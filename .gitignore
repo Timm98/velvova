@@ -1,0 +1,27 @@
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Lokale Daten und Uploads. Enthalten Nutzerinhalte, gehoeren nie ins Repo.
+.data/
+.storage/
+*.sqlite
+*.sqlite3
+
+# Secrets. Nur .env.example wird versioniert.
+.env
+.env.*
+!.env.example
+
+.DS_Store
+*.log
+npm-debug.log*
+playwright-report/
+test-results/
+.expo/
