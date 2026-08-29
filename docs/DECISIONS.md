@@ -107,13 +107,27 @@ geschrieben — „Jobqualitaet" statt „Jobqualität".
 - **Kein externer Sicherheitstest.**
 - **Kein Test mit Screenreader-Nutzenden.**
 
+## Nachgetragen in der zweiten Ausbaustufe
+
+- [ADR 0007](adr/0007-postgres-statt-supabase-sdk.md) — Postgres mit
+  Drizzle statt des Supabase-SDK. Abweichung vom Auftrag, begründet:
+  die vorhandene Sicherheitsschicht ist geprüft, das SDK hätte drei
+  Schichten gleichzeitig ersetzt.
+- [ADR 0008](adr/0008-openai-als-erster-echter-anbieter.md) — OpenAI über
+  die Responses-API, Modellname konfigurierbar, kein stiller Wechsel auf
+  ein Ersatzmodell.
+- [ADR 0009](adr/0009-echte-stellen-nur-aus-offenen-quellen.md) — echte
+  Stellen ausschließlich aus Quellen, die sie selbst offen anbieten.
+
 ## Die nächsten fünf Schritte
 
 1. **Semantische Suche einbinden.** `pgvector`, Embeddings über einen
    echten Anbieter, Abgleich über Bedeutung statt Wortgleichheit. Das hebt
    die Qualität des Matchings am deutlichsten.
-2. **Eine lizenzierte Jobquelle anbinden.** Der Adapter steht; es fehlt
-   der Vertrag. Ohne echte Stellen bleibt alles Demo.
+2. **Weitere Stellenquellen.** Arbeitnow liefert echte Anzeigen, aber
+   keine Gehälter und wenig Struktur. Adzuna und EURES sind rechtlich
+   nutzbar und passen in dieselbe Schnittstelle; beide brauchen einen
+   Schlüssel.
 3. **Uploads fertigstellen.** Speicher anbinden, Dokumentextraktion,
    Malware-Scan. Der Lebenslauf ist für viele der natürliche Einstieg.
 4. **Rate Limiting und ein Wiederherstellungstest.** Beides ist vor einem

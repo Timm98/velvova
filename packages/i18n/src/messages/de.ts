@@ -9,6 +9,7 @@ export const de = {
   common: {
     appName: "{brand}",
     assistant: "{assistant}",
+    example: "Beispiel",
     save: "Speichern",
     cancel: "Abbrechen",
     confirm: "Bestätigen",
@@ -43,47 +44,110 @@ export const de = {
     checkIns: "Check-ins",
     settings: "Einstellungen",
     logout: "Abmelden",
+    howItWorks: "So funktioniert es",
+    methodology: "Methodik",
+    security: "Sicherheit",
+    privacy: "Datenschutz",
+    imprint: "Impressum",
+    matches: "Matches",
+    careerProfile: "Karriereprofil",
+    growth: "Karriere",
+    notifications: "Benachrichtigungen",
+    search: "Suchen",
+    languageRegion: "Sprache & Region",
+    appearance: "Erscheinungsbild",
+    privacyData: "Datenschutz & Daten",
+    help: "Hilfe",
     skipToContent: "Zum Inhalt springen",
   },
 
   landing: {
-    headline: "Finde nicht irgendeinen Job. Finde den, der wirklich zu dir passt.",
+    eyebrow: "Deine Karriere, verstanden statt geraten",
+    headline: "Finde Arbeit, die zu deinem Leben passt.",
     subheadline:
-      "{assistant} versteht deine Erfahrungen, Stärken und Bedingungen, entdeckt passende Rollen " +
-      "und begleitet dich von der Jobsuche bis zum Interview.",
-    ctaVoice: "Mit {assistant} sprechen",
-    ctaText: "Lieber schreiben",
+      "{assistant} fragt zuerst nach dem, was du tatsächlich getan hast — und sortiert dann " +
+      "echte Stellen. Jede Empfehlung kommt mit Grund, Vorbehalt und Quelle.",
+    ctaPrimary: "Mit {assistant} starten",
     ctaSecondary: "So funktioniert es",
-    stepsTitle: "Drei Schritte",
-    step1Title: "Verstehen",
+    trustProfile: "Privates Profil",
+    trustReasons: "Nachvollziehbare Matches",
+    trustNoInvention: "Keine erfundenen Bewerbungsangaben",
+
+    flowEyebrow: "Der Ablauf",
+    flowTitle: "Erst verstehen. Dann vergleichen. Dann bewerben.",
+    step1Title: "{assistant} fragt, bevor sie sucht",
     step1Body:
-      "Bevor du Stellen siehst, klären wir, was du tatsächlich kannst - anhand konkreter " +
-      "Situationen, nicht anhand von Selbsteinschätzungen.",
-    step2Title: "Vergleichen",
+      "Konkrete Situationen statt Selbsteinschätzung. Aus „Kundenservice, 2 Jahre“ wird eine " +
+      "benannte Handlung mit Ergebnis.",
+    step2Title: "Du siehst wenige, wirklich passende Stellen",
     step2Body:
-      "Du bekommst wenige, begründete Vorschläge statt hunderter Anzeigen. Jeder mit einem " +
-      "Grund und einem Vorbehalt.",
-    step3Title: "Bewerben",
+      "Echte Anzeigen mit Quelle und Abrufdatum, sortiert nach begründeter Passung — nicht nach " +
+      "Werbebudget.",
+    step3Title: "{assistant} begleitet Bewerbung und Interview",
     step3Body:
-      "Unterlagen entstehen aus deinen belegten Erfahrungen. Jede Aussage hängt an etwas, " +
-      "das du bestätigt hast.",
-    matchTitle: "Ein Match, das sich erklären lässt",
-    matchBody:
-      "Statt einer Prozentzahl siehst du, woraus sie entsteht - und wo die Datenlage dünn ist.",
-    evidenceTitle: "Aus einer Alltagserfahrung wird eine belegte Stärke",
-    evidenceBody:
-      "Was im Lebenslauf als \"Kundenservice\" steht, ist oft etwas viel Genaueres. Genau danach " +
-      "fragt {assistant}.",
-    realityTitle: "Was in der Anzeige steht - und was nicht",
-    realityBody:
-      "Mitarbeiterstimmen, Kundenbewertungen und Arbeitgeberangaben bleiben getrennt. Eine " +
-      "Standortbewertung von Kundinnen sagt nichts über die Arbeitskultur.",
+      "Jeder Satz in den Unterlagen hängt an etwas, das du bestätigt hast. Versendet wird nie " +
+      "ohne deine ausdrückliche Freigabe.",
+
+    methodEyebrow: "Methodik",
+    methodTitle: "Vier Arten von Wissen. Nie vermischt.",
+    methodBody:
+      "Der häufigste Fehler in KI-Produkten ist, eine Vermutung wie eine Tatsache aussehen zu " +
+      "lassen. Deshalb trägt jede Aussage im Profil sichtbar, woher sie stammt — und du kannst " +
+      "jede Ableitung bestätigen, ändern oder löschen.",
+    methodLink: "Ausführliche Methodik",
+    knowledgeSaidTitle: "Was du gesagt hast",
+    knowledgeSaidBody: "Deine eigenen Angaben, wörtlich gespeichert.",
+    knowledgeEvidenceTitle: "Was belegt ist",
+    knowledgeEvidenceBody:
+      "Eine Aussage mit konkreter Situation, Handlung und Ergebnis — von dir bestätigt.",
+    knowledgeGuessTitle: "Was vermutet wird",
+    knowledgeGuessBody:
+      "Eine Hypothese von {assistant}. Immer als solche gekennzeichnet, nie stillschweigend " +
+      "übernommen.",
+    knowledgeExternalTitle: "Was von außen kommt",
+    knowledgeExternalBody:
+      "Stellenanzeigen, Register, Bewertungen — mit Quelle und Abrufdatum.",
+
+    futureTitle: "Wie sich die Rolle entwickelt",
+    futureBody:
+      "Bewertet werden die Aufgaben der konkreten Stelle, nicht die Berufstafel. Ausgegeben " +
+      "werden Szenarien mit Datenstand — nie eine Jahreszahl, wann etwas „verschwindet“.",
+    futureLink: "Wie das berechnet wird",
     privacyTitle: "Deine Daten bleiben deine",
     privacyBody:
       "Du siehst, was gespeichert ist, kannst alles einzeln ändern oder löschen und jede " +
-      "Einwilligung getrennt widerrufen.",
-    closingTitle: "Fang mit dem an, was du schon kannst",
-    closingBody: "Das Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren.",
+      "Einwilligung getrennt widerrufen. An das Sprachmodell geht nur der Kontext, den die " +
+      "jeweilige Aufgabe braucht.",
+    privacyLink: "Sicherheit und Datenschutz",
+
+    closingTitle: "Fang mit dem an, was du schon kannst.",
+    closingBody:
+      "Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und " +
+      "später weitermachen.",
+    closingCta: "Kostenlos beginnen",
+
+    navProduct: "Produkt",
+    navPricing: "Preise",
+    footerProduct: "Produkt",
+    footerTrust: "Vertrauen",
+    footerCompany: "Unternehmen",
+    footerOverview: "Überblick",
+    footerNote:
+      "{brand} und {assistant} sind vorläufige Namen. Kandidatenseitig — dieses Produkt " +
+      "arbeitet für die suchende Person, nicht für Arbeitgeber.",
+    footerLanguage:
+      "Sprache und Region wählst du beim Anlegen des Kontos und änderst sie jederzeit unter " +
+      "Profil → Sprache & Region.",
+
+    exampleSaid: "Was du erzählst",
+    exampleSaidText: "„Ich habe oft schwierige Kunden beruhigt.“",
+    exampleAsked: "Was {assistant} nachfragt",
+    exampleAskedText:
+      "„Erzähl mir von einer Eskalation, die du übernommen hast. Was hast du konkret getan — " +
+      "und was kam dabei heraus?“",
+    exampleEvidence: "Belegte Stärke",
+    exampleEvidenceText: "Konfliktklärung · technische Vermittlung · Verantwortung unter Druck",
+    exampleRoles: "Passende Rollen",
   },
 
   auth: {

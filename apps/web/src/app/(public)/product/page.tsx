@@ -49,7 +49,7 @@ export default async function ProductPage() {
   return (
     <div className="grid gap-12">
       <header className="grid gap-4">
-        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-brand">Produkt</p>
+        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-accent-text">Produkt</p>
         <h1 className="font-display text-[2.5rem] font-medium leading-[1.08] tracking-[-0.02em]">
           Von der ersten Frage bis zum dritten Monat.
         </h1>
@@ -62,7 +62,7 @@ export default async function ProductPage() {
       <ol className="grid gap-px overflow-hidden rounded-[--radius-lg] border border-line bg-line">
         {stages.map((stage, index) => (
           <li key={stage.title} className="bg-raised px-6 py-6">
-            <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-brand">
+            <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-accent-text">
               {String(index + 1).padStart(2, "0")}
             </span>
             <h2 className="mt-2 text-lg font-semibold">{stage.title}</h2>

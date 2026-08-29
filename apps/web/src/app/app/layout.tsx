@@ -42,19 +42,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       labels={{
         home: t("nav.home"),
         assistant: brand.assistantName,
-        jobs: "Matches",
+        jobs: t("nav.matches"),
         applications: t("nav.applications"),
-        profile: "Karriereprofil",
-        growth: "Karriere",
+        profile: t("nav.careerProfile"),
+        growth: t("nav.growth"),
         settings: t("nav.settings"),
         logout: t("nav.logout"),
         skipToContent: t("nav.skipToContent"),
-        search: "Suchen",
-        notifications: "Benachrichtigungen",
-        languageRegion: "Sprache & Region",
-        appearance: "Erscheinungsbild",
-        privacy: "Datenschutz & Daten",
-        help: "Hilfe",
+        search: t("nav.search"),
+        notifications: t("nav.notifications"),
+        languageRegion: t("nav.languageRegion"),
+        appearance: t("nav.appearance"),
+        privacy: t("nav.privacyData"),
+        help: t("nav.help"),
       }}
       onLogout={
         <form action={logoutAction}>

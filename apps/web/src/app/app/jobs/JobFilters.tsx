@@ -33,6 +33,23 @@ const FRESHNESS = [
   { value: "30", label: "Letzter Monat" },
 ];
 
+/**
+ * Die Sortierung.
+ *
+ * Die Voreinstellung ist die beste begründete Gesamtchance. Alle
+ * anderen Reihenfolgen sind ausdrücklich wählbar — aber keine davon
+ * ist käuflich, und es gibt keine bezahlte Platzierung.
+ */
+const SORT = [
+  { value: "best_overall", label: "Beste Gesamtchance" },
+  { value: "highest_fit", label: "Höchste Passung" },
+  { value: "best_job_quality", label: "Beste Jobqualität" },
+  { value: "highest_salary", label: "Höchstes Gehalt" },
+  { value: "future_robust", label: "Zukunftsrobust" },
+  { value: "shortest_commute", label: "Kürzester Weg" },
+  { value: "newest", label: "Neueste zuerst" },
+];
+
 export function JobFilters({ resultCount }: { resultCount: number }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -87,6 +104,27 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
             />
           </div>
         </form>
+
+        <label className="sr-only" htmlFor="sort">
+          Sortierung
+        </label>
+        <select
+          id="sort"
+          value={params.get("sort") ?? "best_overall"}
+          onChange={(e) => {
+            const next = new URLSearchParams(params.toString());
+            if (e.target.value === "best_overall") next.delete("sort");
+            else next.set("sort", e.target.value);
+            apply(next);
+          }}
+          className="h-11 shrink-0 rounded-[--radius-md] border border-line-2 bg-raised px-3.5 text-sm shadow-xs transition-colors hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
+        >
+          {SORT.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
 
         <button
           type="button"

@@ -13,6 +13,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { currentUser } from "@/lib/auth";
+import type { Translator } from "@paycheck/i18n";
 import { getPageContext } from "@/lib/locale";
 import { EvidenceSequence } from "@/components/marketing/EvidenceSequence";
 
@@ -38,7 +39,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function LandingPage() {
   if (await currentUser()) redirect("/app");
-  const { brand } = await getPageContext();
+  const { t, brand } = await getPageContext();
 
   return (
     <div className="min-h-dvh">
@@ -46,7 +47,7 @@ export default async function LandingPage() {
         Zum Inhalt springen
       </a>
 
-      <SiteHeader brandName={brand.name} assistantName={brand.assistantName} />
+      <SiteHeader brandName={brand.name} t={t} />
 
       <main id="inhalt">
         {/* ══ Hero ═══════════════════════════════════════════════ */}
@@ -54,18 +55,17 @@ export default async function LandingPage() {
           <div className="max-w-[36rem]">
             <p className="inline-flex items-center gap-2 rounded-[--radius-full] border border-line-2 bg-raised px-3 py-1.5 text-2xs font-medium uppercase tracking-[0.12em] text-ink-2 shadow-xs">
               <Sparkles className="size-3 text-brand" strokeWidth={2.2} />
-              Deine Karriere, verstanden statt geraten
+              {t("landing.eyebrow")}
             </p>
 
             {/* Höchstens drei Zeilen auf dem Desktop. Eine Überschrift,
                 die Wort für Wort umbricht, sieht aus wie ein Unfall. */}
             <h1 className="mt-6 font-display text-[2.75rem] font-medium leading-[1.04] tracking-[-0.025em] text-balance sm:text-[3.4rem] lg:text-[4rem]">
-              Finde Arbeit, die zu deinem Leben passt.
+              {t("landing.headline")}
             </h1>
 
             <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-2">
-              {brand.assistantName} fragt zuerst nach dem, was du tatsächlich getan hast — und
-              sortiert dann echte Stellen. Jede Empfehlung kommt mit Grund, Vorbehalt und Quelle.
+              {t("landing.subheadline")}
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -73,22 +73,22 @@ export default async function LandingPage() {
                 href="/register"
                 className="inline-flex h-12 items-center gap-2 rounded-[--radius-md] bg-accent px-6 text-base font-medium text-accent-on shadow-sm transition-[background-color,box-shadow,transform] duration-[--duration-fast] hover:bg-accent-hover hover:shadow-md active:translate-y-px"
               >
-                Mit {brand.assistantName} starten
+                {t("landing.ctaPrimary")}
                 <ArrowRight className="size-4" strokeWidth={2} />
               </Link>
               <Link
                 href="/how-it-works"
                 className="inline-flex h-12 items-center gap-2 rounded-[--radius-md] border border-line-2 bg-raised px-6 text-base font-medium shadow-xs transition-colors hover:border-line-3 hover:bg-sunken"
               >
-                So funktioniert es
+                {t("landing.ctaSecondary")}
               </Link>
             </div>
 
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
               {[
-                "Privates Profil",
-                "Nachvollziehbare Matches",
-                "Keine erfundenen Bewerbungsangaben",
+                t("landing.trustProfile"),
+                t("landing.trustReasons"),
+                t("landing.trustNoInvention"),
               ].map((point) => (
                 <li key={point} className="flex items-center gap-2 text-sm text-ink-2">
                   <Check className="size-3.5 shrink-0 text-positive" strokeWidth={2.4} />
@@ -98,16 +98,28 @@ export default async function LandingPage() {
             </ul>
           </div>
 
-          <EvidenceSequence />
+          <EvidenceSequence
+            labels={{
+              assistantName: brand.assistantName,
+              example: t("common.example"),
+              saidLabel: t("landing.exampleSaid"),
+              saidText: t("landing.exampleSaidText"),
+              askedLabel: t("landing.exampleAsked"),
+              askedText: t("landing.exampleAskedText"),
+              evidenceLabel: t("landing.exampleEvidence"),
+              evidenceText: t("landing.exampleEvidenceText"),
+              rolesLabel: t("landing.exampleRoles"),
+            }}
+          />
         </section>
 
         {/* ══ Der Ablauf ═════════════════════════════════════════ */}
         <section className="border-y border-line bg-raised">
           <div className="mx-auto w-full max-w-[1320px] px-5 py-20 md:px-8 lg:py-24">
             <div className="max-w-[42rem]">
-              <SectionEyebrow>Der Ablauf</SectionEyebrow>
+              <SectionEyebrow>{t("landing.flowEyebrow")}</SectionEyebrow>
               <h2 className="mt-4 font-display text-[2rem] font-medium leading-[1.12] tracking-[-0.02em] lg:text-[2.5rem]">
-                Erst verstehen. Dann vergleichen. Dann bewerben.
+                {t("landing.flowTitle")}
               </h2>
             </div>
 
@@ -115,24 +127,24 @@ export default async function LandingPage() {
               {[
                 {
                   icon: MessagesSquare,
-                  title: brand.assistantName + " fragt, bevor sie sucht",
-                  body: "Konkrete Situationen statt Selbsteinschätzung. Aus „Kundenservice, 2 Jahre“ wird eine benannte Handlung mit Ergebnis.",
+                  title: t("landing.step1Title"),
+                  body: t("landing.step1Body"),
                 },
                 {
                   icon: ScanSearch,
-                  title: "Du siehst wenige, wirklich passende Stellen",
-                  body: "Echte Anzeigen mit Quelle und Abrufdatum, sortiert nach begründeter Passung — nicht nach Werbebudget.",
+                  title: t("landing.step2Title"),
+                  body: t("landing.step2Body"),
                 },
                 {
                   icon: FileCheck2,
-                  title: brand.assistantName + " begleitet Bewerbung und Interview",
-                  body: "Jeder Satz in den Unterlagen hängt an etwas, das du bestätigt hast. Versendet wird nie ohne deine ausdrückliche Freigabe.",
+                  title: t("landing.step3Title"),
+                  body: t("landing.step3Body"),
                 },
               ].map((step, index) => {
                 const Icon = step.icon;
                 return (
                   <li key={step.title}>
-                    <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-brand">
+                    <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-accent-text">
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <span
@@ -154,20 +166,18 @@ export default async function LandingPage() {
         <section className="mx-auto w-full max-w-[1320px] px-5 py-20 md:px-8 lg:py-28">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-20">
             <div>
-              <SectionEyebrow>Methodik</SectionEyebrow>
+              <SectionEyebrow>{t("landing.methodEyebrow")}</SectionEyebrow>
               <h2 className="mt-4 font-display text-[2rem] font-medium leading-[1.12] tracking-[-0.02em] lg:text-[2.4rem]">
-                Vier Arten von Wissen. Nie vermischt.
+                {t("landing.methodTitle")}
               </h2>
               <p className="mt-5 text-[15px] leading-relaxed text-ink-2">
-                Der häufigste Fehler in KI-Produkten ist, eine Vermutung wie eine Tatsache aussehen
-                zu lassen. Deshalb trägt jede Aussage im Profil sichtbar, woher sie stammt — und du
-                kannst jede Ableitung bestätigen, ändern oder löschen.
+                {t("landing.methodBody")}
               </p>
               <Link
                 href="/methodology"
                 className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-accent-text underline underline-offset-[3px]"
               >
-                Ausführliche Methodik
+                {t("landing.methodLink")}
                 <ArrowRight className="size-3.5" strokeWidth={2} />
               </Link>
             </div>
@@ -175,26 +185,23 @@ export default async function LandingPage() {
             <ul className="grid gap-3 sm:grid-cols-2">
               {[
                 {
-                  title: "Was du gesagt hast",
-                  body: "Deine eigenen Angaben, wörtlich gespeichert.",
+                  title: t("landing.knowledgeSaidTitle"),
+                  body: t("landing.knowledgeSaidBody"),
                   dot: "bg-ink-3",
                 },
                 {
-                  title: "Was belegt ist",
-                  body: "Eine Aussage mit konkreter Situation, Handlung und Ergebnis — von dir bestätigt.",
+                  title: t("landing.knowledgeEvidenceTitle"),
+                  body: t("landing.knowledgeEvidenceBody"),
                   dot: "bg-positive",
                 },
                 {
-                  title: "Was vermutet wird",
-                  body:
-                    "Eine Hypothese von " +
-                    brand.assistantName +
-                    ". Immer als solche gekennzeichnet, nie stillschweigend übernommen.",
+                  title: t("landing.knowledgeGuessTitle"),
+                  body: t("landing.knowledgeGuessBody"),
                   dot: "bg-assistant",
                 },
                 {
-                  title: "Was von außen kommt",
-                  body: "Stellenanzeigen, Register, Bewertungen — mit Quelle und Abrufdatum.",
+                  title: t("landing.knowledgeExternalTitle"),
+                  body: t("landing.knowledgeExternalBody"),
                   dot: "bg-caution",
                 },
               ].map((item) => (
@@ -214,17 +221,17 @@ export default async function LandingPage() {
             {[
               {
                 icon: TrendingUp,
-                title: "Wie sich die Rolle entwickelt",
-                body: "Bewertet werden die Aufgaben der konkreten Stelle, nicht die Berufstafel. Ausgegeben werden Szenarien mit Datenstand — nie eine Jahreszahl, wann etwas „verschwindet“.",
+                title: t("landing.futureTitle"),
+                body: t("landing.futureBody"),
                 href: "/methodology",
-                cta: "Wie das berechnet wird",
+                cta: t("landing.futureLink"),
               },
               {
                 icon: ShieldCheck,
-                title: "Deine Daten bleiben deine",
-                body: "Du siehst, was gespeichert ist, kannst alles einzeln ändern oder löschen und jede Einwilligung getrennt widerrufen. An das Sprachmodell geht nur der Kontext, den die jeweilige Aufgabe braucht.",
+                title: t("landing.privacyTitle"),
+                body: t("landing.privacyBody"),
                 href: "/security",
-                cta: "Sicherheit und Datenschutz",
+                cta: t("landing.privacyLink"),
               },
             ].map((promise) => {
               const Icon = promise.icon;
@@ -255,30 +262,29 @@ export default async function LandingPage() {
         <section className="mx-auto w-full max-w-[1320px] px-5 py-24 md:px-8 lg:py-32">
           <div className="mx-auto max-w-[40rem] text-center">
             <h2 className="font-display text-[2.25rem] font-medium leading-[1.1] tracking-[-0.02em] text-balance lg:text-[3rem]">
-              Fang mit dem an, was du schon kannst.
+              {t("landing.closingTitle")}
             </h2>
             <p className="mx-auto mt-5 max-w-[32rem] text-lg leading-relaxed text-ink-2">
-              Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und
-              später weitermachen.
+              {t("landing.closingBody")}
             </p>
             <Link
               href="/register"
               className="mt-9 inline-flex h-12 items-center gap-2 rounded-[--radius-md] bg-accent px-7 text-base font-medium text-accent-on shadow-sm transition-[background-color,box-shadow,transform] duration-[--duration-fast] hover:bg-accent-hover hover:shadow-md active:translate-y-px"
             >
-              Kostenlos beginnen
+              {t("landing.closingCta")}
               <ArrowRight className="size-4" strokeWidth={2} />
             </Link>
           </div>
         </section>
       </main>
 
-      <SiteFooter brandName={brand.name} assistantName={brand.assistantName} />
+      <SiteFooter brandName={brand.name} t={t} />
     </div>
   );
 }
 
 function SectionEyebrow({ children }: { children: React.ReactNode }) {
-  return <p className="text-2xs font-medium uppercase tracking-[0.14em] text-brand">{children}</p>;
+  return <p className="text-2xs font-medium uppercase tracking-[0.14em] text-accent-text">{children}</p>;
 }
 
 /**
@@ -288,12 +294,12 @@ function SectionEyebrow({ children }: { children: React.ReactNode }) {
  * zur Entscheidung beitragen, ob jemand anfängt — sonst nimmt es nur
  * Platz und Aufmerksamkeit.
  */
-function SiteHeader({ brandName, assistantName }: { brandName: string; assistantName: string }) {
+function SiteHeader({ brandName, t }: { brandName: string; t: Translator["t"] }) {
   const links = [
-    { href: "/product", label: "Produkt" },
-    { href: "/how-it-works", label: "So funktioniert es" },
-    { href: "/methodology", label: "Methodik" },
-    { href: "/security", label: "Sicherheit" },
+    { href: "/product", label: t("landing.navProduct") },
+    { href: "/how-it-works", label: t("nav.howItWorks") },
+    { href: "/methodology", label: t("nav.methodology") },
+    { href: "/security", label: t("nav.security") },
   ];
 
   return (
@@ -326,13 +332,13 @@ function SiteHeader({ brandName, assistantName }: { brandName: string; assistant
             href="/login"
             className="rounded-[--radius-md] px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
           >
-            Anmelden
+            {t("auth.login")}
           </Link>
           <Link
             href="/register"
             className="inline-flex h-9 items-center gap-1.5 rounded-[--radius-md] bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
           >
-            Mit {assistantName} starten
+            {t("landing.ctaPrimary")}
           </Link>
         </div>
       </div>
@@ -340,30 +346,30 @@ function SiteHeader({ brandName, assistantName }: { brandName: string; assistant
   );
 }
 
-function SiteFooter({ brandName, assistantName }: { brandName: string; assistantName: string }) {
+function SiteFooter({ brandName, t }: { brandName: string; t: Translator["t"] }) {
   const columns = [
     {
-      title: "Produkt",
+      title: t("landing.footerProduct"),
       links: [
-        { href: "/product", label: "Überblick" },
-        { href: "/how-it-works", label: "So funktioniert es" },
-        { href: "/pricing", label: "Preise" },
+        { href: "/product", label: t("landing.footerOverview") },
+        { href: "/how-it-works", label: t("nav.howItWorks") },
+        { href: "/pricing", label: t("landing.navPricing") },
       ],
     },
     {
-      title: "Vertrauen",
+      title: t("landing.footerTrust"),
       links: [
-        { href: "/methodology", label: "Methodik" },
-        { href: "/security", label: "Sicherheit" },
-        { href: "/privacy", label: "Datenschutz" },
+        { href: "/methodology", label: t("nav.methodology") },
+        { href: "/security", label: t("nav.security") },
+        { href: "/privacy", label: t("nav.privacy") },
       ],
     },
     {
-      title: "Unternehmen",
+      title: t("landing.footerCompany"),
       links: [
-        { href: "/imprint", label: "Impressum" },
-        { href: "/register", label: "Konto anlegen" },
-        { href: "/login", label: "Anmelden" },
+        { href: "/imprint", label: t("nav.imprint") },
+        { href: "/register", label: t("auth.register") },
+        { href: "/login", label: t("auth.login") },
       ],
     },
   ];
@@ -383,8 +389,7 @@ function SiteFooter({ brandName, assistantName }: { brandName: string; assistant
               {brandName}
             </p>
             <p className="mt-3.5 max-w-[24rem] text-sm leading-relaxed text-ink-3">
-              {brandName} und {assistantName} sind vorläufige Namen. Kandidatenseitig — dieses
-              Produkt arbeitet für die suchende Person, nicht für Arbeitgeber.
+              {t("landing.footerNote")}
             </p>
           </div>
 
@@ -408,8 +413,7 @@ function SiteFooter({ brandName, assistantName }: { brandName: string; assistant
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
           <p className="max-w-[42rem] text-xs leading-relaxed text-ink-3">
-            Sprache und Region wählst du beim Anlegen des Kontos und änderst sie jederzeit unter
-            Profil → Sprache &amp; Region.
+            {t("landing.footerLanguage")}
           </p>
           <p className="flex items-center gap-2 text-xs text-ink-3">
             <Globe className="size-3.5" strokeWidth={1.8} />

@@ -50,3 +50,16 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
     );
   }
 }
+
+/**
+ * Die erste Stelle der Liste öffnen.
+ *
+ * Die Karte ist als Ganzes klickbar; der Titel ist der Anker. Ein Test,
+ * der auf einen Knopf mit der Aufschrift "Ansehen" zeigt, bricht bei
+ * jeder Textänderung — der Titel-Link ist die Struktur, nicht die
+ * Formulierung.
+ */
+export async function openFirstJob(page: Page): Promise<void> {
+  await page.getByRole("article").first().getByRole("link").first().click();
+  await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+}

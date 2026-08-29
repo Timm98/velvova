@@ -9,6 +9,7 @@ export const en: Messages = {
   common: {
     appName: "{brand}",
     assistant: "{assistant}",
+    example: "Example",
     save: "Save",
     cancel: "Cancel",
     confirm: "Confirm",
@@ -43,46 +44,107 @@ export const en: Messages = {
     checkIns: "Check-ins",
     settings: "Settings",
     logout: "Sign out",
+    howItWorks: "How it works",
+    methodology: "Method",
+    security: "Security",
+    privacy: "Privacy",
+    imprint: "Legal notice",
+    matches: "Matches",
+    careerProfile: "Career profile",
+    growth: "Career",
+    notifications: "Notifications",
+    search: "Search",
+    languageRegion: "Language & region",
+    appearance: "Appearance",
+    privacyData: "Privacy & data",
+    help: "Help",
     skipToContent: "Skip to content",
   },
 
   landing: {
-    headline: "Don't find just any job. Find the one that actually fits.",
+    eyebrow: "Your career, understood rather than guessed",
+    headline: "Find work that fits the life you have.",
     subheadline:
-      "{assistant} understands your experience, strengths and conditions, discovers roles that " +
-      "suit you, and stays with you from the search through to the interview.",
-    ctaVoice: "Talk to {assistant}",
-    ctaText: "I'd rather type",
+      "{assistant} asks first about what you have actually done — then sorts real listings. " +
+      "Every recommendation comes with a reason, a reservation and a source.",
+    ctaPrimary: "Start with {assistant}",
     ctaSecondary: "How it works",
-    stepsTitle: "Three steps",
-    step1Title: "Understand",
+    trustProfile: "Private profile",
+    trustReasons: "Matches you can trace",
+    trustNoInvention: "No invented application claims",
+
+    flowEyebrow: "How it goes",
+    flowTitle: "Understand first. Then compare. Then apply.",
+    step1Title: "{assistant} asks before she searches",
     step1Body:
-      "Before you see any roles, we work out what you can actually do - from concrete " +
-      "situations, not self-assessments.",
-    step2Title: "Compare",
+      "Concrete situations instead of self-assessment. \"Customer service, 2 years\" becomes a " +
+      "named action with an outcome.",
+    step2Title: "You see a few genuinely fitting roles",
     step2Body:
-      "You get a few reasoned suggestions instead of hundreds of listings. Each with a reason " +
-      "and a reservation.",
-    step3Title: "Apply",
+      "Real listings with source and retrieval date, ranked by reasoned fit — not by " +
+      "advertising budget.",
+    step3Title: "{assistant} stays with you through application and interview",
     step3Body:
-      "Documents are built from your evidenced experience. Every claim traces back to something " +
-      "you confirmed.",
-    matchTitle: "A match that can explain itself",
-    matchBody: "Instead of a percentage, you see what it is made of - and where the data is thin.",
-    evidenceTitle: "An everyday experience becomes an evidenced strength",
-    evidenceBody:
-      "What a CV calls \"customer service\" is usually something far more specific. That is what " +
-      "{assistant} asks about.",
-    realityTitle: "What the ad says - and what it doesn't",
-    realityBody:
-      "Employee voices, customer ratings and employer statements stay separate. A customer " +
-      "rating of a location says nothing about the workplace culture.",
+      "Every sentence in your documents traces back to something you confirmed. Nothing is ever " +
+      "sent without your explicit approval.",
+
+    methodEyebrow: "Method",
+    methodTitle: "Four kinds of knowledge. Never mixed.",
+    methodBody:
+      "The most common failure in AI products is letting a guess look like a fact. So every " +
+      "statement in your profile carries its origin — and you can confirm, change or delete any " +
+      "inference.",
+    methodLink: "The full method",
+    knowledgeSaidTitle: "What you said",
+    knowledgeSaidBody: "Your own words, stored verbatim.",
+    knowledgeEvidenceTitle: "What is evidenced",
+    knowledgeEvidenceBody:
+      "A statement with a concrete situation, action and outcome — confirmed by you.",
+    knowledgeGuessTitle: "What is inferred",
+    knowledgeGuessBody:
+      "A hypothesis from {assistant}. Always marked as one, never quietly adopted.",
+    knowledgeExternalTitle: "What comes from outside",
+    knowledgeExternalBody: "Listings, registries, reviews — with source and retrieval date.",
+
+    futureTitle: "How the role will change",
+    futureBody:
+      "What is assessed are the tasks of this specific role, not the job title. You get " +
+      "scenarios with a data date — never a year by which something \"disappears\".",
+    futureLink: "How this is calculated",
     privacyTitle: "Your data stays yours",
     privacyBody:
       "You can see what is stored, change or delete each item, and withdraw every consent " +
-      "separately.",
-    closingTitle: "Start with what you can already do",
-    closingBody: "The conversation takes about fifteen minutes. You can pause at any point.",
+      "separately. Only the context a given step needs ever reaches the language model.",
+    privacyLink: "Security and privacy",
+
+    closingTitle: "Start with what you can already do.",
+    closingBody:
+      "The first conversation takes about fifteen minutes. You can pause at any point and pick " +
+      "it up later.",
+    closingCta: "Start for free",
+
+    navProduct: "Product",
+    navPricing: "Pricing",
+    footerProduct: "Product",
+    footerTrust: "Trust",
+    footerCompany: "Company",
+    footerOverview: "Overview",
+    footerNote:
+      "{brand} and {assistant} are working names. Candidate-side — this product works for the " +
+      "person looking, not for employers.",
+    footerLanguage:
+      "You choose language and region when you create your account, and can change them any " +
+      "time under Profile → Language & region.",
+
+    exampleSaid: "What you say",
+    exampleSaidText: "\"I often calmed down difficult customers.\"",
+    exampleAsked: "What {assistant} asks back",
+    exampleAskedText:
+      "\"Tell me about an escalation you took on. What exactly did you do — and what came out " +
+      "of it?\"",
+    exampleEvidence: "Evidenced strength",
+    exampleEvidenceText: "Conflict resolution · technical mediation · responsibility under pressure",
+    exampleRoles: "Roles that fit",
   },
 
   auth: {

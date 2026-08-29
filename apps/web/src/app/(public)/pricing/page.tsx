@@ -17,7 +17,7 @@ export default async function PricingPage() {
   return (
     <div className="grid gap-8">
       <header className="grid gap-4">
-        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-brand">Preise</p>
+        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-accent-text">Preise</p>
         <h1 className="font-display text-[2.5rem] font-medium leading-[1.08] tracking-[-0.02em]">
           Noch nicht festgelegt.
         </h1>

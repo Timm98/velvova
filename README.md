@@ -4,10 +4,11 @@ Ein kandidatenkontrolliertes, evidenzbasiertes Karriere-Betriebssystem.
 Die Assistenz heißt **Nina**. Beide Namen sind vorläufig und stehen an
 genau einer Stelle: `packages/config/src/brand.ts`.
 
-> **Demo-Modus.** Ohne einen einzigen Zugangsschlüssel läuft das Projekt
-> vollständig — mit einem lokalen Demo-Anbieter für die KI, synthetischen
-> Stellen und ohne jeden echten E-Mail-Versand. Was nicht verbunden ist,
-> sagt das in der Oberfläche.
+> **Ohne einen einzigen Zugangsschlüssel läuft das Projekt vollständig.**
+> Echte Stellen kommen von einer Quelle, die sie selbst offen anbietet;
+> die KI läuft ohne Schlüssel als lokaler Demo-Anbieter, und es wird
+> keine E-Mail versendet. Was nicht verbunden ist, sagt das in der
+> Oberfläche — unter Einstellungen → Verbundene Dienste.
 
 ## Was das Produkt tut
 
@@ -55,6 +56,7 @@ Treiber.
 | `pnpm setup` | Installieren, migrieren, Seed laden — in einem Schritt |
 | `pnpm db:migrate` | Migrationen anwenden, RLS-Richtlinien setzen |
 | `pnpm db:seed` | Demo-Persona Lea, 7 Firmen, 10 Stellen |
+| `pnpm jobs:refresh [n]` | Echte Stellen abrufen (nur bei gestopptem Server) |
 | `pnpm db:reset` | Lokale Datenbank löschen (verweigert gegen einen Server) |
 | `pnpm --filter @paycheck/web dev` | Web-App auf Port 3000 |
 | `pnpm --filter @paycheck/api dev` | API auf Port 3001 |
@@ -67,6 +69,15 @@ Treiber.
 | `pnpm typecheck` | TypeScript über alle Pakete |
 | `pnpm build` | Produktionsbuild |
 | `pnpm verify` | Alles nacheinander |
+| `node scripts/screenshots.mjs <name>` | Bildschirmfotos in drei Größen |
+| `node scripts/axe-detail.mjs <pfad…>` | Welche Elemente axe genau beanstandet |
+
+**Echte Stellen laden.** Im Betrieb geht das über einen Zeitplan gegen
+`POST /api/jobs/refresh`. Lokal ist der Weg über die laufende Anwendung
+der richtige — Einstellungen → Verbundene Dienste → *Stellen jetzt
+abrufen*. Grund: die eingebettete Datenbank läuft in genau einem Prozess.
+Ein Abruf von außen schreibt in dieselbe Ablage, aber der laufende Server
+sieht davon nichts.
 
 ## Aufbau
 
@@ -101,9 +112,12 @@ infra/      Docker Compose für optionale Dienste
 | `NEXT_PUBLIC_ASSISTANT_NAME` | `Nina` | Name der Assistenz |
 | `PAYCHECK_DEMO_MODE` | `demo` | `live` schaltet echte Adapter frei |
 | `DATABASE_DRIVER` | `pglite` | `pg` für einen echten Server |
-| `AI_PROVIDER` | `mock` | `anthropic` braucht `ANTHROPIC_API_KEY` |
+| `AI_PROVIDER` | `mock` | `openai`, `anthropic` oder `self_hosted` |
+| `OPENAI_API_KEY` | leer | Nötig für `AI_PROVIDER=openai` |
+| `OPENAI_PRIMARY_MODEL` | `gpt-5.6` | Modellname, frei konfigurierbar |
 | `MAIL_PROVIDER` | `draft` | Erzeugt Entwürfe, versendet nichts |
-| `JOB_SOURCES` | `seed` | Nur synthetische Stellen |
+| `JOB_SOURCES` | `arbeitnow,user_text,seed` | Echte Stellen plus Demo-Datensatz |
+| `JOBS_REFRESH_SECRET` | leer | Für den planmäßigen Stellenabruf |
 
 Fehlt ein Schlüssel, fällt der Adapter auf den Demo-Pfad zurück **und
 die Oberfläche sagt es**. Es gibt keinen Zustand, in dem etwas

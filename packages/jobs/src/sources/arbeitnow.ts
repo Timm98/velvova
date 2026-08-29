@@ -76,17 +76,22 @@ export function readContractType(jobTypes: string[]): string | null {
   return null;
 }
 
-/** Sprachanforderung nur, wenn die Anzeige sie ausspricht. */
+/**
+ * Sprachanforderung nur, wenn die Anzeige sie ausspricht.
+ *
+ * Die Wortstämme stehen bewusst ohne abschließende Wortgrenze: im
+ * Deutschen wird gebeugt. "Verhandlungssicheres Deutsch" ist genau die
+ * Form, in der der Satz tatsächlich in Anzeigen steht — mit einer
+ * Wortgrenze hinter dem Stamm wäre sie durchgerutscht und die
+ * Anforderung eine Stufe zu niedrig eingeschätzt worden.
+ */
+const HIGH_LEVEL = /(verhandlungssicher|fließend|fliessend|fluent|muttersprach|native|\bc1\b|\bc2\b)/i;
+
 export function readLanguages(text: string): Record<string, string> {
   const out: Record<string, string> = {};
-  if (/\b(deutsch|german)\b/i.test(text)) {
-    out.de = /\b(verhandlungssicher|fließend|fluent|c1|c2|muttersprach|native)\b/i.test(text)
-      ? "C1"
-      : "B2";
-  }
-  if (/\b(englisch|english)\b/i.test(text)) {
-    out.en = /\b(fluent|verhandlungssicher|c1|c2)\b/i.test(text) ? "C1" : "B2";
-  }
+  const high = HIGH_LEVEL.test(text);
+  if (/\b(deutsch|german)\b/i.test(text)) out.de = high ? "C1" : "B2";
+  if (/\b(englisch|english)\b/i.test(text)) out.en = high ? "C1" : "B2";
   return out;
 }
 

@@ -22,12 +22,16 @@ export function SettingsNav() {
     <nav aria-label="Einstellungsbereiche">
       {/* Auf schmalen Geräten waagerecht scrollbar — mit Tastaturzugang,
           sonst ist der überstehende Teil ohne Maus unerreichbar. */}
-      <ul
+      {/* Der scrollbare Bereich ist ein eigenes Element. Setzt man
+          role="region" auf die <ul>, verliert sie ihre Listenrolle und
+          die <li> stehen ohne Elternliste da. */}
+      <div
         tabIndex={0}
         role="region"
         aria-label="Einstellungsbereiche"
-        className="scroll-x flex gap-1 pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:grid lg:gap-0.5 lg:pb-0"
+        className="scroll-x pb-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent lg:pb-0"
       >
+      <ul className="flex gap-1 lg:grid lg:gap-0.5">
         {ITEMS.map((item) => {
           const active = item.exact ? pathname === item.href : pathname.startsWith(item.href);
           const Icon = item.icon;
@@ -53,6 +57,7 @@ export function SettingsNav() {
           );
         })}
       </ul>
+      </div>
     </nav>
   );
 }

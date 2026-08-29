@@ -114,9 +114,14 @@ export function JobCard({
                 {/* Die ganze Karte ist klickbar, ohne dass die Karte
                     selbst ein Link wird — sonst wären die Knöpfe darin
                     verschachtelte Klickziele. */}
+                {/* Der Ueberzug macht die ganze Karte klickbar. Das
+                    Element selbst braucht trotzdem eigene 24 Pixel
+                    Hoehe: eine Pruefung, die nur die Kastenmasse sieht,
+                    kann den Ueberzug nicht kennen - und wer mit dem
+                    Finger genau auf den Titel zielt, auch nicht. */}
                 <Link
                   href={`/app/jobs/${scored.jobId}`}
-                  className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+                  className="block min-h-6 after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
                 >
                   {job.title}
                 </Link>

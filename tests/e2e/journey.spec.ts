@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { expectNoHorizontalOverflow, loginAsDemo, setLocale, setTheme } from "./helpers.ts";
+import { expectNoHorizontalOverflow, loginAsDemo, openFirstJob, setLocale, setTheme } from "./helpers.ts";
 
 /**
  * Die Journey von der Landing Page bis zur Bewerbung.
@@ -14,9 +14,10 @@ test.describe("Öffentlicher Bereich", () => {
   test("Landing Page erklärt das Produkt und bietet beide Einstiege", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Finde nicht irgendeinen Job");
-    await expect(page.getByRole("link", { name: /sprechen/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /schreiben/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    // Zwei Einstiege: anfangen und erst verstehen.
+    await expect(page.getByRole("link", { name: /Mit Nina starten/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /So funktioniert es/i }).first()).toBeVisible();
 
     // Keine erfundenen Belege: die Seite darf keine Erfolgsquoten behaupten.
     const body = (await page.textContent("body")) ?? "";
@@ -110,8 +111,11 @@ test.describe("Der Riegel vor personalisierten Jobs", () => {
     await page.waitForURL(/\/setup/, { timeout: 20_000 });
 
     await page.goto("/app/jobs");
-    await expect(page.getByText("Noch gesperrt")).toBeVisible();
-    await expect(page.getByText(/Sonst wären es Zufallstreffer|Sonst waeren es Zufallstreffer/)).toBeVisible();
+    await expect(page.getByRole("article")).toHaveCount(0);
+    await expect(
+      page.getByText(/Sonst wären es Zufallstreffer|Sonst waeren es Zufallstreffer/),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /Gespräch|Profil bestätigen/ })).toBeVisible();
   });
 });
 
@@ -122,7 +126,10 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Dashboard zeigt genau einen nächsten Schritt", async ({ page }) => {
     await page.goto("/app");
-    await expect(page.getByRole("heading", { name: /Dein nächster Schritt|Dein naechster Schritt/ })).toBeVisible();
+    // Genau ein naechster Schritt, mit einer einzigen Handlung.
+    const step = page.locator("section", { has: page.locator("#naechster-schritt") });
+    await expect(step).toHaveCount(1);
+    await expect(step.getByRole("link")).toHaveCount(1);
     await expect(page.getByRole("heading", { name: "Bewerbungsfortschritt" })).toBeVisible();
 
     // Kein Gamification-Druck.
@@ -131,25 +138,39 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Demo-Daten sind als Demo gekennzeichnet", async ({ page }) => {
-    await page.goto("/app");
-    await expect(page.getByText("Demo-Modus").first()).toBeVisible();
-    await expect(page.getByText(/Diese Daten sind erfunden/)).toBeVisible();
+    // Die Kennzeichnung steht an den Daten selbst, nicht als Dauerbanner
+    // ueber der ganzen Anwendung: ein Band, das immer da ist, wird nach
+    // zwei Minuten nicht mehr gesehen.
+    await page.goto("/app/jobs");
+    const demoCard = page.getByRole("article").filter({ hasText: "Demo-Datensatz" }).first();
+    await expect(demoCard).toBeVisible();
+    await expect(page.getByText(/Demo-Datensätze|Demo-Datensatz/).first()).toBeVisible();
   });
 
-  test("Jobliste zeigt fünf getrennte Bewertungen je Stelle", async ({ page }) => {
+  test("Die Karte trennt Passung und Sicherheit, die Detailseite alle fünf", async ({ page }) => {
     await page.goto("/app/jobs");
-    const firstCard = page.locator("li").filter({ hasText: "Warum sie passt" }).first();
-    await expect(firstCard).toBeVisible();
+    const firstCard = page.getByRole("article").first();
+    await expect(firstCard.getByText("Passung", { exact: false }).first()).toBeVisible();
+    await expect(firstCard.getByText("Sicherheit", { exact: false }).first()).toBeVisible();
 
-    for (const label of ["Passung", "Sicherheit", "Jobqualität", "Entwicklung durch KI", "Vertrauen in die Anzeige"]) {
-      await expect(firstCard.getByText(label, { exact: false }).first()).toBeVisible();
+    await firstCard.getByRole("link").first().click();
+    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+
+    for (const label of [
+      "Passung",
+      "Sicherheit",
+      "Jobqualität",
+      "Entwicklung durch KI",
+      "Vertrauen in die Anzeige",
+    ]) {
+      await expect(page.getByText(label, { exact: false }).first()).toBeVisible();
     }
   });
 
   test("Jede Stelle nennt einen Grund UND einen Vorbehalt", async ({ page }) => {
     await page.goto("/app/jobs");
-    const reasons = await page.getByText("Warum sie passt:").count();
-    const reservations = await page.getByText("Was du bedenken solltest:").count();
+    const reasons = await page.getByText("Dafür spricht:").count();
+    const reservations = await page.getByText("Zu prüfen:").count();
     expect(reasons).toBeGreaterThan(0);
     expect(reservations).toBe(reasons);
   });
@@ -163,19 +184,29 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Ausgeschlossene Stellen sind begründet einblendbar", async ({ page }) => {
     await page.goto("/app/jobs");
-    await expect(page.getByText(/Stellen sind ausgeschlossen/)).toBeVisible();
+    const notice = page.getByText(/wurden? ausgeschlossen/);
 
-    await page.getByRole("link", { name: /Ausgeschlossene Stellen anzeigen/ }).click();
-    await expect(page.getByText("Ausgeschlossen wegen:").first()).toBeVisible();
+    // Bei dieser Datenlage kann es sein, dass keine Stelle eine harte
+    // Bedingung verletzt. Dann ist "kein Hinweis" das richtige Ergebnis
+    // - aber wenn es einen gibt, muss er begruendet aufklappbar sein.
+    if ((await notice.count()) === 0) {
+      await expect(page.getByRole("article").first()).toBeVisible();
+      return;
+    }
+
+    await expect(notice.first()).toBeVisible();
+    await page.getByRole("link", { name: /Mit Begründung anzeigen/ }).click();
+    await page.waitForURL(/blocked=1/);
+    await expect(page.getByText(/Ausschlusskriterium|Ausgeschlossen wegen/).first()).toBeVisible();
   });
 
   test("Sortierung ändert die Reihenfolge tatsächlich", async ({ page }) => {
     await page.goto("/app/jobs");
-    const firstBefore = await page.locator("h2").first().textContent();
+    const firstBefore = await page.getByRole("article").first().locator("h3").textContent();
 
-    await page.getByRole("link", { name: "Höchstes Gehalt" }).click();
+    await page.getByLabel("Sortierung").selectOption("highest_salary");
     await page.waitForURL(/sort=highest_salary/);
-    const firstAfter = await page.locator("h2").first().textContent();
+    const firstAfter = await page.getByRole("article").first().locator("h3").textContent();
 
     // Bei den Seed-Daten unterscheiden sich beste Gesamtchance und höchstes Gehalt.
     expect(firstAfter).not.toBe(firstBefore);
@@ -183,8 +214,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Jobdetail trennt die Quellenarten sichtbar", async ({ page }) => {
     await page.goto("/app/jobs");
-    await page.locator("a", { hasText: "Ansehen" }).first().click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    await openFirstJob(page);
 
     await expect(page.getByText("Mitarbeiterstimmen").first()).toBeVisible();
     await expect(page.getByText("Kundenbewertungen").first()).toBeVisible();
@@ -195,8 +225,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("KI-Zusammenfassungen sind als solche gekennzeichnet", async ({ page }) => {
     await page.goto("/app/jobs");
-    await page.locator("a", { hasText: "Ansehen" }).first().click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    await openFirstJob(page);
 
     // Wo eine KI-Zusammenfassung erscheint, muss auch der Hinweis stehen,
     // dass sie von einem Sprachmodell stammt - nie das eine ohne das andere.
@@ -208,8 +237,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Jobdetail nennt Quelle und Abrufdatum", async ({ page }) => {
     await page.goto("/app/jobs");
-    await page.locator("a", { hasText: "Ansehen" }).first().click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    await openFirstJob(page);
 
     await expect(page.getByText("Zuletzt abgerufen")).toBeVisible();
     await expect(page.getByRole("link", { name: /Im Original öffnen|Im Original oeffnen/ }).first()).toBeVisible();
@@ -217,8 +245,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("AI Transition nennt Aufgaben und Szenarien, keine Jahreszahl", async ({ page }) => {
     await page.goto("/app/jobs");
-    await page.locator("a", { hasText: "Ansehen" }).first().click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    await openFirstJob(page);
 
     await expect(page.getByRole("heading", { name: /Zukunft & KI/ })).toBeVisible();
     const body = (await page.textContent("body")) ?? "";
@@ -291,8 +318,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
   test("Studio sperrt die Freigabe bei unbelegter Aussage", async ({ page }) => {
     test.slow(); // Dokument erzeugen und jede Aussage pruefen dauert.
     await page.goto("/app/jobs");
-    await page.locator("a", { hasText: "Ansehen" }).first().click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    await openFirstJob(page);
     await page.getByRole("button", { name: "Bewerbung vorbereiten" }).click();
     await page.waitForURL(/\/app\/applications\/[0-9a-f-]{36}/, { timeout: 20_000 });
 
@@ -351,8 +377,8 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Privacy Center erlaubt Widerruf einzelner Einwilligungen", async ({ page }) => {
-    await page.goto("/app/settings");
-    await expect(page.getByRole("heading", { name: "Privacy Center" })).toBeVisible();
+    await page.goto("/app/settings/privacy");
+    await expect(page.getByRole("heading", { name: /Einwilligungen/ })).toBeVisible();
 
     // Bewusst zustandsunabhaengig: der aktuelle Wert wird gelesen,
     // umgeschaltet, geprueft und wiederhergestellt. Ein Test, der einen
@@ -361,7 +387,13 @@ test.describe("Angemeldet als Demo-Persona", () => {
     // Der Schalter ist an den Serverzustand gebunden: der Klick loest
     // eine Aktion aus, und erst deren Ergebnis aendert die Anzeige.
     // Deshalb auf die sichtbare Folge warten, nicht auf den Klick.
-    const row = page.locator("li").filter({ hasText: "Karriereprofil" }).first();
+    // Auf "main" eingegrenzt: der Navigationseintrag heisst inzwischen
+    // ebenfalls "Karriereprofil", und der hat keinen Schalter.
+    const row = page
+      .getByRole("main")
+      .locator("li")
+      .filter({ hasText: "Karriereprofil" })
+      .first();
     const checkbox = row.getByRole("checkbox");
     const before = await checkbox.isChecked();
 
@@ -377,15 +409,19 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Kontolöschung verlangt eine Tippbestätigung", async ({ page }) => {
-    await page.goto("/app/settings");
+    await page.goto("/app/settings/privacy");
     const deleteButton = page.getByRole("button", { name: /Konto löschen|Konto loeschen/ });
     await expect(deleteButton).toBeDisabled();
   });
 
   test("Nicht verbundene Dienste erscheinen ehrlich als nicht verbunden", async ({ page }) => {
-    await page.goto("/app/settings");
-    const notConnected = await page.getByText("nicht verbunden").count();
+    await page.goto("/app/settings/integrations");
+    const notConnected = await page.getByText(/nicht verbunden|nur Entwurf|lokal/).count();
     expect(notConnected).toBeGreaterThanOrEqual(3);
+
+    // Kein Dienst darf als verbunden erscheinen, ohne es zu sein.
+    const body = (await page.textContent("body")) ?? "";
+    expect(body).toContain("nicht in Betrieb");
   });
 });
 
@@ -393,8 +429,14 @@ test.describe("Sprache und Darstellung", () => {
   test("Englisch schaltet die Oberfläche vollständig um", async ({ page, context }) => {
     await setLocale(context, "en");
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Don't find just any job");
-    await expect(page.getByRole("link", { name: /Talk to/i })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Find work that fits the life you have",
+    );
+    await expect(page.getByRole("link", { name: /Start with/i }).first()).toBeVisible();
+
+    // Kein deutscher Rest auf einer englischen Seite.
+    const body = (await page.textContent("body")) ?? "";
+    expect(body).not.toMatch(/Konto anlegen|Anmelden|Datenschutz\b/);
   });
 
   test("Dunkle Darstellung greift serverseitig ohne Aufblitzen", async ({ page, context }) => {

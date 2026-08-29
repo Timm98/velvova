@@ -17,26 +17,32 @@ import { cn } from "@/lib/cn";
  * sieht alle drei Stufen sofort und vollständig — nichts geht verloren.
  */
 
-const STEPS = [
-  {
-    kind: "said" as const,
-    label: "Was du erzählst",
-    text: "„Ich habe oft schwierige Kunden beruhigt.“",
-  },
-  {
-    kind: "asked" as const,
-    label: "Was Nina nachfragt",
-    text: "„Erzähl mir von einer Eskalation, die du übernommen hast. Was hast du konkret getan — und was kam dabei heraus?“",
-  },
-  {
-    kind: "evidence" as const,
-    label: "Belegte Stärke",
-    text: "Konfliktklärung · technische Vermittlung · Verantwortung unter Druck",
-    roles: ["Implementation Specialist", "Customer Success", "Service Operations"],
-  },
-];
+export interface SequenceLabels {
+  assistantName: string;
+  example: string;
+  saidLabel: string;
+  saidText: string;
+  askedLabel: string;
+  askedText: string;
+  evidenceLabel: string;
+  evidenceText: string;
+  rolesLabel: string;
+}
 
-export function EvidenceSequence() {
+export function EvidenceSequence({ labels }: { labels: SequenceLabels }) {
+  const STEPS = [
+    { kind: "said" as const, label: labels.saidLabel, text: labels.saidText, roles: undefined },
+    { kind: "asked" as const, label: labels.askedLabel, text: labels.askedText, roles: undefined },
+    {
+      kind: "evidence" as const,
+      label: labels.evidenceLabel,
+      text: labels.evidenceText,
+      // Rollennamen bleiben unübersetzt: sie sind Stellenbezeichnungen,
+      // wie sie tatsächlich ausgeschrieben werden.
+      roles: ["Implementation Specialist", "Customer Success", "Service Operations"],
+    },
+  ];
+
   const [visible, setVisible] = useState(1);
 
   useEffect(() => {
@@ -71,8 +77,8 @@ export function EvidenceSequence() {
           >
             <Sparkles className="size-3.5 text-assistant-text" strokeWidth={2} />
           </span>
-          <span className="text-sm font-medium">Nina</span>
-          <span className="ml-auto text-2xs uppercase tracking-wider text-ink-3">Beispiel</span>
+          <span className="text-sm font-medium">{labels.assistantName}</span>
+          <span className="ml-auto text-2xs uppercase tracking-wider text-ink-3">{labels.example}</span>
         </div>
 
         <ol className="grid gap-3 pt-5">
@@ -119,7 +125,7 @@ export function EvidenceSequence() {
                 {step.roles && (
                   <div className="mt-3.5 border-t border-positive/20 pt-3">
                     <p className="text-2xs font-medium uppercase tracking-wider text-ink-3">
-                      Passende Rollen
+                      {labels.rolesLabel}
                     </p>
                     <ul className="mt-2 flex flex-wrap gap-1.5">
                       {step.roles.map((role) => (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { SortKey } from "@paycheck/matching";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Compass, Sparkles, Target } from "lucide-react";
@@ -16,6 +17,11 @@ import { SaveJobButton } from "./SaveJobButton";
 
 export const metadata: Metadata = { title: "Matches" };
 export const dynamic = "force-dynamic";
+
+const SORT_KEYS: SortKey[] = [
+  "best_overall", "highest_fit", "best_job_quality", "highest_salary",
+  "future_robust", "shortest_commute", "newest",
+];
 
 /**
  * Die Stellenliste.
@@ -52,7 +58,7 @@ export default async function JobsPage({
         <EmptyState
           icon={<Target className="size-5" strokeWidth={1.7} />}
           title={`${brand.assistantName} braucht noch etwas mehr von dir`}
-          body={gate.reason}
+          body={`${t("jobs.lockedBody")} ${gate.reason}`}
           action={
             <Button asChild variant="primary">
               <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"}>
@@ -68,6 +74,9 @@ export default async function JobsPage({
   const db = await getDb();
   const ctx = await loadProfileContext(user.id);
   const includeBlocked = params.blocked === "1";
+  const sort = (SORT_KEYS as string[]).includes(params.sort ?? "")
+    ? (params.sort as SortKey)
+    : "best_overall";
 
   const [saved, { jobs, blockedCount }] = await Promise.all([
     withUser(db, user.id, (tx) =>
@@ -76,31 +85,38 @@ export default async function JobsPage({
         .from(schema.savedJobs)
         .where(eq(schema.savedJobs.userId, user.id)),
     ),
-    listJobsForUser(user.id, ctx, { sort: "best_overall", includeBlocked }),
+    listJobsForUser(user.id, ctx, { sort, includeBlocked }),
   ]);
 
   const savedIds = new Set(saved.map((s) => s.jobId));
   const filtered = applyFilters(jobs, params);
+  const blockedJobs = includeBlocked
+    ? filtered.filter((j) => j.constraints.overall === "blocked")
+    : [];
+  const eligible = filtered.filter((j) => j.constraints.overall !== "blocked");
 
   // Drei Gruppen, überschneidungsfrei: was oben steht, steht nicht
   // unten noch einmal.
-  const top = filtered.slice(0, 8);
+  const grouped = sort === "best_overall";
+  const top = grouped ? eligible.slice(0, 8) : eligible.slice(0, 20);
   const topIds = new Set(top.map((j) => j.jobId));
 
-  const alternatives = filtered
-    .filter((j) => !topIds.has(j.jobId) && j.fit.band === "exploratory")
-    .slice(0, 4);
+  const alternatives = grouped
+    ? eligible.filter((j) => !topIds.has(j.jobId) && j.fit.band === "exploratory").slice(0, 4)
+    : [];
   const altIds = new Set(alternatives.map((j) => j.jobId));
 
   const weekAgo = Date.now() - 7 * 86_400_000;
-  const fresh = filtered
-    .filter(
-      (j) =>
-        !topIds.has(j.jobId) &&
-        !altIds.has(j.jobId) &&
-        (j.job.publishedAt?.getTime() ?? 0) >= weekAgo,
-    )
-    .slice(0, 6);
+  const fresh = grouped
+    ? eligible
+        .filter(
+          (j) =>
+            !topIds.has(j.jobId) &&
+            !altIds.has(j.jobId) &&
+            (j.job.publishedAt?.getTime() ?? 0) >= weekAgo,
+        )
+        .slice(0, 6)
+    : [];
 
   const realCount = filtered.filter((j) => !j.job.isDemo).length;
   const demoCount = filtered.length - realCount;
@@ -131,7 +147,7 @@ export default async function JobsPage({
         </span>
         <Link
           href="/app/settings/integrations"
-          className="ml-auto text-sm text-accent-text underline underline-offset-[3px]"
+          className="ml-auto inline-flex min-h-6 items-center text-sm text-accent-text underline underline-offset-[3px]"
         >
           Quellen
         </Link>
@@ -150,7 +166,14 @@ export default async function JobsPage({
         />
       ) : (
         <>
-          <Section title="Beste Treffer" description="Die begründetsten Übereinstimmungen zuerst.">
+          <Section
+            title={grouped ? "Beste Treffer" : "Ergebnisse"}
+            description={
+              grouped
+                ? "Die begründetsten Übereinstimmungen zuerst."
+                : "In der von dir gewählten Reihenfolge."
+            }
+          >
             <ul className="grid gap-4">
               {top.map((scored) => (
                 <li key={scored.jobId}>
@@ -224,6 +247,21 @@ export default async function JobsPage({
         </>
       )}
 
+      {includeBlocked && blockedJobs.length > 0 && (
+        <Section
+          title="Ausgeschlossene Stellen"
+          description="Jede mit dem konkreten Grund. Weiche Stärken können eine harte Bedingung nicht aufwiegen."
+        >
+          <ul className="grid gap-4">
+            {blockedJobs.map((scored) => (
+              <li key={scored.jobId}>
+                <JobCard scored={scored} t={t} saved={savedIds.has(scored.jobId)} />
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
       {blockedCount > 0 && (
         <Card className="grid gap-3">
           <h2 className="text-base font-semibold">
@@ -236,7 +274,7 @@ export default async function JobsPage({
           </p>
           <p>
             <Button asChild variant="secondary" size="sm">
-              <Link href={includeBlocked ? "/app/jobs" : "/app/jobs?blocked=1"}>
+              <Link href={includeBlocked ? "/app/jobs" : "/app/jobs?blocked=1"} scroll={false}>
                 {includeBlocked ? "Wieder ausblenden" : "Mit Begründung anzeigen"}
               </Link>
             </Button>

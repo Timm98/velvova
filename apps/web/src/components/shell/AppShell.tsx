@@ -260,9 +260,12 @@ export function AppShell({
             <span className="sr-only">{brandName}</span>
           </Link>
 
-          <h1 className="truncate text-sm font-medium md:text-[15px]">
+          {/* Bewusst keine Ueberschrift: das ist eine Ortsangabe, keine
+              Ueberschrift des Inhalts. Als <h1> gaebe es zwei davon je
+              Seite, und Vorlesesoftware verliert die Gliederung. */}
+          <p className="truncate text-sm font-medium text-ink-2 md:text-[15px]">
             {contextTitle(pathname, labels)}
-          </h1>
+          </p>
 
           <div className="ml-auto flex items-center gap-1.5">
             <button

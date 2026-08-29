@@ -123,7 +123,14 @@ export default async function DashboardPage() {
       </div>
 
       {/* ── 1. Der nächste Schritt ───────────────────────────────── */}
-      <Card padded={false} className="overflow-hidden border-assistant-border">
+      <section aria-labelledby="naechster-schritt">
+        {/* Die Ueberschrift steht nur fuer Vorlesesoftware: sichtbar
+            traegt die Karte ihre Aussage selbst, aber die Gliederung
+            der Seite braucht den Namen des Abschnitts. */}
+        <h2 id="naechster-schritt" className="sr-only">
+          Dein nächster Schritt
+        </h2>
+        <Card padded={false} className="overflow-hidden border-assistant-border">
         <div className="surface-gradient bg-assistant-soft px-6 py-7 md:px-8 md:py-8">
           <Badge tone="assistant">
             <Sparkles className="size-3" strokeWidth={2} />
@@ -140,7 +147,8 @@ export default async function DashboardPage() {
             </Button>
           </div>
         </div>
-      </Card>
+        </Card>
+      </section>
 
       {/* ── 2. Beste Möglichkeiten ───────────────────────────────── */}
       <Section
