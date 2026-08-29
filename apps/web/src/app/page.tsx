@@ -1,462 +1,386 @@
 import Link from "next/link";
+import {
+  ArrowRight,
+  Check,
+  MessageSquare,
+  Mic,
+  ShieldCheck,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { getPageContext } from "@/lib/locale";
 import { currentUser } from "@/lib/auth";
-import { LocaleToggle, ThemeToggle } from "@/components/ThemeToggle";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, Button, Card, Separator } from "@/components/ui";
+import { ConfidenceMeter, ScoreRing } from "@/components/ui/score";
+
+export const dynamic = "force-dynamic";
 
 /**
  * Landing Page.
  *
- * In fünf Sekunden muss klar sein, dass hier vor der Jobbörse angesetzt
- * wird und bis nach der Bewerbung begleitet. Kein erfundenes Kundenlogo,
- * kein Testimonial, keine Erfolgsquote - was wir nicht belegen können,
- * steht nicht hier. Die gezeigten Beispiele sind als Beispiel beschriftet.
+ * Sie hat genau eine Aufgabe: in fünf Sekunden klarmachen, dass hier VOR
+ * der Jobbörse angesetzt wird — und dass danach jemand mitgeht.
+ *
+ * Was bewusst fehlt: erfundene Kundenlogos, Testimonials, Erfolgsquoten,
+ * Nutzerzahlen, Presselogos. Nichts davon ist belegbar, und eine
+ * Karriereplattform, die beim ersten Kontakt schwindelt, hat ihren
+ * wichtigsten Wert schon verspielt.
+ *
+ * Das gezeigte Match ist als Beispiel beschriftet.
  */
-
 export default async function LandingPage() {
-  const { t, brand, locale } = await getPageContext();
+  const { t, brand } = await getPageContext();
   const user = await currentUser();
 
   return (
-    <>
+    <div className="min-h-dvh">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
 
-      <header
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-          background: "color-mix(in srgb, var(--surface-page) 88%, transparent)",
-          backdropFilter: "blur(8px)",
-          borderBottom: "1px solid var(--border-subtle)",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1160,
-            margin: "0 auto",
-            padding: "var(--space-3) var(--space-5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "var(--space-4)",
-            flexWrap: "wrap",
-          }}
-        >
-          <Link href="/" style={{ fontWeight: 600, fontSize: "var(--text-lg)", textDecoration: "none" }}>
+      {/* ═══ Kopfzeile ═══ */}
+      <header className="sticky top-0 z-30 border-b border-line/70 bg-page/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-4 px-5 py-3.5 md:px-8">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
+          >
+            <span
+              aria-hidden
+              className="grid size-7 place-items-center rounded-[--radius-sm] bg-accent text-xs font-bold text-accent-on"
+            >
+              P
+            </span>
             {brand.name}
           </Link>
 
-          <nav
-            aria-label="Hauptnavigation"
-            style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", flexWrap: "wrap" }}
-          >
+          <nav aria-label="Hauptnavigation" className="flex items-center gap-1 sm:gap-2">
             <Link
               href="/how-it-works"
-              style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", textDecoration: "none" }}
+              className="hidden rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink sm:block"
             >
               {t("landing.ctaSecondary")}
             </Link>
             <Link
               href="/methodology"
-              style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", textDecoration: "none" }}
+              className="hidden rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink md:block"
             >
               Methodik
             </Link>
-            <Link
-              href="/privacy"
-              style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", textDecoration: "none" }}
-            >
-              Datenschutz
-            </Link>
-            <div style={{ display: "flex", gap: "var(--space-2)" }}>
-              <LocaleToggle current={locale} />
-              <ThemeToggle
-                labels={{
-                  light: t("settings.themeLight"),
-                  dark: t("settings.themeDark"),
-                  system: t("settings.themeSystem"),
-                  group: t("settings.theme"),
-                }}
-              />
-            </div>
-            <Link href={user ? "/app" : "/login"} style={buttonStyle("secondary")}>
-              {user ? t("nav.home") : t("auth.login")}
-            </Link>
+            <Button asChild variant={user ? "primary" : "secondary"} size="sm">
+              <Link href={user ? "/app" : "/login"}>{user ? t("nav.home") : t("auth.login")}</Link>
+            </Button>
           </nav>
         </div>
       </header>
 
       <main id="inhalt">
-        {/* --- Hero --- */}
-        <section
-          style={{
-            maxWidth: 1160,
-            margin: "0 auto",
-            padding: "var(--space-9) var(--space-5) var(--space-8)",
-          }}
-        >
-          <div style={{ maxWidth: "22ch" }}>
-            <h1
-              style={{
-                fontSize: "clamp(2.25rem, 5.5vw, var(--text-4xl))",
-                lineHeight: "var(--leading-4xl)",
-                letterSpacing: "-0.022em",
-              }}
-            >
-              {t("landing.headline")}
-            </h1>
+        {/* ═══ Hero ═══ */}
+        <section className="surface-gradient border-b border-line">
+          <div className="mx-auto max-w-[1120px] px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24">
+            <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+              <div className="animate-fade-up">
+                <Badge tone="assistant" className="mb-6">
+                  <Sparkles className="size-3" strokeWidth={2} />
+                  Karriereanalyse vor der Jobsuche
+                </Badge>
+
+                <h1 className="max-w-[15ch] text-[2.6rem] font-semibold sm:text-5xl lg:text-6xl">
+                  {t("landing.headline")}
+                </h1>
+
+                <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-ink-2">
+                  {t("landing.subheadline")}
+                </p>
+
+                <div className="mt-9 flex flex-wrap items-center gap-3">
+                  <Button asChild variant="primary" size="lg">
+                    <Link href="/register?mode=voice">
+                      <Mic className="size-4" strokeWidth={1.9} />
+                      {t("landing.ctaVoice")}
+                    </Link>
+                  </Button>
+                  <Button asChild variant="secondary" size="lg">
+                    <Link href="/register?mode=text">
+                      <MessageSquare className="size-4" strokeWidth={1.9} />
+                      {t("landing.ctaText")}
+                    </Link>
+                  </Button>
+                </div>
+
+                <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-3">
+                  <span className="flex items-center gap-1.5">
+                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
+                    Etwa fünfzehn Minuten
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
+                    Jederzeit pausierbar
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
+                    Deine Daten bleiben deine
+                  </span>
+                </p>
+              </div>
+
+              {/* Beispielkarte — ausdrücklich als Beispiel beschriftet */}
+              <div
+                className="animate-fade-up lg:justify-self-end"
+                style={{ animationDelay: "120ms" }}
+              >
+                <Card className="w-full max-w-[420px] shadow-xl">
+                  <div className="flex items-start justify-between gap-3 border-b border-line px-6 py-5">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold">Customer Success Manager</p>
+                      <p className="mt-0.5 truncate text-sm text-ink-3">
+                        Hamburg · hybrid · 44.000–52.000 €
+                      </p>
+                    </div>
+                    <Badge tone="caution">Beispiel</Badge>
+                  </div>
+
+                  <div className="grid gap-5 px-6 py-5">
+                    <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                      <ScoreRing value={81} label="Passung" band="hohe Passung" />
+                      <ConfidenceMeter level="medium" label="Sicherheit" />
+                    </div>
+
+                    <Separator soft />
+
+                    <div className="grid gap-2.5 text-sm leading-relaxed">
+                      <p className="flex gap-2">
+                        <span
+                          aria-hidden
+                          className="mt-[7px] size-1.5 shrink-0 rounded-full bg-positive"
+                        />
+                        <span>
+                          <span className="font-medium text-positive">Warum sie passt: </span>
+                          <span className="text-ink-2">
+                            Zwei von zwei Muss-Anforderungen sind durch bestätigte Erfahrungen
+                            gedeckt.
+                          </span>
+                        </span>
+                      </p>
+                      <p className="flex gap-2">
+                        <span
+                          aria-hidden
+                          className="mt-[7px] size-1.5 shrink-0 rounded-full bg-caution"
+                        />
+                        <span>
+                          <span className="font-medium text-caution">
+                            Was du bedenken solltest:{" "}
+                          </span>
+                          <span className="text-ink-2">
+                            Zur Arbeitsbelastung liegen keine belastbaren Angaben vor.
+                          </span>
+                        </span>
+                      </p>
+                    </div>
+
+                    <p className="rounded-[--radius-md] bg-sunken px-3.5 py-3 text-xs leading-relaxed text-ink-3">
+                      Die Sicherheit ist mittel, weil die Anzeige nichts zur Arbeitszeit sagt. Das
+                      senkt die Sicherheit — nicht die Passung.
+                    </p>
+                  </div>
+                </Card>
+              </div>
+            </div>
           </div>
-
-          <p
-            style={{
-              marginTop: "var(--space-5)",
-              fontSize: "var(--text-lg)",
-              color: "var(--text-secondary)",
-              maxWidth: "58ch",
-              lineHeight: 1.6,
-            }}
-          >
-            {t("landing.subheadline")}
-          </p>
-
-          <div
-            style={{
-              marginTop: "var(--space-7)",
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "var(--space-3)",
-              alignItems: "center",
-            }}
-          >
-            <Link href="/register?mode=voice" style={buttonStyle("primary")}>
-              {t("landing.ctaVoice")}
-            </Link>
-            <Link href="/register?mode=text" style={buttonStyle("secondary")}>
-              {t("landing.ctaText")}
-            </Link>
-            <Link
-              href="/how-it-works"
-              style={{ ...buttonStyle("quiet"), textDecoration: "underline", textUnderlineOffset: 3 }}
-            >
-              {t("landing.ctaSecondary")}
-            </Link>
-          </div>
-
-          <p style={{ marginTop: "var(--space-5)", fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-            {t("landing.closingBody")}
-          </p>
         </section>
 
-        {/* --- Drei Schritte --- */}
-        <section
-          aria-labelledby="schritte"
-          style={{
-            background: "var(--surface-sunken)",
-            borderTop: "1px solid var(--border-subtle)",
-            borderBottom: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}>
-            <h2 id="schritte" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-6)" }}>
+        {/* ═══ Drei Schritte ═══ */}
+        <section aria-labelledby="schritte" className="border-b border-line bg-raised">
+          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
+            <h2 id="schritte" className="text-2xl font-semibold sm:text-3xl">
               {t("landing.stepsTitle")}
             </h2>
-            <ol
-              style={{
-                listStyle: "none",
-                display: "grid",
-                gap: "var(--space-5)",
-                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))",
-              }}
-            >
+
+            <ol className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
               {[
-                { n: 1, title: t("landing.step1Title"), body: t("landing.step1Body") },
-                { n: 2, title: t("landing.step2Title"), body: t("landing.step2Body") },
-                { n: 3, title: t("landing.step3Title"), body: t("landing.step3Body") },
+                { n: "01", title: t("landing.step1Title"), body: t("landing.step1Body") },
+                { n: "02", title: t("landing.step2Title"), body: t("landing.step2Body") },
+                { n: "03", title: t("landing.step3Title"), body: t("landing.step3Body") },
               ].map((s) => (
-                <Card as="li" key={s.n}>
-                  <Stack gap={3}>
-                    <span
-                      aria-hidden
-                      style={{
-                        width: 32,
-                        height: 32,
-                        display: "grid",
-                        placeItems: "center",
-                        borderRadius: "var(--radius-full)",
-                        background: "var(--accent-subtle)",
-                        color: "var(--accent-text)",
-                        border: "1px solid var(--accent-border)",
-                        fontWeight: 600,
-                        fontSize: "var(--text-sm)",
-                      }}
-                    >
-                      {s.n}
-                    </span>
-                    <h3 style={{ fontSize: "var(--text-lg)" }}>{s.title}</h3>
-                    <p style={{ color: "var(--text-secondary)", fontSize: "var(--text-sm)" }}>{s.body}</p>
-                  </Stack>
-                </Card>
+                <li key={s.n} className="grid gap-3">
+                  <span className="text-2xs font-semibold tracking-[0.16em] text-accent-text">
+                    {s.n}
+                  </span>
+                  <h3 className="text-lg font-semibold">{s.title}</h3>
+                  <p className="text-sm leading-relaxed text-ink-2">{s.body}</p>
+                </li>
               ))}
             </ol>
           </div>
         </section>
 
-        {/* --- Erklärbarer Match, als Beispiel gekennzeichnet --- */}
-        <section
-          aria-labelledby="match"
-          style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}
-        >
-          <div style={{ display: "grid", gap: "var(--space-6)", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 340px), 1fr))" }}>
-            <div>
-              <h2 id="match" style={{ fontSize: "var(--text-xl)" }}>
-                {t("landing.matchTitle")}
+        {/* ═══ Aus Erfahrung wird Beleg ═══ */}
+        <section aria-labelledby="evidenz" className="border-b border-line">
+          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
+            <div className="max-w-[58ch]">
+              <h2 id="evidenz" className="text-2xl font-semibold sm:text-3xl">
+                {t("landing.evidenceTitle")}
               </h2>
-              <p
-                style={{
-                  marginTop: "var(--space-3)",
-                  color: "var(--text-secondary)",
-                  maxWidth: "48ch",
-                }}
-              >
-                {t("landing.matchBody")}
+              <p className="mt-4 text-base leading-relaxed text-ink-2">
+                {t("landing.evidenceBody")}
               </p>
             </div>
 
-            <Card>
-              <Stack gap={4}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "var(--space-3)" }}>
-                  <div>
-                    <strong>Customer Success Manager</strong>
-                    <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                      Hamburg · hybrid · 44.000–52.000 EUR
-                    </p>
-                  </div>
-                  <Badge tone="caution">Beispiel</Badge>
-                </div>
+            <div className="mt-10 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+              <Card className="p-6">
+                <Badge tone="outline">im Lebenslauf</Badge>
+                <p className="mt-4 text-lg text-ink-3">„Kundenservice, 2 Jahre"</p>
+              </Card>
 
-                <div style={{ display: "flex", gap: "var(--space-6)" }}>
-                  <div>
-                    <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textTransform: "uppercase" }}>
-                      Passung
-                    </span>
-                    <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-                      <strong style={{ fontSize: "var(--text-2xl)", color: "var(--positive)", lineHeight: 1 }}>81</strong>
-                      <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>/ 100</span>
-                    </div>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textTransform: "uppercase" }}>
-                      Sicherheit
-                    </span>
-                    <div style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", marginTop: 6 }}>
-                      <span aria-hidden style={{ display: "flex", gap: 2 }}>
-                        <span style={{ width: 10, height: 4, borderRadius: 2, background: "var(--caution)" }} />
-                        <span style={{ width: 10, height: 4, borderRadius: 2, background: "var(--caution)" }} />
-                        <span style={{ width: 10, height: 4, borderRadius: 2, background: "var(--border-default)" }} />
-                      </span>
-                      <span style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>mittel</span>
-                    </div>
-                  </div>
-                </div>
+              <div className="hidden items-center justify-center md:flex">
+                <ArrowRight className="size-5 text-ink-3" strokeWidth={1.6} />
+              </div>
 
-                <div style={{ display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)" }}>
-                  <p>
-                    <strong style={{ color: "var(--positive)" }}>Warum sie passt:</strong>{" "}
-                    Zwei von zwei Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.
-                  </p>
-                  <p>
-                    <strong style={{ color: "var(--caution)" }}>Was du bedenken solltest:</strong>{" "}
-                    Zur Arbeitsbelastung liegen keine belastbaren Angaben vor.
-                  </p>
-                </div>
-
-                <p
-                  style={{
-                    fontSize: "var(--text-xs)",
-                    color: "var(--text-muted)",
-                    borderTop: "1px solid var(--border-subtle)",
-                    paddingTop: "var(--space-3)",
-                  }}
-                >
-                  Die Sicherheit ist mittel, weil die Anzeige nichts zur Arbeitszeit sagt und zum
-                  Unternehmen nur wenige Stimmen vorliegen. Das senkt die Sicherheit — nicht die Passung.
+              <Card className="border-assistant-border bg-assistant-soft p-6">
+                <Badge tone="assistant">
+                  <Sparkles className="size-3" strokeWidth={2} />
+                  was gefragt wird
+                </Badge>
+                <p className="mt-4 text-sm leading-relaxed">
+                  „Erzähl von einer Eskalation, die du übernommen hast. Was hast du getan?"
                 </p>
-              </Stack>
+              </Card>
+
+              <div className="hidden items-center justify-center md:flex">
+                <ArrowRight className="size-5 text-ink-3" strokeWidth={1.6} />
+              </div>
+
+              <Card className="p-6">
+                <Badge tone="positive">
+                  <Check className="size-3" strokeWidth={2.4} />
+                  belegte Stärke
+                </Badge>
+                <p className="mt-4 text-sm leading-relaxed">
+                  Vermittelt zwischen Kunde und Technik unter Druck — belegt durch eine konkrete
+                  Situation mit benanntem Ergebnis.
+                </p>
+                <p className="mt-3 text-xs leading-relaxed text-ink-3">
+                  Daraus entsteht eine Rollenidee, die im Lebenslauf nicht stand.
+                </p>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* ═══ Quellen getrennt ═══ */}
+        <section aria-labelledby="realitaet" className="border-b border-line bg-raised">
+          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
+            <div className="max-w-[58ch]">
+              <h2 id="realitaet" className="text-2xl font-semibold sm:text-3xl">
+                {t("landing.realityTitle")}
+              </h2>
+              <p className="mt-4 text-base leading-relaxed text-ink-2">
+                {t("landing.realityBody")}
+              </p>
+            </div>
+
+            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                {
+                  kind: "Mitarbeiterstimmen",
+                  note: "Sagen etwas über die Arbeit. Stichprobe und Zeitraum stehen dabei.",
+                },
+                {
+                  kind: "Kundenbewertungen",
+                  note: "Sagen etwas über Produkt oder Standort. Nicht über die Kultur.",
+                },
+                {
+                  kind: "Arbeitgeberangaben",
+                  note: "Die Selbstdarstellung. Wichtig, aber eine Partei.",
+                },
+                {
+                  kind: "Register und Behörden",
+                  note: "Harte Fakten wie Rechtsform und Sitz.",
+                },
+              ].map((s) => (
+                <Card key={s.kind} className="p-5">
+                  <h3 className="text-sm font-semibold">{s.kind}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-2">{s.note}</p>
+                </Card>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* ═══ Zwei Versprechen ═══ */}
+        <section className="border-b border-line">
+          <div className="mx-auto grid max-w-[1120px] gap-6 px-5 py-20 md:grid-cols-2 md:px-8 md:py-24">
+            <Card className="p-7">
+              <div className="grid size-10 place-items-center rounded-[--radius-md] bg-accent-soft text-accent-text">
+                <TrendingUp className="size-5" strokeWidth={1.8} />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold">Wie sich die Rolle entwickelt</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink-2">
+                Bewertet werden die Aufgaben der konkreten Stelle, nicht der Berufstitel. Ausgegeben
+                werden Szenarien — nie eine Jahreszahl, wann etwas „verschwindet".
+              </p>
+            </Card>
+
+            <Card className="p-7">
+              <div className="grid size-10 place-items-center rounded-[--radius-md] bg-assistant-soft text-assistant-text">
+                <ShieldCheck className="size-5" strokeWidth={1.8} />
+              </div>
+              <h3 className="mt-5 text-lg font-semibold">{t("landing.privacyTitle")}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-ink-2">{t("landing.privacyBody")}</p>
+              <p className="mt-4">
+                <Link
+                  href="/privacy"
+                  className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+                >
+                  Zum Privacy Center
+                  <ArrowRight className="size-3.5" strokeWidth={1.9} />
+                </Link>
+              </p>
             </Card>
           </div>
         </section>
 
-        {/* --- Aus Erfahrung wird Beleg --- */}
-        <section
-          aria-labelledby="evidenz"
-          style={{
-            background: "var(--surface-sunken)",
-            borderTop: "1px solid var(--border-subtle)",
-            borderBottom: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}>
-            <h2 id="evidenz" style={{ fontSize: "var(--text-xl)" }}>
-              {t("landing.evidenceTitle")}
-            </h2>
-            <p style={{ marginTop: "var(--space-3)", color: "var(--text-secondary)", maxWidth: "56ch" }}>
-              {t("landing.evidenceBody")}
-            </p>
-
-            <div
-              style={{
-                marginTop: "var(--space-6)",
-                display: "grid",
-                gap: "var(--space-4)",
-                gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
-                alignItems: "stretch",
-              }}
-            >
-              <Card style={{ background: "var(--surface-raised)" }}>
-                <Stack gap={2}>
-                  <Badge tone="neutral">im Lebenslauf</Badge>
-                  <p style={{ fontSize: "var(--text-lg)", color: "var(--text-muted)" }}>„Kundenservice, 2 Jahre"</p>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack gap={2}>
-                  <Badge tone="assistant">was gefragt wird</Badge>
-                  <p style={{ fontSize: "var(--text-sm)" }}>
-                    „Erzähl von einer Eskalation, die du übernommen hast. Was hast du getan?"
-                  </p>
-                </Stack>
-              </Card>
-
-              <Card>
-                <Stack gap={2}>
-                  <Badge tone="positive">belegte Stärke</Badge>
-                  <p style={{ fontSize: "var(--text-sm)" }}>
-                    Vermittelt zwischen Kunde und Technik unter Druck — belegt durch eine konkrete
-                    Situation mit benanntem Ergebnis.
-                  </p>
-                  <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                    Daraus entsteht eine Rollenidee, die im Lebenslauf nicht stand.
-                  </p>
-                </Stack>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* --- Quellen getrennt --- */}
-        <section
-          aria-labelledby="realität"
-          style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}
-        >
-          <h2 id="realität" style={{ fontSize: "var(--text-xl)" }}>
-            {t("landing.realityTitle")}
-          </h2>
-          <p style={{ marginTop: "var(--space-3)", color: "var(--text-secondary)", maxWidth: "56ch" }}>
-            {t("landing.realityBody")}
-          </p>
-
-          <ul
-            style={{
-              marginTop: "var(--space-6)",
-              listStyle: "none",
-              display: "grid",
-              gap: "var(--space-4)",
-              gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 240px), 1fr))",
-            }}
-          >
-            {[
-              { kind: "Mitarbeiterstimmen", note: "Sagen etwas über die Arbeit. Stichprobe und Zeitraum stehen dabei." },
-              { kind: "Kundenbewertungen", note: "Sagen etwas über das Produkt oder den Standort. Nicht über die Kultur." },
-              { kind: "Arbeitgeberangaben", note: "Die Selbstdarstellung. Wichtig, aber eine Partei." },
-              { kind: "Register und Behörden", note: "Harte Fakten wie Rechtsform und Sitz." },
-            ].map((s) => (
-              <Card as="li" key={s.kind}>
-                <Stack gap={2}>
-                  <strong style={{ fontSize: "var(--text-sm)" }}>{s.kind}</strong>
-                  <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>{s.note}</p>
-                </Stack>
-              </Card>
-            ))}
-          </ul>
-        </section>
-
-        {/* --- Datenschutz --- */}
-        <section
-          aria-labelledby="datenschutz"
-          style={{
-            background: "var(--surface-sunken)",
-            borderTop: "1px solid var(--border-subtle)",
-          }}
-        >
-          <div style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}>
-            <div style={{ maxWidth: "56ch" }}>
-              <h2 id="datenschutz" style={{ fontSize: "var(--text-xl)" }}>
-                {t("landing.privacyTitle")}
-              </h2>
-              <p style={{ marginTop: "var(--space-3)", color: "var(--text-secondary)" }}>
-                {t("landing.privacyBody")}
-              </p>
-              <p style={{ marginTop: "var(--space-4)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                Eine eigene Datenbank bedeutet nicht automatisch, dass keine Daten einen externen
-                Anbieter erreichen. Wo das geschieht, steht es im Privacy Center — mit Zweck,
-                Anbieter und Region.
-              </p>
-              <p style={{ marginTop: "var(--space-5)" }}>
-                <Link href="/privacy" style={buttonStyle("secondary")}>
-                  {t("consent.privacyCenter")}
-                </Link>
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* --- Abschluss --- */}
-        <section style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-9) var(--space-5)" }}>
-          <div style={{ maxWidth: "44ch" }}>
-            <h2 style={{ fontSize: "var(--text-2xl)", lineHeight: "var(--leading-2xl)" }}>
-              {t("landing.closingTitle")}
-            </h2>
-            <p style={{ marginTop: "var(--space-4)", color: "var(--text-secondary)" }}>
-              {t("landing.closingBody")}
-            </p>
-            <div style={{ marginTop: "var(--space-6)", display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
-              <Link href="/register?mode=text" style={buttonStyle("primary")}>
-                {t("consent.start")}
-              </Link>
+        {/* ═══ Abschluss ═══ */}
+        <section className="surface-gradient">
+          <div className="mx-auto max-w-[1120px] px-5 py-24 md:px-8 md:py-32">
+            <div className="max-w-[44ch]">
+              <h2 className="text-3xl font-semibold sm:text-4xl">{t("landing.closingTitle")}</h2>
+              <p className="mt-5 text-lg leading-relaxed text-ink-2">{t("landing.closingBody")}</p>
+              <div className="mt-9">
+                <Button asChild variant="primary" size="lg">
+                  <Link href="/register?mode=text">
+                    {t("consent.start")}
+                    <ArrowRight className="size-4" strokeWidth={1.9} />
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
       </main>
 
-      <footer style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--surface-sunken)" }}>
-        <div
-          style={{
-            maxWidth: 1160,
-            margin: "0 auto",
-            padding: "var(--space-6) var(--space-5)",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "var(--space-5)",
-            justifyContent: "space-between",
-            fontSize: "var(--text-sm)",
-            color: "var(--text-secondary)",
-          }}
-        >
+      <footer className="border-t border-line bg-sunken">
+        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-5 px-5 py-8 text-sm text-ink-3 md:px-8">
           <span>
             {brand.name} · {brand.assistantName}
-            <span style={{ color: "var(--text-muted)" }}> — beide Namen sind vorläufig</span>
+            <span className="text-ink-3/70"> — beide Namen sind vorläufig</span>
           </span>
-          <nav aria-label="Rechtliches" style={{ display: "flex", gap: "var(--space-5)", flexWrap: "wrap" }}>
-            <Link href="/methodology" style={{ textDecoration: "none" }}>Methodik</Link>
-            <Link href="/security" style={{ textDecoration: "none" }}>Sicherheit</Link>
-            <Link href="/privacy" style={{ textDecoration: "none" }}>Datenschutz</Link>
+          <nav aria-label="Rechtliches" className="flex flex-wrap gap-x-6 gap-y-2">
+            <Link href="/how-it-works" className="transition-colors hover:text-ink-2">
+              So funktioniert es
+            </Link>
+            <Link href="/methodology" className="transition-colors hover:text-ink-2">
+              Methodik
+            </Link>
+            <Link href="/security" className="transition-colors hover:text-ink-2">
+              Sicherheit
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-ink-2">
+              Datenschutz
+            </Link>
           </nav>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

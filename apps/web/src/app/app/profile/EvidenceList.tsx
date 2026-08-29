@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { confirmEvidence, deleteEvidence, editEvidence, rejectEvidence } from "@/lib/profile";
-import { Badge, buttonStyle, Card } from "@/components/ui";
+import { Badge, buttonClass, Card } from "@/components/ui";
 
 /**
  * Eine Liste von Evidenz-Einträgen.
@@ -107,21 +107,19 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
             <div style={{ display: "flex", gap: "var(--space-2)" }}>
               <button
                 type="button"
-                className="compact"
                 onClick={() => run(() => editEvidence(item.id, draft))}
                 disabled={pending || draft.trim().length === 0}
-                style={{ ...buttonStyle("primary"), padding: "var(--space-2) var(--space-4)" }}
+                className={buttonClass("primary", false, "sm")}
               >
                 Speichern
               </button>
               <button
                 type="button"
-                className="compact"
                 onClick={() => {
                   setDraft(item.statement);
                   setEditing(false);
                 }}
-                style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)" }}
+                className={buttonClass("quiet", false, "sm")}
               >
                 Abbrechen
               </button>
@@ -142,40 +140,36 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
             {showConfirm && !item.userConfirmed && !item.userRejected && (
               <button
                 type="button"
-                className="compact"
                 onClick={() => run(() => confirmEvidence(item.id))}
                 disabled={pending}
-                style={{ ...buttonStyle("secondary"), padding: "var(--space-2) var(--space-4)" }}
+                className={buttonClass("secondary", false, "sm")}
               >
                 Stimmt
               </button>
             )}
             <button
               type="button"
-              className="compact"
               onClick={() => setEditing(true)}
               disabled={pending}
-              style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)" }}
+              className={buttonClass("quiet", false, "sm")}
             >
               Bearbeiten
             </button>
             {!item.userRejected && (
               <button
                 type="button"
-                className="compact"
                 onClick={() => run(() => rejectEvidence(item.id))}
                 disabled={pending}
-                style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)" }}
+                className={buttonClass("quiet", false, "sm")}
               >
                 Stimmt nicht
               </button>
             )}
             <button
               type="button"
-              className="compact"
               onClick={() => run(() => deleteEvidence(item.id))}
               disabled={pending}
-              style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)", color: "var(--critical)" }}
+              className={buttonClass("danger", false, "sm")}
             >
               Löschen
             </button>

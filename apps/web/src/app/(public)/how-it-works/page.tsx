@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getPageContext } from "@/lib/locale";
-import { buttonStyle, Card, Stack } from "@/components/ui";
+import { buttonClass, Card, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "So funktioniert es" };
 
@@ -88,7 +88,7 @@ export default async function HowItWorksPage() {
       </Card>
 
       <p>
-        <Link href="/register" style={buttonStyle("primary")}>Konto anlegen</Link>
+        <Link href="/register" className={buttonClass("primary")}>Konto anlegen</Link>
       </p>
     </Stack>
   );

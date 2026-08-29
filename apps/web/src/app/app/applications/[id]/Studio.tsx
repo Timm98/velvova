@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { approveArtifact, generateArtifact, sendApplication, updateArtifact } from "@/lib/studio";
 import type { StudioView } from "@/lib/studio";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
 /**
  * Das Studio.
@@ -165,28 +165,25 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
               <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
                 <button
                   type="button"
-                  className="compact"
                   onClick={() => generate("cv_ats")}
                   disabled={pending}
-                  style={{ ...buttonStyle("secondary"), padding: "var(--space-2) var(--space-4)" }}
+                  className={buttonClass("secondary", false, "sm")}
                 >
                   {labels.generateCvAts}
                 </button>
                 <button
                   type="button"
-                  className="compact"
                   onClick={() => generate("application_email")}
                   disabled={pending}
-                  style={{ ...buttonStyle("secondary"), padding: "var(--space-2) var(--space-4)" }}
+                  className={buttonClass("secondary", false, "sm")}
                 >
                   {labels.generateEmail}
                 </button>
                 <button
                   type="button"
-                  className="compact"
                   onClick={() => generate("cover_letter")}
                   disabled={pending}
-                  style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)" }}
+                  className={buttonClass("quiet", false, "sm")}
                 >
                   {labels.generateCoverLetter}
                 </button>
@@ -204,14 +201,9 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                     <button
                       key={a.id}
                       type="button"
-                      className="compact"
                       onClick={() => setActiveId(a.id)}
                       aria-pressed={a.id === active?.id}
-                      style={{
-                        ...buttonStyle(a.id === active?.id ? "secondary" : "quiet"),
-                        padding: "var(--space-2) var(--space-3)",
-                        fontSize: "var(--text-xs)",
-                      }}
+                      className={buttonClass(a.id === active?.id ? "secondary" : "quiet", false, "sm")}
                     >
                       {KIND_LABEL[a.kind] ?? a.kind} v{a.version}
                     </button>
@@ -326,11 +318,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                     type="button"
                     onClick={approve}
                     disabled={pending || !active.canApprove}
-                    style={{
-                      ...buttonStyle(active.canApprove ? "primary" : "quiet"),
-                      opacity: active.canApprove ? 1 : 0.5,
-                      cursor: active.canApprove ? "pointer" : "not-allowed",
-                    }}
+                    className={buttonClass(active.canApprove ? "primary" : "quiet", false, "md")}
                   >
                     Dokument freigeben
                   </button>
@@ -352,11 +340,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                       type="button"
                       onClick={send}
                       disabled={pending || !confirmed}
-                      style={{
-                        ...buttonStyle(confirmed ? "primary" : "quiet"),
-                        opacity: confirmed ? 1 : 0.5,
-                        cursor: confirmed ? "pointer" : "not-allowed",
-                      }}
+                      className={buttonClass(confirmed ? "primary" : "quiet", false, "md")}
                     >
                       {view.delivery.willActuallySend ? labels.send : labels.exportDraft}
                     </button>
@@ -437,10 +421,9 @@ function ArtifactEditor({
       <div style={{ display: "flex", gap: "var(--space-3)", alignItems: "center" }}>
         <button
           type="button"
-          className="compact"
           onClick={() => onSave(text)}
           disabled={pending || !changed}
-          style={{ ...buttonStyle(changed ? "secondary" : "quiet"), padding: "var(--space-2) var(--space-4)" }}
+          className={buttonClass(changed ? "secondary" : "quiet", false, "sm")}
         >
           Speichern
         </button>

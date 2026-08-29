@@ -6,14 +6,20 @@ import { currentUser } from "@/lib/auth";
 import { RegisterForm } from "./RegisterForm";
 
 export const metadata: Metadata = { title: "Konto anlegen" };
+export const dynamic = "force-dynamic";
 
 export default async function RegisterPage() {
   if (await currentUser()) redirect("/app");
-  const { t } = await getPageContext();
+  const { t, brand } = await getPageContext();
 
   return (
-    <div style={{ display: "grid", gap: "var(--space-6)" }}>
-      <h1 style={{ fontSize: "var(--text-2xl)" }}>{t("auth.registerTitle")}</h1>
+    <div className="grid gap-7">
+      <div className="grid gap-2">
+        <h1 className="text-2xl font-semibold">{t("auth.registerTitle")}</h1>
+        <p className="text-sm text-ink-2">
+          Danach führt dich {brand.assistantName} durch die Karriereanalyse.
+        </p>
+      </div>
 
       <RegisterForm
         labels={{
@@ -27,9 +33,9 @@ export default async function RegisterPage() {
         }}
       />
 
-      <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", textAlign: "center" }}>
+      <p className="text-center text-sm text-ink-2">
         {t("auth.hasAccount")}{" "}
-        <Link href="/login" style={{ color: "var(--accent-text)" }}>
+        <Link href="/login" className="font-medium text-accent-text underline underline-offset-[3px]">
           {t("auth.login")}
         </Link>
       </p>

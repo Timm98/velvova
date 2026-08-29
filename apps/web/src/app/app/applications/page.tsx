@@ -6,7 +6,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { APPLICATION_PIPELINE } from "@paycheck/domain";
 import { desc, eq } from "drizzle-orm";
 import { diagnoseFunnel } from "@/lib/funnel";
-import { Badge, buttonStyle, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Bewerbungen" };
 export const dynamic = "force-dynamic";
@@ -73,7 +73,7 @@ export default async function ApplicationsPage({
           title={t("states.emptyTitle")}
           body={t("applications.empty")}
           action={
-            <Link href="/app/jobs" style={buttonStyle("primary")}>
+            <Link href="/app/jobs" className={buttonClass("primary")}>
               {t("nav.jobs")}
             </Link>
           }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Badge, buttonStyle } from "@/components/ui";
+import { Badge, buttonClass } from "@/components/ui";
 
 /**
  * Sprachmodus.
@@ -202,11 +202,11 @@ export function VoicePanel({
 
       <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", justifyContent: "center" }}>
         {!listening ? (
-          <button type="button" onClick={start} style={buttonStyle("primary")}>
+          <button type="button" onClick={start} className={buttonClass("primary")}>
             {labels.resume}
           </button>
         ) : (
-          <button type="button" onClick={stop} style={buttonStyle("secondary")}>
+          <button type="button" onClick={stop} className={buttonClass("secondary")}>
             {labels.pause}
           </button>
         )}
@@ -218,7 +218,7 @@ export function VoicePanel({
             onSubmit(currentText);
           }}
           disabled={currentText.trim().length === 0}
-          style={buttonStyle("secondary")}
+          className={buttonClass("secondary")}
         >
           Antwort absenden
         </button>

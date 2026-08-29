@@ -1,195 +1,203 @@
 /*
- * Farbtokens.
+ * Designsystem — Farbe, Raum, Schrift.
  *
- * Warme, neutrale Grundtoene statt des ueblichen kuehlen Blaugrau. Ein
- * einziger warmer Markenakzent, sparsam eingesetzt, plus ein deutlich
- * zurueckhaltenderer Ton fuer alles, was von der Assistenz kommt - so
- * bleibt unterscheidbar, was das Produkt sagt und was ein Mensch tut.
+ * Die Haltung: ruhig, warm, hochwertig. Ein Produkt, das man benutzt,
+ * während man unter Druck steht — es darf nie laut sein.
  *
- * Die Kontraste sind auf WCAG 2.2 AA ausgelegt: Fliesstext mindestens
- * 4.5:1, grosse Schrift und Bedienelemente mindestens 3:1. Der Hell-Modus
- * ist der Standard, Dunkel und System sind gleichwertig gepflegt.
+ * Drei Regeln, die alles andere bestimmen:
  *
- * --text-muted wurde nachgezogen: der erste Wert hielt 4.5:1 nur gegen
- * die hellste Flaeche und fiel auf --surface-inset auf 3.73 (hell) und
- * 3.93 (dunkel). Ein Kontrast muss gegen JEDE Flaeche halten, auf der
- * die Farbe erscheint - axe hat das aufgedeckt. Die heutigen Werte
- * halten mindestens 4.66 (hell) und 4.78 (dunkel) auf der jeweils
- * schwierigsten Flaeche.
+ * 1. EINE Akzentfarbe, sparsam. Farbe bedeutet hier "hier entscheidest
+ *    du etwas", nicht "das ist unsere Marke". Zehn bunte Elemente auf
+ *    einem Bildschirm sind kein Design, sondern Rauschen.
+ *
+ * 2. Flächen unterscheiden sich durch Helligkeit, nicht durch Rahmen.
+ *    Harte Linien zerschneiden eine Oberfläche. Ein kaum sichtbarer
+ *    Helligkeitswechsel plus ein weicher Schatten trägt dieselbe
+ *    Information ruhiger.
+ *
+ * 3. Kontraste halten gegen JEDE Fläche, auf der die Farbe erscheint —
+ *    nicht nur gegen die hellste. Das ist beim ersten Anlauf schief
+ *    gegangen und hat axe aufgedeckt.
+ *
+ * Die Werte stehen als HSL-Tripel ohne Funktion, damit Tailwind sie mit
+ * beliebiger Deckkraft verwenden kann: hsl(var(--accent) / 0.1).
  */
 
 :root {
   color-scheme: light;
 
-  /* Flaechen */
-  --surface-page: #faf8f5;
-  --surface-raised: #ffffff;
-  --surface-sunken: #f2eee8;
-  --surface-inset: #ebe5dc;
+  /* ---- Flächen ----
+     Warme Neutralen mit einem Hauch Ocker. Reines Grau wirkt klinisch;
+     ein warmer Ton wirkt wertiger und ist über Stunden angenehmer. */
+  --surface-page: 40 33% 98%;
+  --surface-raised: 0 0% 100%;
+  --surface-sunken: 40 20% 95%;
+  --surface-inset: 38 18% 91%;
+  --surface-overlay: 0 0% 100%;
 
-  /* Text */
-  --text-primary: #22201d;
-  --text-secondary: #56504a;
-  --text-muted: #6b645c;
-  --text-inverse: #faf8f5;
+  /* ---- Text ---- */
+  --text-primary: 30 10% 12%;
+  --text-secondary: 30 7% 33%;
+  --text-muted: 32 7% 42%;
+  --text-inverse: 40 33% 98%;
 
-  /* Linien */
-  --border-subtle: #e3ddd3;
-  --border-default: #d2cabd;
-  --border-strong: #b3a898;
+  /* ---- Linien ---- */
+  --border-subtle: 38 16% 90%;
+  --border-default: 36 13% 83%;
+  --border-strong: 33 11% 68%;
 
-  /* Markenakzent: warmes Terrakotta */
-  --accent: #a8442a;
-  --accent-hover: #8f381f;
-  --accent-subtle: #fbeee9;
-  --accent-border: #e8c4b6;
-  --accent-text: #8f381f;
-  /* Schrift AUF einer Akzentflaeche. Im Hellmodus ist der Akzent dunkel,
-     also weiss (5.96:1). Im Dunkelmodus ist er hell - dort muss die
-     Schrift dunkel werden, sonst bleiben 2.8:1 uebrig. */
-  --accent-on: #ffffff;
+  /* ---- Akzent: gebranntes Terrakotta ----
+     Warm, erwachsen, nicht das übliche Tech-Blau. */
+  --accent: 14 60% 41%;
+  --accent-hover: 14 63% 35%;
+  --accent-pressed: 14 66% 30%;
+  --accent-soft: 18 60% 96%;
+  --accent-border: 16 45% 84%;
+  --accent-text: 14 63% 34%;
+  --accent-on: 0 0% 100%;
 
-  /* Assistenz: ruhiges Indigo, bewusst leiser als der Markenakzent */
-  --assistant: #4a5578;
-  --assistant-subtle: #eef0f6;
-  --assistant-border: #ccd2e3;
-  --assistant-text: #3b4463;
+  /* ---- Assistenz: gedämpftes Indigo ----
+     Bewusst leiser als der Markenakzent. Was von Nina kommt, soll
+     erkennbar sein, ohne um Aufmerksamkeit zu konkurrieren. */
+  --assistant: 226 22% 38%;
+  --assistant-soft: 228 32% 96%;
+  --assistant-border: 226 26% 87%;
+  --assistant-text: 226 26% 31%;
 
-  /* Bedeutungsfarben. Nie alleiniger Traeger einer Information. */
-  --positive: #2f6a45;
-  --positive-subtle: #e9f2ec;
-  --caution: #8a6115;
-  --caution-subtle: #f9f1e0;
-  --critical: #9c2f2f;
-  --critical-subtle: #f8eaea;
-  --neutral: #5b5751;
-  --neutral-subtle: #f0ece6;
+  /* ---- Bedeutung. Nie alleiniger Träger einer Information. ---- */
+  --positive: 152 39% 30%;
+  --positive-soft: 150 33% 95%;
+  --caution: 38 73% 30%;
+  --caution-soft: 42 70% 95%;
+  --critical: 0 53% 40%;
+  --critical-soft: 0 60% 96%;
+  --neutral: 34 6% 35%;
+  --neutral-soft: 38 14% 95%;
 
-  /* Schatten statt harter Rahmen */
-  --shadow-sm: 0 1px 2px rgb(34 32 29 / 0.05);
-  --shadow-md: 0 2px 8px rgb(34 32 29 / 0.07), 0 1px 2px rgb(34 32 29 / 0.04);
-  --shadow-lg: 0 8px 24px rgb(34 32 29 / 0.09), 0 2px 6px rgb(34 32 29 / 0.05);
+  /* ---- Schatten ----
+     Sehr weich und mehrlagig. Ein harter Schatten sieht nach 2012 aus;
+     zwei weiche Lagen erzeugen Tiefe, ohne aufzufallen. */
+  --shadow-xs: 0 1px 2px hsl(30 10% 12% / 0.04);
+  --shadow-sm: 0 1px 3px hsl(30 10% 12% / 0.05), 0 1px 2px hsl(30 10% 12% / 0.03);
+  --shadow-md: 0 2px 4px hsl(30 10% 12% / 0.04), 0 4px 12px hsl(30 10% 12% / 0.06);
+  --shadow-lg: 0 4px 8px hsl(30 10% 12% / 0.04), 0 12px 32px hsl(30 10% 12% / 0.08);
+  --shadow-xl: 0 8px 16px hsl(30 10% 12% / 0.05), 0 24px 56px hsl(30 10% 12% / 0.10);
 
-  /* Radien */
-  --radius-sm: 6px;
-  --radius-md: 10px;
+  /* ---- Radien ---- */
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 22px;
   --radius-full: 999px;
 
-  /* Abstaende: 4px-Raster */
-  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
-  --space-5: 24px;  --space-6: 32px;  --space-7: 48px;  --space-8: 64px;
-  --space-9: 96px;
-
-  /* Typografie */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
-
-  --text-xs: 0.8125rem;   --leading-xs: 1.5;
-  --text-sm: 0.9375rem;   --leading-sm: 1.6;
-  --text-base: 1.0625rem; --leading-base: 1.65;
-  --text-lg: 1.25rem;     --leading-lg: 1.5;
-  --text-xl: 1.5rem;      --leading-xl: 1.35;
-  --text-2xl: 1.9375rem;  --leading-2xl: 1.25;
-  --text-3xl: 2.5rem;     --leading-3xl: 1.15;
-  --text-4xl: 3.25rem;    --leading-4xl: 1.08;
-
-  --measure: 68ch;
-
-  /* Bewegung, nur funktional */
-  --ease: cubic-bezier(0.2, 0, 0.15, 1);
+  /* ---- Bewegung. Kurz und weich; alles über 250ms wirkt träge. ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-fast: 120ms;
   --duration-base: 200ms;
+  --duration-slow: 320ms;
+
+  --measure: 66ch;
 }
 
+/* Ausdrückliche Wahl gewinnt in beide Richtungen. */
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --surface-page: #16151a;
-  --surface-raised: #201f26;
-  --surface-sunken: #111014;
-  --surface-inset: #2a2831;
+  /* Tiefes, leicht warmes Anthrazit statt Schwarz. Reines Schwarz
+     erzeugt harte Kanten und ermüdet die Augen. */
+  --surface-page: 30 8% 9%;
+  --surface-raised: 30 7% 13%;
+  --surface-sunken: 30 9% 6%;
+  --surface-inset: 30 6% 18%;
+  --surface-overlay: 30 7% 15%;
 
-  --text-primary: #ece8e3;
-  --text-secondary: #b5aea6;
-  --text-muted: #9a938b;
-  --text-inverse: #16151a;
+  --text-primary: 38 22% 92%;
+  --text-secondary: 34 10% 71%;
+  --text-muted: 34 8% 60%;
+  --text-inverse: 30 8% 9%;
 
-  --border-subtle: #2e2c35;
-  --border-default: #3d3a45;
-  --border-strong: #565161;
+  --border-subtle: 30 6% 20%;
+  --border-default: 30 6% 27%;
+  --border-strong: 30 5% 40%;
 
-  --accent: #e08163;
-  --accent-hover: #eb9376;
-  --accent-subtle: #2c1f1a;
-  --accent-border: #4d3327;
-  --accent-text: #f0a184;
-  --accent-on: #16151a;
+  --accent: 16 70% 63%;
+  --accent-hover: 16 75% 69%;
+  --accent-pressed: 16 78% 74%;
+  --accent-soft: 16 30% 14%;
+  --accent-border: 16 30% 26%;
+  --accent-text: 18 76% 72%;
+  --accent-on: 30 8% 9%;
 
-  --assistant: #9aa5cc;
-  --assistant-subtle: #1e202c;
-  --assistant-border: #333853;
-  --assistant-text: #aeb8dc;
+  --assistant: 226 32% 70%;
+  --assistant-soft: 228 22% 15%;
+  --assistant-border: 228 20% 27%;
+  --assistant-text: 228 40% 78%;
 
-  --positive: #74c497;
-  --positive-subtle: #172319;
-  --caution: #d9ab5c;
-  --caution-subtle: #262015;
-  --critical: #e08585;
-  --critical-subtle: #2a1a1a;
-  --neutral: #a09a92;
-  --neutral-subtle: #232128;
+  --positive: 152 38% 61%;
+  --positive-soft: 152 22% 12%;
+  --caution: 38 62% 61%;
+  --caution-soft: 38 26% 13%;
+  --critical: 0 62% 70%;
+  --critical-soft: 0 25% 14%;
+  --neutral: 34 8% 63%;
+  --neutral-soft: 30 6% 15%;
 
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
+  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
+  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.36), 0 1px 2px hsl(0 0% 0% / 0.24);
+  --shadow-md: 0 2px 4px hsl(0 0% 0% / 0.30), 0 4px 12px hsl(0 0% 0% / 0.40);
+  --shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.32), 0 12px 32px hsl(0 0% 0% / 0.46);
+  --shadow-xl: 0 8px 16px hsl(0 0% 0% / 0.34), 0 24px 56px hsl(0 0% 0% / 0.52);
 }
 
-/*
- * Systemvorgabe. Greift nur, wenn der Mensch nichts anderes gewaehlt hat -
- * eine ausdrueckliche Wahl gewinnt in beide Richtungen.
- */
+/* Systemvorgabe — greift nur ohne ausdrückliche Wahl. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --surface-page: #16151a;
-    --surface-raised: #201f26;
-    --surface-sunken: #111014;
-    --surface-inset: #2a2831;
+    --surface-page: 30 8% 9%;
+    --surface-raised: 30 7% 13%;
+    --surface-sunken: 30 9% 6%;
+    --surface-inset: 30 6% 18%;
+    --surface-overlay: 30 7% 15%;
 
-    --text-primary: #ece8e3;
-    --text-secondary: #b5aea6;
-    --text-muted: #9a938b;
-    --text-inverse: #16151a;
+    --text-primary: 38 22% 92%;
+    --text-secondary: 34 10% 71%;
+    --text-muted: 34 8% 60%;
+    --text-inverse: 30 8% 9%;
 
-    --border-subtle: #2e2c35;
-    --border-default: #3d3a45;
-    --border-strong: #565161;
+    --border-subtle: 30 6% 20%;
+    --border-default: 30 6% 27%;
+    --border-strong: 30 5% 40%;
 
-    --accent: #e08163;
-    --accent-hover: #eb9376;
-    --accent-subtle: #2c1f1a;
-    --accent-border: #4d3327;
-    --accent-text: #f0a184;
+    --accent: 16 70% 63%;
+    --accent-hover: 16 75% 69%;
+    --accent-pressed: 16 78% 74%;
+    --accent-soft: 16 30% 14%;
+    --accent-border: 16 30% 26%;
+    --accent-text: 18 76% 72%;
+    --accent-on: 30 8% 9%;
 
-    --assistant: #9aa5cc;
-    --assistant-subtle: #1e202c;
-    --assistant-border: #333853;
-    --assistant-text: #aeb8dc;
+    --assistant: 226 32% 70%;
+    --assistant-soft: 228 22% 15%;
+    --assistant-border: 228 20% 27%;
+    --assistant-text: 228 40% 78%;
 
-    --positive: #74c497;
-    --positive-subtle: #172319;
-    --caution: #d9ab5c;
-    --caution-subtle: #262015;
-    --critical: #e08585;
-    --critical-subtle: #2a1a1a;
-    --neutral: #a09a92;
-    --neutral-subtle: #232128;
+    --positive: 152 38% 61%;
+    --positive-soft: 152 22% 12%;
+    --caution: 38 62% 61%;
+    --caution-soft: 38 26% 13%;
+    --critical: 0 62% 70%;
+    --critical-soft: 0 25% 14%;
+    --neutral: 34 8% 63%;
+    --neutral-soft: 30 6% 15%;
 
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
+    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
+    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.36), 0 1px 2px hsl(0 0% 0% / 0.24);
+    --shadow-md: 0 2px 4px hsl(0 0% 0% / 0.30), 0 4px 12px hsl(0 0% 0% / 0.40);
+    --shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.32), 0 12px 32px hsl(0 0% 0% / 0.46);
+    --shadow-xl: 0 8px 16px hsl(0 0% 0% / 0.34), 0 24px 56px hsl(0 0% 0% / 0.52);
   }
 }
 
@@ -198,8 +206,11 @@
   :root {
     --duration-fast: 0.01ms;
     --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
   }
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

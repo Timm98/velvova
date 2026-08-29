@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { pauseSession, skipQuestion, submitAnswer } from "@/lib/interview";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Stack } from "@/components/ui";
+import { cn } from "@/lib/cn";
 import { VoicePanel } from "./VoicePanel";
 
 /**
@@ -171,7 +172,6 @@ export function InterviewChat({
           <div>
             <button
               type="button"
-              className="compact"
               onClick={() => setShowPurpose((v) => !v)}
               aria-expanded={showPurpose}
               style={{
@@ -200,25 +200,17 @@ export function InterviewChat({
               <div role="group" aria-label="Eingabeart" style={{ display: "flex", gap: "var(--space-2)" }}>
                 <button
                   type="button"
-                  className="compact"
                   onClick={() => setMode("text")}
                   aria-pressed={mode === "text"}
-                  style={{
-                    ...buttonStyle(mode === "text" ? "secondary" : "quiet"),
-                    padding: "var(--space-2) var(--space-4)",
-                  }}
+                  className={buttonClass(mode === "text" ? "secondary" : "quiet", false, "sm")}
                 >
                   {labels.textMode}
                 </button>
                 <button
                   type="button"
-                  className="compact"
                   onClick={() => setMode("voice")}
                   aria-pressed={mode === "voice"}
-                  style={{
-                    ...buttonStyle(mode === "voice" ? "secondary" : "quiet"),
-                    padding: "var(--space-2) var(--space-4)",
-                  }}
+                  className={buttonClass(mode === "voice" ? "secondary" : "quiet", false, "sm")}
                 >
                   {labels.voiceMode}
                 </button>
@@ -277,13 +269,13 @@ export function InterviewChat({
                     type="button"
                     onClick={() => send(answer)}
                     disabled={pending}
-                    style={buttonStyle("primary")}
+                    className={buttonClass("primary")}
                   >
                     {pending ? labels.thinking : labels.send}
                   </button>
 
                   {step.canSkip && (
-                    <button type="button" onClick={skip} disabled={pending} style={buttonStyle("quiet")}>
+                    <button type="button" onClick={skip} disabled={pending} className={buttonClass("quiet")}>
                       {labels.skipQuestion}
                     </button>
                   )}
@@ -292,7 +284,7 @@ export function InterviewChat({
                     type="button"
                     onClick={pause}
                     disabled={pending}
-                    style={{ ...buttonStyle("quiet"), marginLeft: "auto" }}
+                    className={cn(buttonClass("quiet"), "ml-auto")}
                   >
                     {labels.pauseSession}
                   </button>
@@ -306,7 +298,7 @@ export function InterviewChat({
           )}
 
           {isComplete && (
-            <a href="/app/profile" style={buttonStyle("primary")}>
+            <a href="/app/profile" className={buttonClass("primary")}>
               Profil ansehen und bestätigen
             </a>
           )}

@@ -7,7 +7,7 @@ import { loadGate } from "@/lib/gate";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { listJobsForUser, loadProfileContext, countSentApplications } from "@/lib/matching";
 import { diagnoseFunnel } from "@/lib/funnel";
-import { Badge, buttonStyle, Card, EmptyState, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, EmptyState, Stack } from "@/components/ui";
 import { ConfidenceDisplay, FitDisplay } from "@/components/scores";
 
 export const metadata: Metadata = { title: "Start" };
@@ -109,7 +109,7 @@ export default async function DashboardPage() {
               </p>
             </div>
             <div>
-              <Link href={nextAction.href} style={buttonStyle("primary")}>
+              <Link href={nextAction.href} className={buttonClass("primary")}>
                 {nextAction.cta}
               </Link>
             </div>
@@ -135,7 +135,7 @@ export default async function DashboardPage() {
             title={t("jobs.locked")}
             body={t("jobs.lockedBody")}
             action={
-              <Link href="/app/nina" style={buttonStyle("primary")}>
+              <Link href="/app/nina" className={buttonClass("primary")}>
                 {t("jobs.lockedCta")}
               </Link>
             }

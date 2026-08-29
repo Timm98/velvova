@@ -6,14 +6,18 @@ import { currentUser } from "@/lib/auth";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = { title: "Anmelden" };
+export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
   if (await currentUser()) redirect("/app");
   const { t } = await getPageContext();
 
   return (
-    <div style={{ display: "grid", gap: "var(--space-6)" }}>
-      <h1 style={{ fontSize: "var(--text-2xl)" }}>{t("auth.loginTitle")}</h1>
+    <div className="grid gap-7">
+      <div className="grid gap-2">
+        <h1 className="text-2xl font-semibold">{t("auth.loginTitle")}</h1>
+        <p className="text-sm text-ink-2">Weiter, wo du aufgehört hast.</p>
+      </div>
 
       <LoginForm
         labels={{
@@ -28,9 +32,9 @@ export default async function LoginPage() {
         }}
       />
 
-      <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", textAlign: "center" }}>
+      <p className="text-center text-sm text-ink-2">
         {t("auth.noAccount")}{" "}
-        <Link href="/register" style={{ color: "var(--accent-text)" }}>
+        <Link href="/register" className="font-medium text-accent-text underline underline-offset-[3px]">
           {t("auth.register")}
         </Link>
       </p>

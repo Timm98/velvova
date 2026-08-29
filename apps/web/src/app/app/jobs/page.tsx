@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import { listJobsForUser, loadProfileContext } from "@/lib/matching";
 import { loadGate } from "@/lib/gate";
 import type { SortKey } from "@paycheck/matching";
-import { Badge, buttonStyle, Card, DemoBadge, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, DemoBadge, EmptyState, PageHeader, Stack } from "@/components/ui";
 import {
   AiTransitionDisplay,
   ConfidenceDisplay,
@@ -66,7 +66,7 @@ export default async function JobsPage({
           title={t("jobs.locked")}
           body={`${t("jobs.lockedBody")} ${gate.reason}`}
           action={
-            <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"} style={buttonStyle("primary")}>
+            <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"} className={buttonClass("primary")}>
               {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
             </Link>
           }
@@ -253,7 +253,7 @@ export default async function JobsPage({
                   )}
 
                   <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
-                    <Link href={`/app/jobs/${j.jobId}`} style={buttonStyle("secondary")}>
+                    <Link href={`/app/jobs/${j.jobId}`} className={buttonClass("secondary")}>
                       {t("jobs.view")}
                     </Link>
                     <SaveJobButton

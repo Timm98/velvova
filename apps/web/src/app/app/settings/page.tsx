@@ -5,7 +5,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { updateSettings } from "@/lib/privacy";
 import { ConsentToggles, DangerZone, DeviceList, ExportButton } from "./SettingsClient";
-import { Card, inputStyle, NotConnected, PageHeader, Stack } from "@/components/ui";
+import { Card, inputClass, NotConnected, PageHeader, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Einstellungen" };
 export const dynamic = "force-dynamic";
@@ -90,7 +90,7 @@ export default async function SettingsPage() {
                 <label htmlFor="locale" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
                   {t("settings.language")}
                 </label>
-                <select id="locale" name="locale" defaultValue={settings?.locale ?? "de"} style={inputStyle}>
+                <select id="locale" name="locale" defaultValue={settings?.locale ?? "de"} className={inputClass}>
                   <option value="de">Deutsch</option>
                   <option value="en">English</option>
                 </select>
@@ -100,7 +100,7 @@ export default async function SettingsPage() {
                 <label htmlFor="country" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
                   {t("settings.region")}
                 </label>
-                <select id="country" name="country" defaultValue={settings?.country ?? "DE"} style={inputStyle}>
+                <select id="country" name="country" defaultValue={settings?.country ?? "DE"} className={inputClass}>
                   <option value="DE">Deutschland</option>
                   <option value="AT">Oesterreich</option>
                   <option value="CH">Schweiz</option>
@@ -116,7 +116,7 @@ export default async function SettingsPage() {
                   name="baseLocation"
                   type="text"
                   defaultValue={settings?.baseLocation ?? ""}
-                  style={inputStyle}
+                  className={inputClass}
                 />
               </div>
 
@@ -131,7 +131,7 @@ export default async function SettingsPage() {
                   min={1}
                   max={600}
                   defaultValue={settings?.maxCommuteMinutes ?? ""}
-                  style={inputStyle}
+                  className={inputClass}
                 />
               </div>
             </div>

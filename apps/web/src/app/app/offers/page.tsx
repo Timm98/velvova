@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { eq } from "drizzle-orm";
-import { buttonStyle, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { buttonClass, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Angebote" };
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export default async function OffersPage() {
         <EmptyState
           title={t("states.emptyTitle")}
           body="Sobald du ein Angebot erhältst, kannst du es hier eintragen und vergleichen."
-          action={<Link href="/app/applications" style={buttonStyle("secondary")}>{t("applications.title")}</Link>}
+          action={<Link href="/app/applications" className={buttonClass("secondary")}>{t("applications.title")}</Link>}
         />
       </Stack>
     );

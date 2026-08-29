@@ -1,34 +1,72 @@
 import Link from "next/link";
 import { getPageContext } from "@/lib/locale";
-import { LocaleToggle, ThemeToggle } from "@/components/ThemeToggle";
 
+/**
+ * Rahmen der öffentlichen Seiten.
+ *
+ * Keine Sprachumschaltung und keine Darstellungswahl mehr in der
+ * Kopfzeile: beides gehört ins Konto, nicht in die dauerhafte Navigation.
+ * Was oben steht, muss man mehrmals am Tag brauchen — sonst nimmt es nur
+ * Aufmerksamkeit weg.
+ */
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const { t, brand, locale } = await getPageContext();
+  const { t, brand } = await getPageContext();
+
+  const legal = [
+    { href: "/how-it-works", label: "So funktioniert es" },
+    { href: "/methodology", label: "Methodik" },
+    { href: "/security", label: "Sicherheit" },
+    { href: "/privacy", label: "Datenschutz" },
+  ];
 
   return (
-    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
-      <a href="#inhalt" className="skip-link">{t("nav.skipToContent")}</a>
+    <div className="flex min-h-dvh flex-col">
+      <a href="#inhalt" className="skip-link">
+        {t("nav.skipToContent")}
+      </a>
 
-      <header style={{ borderBottom: "1px solid var(--border-subtle)" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", padding: "var(--space-4) var(--space-5)", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "var(--space-4)", flexWrap: "wrap" }}>
-          <Link href="/" style={{ fontWeight: 600, textDecoration: "none" }}>{brand.name}</Link>
-          <div style={{ display: "flex", gap: "var(--space-2)" }}>
-            <LocaleToggle current={locale} />
-            <ThemeToggle labels={{ light: t("settings.themeLight"), dark: t("settings.themeDark"), system: t("settings.themeSystem"), group: t("settings.theme") }} />
-          </div>
+      <header className="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 px-5 py-3.5">
+          <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight">
+            <span
+              aria-hidden
+              className="grid size-7 place-items-center rounded-[--radius-sm] bg-accent text-accent-on text-xs font-bold"
+            >
+              P
+            </span>
+            {brand.name}
+          </Link>
+          <nav aria-label="Seiten" className="flex items-center gap-1">
+            <Link
+              href="/login"
+              className="rounded-[--radius-md] px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+            >
+              {t("auth.login")}
+            </Link>
+            <Link
+              href="/register"
+              className="inline-flex h-9 items-center rounded-[--radius-md] bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+            >
+              {t("auth.register")}
+            </Link>
+          </nav>
         </div>
       </header>
 
-      <main id="inhalt" style={{ flex: 1, maxWidth: 760, width: "100%", margin: "0 auto", padding: "var(--space-8) var(--space-5) var(--space-9)" }}>
+      <main id="inhalt" className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:py-20">
         {children}
       </main>
 
-      <footer style={{ borderTop: "1px solid var(--border-subtle)", background: "var(--surface-sunken)" }}>
-        <nav aria-label="Rechtliches" style={{ maxWidth: 900, margin: "0 auto", padding: "var(--space-5)", display: "flex", gap: "var(--space-5)", flexWrap: "wrap", fontSize: "var(--text-sm)" }}>
-          <Link href="/how-it-works" style={{ textDecoration: "none" }}>So funktioniert es</Link>
-          <Link href="/methodology" style={{ textDecoration: "none" }}>Methodik</Link>
-          <Link href="/security" style={{ textDecoration: "none" }}>Sicherheit</Link>
-          <Link href="/privacy" style={{ textDecoration: "none" }}>Datenschutz</Link>
+      <footer className="border-t border-line bg-sunken">
+        <nav
+          aria-label="Rechtliches"
+          className="mx-auto flex w-full max-w-[1120px] flex-wrap gap-x-7 gap-y-3 px-5 py-8 text-sm text-ink-2"
+        >
+          {legal.map((l) => (
+            <Link key={l.href} href={l.href} className="transition-colors hover:text-ink">
+              {l.label}
+            </Link>
+          ))}
         </nav>
       </footer>
     </div>

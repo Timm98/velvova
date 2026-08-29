@@ -5,7 +5,7 @@ import { getPageContext } from "@/lib/locale";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { eq } from "drizzle-orm";
 import { RoleClusterCard } from "../profile/ProfileClient";
-import { buttonStyle, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { buttonClass, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Richtungen" };
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export default async function RolesPage() {
         <EmptyState
           title={t("states.emptyTitle")}
           body="Richtungen entstehen aus dem Gespräch. Sobald genug Themen abgedeckt sind, erscheinen sie hier."
-          action={<Link href="/app/nina" style={buttonStyle("primary")}>{t("jobs.lockedCta")}</Link>}
+          action={<Link href="/app/nina" className={buttonClass("primary")}>{t("jobs.lockedCta")}</Link>}
         />
       </Stack>
     );

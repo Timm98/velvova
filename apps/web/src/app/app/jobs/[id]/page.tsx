@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { loadScoredJob } from "@/lib/matching";
 import { coverLetterAdvisable } from "@paycheck/documents";
-import { Badge, buttonStyle, Card, Disclosure, PageHeader, SourceNote, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Disclosure, PageHeader, SourceNote, Stack } from "@/components/ui";
 import {
   AiTransitionDisplay,
   BlockedNotice,
@@ -532,7 +532,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
             {job.originalUrl && (
               <p>
-                <a href={job.originalUrl} target="_blank" rel="noopener noreferrer" style={buttonStyle("secondary")}>
+                <a href={job.originalUrl} target="_blank" rel="noopener noreferrer" className={buttonClass("secondary")}>
                   {t("common.openOriginal")}
                 </a>
               </p>

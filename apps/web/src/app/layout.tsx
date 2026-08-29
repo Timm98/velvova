@@ -35,7 +35,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const locale = isLocale(localeCookie) ? localeCookie : "de";
 
   return (
-    <html lang={locale} data-theme={theme === "light" || theme === "dark" ? theme : undefined}>
+    <html
+      lang={locale}
+      data-theme={theme === "light" || theme === "dark" ? theme : undefined}
+      suppressHydrationWarning
+    >
       <body>
         {children}
         <ServiceWorker />

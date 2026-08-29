@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { confirmProfile, confirmRoleCluster } from "@/lib/profile";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
 /** Bestätigung des Gesamtprofils. Schaltet personalisierte Jobs frei. */
 export function ConfirmProfileButton({
@@ -38,7 +38,7 @@ export function ConfirmProfileButton({
           })
         }
         disabled={pending}
-        style={buttonStyle("primary")}
+        className={buttonClass("primary")}
       >
         {pending ? "…" : label}
       </button>
@@ -132,7 +132,6 @@ export function RoleClusterCard({
         <div>
           <button
             type="button"
-            className="compact"
             onClick={() =>
               startTransition(async () => {
                 await confirmRoleCluster(cluster.id, !cluster.userConfirmed);
@@ -140,7 +139,7 @@ export function RoleClusterCard({
               })
             }
             disabled={pending}
-            style={{ ...buttonStyle(cluster.userConfirmed ? "quiet" : "secondary"), padding: "var(--space-2) var(--space-4)" }}
+            className={buttonClass(cluster.userConfirmed ? "quiet" : "secondary", false, "sm")}
           >
             {cluster.userConfirmed ? "Nicht mehr verfolgen" : "Diese Richtung verfolgen"}
           </button>

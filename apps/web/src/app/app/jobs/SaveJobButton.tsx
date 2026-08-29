@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toggleSaveJob } from "@/lib/jobActions";
-import { buttonStyle } from "@/components/ui";
+import { buttonClass } from "@/components/ui";
 
 export function SaveJobButton({
   jobId,
@@ -27,7 +27,7 @@ export function SaveJobButton({
         })
       }
       disabled={pending}
-      style={buttonStyle(saved ? "quiet" : "secondary")}
+      className={buttonClass(saved ? "quiet" : "secondary")}
     >
       {saved ? `✓ ${labels.saved}` : labels.save}
     </button>

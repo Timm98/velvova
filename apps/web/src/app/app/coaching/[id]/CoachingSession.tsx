@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitCoachingAnswer } from "@/lib/coaching";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
 /**
  * Eine Uebungsrunde. Eine Frage, eine Antwort, eine Rückmeldung zu
@@ -73,22 +73,20 @@ export function CoachingSession({
             <div style={{ display: "flex", gap: "var(--space-2)" }}>
               <button
                 type="button"
-                className="compact"
                 onClick={() => setIndex((i) => Math.max(0, i - 1))}
                 disabled={index === 0}
-                style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-3)" }}
+                className={buttonClass("quiet", false, "sm")}
               >
                 Zurück
               </button>
               <button
                 type="button"
-                className="compact"
                 onClick={() => {
                   setIndex((i) => Math.min(questions.length - 1, i + 1));
                   setAnswer("");
                 }}
                 disabled={index === questions.length - 1}
-                style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-3)" }}
+                className={buttonClass("quiet", false, "sm")}
               >
                 Weiter
               </button>
@@ -131,7 +129,7 @@ export function CoachingSession({
               </p>
             )}
             <div>
-              <button type="button" onClick={submit} disabled={pending} style={buttonStyle("primary")}>
+              <button type="button" onClick={submit} disabled={pending} className={buttonClass("primary")}>
                 {pending ? "…" : answered.length > 0 ? labels.repeat : labels.send}
               </button>
             </div>

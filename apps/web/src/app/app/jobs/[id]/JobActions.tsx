@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { startApplication, toggleSaveJob } from "@/lib/jobActions";
-import { buttonStyle } from "@/components/ui";
+import { buttonClass } from "@/components/ui";
 
 /**
  * Die Handlungen an einer Stelle. Eine primäre - Bewerbung vorbereiten -
@@ -37,7 +37,7 @@ export function JobActions({
           })
         }
         disabled={pending}
-        style={buttonStyle("primary")}
+        className={buttonClass("primary")}
       >
         {pending ? "…" : labels.prepare}
       </button>
@@ -52,12 +52,12 @@ export function JobActions({
           })
         }
         disabled={pending}
-        style={buttonStyle("secondary")}
+        className={buttonClass("secondary")}
       >
         {saved ? `✓ ${labels.saved}` : labels.save}
       </button>
 
-      <a href="/app/nina" style={buttonStyle("quiet")}>
+      <a href="/app/nina" className={buttonClass("quiet")}>
         {labels.discuss}
       </a>
 

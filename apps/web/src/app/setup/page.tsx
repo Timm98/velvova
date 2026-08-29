@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { saveSetupAction } from "@/app/(auth)/actions";
-import { buttonStyle, Card, inputStyle, Stack } from "@/components/ui";
+import { buttonClass, Card, inputClass, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Bevor wir anfangen" };
 export const dynamic = "force-dynamic";
@@ -80,7 +80,7 @@ export default async function SetupPage() {
                     <label htmlFor="locale" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
                       {t("consent.language")}
                     </label>
-                    <select id="locale" name="locale" defaultValue="de" style={inputStyle}>
+                    <select id="locale" name="locale" defaultValue="de" className={inputClass}>
                       <option value="de">Deutsch</option>
                       <option value="en">English</option>
                     </select>
@@ -90,7 +90,7 @@ export default async function SetupPage() {
                     <label htmlFor="country" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
                       {t("consent.country")}
                     </label>
-                    <select id="country" name="country" defaultValue="DE" style={inputStyle}>
+                    <select id="country" name="country" defaultValue="DE" className={inputClass}>
                       <option value="DE">Deutschland</option>
                       <option value="AT">Oesterreich</option>
                       <option value="CH">Schweiz</option>
@@ -108,7 +108,7 @@ export default async function SetupPage() {
                     type="text"
                     placeholder="z. B. Hamburg"
                     autoComplete="address-level2"
-                    style={inputStyle}
+                    className={inputClass}
                   />
                   <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
                     Nur für die Schätzung von Arbeitswegen. Du kannst das leer lassen.
@@ -196,7 +196,7 @@ export default async function SetupPage() {
               </Stack>
             </Card>
 
-            <button type="submit" style={buttonStyle("primary")}>
+            <button type="submit" className={buttonClass("primary")}>
               {t("consent.start")}
             </button>
           </Stack>

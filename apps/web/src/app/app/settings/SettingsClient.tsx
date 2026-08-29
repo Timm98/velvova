@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteAccount, exportData, setConsent, signOutDevice } from "@/lib/privacy";
-import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
+import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
 /** Einwilligungen einzeln schalten. Der Widerruf wirkt sofort. */
 export function ConsentToggles({
@@ -92,7 +92,6 @@ export function DeviceList({
           {!s.isCurrent && (
             <button
               type="button"
-              className="compact"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
@@ -100,7 +99,7 @@ export function DeviceList({
                   router.refresh();
                 })
               }
-              style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)" }}
+              className={buttonClass("quiet", false, "sm")}
             >
               Abmelden
             </button>
@@ -138,7 +137,7 @@ export function ExportButton({ label }: { label: string }) {
               setDone(true);
             })
           }
-          style={buttonStyle("secondary")}
+          className={buttonClass("secondary")}
         >
           {pending ? "…" : label}
         </button>
@@ -211,11 +210,7 @@ export function DangerZone({ title, body }: { title: string; body: string }) {
                 if (!r.ok) setError(r.message);
               })
             }
-            style={{
-              ...buttonStyle("danger"),
-              opacity: confirmation.trim().toLowerCase() === "löschen" ? 1 : 0.5,
-              cursor: confirmation.trim().toLowerCase() === "löschen" ? "pointer" : "not-allowed",
-            }}
+            className={buttonClass("danger", false, "md")}
           >
             {pending ? "…" : title}
           </button>

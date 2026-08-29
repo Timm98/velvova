@@ -1,16 +1,20 @@
 "use client";
 
+import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/cn";
 
 type Theme = "light" | "dark" | "system";
 
 /**
- * Hell, Dunkel, System.
+ * Darstellung wählen.
  *
  * Die Wahl landet in einem Cookie, damit der Server sie beim nächsten
  * Laden schon kennt und die Seite nicht kurz in der falschen Farbe
- * aufblitzt. "System" entfernt das Attribut - dann entscheiden die
+ * aufblitzt. "System" entfernt das Attribut — dann entscheiden die
  * Medienabfragen in den Tokens.
+ *
+ * Steht ab jetzt in den Einstellungen, nicht mehr in der Kopfzeile.
  */
 export function ThemeToggle({
   labels,
@@ -35,103 +39,35 @@ export function ThemeToggle({
     }
   }
 
-  const options: { value: Theme; label: string }[] = [
-    { value: "light", label: labels.light },
-    { value: "dark", label: labels.dark },
-    { value: "system", label: labels.system },
+  const options = [
+    { value: "light" as const, label: labels.light, Icon: Sun },
+    { value: "dark" as const, label: labels.dark, Icon: Moon },
+    { value: "system" as const, label: labels.system, Icon: Monitor },
   ];
 
   return (
-    <fieldset
-      style={{
-        border: "1px solid var(--border-default)",
-        borderRadius: "var(--radius-full)",
-        padding: 2,
-        display: "inline-flex",
-        gap: 2,
-        margin: 0,
-      }}
-    >
+    <fieldset className="inline-flex gap-1 rounded-[--radius-md] border border-line-2 bg-sunken p-1">
       <legend className="sr-only">{labels.group}</legend>
-      {options.map((o) => (
+      {options.map(({ value, label, Icon }) => (
         <label
-          key={o.value}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "var(--space-2) var(--space-3)",
-            borderRadius: "var(--radius-full)",
-            fontSize: "var(--text-xs)",
-            cursor: "pointer",
-            minHeight: 36,
-            background: theme === o.value ? "var(--surface-inset)" : "transparent",
-            color: theme === o.value ? "var(--text-primary)" : "var(--text-secondary)",
-            fontWeight: theme === o.value ? 500 : 400,
-          }}
+          key={value}
+          className={cn(
+            "flex min-h-9 cursor-pointer items-center gap-2 rounded-[--radius-sm] px-3 text-sm transition-colors duration-[--duration-fast]",
+            theme === value
+              ? "bg-raised font-medium text-ink shadow-xs"
+              : "text-ink-2 hover:text-ink",
+          )}
         >
           <input
             type="radio"
             name="theme"
-            value={o.value}
-            checked={theme === o.value}
-            onChange={() => choose(o.value)}
+            value={value}
+            checked={theme === value}
+            onChange={() => choose(value)}
             className="sr-only"
           />
-          {o.label}
-        </label>
-      ))}
-    </fieldset>
-  );
-}
-
-/**
- * Sprachumschalter. Ebenfalls per Cookie, damit die Wahl serverseitig
- * gilt und nicht erst nach dem ersten Rendern greift.
- */
-export function LocaleToggle({ current }: { current: "de" | "en" }) {
-  function choose(next: "de" | "en") {
-    document.cookie = `paycheck_locale=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
-    window.location.reload();
-  }
-
-  return (
-    <fieldset
-      style={{
-        border: "1px solid var(--border-default)",
-        borderRadius: "var(--radius-full)",
-        padding: 2,
-        display: "inline-flex",
-        gap: 2,
-        margin: 0,
-      }}
-    >
-      <legend className="sr-only">Sprache / Language</legend>
-      {(["de", "en"] as const).map((l) => (
-        <label
-          key={l}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            padding: "var(--space-2) var(--space-3)",
-            borderRadius: "var(--radius-full)",
-            fontSize: "var(--text-xs)",
-            cursor: "pointer",
-            minHeight: 36,
-            background: current === l ? "var(--surface-inset)" : "transparent",
-            color: current === l ? "var(--text-primary)" : "var(--text-secondary)",
-            fontWeight: current === l ? 500 : 400,
-            textTransform: "uppercase",
-          }}
-        >
-          <input
-            type="radio"
-            name="locale"
-            value={l}
-            checked={current === l}
-            onChange={() => choose(l)}
-            className="sr-only"
-          />
-          {l}
+          <Icon className="size-4" strokeWidth={1.8} />
+          {label}
         </label>
       ))}
     </fieldset>
