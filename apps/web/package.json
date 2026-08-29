@@ -1,0 +1,39 @@
+{
+  "name": "@paycheck/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack --port ${WEB_PORT:-3000}",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@paycheck/ai": "workspace:*",
+    "@paycheck/config": "workspace:*",
+    "@paycheck/db": "workspace:*",
+    "@paycheck/design-tokens": "workspace:*",
+    "@paycheck/documents": "workspace:*",
+    "@paycheck/domain": "workspace:*",
+    "@paycheck/i18n": "workspace:*",
+    "@paycheck/jobs": "workspace:*",
+    "@paycheck/matching": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "next": "16.3.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "4.5.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "26.4.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.4",
+    "tailwindcss": "4.3.3",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

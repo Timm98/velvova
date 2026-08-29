@@ -36,9 +36,12 @@ export async function runMigrations(db: Database): Promise<{ applied: string[]; 
     )
   `);
 
-  const done = new Set(
-    ((await db.execute(sql`SELECT name FROM _migrations`)).rows as { name: string }[]).map((r) => r.name),
-  );
+  // Der generische Treibertyp kennt die Zeilenform nicht. Sie steht direkt
+  // ueber der Abfrage, deshalb ist die Angabe hier belegt und nicht geraten.
+  const result = (await db.execute(sql`SELECT name FROM _migrations`)) as unknown as {
+    rows: { name: string }[];
+  };
+  const done = new Set(result.rows.map((r) => r.name));
 
   const files = existsSync(migrationsDir)
     ? (await readdir(migrationsDir)).filter((f) => f.endsWith(".sql")).sort()

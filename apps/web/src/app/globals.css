@@ -1,0 +1,90 @@
+@import "tailwindcss";
+@import "@paycheck/design-tokens/css";
+
+/*
+ * Grundlagen. Die Farben kommen aus den Tokens, damit Web und native App
+ * dieselben Werte nutzen.
+ */
+
+@theme inline {
+  --color-page: var(--surface-page);
+  --color-raised: var(--surface-raised);
+  --color-sunken: var(--surface-sunken);
+  --color-inset: var(--surface-inset);
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-muted);
+  --color-line: var(--border-subtle);
+  --color-line-2: var(--border-default);
+  --color-line-3: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-assistant: var(--assistant);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-base);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; letter-spacing: -0.011em; }
+p { margin: 0; }
+ul, ol { margin: 0; padding: 0; }
+
+a { color: inherit; }
+
+/*
+ * Fokus. Immer sichtbar, nie entfernt - Tastaturbedienung ist keine
+ * Randbedingung, sondern die Grundlage.
+ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* Beruehrungsziele mindestens 44x44 nach WCAG 2.2 */
+button, [role="button"], a.tap, input[type="checkbox"], input[type="radio"] {
+  min-height: 44px;
+}
+button.compact { min-height: 36px; }
+
+/* Sprungmarke: unsichtbar, bis sie den Fokus bekommt */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: var(--space-2);
+  z-index: 100;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+}
+.skip-link:focus { left: var(--space-4); }
+
+/* Nur fuer Screenreader */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Breite Inhalte scrollen in sich, nie die Seite */
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+@keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

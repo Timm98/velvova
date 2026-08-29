@@ -1,0 +1,46 @@
+import { normalise, type JobSourceAdapter, type RawListing } from "../adapter.ts";
+
+/**
+ * Import durch den Menschen selbst: eine URL oder ein eingefuegter Text.
+ *
+ * Das ist der einzige Weg, auf dem eine Anzeige aus einer Quelle ins
+ * System kommt, mit der wir keinen Vertrag haben - und er ist zulaessig,
+ * weil der Mensch die Anzeige selbst mitbringt. Es wird nichts abgerufen,
+ * was er nicht selbst geoeffnet hat, und nichts im Hintergrund
+ * nachgeladen.
+ */
+export class UserTextImportAdapter implements JobSourceAdapter {
+  readonly key = "user_text";
+  readonly displayName = "Von dir eingefuegt";
+  readonly kind = "user_text" as const;
+  readonly licenseStatus = "user_provided" as const;
+  readonly attributionRequired = false;
+  readonly attributionText = null;
+  readonly termsUrl = null;
+
+  isConfigured(): boolean {
+    return true;
+  }
+
+  async fetchListings(): Promise<RawListing[]> {
+    // Diese Quelle wird nie abgefragt - sie nimmt entgegen.
+    return [];
+  }
+
+  /** Wird aufgerufen, wenn jemand eine Stellenbeschreibung einfuegt. */
+  parse(input: { text: string; url?: string; title?: string; companyName?: string }): RawListing {
+    const firstLine = input.text.split("\n").find((l) => l.trim().length > 0)?.trim() ?? "Ohne Titel";
+    return {
+      externalId: `user:${Date.now()}`,
+      title: input.title?.trim() || firstLine.slice(0, 120),
+      companyName: input.companyName?.trim() || "Nicht angegeben",
+      location: "Nicht angegeben",
+      description: input.text,
+      originalUrl: input.url ?? null,
+      publishedAt: null,
+      raw: { importedByUser: true },
+    };
+  }
+}
+
+export { normalise };

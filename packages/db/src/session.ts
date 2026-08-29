@@ -17,11 +17,10 @@ export async function withUser<T>(
   userId: string,
   fn: (tx: Database) => Promise<T>,
 ): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (db as any).transaction(async (tx: Database) => {
+  return db.transaction(async (tx) => {
     await tx.execute(sql`SET LOCAL ROLE paycheck_app`);
     await tx.execute(sql`SELECT set_config('app.user_id', ${userId}, true)`);
-    return fn(tx);
+    return fn(tx as unknown as Database);
   });
 }
 
@@ -31,6 +30,5 @@ export async function withUser<T>(
  * Anfragen aus der Oberflaeche verwendet.
  */
 export async function withSystem<T>(db: Database, fn: (tx: Database) => Promise<T>): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (db as any).transaction(async (tx: Database) => fn(tx));
+  return db.transaction(async (tx) => fn(tx as unknown as Database));
 }

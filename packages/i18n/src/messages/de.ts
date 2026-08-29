@@ -424,6 +424,11 @@ export const de = {
       "Deine letzten acht Bewerbungen hatten ein gemeinsames Muss-Kriterium, das in deinem Profil " +
       "nicht belegt ist. Sollen wir die Suche korrigieren?",
   },
-} as const;
+};
 
+/**
+ * Die Struktur des Katalogs, nicht seine konkreten Saetze. Ohne diese
+ * Aufweitung wuerde TypeScript den deutschen Wortlaut als Typ verlangen -
+ * und keine Uebersetzung koennte ihn je erfuellen.
+ */
 export type Messages = typeof de;
