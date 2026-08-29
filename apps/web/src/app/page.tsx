@@ -1,386 +1,422 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   ArrowRight,
   Check,
-  MessageSquare,
-  Mic,
+  FileCheck2,
+  Globe,
+  MessagesSquare,
+  ScanSearch,
   ShieldCheck,
   Sparkles,
   TrendingUp,
 } from "lucide-react";
-import { getPageContext } from "@/lib/locale";
 import { currentUser } from "@/lib/auth";
-import { Badge, Button, Card, Separator } from "@/components/ui";
-import { ConfidenceMeter, ScoreRing } from "@/components/ui/score";
+import { getPageContext } from "@/lib/locale";
+import { EvidenceSequence } from "@/components/marketing/EvidenceSequence";
+
+export const metadata: Metadata = {
+  title: "Finde Arbeit, die zu deinem Leben passt",
+  description:
+    "Nina versteht erst deine Erfahrungen, Stärken und Bedingungen — und sortiert dann echte Stellen. Jede Empfehlung mit Grund, Vorbehalt und Quelle.",
+};
 
 export const dynamic = "force-dynamic";
 
 /**
- * Landing Page.
+ * Die Landingpage.
  *
- * Sie hat genau eine Aufgabe: in fünf Sekunden klarmachen, dass hier VOR
- * der Jobbörse angesetzt wird — und dass danach jemand mitgeht.
+ * Sie muss in wenigen Sekunden eine einzige Sache klarmachen: hier wird
+ * nicht gesucht, hier wird zuerst verstanden. Alles, was diese Aussage
+ * nicht trägt, ist gestrichen.
  *
- * Was bewusst fehlt: erfundene Kundenlogos, Testimonials, Erfolgsquoten,
- * Nutzerzahlen, Presselogos. Nichts davon ist belegbar, und eine
- * Karriereplattform, die beim ersten Kontakt schwindelt, hat ihren
- * wichtigsten Wert schon verspielt.
- *
- * Das gezeigte Match ist als Beispiel beschriftet.
+ * Was hier bewusst NICHT steht: erfundene Nutzerzahlen, Presse-Logos,
+ * Erfolgsquoten, Testimonials. Ein Produkt, das Nachvollziehbarkeit
+ * verspricht, darf seine eigene Startseite nicht damit beginnen, welche
+ * zu erfinden.
  */
 export default async function LandingPage() {
-  const { t, brand } = await getPageContext();
-  const user = await currentUser();
+  if (await currentUser()) redirect("/app");
+  const { brand } = await getPageContext();
 
   return (
     <div className="min-h-dvh">
       <a href="#inhalt" className="skip-link">
-        {t("nav.skipToContent")}
+        Zum Inhalt springen
       </a>
 
-      {/* ═══ Kopfzeile ═══ */}
-      <header className="sticky top-0 z-30 border-b border-line/70 bg-page/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1120px] items-center justify-between gap-4 px-5 py-3.5 md:px-8">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight"
-          >
-            <span
-              aria-hidden
-              className="grid size-7 place-items-center rounded-[--radius-sm] bg-accent text-xs font-bold text-accent-on"
-            >
-              P
-            </span>
-            {brand.name}
-          </Link>
-
-          <nav aria-label="Hauptnavigation" className="flex items-center gap-1 sm:gap-2">
-            <Link
-              href="/how-it-works"
-              className="hidden rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink sm:block"
-            >
-              {t("landing.ctaSecondary")}
-            </Link>
-            <Link
-              href="/methodology"
-              className="hidden rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:text-ink md:block"
-            >
-              Methodik
-            </Link>
-            <Button asChild variant={user ? "primary" : "secondary"} size="sm">
-              <Link href={user ? "/app" : "/login"}>{user ? t("nav.home") : t("auth.login")}</Link>
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader brandName={brand.name} assistantName={brand.assistantName} />
 
       <main id="inhalt">
-        {/* ═══ Hero ═══ */}
-        <section className="surface-gradient border-b border-line">
-          <div className="mx-auto max-w-[1120px] px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24">
-            <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-              <div className="animate-fade-up">
-                <Badge tone="assistant" className="mb-6">
-                  <Sparkles className="size-3" strokeWidth={2} />
-                  Karriereanalyse vor der Jobsuche
-                </Badge>
+        {/* ══ Hero ═══════════════════════════════════════════════ */}
+        <section className="mx-auto grid w-full max-w-[1320px] gap-14 px-5 pb-20 pt-14 md:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] lg:items-center lg:gap-16 lg:pb-28 lg:pt-24">
+          <div className="max-w-[36rem]">
+            <p className="inline-flex items-center gap-2 rounded-[--radius-full] border border-line-2 bg-raised px-3 py-1.5 text-2xs font-medium uppercase tracking-[0.12em] text-ink-2 shadow-xs">
+              <Sparkles className="size-3 text-brand" strokeWidth={2.2} />
+              Deine Karriere, verstanden statt geraten
+            </p>
 
-                <h1 className="max-w-[15ch] text-[2.6rem] font-semibold sm:text-5xl lg:text-6xl">
-                  {t("landing.headline")}
-                </h1>
+            {/* Höchstens drei Zeilen auf dem Desktop. Eine Überschrift,
+                die Wort für Wort umbricht, sieht aus wie ein Unfall. */}
+            <h1 className="mt-6 font-display text-[2.75rem] font-medium leading-[1.04] tracking-[-0.025em] text-balance sm:text-[3.4rem] lg:text-[4rem]">
+              Finde Arbeit, die zu deinem Leben passt.
+            </h1>
 
-                <p className="mt-6 max-w-[52ch] text-lg leading-relaxed text-ink-2">
-                  {t("landing.subheadline")}
-                </p>
+            <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-2">
+              {brand.assistantName} fragt zuerst nach dem, was du tatsächlich getan hast — und
+              sortiert dann echte Stellen. Jede Empfehlung kommt mit Grund, Vorbehalt und Quelle.
+            </p>
 
-                <div className="mt-9 flex flex-wrap items-center gap-3">
-                  <Button asChild variant="primary" size="lg">
-                    <Link href="/register?mode=voice">
-                      <Mic className="size-4" strokeWidth={1.9} />
-                      {t("landing.ctaVoice")}
-                    </Link>
-                  </Button>
-                  <Button asChild variant="secondary" size="lg">
-                    <Link href="/register?mode=text">
-                      <MessageSquare className="size-4" strokeWidth={1.9} />
-                      {t("landing.ctaText")}
-                    </Link>
-                  </Button>
-                </div>
-
-                <p className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-3">
-                  <span className="flex items-center gap-1.5">
-                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
-                    Etwa fünfzehn Minuten
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
-                    Jederzeit pausierbar
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Check className="size-3.5 text-positive" strokeWidth={2.4} />
-                    Deine Daten bleiben deine
-                  </span>
-                </p>
-              </div>
-
-              {/* Beispielkarte — ausdrücklich als Beispiel beschriftet */}
-              <div
-                className="animate-fade-up lg:justify-self-end"
-                style={{ animationDelay: "120ms" }}
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link
+                href="/register"
+                className="inline-flex h-12 items-center gap-2 rounded-[--radius-md] bg-accent px-6 text-base font-medium text-accent-on shadow-sm transition-[background-color,box-shadow,transform] duration-[--duration-fast] hover:bg-accent-hover hover:shadow-md active:translate-y-px"
               >
-                <Card className="w-full max-w-[420px] shadow-xl">
-                  <div className="flex items-start justify-between gap-3 border-b border-line px-6 py-5">
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">Customer Success Manager</p>
-                      <p className="mt-0.5 truncate text-sm text-ink-3">
-                        Hamburg · hybrid · 44.000–52.000 €
-                      </p>
-                    </div>
-                    <Badge tone="caution">Beispiel</Badge>
-                  </div>
-
-                  <div className="grid gap-5 px-6 py-5">
-                    <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                      <ScoreRing value={81} label="Passung" band="hohe Passung" />
-                      <ConfidenceMeter level="medium" label="Sicherheit" />
-                    </div>
-
-                    <Separator soft />
-
-                    <div className="grid gap-2.5 text-sm leading-relaxed">
-                      <p className="flex gap-2">
-                        <span
-                          aria-hidden
-                          className="mt-[7px] size-1.5 shrink-0 rounded-full bg-positive"
-                        />
-                        <span>
-                          <span className="font-medium text-positive">Warum sie passt: </span>
-                          <span className="text-ink-2">
-                            Zwei von zwei Muss-Anforderungen sind durch bestätigte Erfahrungen
-                            gedeckt.
-                          </span>
-                        </span>
-                      </p>
-                      <p className="flex gap-2">
-                        <span
-                          aria-hidden
-                          className="mt-[7px] size-1.5 shrink-0 rounded-full bg-caution"
-                        />
-                        <span>
-                          <span className="font-medium text-caution">
-                            Was du bedenken solltest:{" "}
-                          </span>
-                          <span className="text-ink-2">
-                            Zur Arbeitsbelastung liegen keine belastbaren Angaben vor.
-                          </span>
-                        </span>
-                      </p>
-                    </div>
-
-                    <p className="rounded-[--radius-md] bg-sunken px-3.5 py-3 text-xs leading-relaxed text-ink-3">
-                      Die Sicherheit ist mittel, weil die Anzeige nichts zur Arbeitszeit sagt. Das
-                      senkt die Sicherheit — nicht die Passung.
-                    </p>
-                  </div>
-                </Card>
-              </div>
+                Mit {brand.assistantName} starten
+                <ArrowRight className="size-4" strokeWidth={2} />
+              </Link>
+              <Link
+                href="/how-it-works"
+                className="inline-flex h-12 items-center gap-2 rounded-[--radius-md] border border-line-2 bg-raised px-6 text-base font-medium shadow-xs transition-colors hover:border-line-3 hover:bg-sunken"
+              >
+                So funktioniert es
+              </Link>
             </div>
-          </div>
-        </section>
 
-        {/* ═══ Drei Schritte ═══ */}
-        <section aria-labelledby="schritte" className="border-b border-line bg-raised">
-          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
-            <h2 id="schritte" className="text-2xl font-semibold sm:text-3xl">
-              {t("landing.stepsTitle")}
-            </h2>
-
-            <ol className="mt-10 grid gap-8 md:grid-cols-3 md:gap-6">
+            <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5">
               {[
-                { n: "01", title: t("landing.step1Title"), body: t("landing.step1Body") },
-                { n: "02", title: t("landing.step2Title"), body: t("landing.step2Body") },
-                { n: "03", title: t("landing.step3Title"), body: t("landing.step3Body") },
-              ].map((s) => (
-                <li key={s.n} className="grid gap-3">
-                  <span className="text-2xs font-semibold tracking-[0.16em] text-accent-text">
-                    {s.n}
-                  </span>
-                  <h3 className="text-lg font-semibold">{s.title}</h3>
-                  <p className="text-sm leading-relaxed text-ink-2">{s.body}</p>
+                "Privates Profil",
+                "Nachvollziehbare Matches",
+                "Keine erfundenen Bewerbungsangaben",
+              ].map((point) => (
+                <li key={point} className="flex items-center gap-2 text-sm text-ink-2">
+                  <Check className="size-3.5 shrink-0 text-positive" strokeWidth={2.4} />
+                  {point}
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <EvidenceSequence />
+        </section>
+
+        {/* ══ Der Ablauf ═════════════════════════════════════════ */}
+        <section className="border-y border-line bg-raised">
+          <div className="mx-auto w-full max-w-[1320px] px-5 py-20 md:px-8 lg:py-24">
+            <div className="max-w-[42rem]">
+              <SectionEyebrow>Der Ablauf</SectionEyebrow>
+              <h2 className="mt-4 font-display text-[2rem] font-medium leading-[1.12] tracking-[-0.02em] lg:text-[2.5rem]">
+                Erst verstehen. Dann vergleichen. Dann bewerben.
+              </h2>
+            </div>
+
+            <ol className="mt-14 grid gap-x-10 gap-y-12 md:grid-cols-3">
+              {[
+                {
+                  icon: MessagesSquare,
+                  title: brand.assistantName + " fragt, bevor sie sucht",
+                  body: "Konkrete Situationen statt Selbsteinschätzung. Aus „Kundenservice, 2 Jahre“ wird eine benannte Handlung mit Ergebnis.",
+                },
+                {
+                  icon: ScanSearch,
+                  title: "Du siehst wenige, wirklich passende Stellen",
+                  body: "Echte Anzeigen mit Quelle und Abrufdatum, sortiert nach begründeter Passung — nicht nach Werbebudget.",
+                },
+                {
+                  icon: FileCheck2,
+                  title: brand.assistantName + " begleitet Bewerbung und Interview",
+                  body: "Jeder Satz in den Unterlagen hängt an etwas, das du bestätigt hast. Versendet wird nie ohne deine ausdrückliche Freigabe.",
+                },
+              ].map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <li key={step.title}>
+                    <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-brand">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="mt-4 grid size-10 place-items-center rounded-[--radius-md] bg-sunken text-ink-2"
+                    >
+                      <Icon className="size-[18px]" strokeWidth={1.7} />
+                    </span>
+                    <h3 className="mt-4 text-base font-semibold leading-snug">{step.title}</h3>
+                    <p className="mt-2.5 text-[15px] leading-relaxed text-ink-2">{step.body}</p>
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </section>
 
-        {/* ═══ Aus Erfahrung wird Beleg ═══ */}
-        <section aria-labelledby="evidenz" className="border-b border-line">
-          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
-            <div className="max-w-[58ch]">
-              <h2 id="evidenz" className="text-2xl font-semibold sm:text-3xl">
-                {t("landing.evidenceTitle")}
+        {/* ══ Was getrennt bleibt ════════════════════════════════ */}
+        <section className="mx-auto w-full max-w-[1320px] px-5 py-20 md:px-8 lg:py-28">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-20">
+            <div>
+              <SectionEyebrow>Methodik</SectionEyebrow>
+              <h2 className="mt-4 font-display text-[2rem] font-medium leading-[1.12] tracking-[-0.02em] lg:text-[2.4rem]">
+                Vier Arten von Wissen. Nie vermischt.
               </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink-2">
-                {t("landing.evidenceBody")}
+              <p className="mt-5 text-[15px] leading-relaxed text-ink-2">
+                Der häufigste Fehler in KI-Produkten ist, eine Vermutung wie eine Tatsache aussehen
+                zu lassen. Deshalb trägt jede Aussage im Profil sichtbar, woher sie stammt — und du
+                kannst jede Ableitung bestätigen, ändern oder löschen.
               </p>
+              <Link
+                href="/methodology"
+                className="mt-7 inline-flex items-center gap-2 text-sm font-medium text-accent-text underline underline-offset-[3px]"
+              >
+                Ausführliche Methodik
+                <ArrowRight className="size-3.5" strokeWidth={2} />
+              </Link>
             </div>
 
-            <div className="mt-10 grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-              <Card className="p-6">
-                <Badge tone="outline">im Lebenslauf</Badge>
-                <p className="mt-4 text-lg text-ink-3">„Kundenservice, 2 Jahre"</p>
-              </Card>
-
-              <div className="hidden items-center justify-center md:flex">
-                <ArrowRight className="size-5 text-ink-3" strokeWidth={1.6} />
-              </div>
-
-              <Card className="border-assistant-border bg-assistant-soft p-6">
-                <Badge tone="assistant">
-                  <Sparkles className="size-3" strokeWidth={2} />
-                  was gefragt wird
-                </Badge>
-                <p className="mt-4 text-sm leading-relaxed">
-                  „Erzähl von einer Eskalation, die du übernommen hast. Was hast du getan?"
-                </p>
-              </Card>
-
-              <div className="hidden items-center justify-center md:flex">
-                <ArrowRight className="size-5 text-ink-3" strokeWidth={1.6} />
-              </div>
-
-              <Card className="p-6">
-                <Badge tone="positive">
-                  <Check className="size-3" strokeWidth={2.4} />
-                  belegte Stärke
-                </Badge>
-                <p className="mt-4 text-sm leading-relaxed">
-                  Vermittelt zwischen Kunde und Technik unter Druck — belegt durch eine konkrete
-                  Situation mit benanntem Ergebnis.
-                </p>
-                <p className="mt-3 text-xs leading-relaxed text-ink-3">
-                  Daraus entsteht eine Rollenidee, die im Lebenslauf nicht stand.
-                </p>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* ═══ Quellen getrennt ═══ */}
-        <section aria-labelledby="realitaet" className="border-b border-line bg-raised">
-          <div className="mx-auto max-w-[1120px] px-5 py-20 md:px-8 md:py-24">
-            <div className="max-w-[58ch]">
-              <h2 id="realitaet" className="text-2xl font-semibold sm:text-3xl">
-                {t("landing.realityTitle")}
-              </h2>
-              <p className="mt-4 text-base leading-relaxed text-ink-2">
-                {t("landing.realityBody")}
-              </p>
-            </div>
-
-            <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <ul className="grid gap-3 sm:grid-cols-2">
               {[
                 {
-                  kind: "Mitarbeiterstimmen",
-                  note: "Sagen etwas über die Arbeit. Stichprobe und Zeitraum stehen dabei.",
+                  title: "Was du gesagt hast",
+                  body: "Deine eigenen Angaben, wörtlich gespeichert.",
+                  dot: "bg-ink-3",
                 },
                 {
-                  kind: "Kundenbewertungen",
-                  note: "Sagen etwas über Produkt oder Standort. Nicht über die Kultur.",
+                  title: "Was belegt ist",
+                  body: "Eine Aussage mit konkreter Situation, Handlung und Ergebnis — von dir bestätigt.",
+                  dot: "bg-positive",
                 },
                 {
-                  kind: "Arbeitgeberangaben",
-                  note: "Die Selbstdarstellung. Wichtig, aber eine Partei.",
+                  title: "Was vermutet wird",
+                  body:
+                    "Eine Hypothese von " +
+                    brand.assistantName +
+                    ". Immer als solche gekennzeichnet, nie stillschweigend übernommen.",
+                  dot: "bg-assistant",
                 },
                 {
-                  kind: "Register und Behörden",
-                  note: "Harte Fakten wie Rechtsform und Sitz.",
+                  title: "Was von außen kommt",
+                  body: "Stellenanzeigen, Register, Bewertungen — mit Quelle und Abrufdatum.",
+                  dot: "bg-caution",
                 },
-              ].map((s) => (
-                <Card key={s.kind} className="p-5">
-                  <h3 className="text-sm font-semibold">{s.kind}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-2">{s.note}</p>
-                </Card>
+              ].map((item) => (
+                <li key={item.title} className="rounded-[--radius-lg] border border-line bg-raised p-5 shadow-xs">
+                  <span aria-hidden className={"block size-1.5 rounded-full " + item.dot} />
+                  <h3 className="mt-3.5 text-sm font-semibold">{item.title}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{item.body}</p>
+                </li>
               ))}
             </ul>
           </div>
         </section>
 
-        {/* ═══ Zwei Versprechen ═══ */}
-        <section className="border-b border-line">
-          <div className="mx-auto grid max-w-[1120px] gap-6 px-5 py-20 md:grid-cols-2 md:px-8 md:py-24">
-            <Card className="p-7">
-              <div className="grid size-10 place-items-center rounded-[--radius-md] bg-accent-soft text-accent-text">
-                <TrendingUp className="size-5" strokeWidth={1.8} />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold">Wie sich die Rolle entwickelt</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-2">
-                Bewertet werden die Aufgaben der konkreten Stelle, nicht der Berufstitel. Ausgegeben
-                werden Szenarien — nie eine Jahreszahl, wann etwas „verschwindet".
-              </p>
-            </Card>
-
-            <Card className="p-7">
-              <div className="grid size-10 place-items-center rounded-[--radius-md] bg-assistant-soft text-assistant-text">
-                <ShieldCheck className="size-5" strokeWidth={1.8} />
-              </div>
-              <h3 className="mt-5 text-lg font-semibold">{t("landing.privacyTitle")}</h3>
-              <p className="mt-3 text-sm leading-relaxed text-ink-2">{t("landing.privacyBody")}</p>
-              <p className="mt-4">
-                <Link
-                  href="/privacy"
-                  className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-                >
-                  Zum Privacy Center
-                  <ArrowRight className="size-3.5" strokeWidth={1.9} />
-                </Link>
-              </p>
-            </Card>
+        {/* ══ Zwei Versprechen ═══════════════════════════════════ */}
+        <section className="border-y border-line bg-raised">
+          <div className="mx-auto grid w-full max-w-[1320px] gap-10 px-5 py-20 md:grid-cols-2 md:px-8 lg:gap-16 lg:py-24">
+            {[
+              {
+                icon: TrendingUp,
+                title: "Wie sich die Rolle entwickelt",
+                body: "Bewertet werden die Aufgaben der konkreten Stelle, nicht die Berufstafel. Ausgegeben werden Szenarien mit Datenstand — nie eine Jahreszahl, wann etwas „verschwindet“.",
+                href: "/methodology",
+                cta: "Wie das berechnet wird",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Deine Daten bleiben deine",
+                body: "Du siehst, was gespeichert ist, kannst alles einzeln ändern oder löschen und jede Einwilligung getrennt widerrufen. An das Sprachmodell geht nur der Kontext, den die jeweilige Aufgabe braucht.",
+                href: "/security",
+                cta: "Sicherheit und Datenschutz",
+              },
+            ].map((promise) => {
+              const Icon = promise.icon;
+              return (
+                <div key={promise.title}>
+                  <span
+                    aria-hidden
+                    className="grid size-10 place-items-center rounded-[--radius-md] bg-sunken text-ink-2"
+                  >
+                    <Icon className="size-[18px]" strokeWidth={1.7} />
+                  </span>
+                  <h2 className="mt-4 text-xl font-semibold">{promise.title}</h2>
+                  <p className="mt-3 max-w-[38rem] leading-relaxed text-ink-2">{promise.body}</p>
+                  <Link
+                    href={promise.href}
+                    className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-accent-text underline underline-offset-[3px]"
+                  >
+                    {promise.cta}
+                    <ArrowRight className="size-3.5" strokeWidth={2} />
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* ═══ Abschluss ═══ */}
-        <section className="surface-gradient">
-          <div className="mx-auto max-w-[1120px] px-5 py-24 md:px-8 md:py-32">
-            <div className="max-w-[44ch]">
-              <h2 className="text-3xl font-semibold sm:text-4xl">{t("landing.closingTitle")}</h2>
-              <p className="mt-5 text-lg leading-relaxed text-ink-2">{t("landing.closingBody")}</p>
-              <div className="mt-9">
-                <Button asChild variant="primary" size="lg">
-                  <Link href="/register?mode=text">
-                    {t("consent.start")}
-                    <ArrowRight className="size-4" strokeWidth={1.9} />
-                  </Link>
-                </Button>
-              </div>
-            </div>
+        {/* ══ Abschluss ══════════════════════════════════════════ */}
+        <section className="mx-auto w-full max-w-[1320px] px-5 py-24 md:px-8 lg:py-32">
+          <div className="mx-auto max-w-[40rem] text-center">
+            <h2 className="font-display text-[2.25rem] font-medium leading-[1.1] tracking-[-0.02em] text-balance lg:text-[3rem]">
+              Fang mit dem an, was du schon kannst.
+            </h2>
+            <p className="mx-auto mt-5 max-w-[32rem] text-lg leading-relaxed text-ink-2">
+              Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und
+              später weitermachen.
+            </p>
+            <Link
+              href="/register"
+              className="mt-9 inline-flex h-12 items-center gap-2 rounded-[--radius-md] bg-accent px-7 text-base font-medium text-accent-on shadow-sm transition-[background-color,box-shadow,transform] duration-[--duration-fast] hover:bg-accent-hover hover:shadow-md active:translate-y-px"
+            >
+              Kostenlos beginnen
+              <ArrowRight className="size-4" strokeWidth={2} />
+            </Link>
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-line bg-sunken">
-        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-5 px-5 py-8 text-sm text-ink-3 md:px-8">
-          <span>
-            {brand.name} · {brand.assistantName}
-            <span className="text-ink-3/70"> — beide Namen sind vorläufig</span>
-          </span>
-          <nav aria-label="Rechtliches" className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/how-it-works" className="transition-colors hover:text-ink-2">
-              So funktioniert es
-            </Link>
-            <Link href="/methodology" className="transition-colors hover:text-ink-2">
-              Methodik
-            </Link>
-            <Link href="/security" className="transition-colors hover:text-ink-2">
-              Sicherheit
-            </Link>
-            <Link href="/privacy" className="transition-colors hover:text-ink-2">
-              Datenschutz
-            </Link>
-          </nav>
-        </div>
-      </footer>
+      <SiteFooter brandName={brand.name} assistantName={brand.assistantName} />
     </div>
+  );
+}
+
+function SectionEyebrow({ children }: { children: React.ReactNode }) {
+  return <p className="text-2xs font-medium uppercase tracking-[0.14em] text-brand">{children}</p>;
+}
+
+/**
+ * Die öffentliche Kopfzeile.
+ *
+ * Kein Sprachschalter, kein Darstellungsschalter. Was hier steht, muss
+ * zur Entscheidung beitragen, ob jemand anfängt — sonst nimmt es nur
+ * Platz und Aufmerksamkeit.
+ */
+function SiteHeader({ brandName, assistantName }: { brandName: string; assistantName: string }) {
+  const links = [
+    { href: "/product", label: "Produkt" },
+    { href: "/how-it-works", label: "So funktioniert es" },
+    { href: "/methodology", label: "Methodik" },
+    { href: "/security", label: "Sicherheit" },
+  ];
+
+  return (
+    <header className="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-[1320px] items-center gap-6 px-5 py-3.5 md:px-8">
+        <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight">
+          <span
+            aria-hidden
+            className="grid size-7 place-items-center rounded-[--radius-sm] bg-brand text-xs font-bold text-white"
+          >
+            P
+          </span>
+          {brandName}
+        </Link>
+
+        <nav aria-label="Produktseiten" className="ml-4 hidden items-center gap-1 lg:flex">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-[--radius-md] px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <Link
+            href="/login"
+            className="rounded-[--radius-md] px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+          >
+            Anmelden
+          </Link>
+          <Link
+            href="/register"
+            className="inline-flex h-9 items-center gap-1.5 rounded-[--radius-md] bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+          >
+            Mit {assistantName} starten
+          </Link>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function SiteFooter({ brandName, assistantName }: { brandName: string; assistantName: string }) {
+  const columns = [
+    {
+      title: "Produkt",
+      links: [
+        { href: "/product", label: "Überblick" },
+        { href: "/how-it-works", label: "So funktioniert es" },
+        { href: "/pricing", label: "Preise" },
+      ],
+    },
+    {
+      title: "Vertrauen",
+      links: [
+        { href: "/methodology", label: "Methodik" },
+        { href: "/security", label: "Sicherheit" },
+        { href: "/privacy", label: "Datenschutz" },
+      ],
+    },
+    {
+      title: "Unternehmen",
+      links: [
+        { href: "/imprint", label: "Impressum" },
+        { href: "/register", label: "Konto anlegen" },
+        { href: "/login", label: "Anmelden" },
+      ],
+    },
+  ];
+
+  return (
+    <footer className="border-t border-line bg-sunken">
+      <div className="mx-auto w-full max-w-[1320px] px-5 py-14 md:px-8">
+        <div className="grid gap-10 md:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]">
+          <div>
+            <p className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight">
+              <span
+                aria-hidden
+                className="grid size-7 place-items-center rounded-[--radius-sm] bg-brand text-xs font-bold text-white"
+              >
+                P
+              </span>
+              {brandName}
+            </p>
+            <p className="mt-3.5 max-w-[24rem] text-sm leading-relaxed text-ink-3">
+              {brandName} und {assistantName} sind vorläufige Namen. Kandidatenseitig — dieses
+              Produkt arbeitet für die suchende Person, nicht für Arbeitgeber.
+            </p>
+          </div>
+
+          {columns.map((column) => (
+            <nav key={column.title} aria-label={column.title}>
+              <h2 className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">
+                {column.title}
+              </h2>
+              <ul className="mt-4 grid gap-2.5">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="text-sm text-ink-2 transition-colors hover:text-ink">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
+        </div>
+
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6">
+          <p className="max-w-[42rem] text-xs leading-relaxed text-ink-3">
+            Sprache und Region wählst du beim Anlegen des Kontos und änderst sie jederzeit unter
+            Profil → Sprache &amp; Region.
+          </p>
+          <p className="flex items-center gap-2 text-xs text-ink-3">
+            <Globe className="size-3.5" strokeWidth={1.8} />
+            Deutsch (Deutschland)
+          </p>
+        </div>
+      </div>
+    </footer>
   );
 }

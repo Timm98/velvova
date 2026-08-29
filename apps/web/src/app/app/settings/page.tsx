@@ -1,283 +1,125 @@
 import type { Metadata } from "next";
-import { requireUser, listSessions } from "@/lib/auth";
-import { getPageContext } from "@/lib/locale";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { and, eq, isNull } from "drizzle-orm";
-import { updateSettings } from "@/lib/privacy";
-import { ConsentToggles, DangerZone, DeviceList, ExportButton } from "./SettingsClient";
-import { Card, inputClass, NotConnected, PageHeader, Stack } from "@/components/ui";
+import { listSessions, requireUser } from "@/lib/auth";
+import { getPageContext } from "@/lib/locale";
+import { Card, Field, Input, Separator } from "@/components/ui";
+import { DeviceList } from "./SettingsClient";
+import { SaveButton } from "./SettingsForm";
+import { updateDisplayName } from "@/lib/account";
 
-export const metadata: Metadata = { title: "Einstellungen" };
+export const metadata: Metadata = { title: "Konto" };
 export const dynamic = "force-dynamic";
 
-const CONSENT_TEXT: Record<string, { title: string; body: string }> = {
-  career_profile: {
-    title: "Karriereprofil",
-    body: "Deine Antworten werden gespeichert, damit daraus ein Profil entsteht.",
-  },
-  document_analysis: {
-    title: "Unterlagen auswerten",
-    body: "Text aus hochgeladenen Dokumenten wird ausgewertet, um das Profil vorzubefüllen.",
-  },
-  voice_input: {
-    title: "Spracheingabe",
-    body: "Du kannst sprechen statt zu schreiben.",
-  },
-  transcript_storage: {
-    title: "Transkript speichern",
-    body: "Ohne diese Zustimmung wird gesprochener Text verarbeitet, aber nicht abgelegt.",
-  },
-  external_ai_processing: {
-    title: "Externer KI-Anbieter",
-    body: "Texte werden zur Analyse an einen externen Anbieter übermittelt. Direkte Identifikatoren werden vorher entfernt.",
-  },
-  model_training: {
-    title: "Training von Modellen",
-    body: "Standardmäßig aus. Ohne diese ausdrückliche Zustimmung werden deine Daten nicht für Modelltraining verwendet.",
-  },
-  partner_sharing: {
-    title: "Weitergabe an Partner",
-    body: "Standardmäßig aus. Ohne diese Zustimmung sehen institutionelle Partner ausschließlich aggregierte Zahlen, nie dein Profil.",
-  },
-};
-
 /**
- * Einstellungen und Privacy Center.
+ * Konto.
  *
- * Der wichtigste Teil ist der untere: einsehen, exportieren, löschen -
- * und zwar so, dass es tatsächlich funktioniert.
+ * Die Startseite der Einstellungen. Sie enthält nur, was zum Konto
+ * selbst gehört — alles Weitere hat einen eigenen Bereich, damit
+ * niemand beim Ändern der Sprache an einem Löschknopf vorbeiscrollt.
  */
-export default async function SettingsPage() {
+export default async function AccountSettingsPage() {
   const user = await requireUser();
-  const { t, integrations, brand } = await getPageContext();
+  const { t } = await getPageContext();
   const db = await getDb();
 
-  const [settings, consents, evidenceCount, sessions] = await Promise.all([
-    withUser(db, user.id, async (tx) =>
-      (await tx.select().from(schema.userSettings).where(eq(schema.userSettings.userId, user.id)).limit(1))[0],
-    ),
-    withUser(db, user.id, (tx) =>
-      tx.select().from(schema.consents).where(eq(schema.consents.userId, user.id)),
-    ),
+  const [settings, sessions] = await Promise.all([
     withUser(db, user.id, async (tx) =>
       (
         await tx
           .select()
-          .from(schema.evidenceItems)
-          .where(and(eq(schema.evidenceItems.userId, user.id), isNull(schema.evidenceItems.deletedAt)))
-      ).length,
+          .from(schema.userSettings)
+          .where(eq(schema.userSettings.userId, user.id))
+          .limit(1)
+      )[0],
     ),
     listSessions(user.id),
   ]);
 
-  const consentState = Object.fromEntries(consents.map((c) => [c.kind, c.granted]));
-
   return (
-    <Stack gap={7}>
-      <PageHeader title={t("settings.title")} />
+    <div className="grid gap-6">
+      <form action={updateDisplayName}>
+        <Card className="grid gap-5">
+          <div>
+            <h2 className="text-lg font-semibold">Wie sollen wir dich ansprechen?</h2>
+            <p className="mt-1.5 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+              Der Name erscheint in der Anwendung und in erzeugten Unterlagen. Er wird nicht an das
+              Sprachmodell übermittelt.
+            </p>
+          </div>
 
-      {/* --- Grundeinstellungen --- */}
-      <Card>
-        <form action={updateSettings}>
-          <Stack gap={5}>
-            <h2 style={{ fontSize: "var(--text-lg)" }}>Sprache, Ort und Benachrichtigungen</h2>
-
-            {/* Groesserer Abstand: WCAG 2.2 verlangt, dass benachbarte
-                Ziele einander nicht verdecken. Bei var(--space-4) lagen
-                die Auswahlfelder auf schmalen Geraeten zu eng. */}
-            <div style={{ display: "grid", gap: "var(--space-5)", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))" }}>
-              <div style={{ display: "grid", gap: "var(--space-2)" }}>
-                <label htmlFor="locale" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
-                  {t("settings.language")}
-                </label>
-                <select id="locale" name="locale" defaultValue={settings?.locale ?? "de"} className={inputClass}>
-                  <option value="de">Deutsch</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              <div style={{ display: "grid", gap: "var(--space-2)" }}>
-                <label htmlFor="country" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
-                  {t("settings.region")}
-                </label>
-                <select id="country" name="country" defaultValue={settings?.country ?? "DE"} className={inputClass}>
-                  <option value="DE">Deutschland</option>
-                  <option value="AT">Oesterreich</option>
-                  <option value="CH">Schweiz</option>
-                </select>
-              </div>
-
-              <div style={{ display: "grid", gap: "var(--space-2)" }}>
-                <label htmlFor="baseLocation" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
-                  Standort
-                </label>
-                <input
-                  id="baseLocation"
-                  name="baseLocation"
-                  type="text"
-                  defaultValue={settings?.baseLocation ?? ""}
-                  className={inputClass}
-                />
-              </div>
-
-              <div style={{ display: "grid", gap: "var(--space-2)" }}>
-                <label htmlFor="maxCommuteMinutes" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
-                  Höchste Pendelzeit (Minuten)
-                </label>
-                <input
-                  id="maxCommuteMinutes"
-                  name="maxCommuteMinutes"
-                  type="number"
-                  min={1}
-                  max={600}
-                  defaultValue={settings?.maxCommuteMinutes ?? ""}
-                  className={inputClass}
-                />
-              </div>
-            </div>
-
-            <label style={{ display: "flex", gap: "var(--space-3)", alignItems: "center", cursor: "pointer", minHeight: 44 }}>
-              <input
-                type="checkbox"
-                name="notificationEmail"
-                defaultChecked={settings?.notificationEmail ?? true}
-                style={{ width: 20, height: 20 }}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Field label="Name" htmlFor="displayName">
+              <Input
+                id="displayName"
+                name="displayName"
+                defaultValue={user.displayName ?? ""}
+                autoComplete="name"
+                placeholder="Vorname Nachname"
               />
-              <span style={{ fontSize: "var(--text-sm)" }}>Erinnerungen per E-Mail</span>
-            </label>
+            </Field>
 
-            <div>
-              <button
-                type="submit"
-                style={{
-                  background: "var(--accent)",
-                  color: "var(--accent-on)",
-                  border: "1px solid var(--accent)",
-                  borderRadius: "var(--radius-md)",
-                  padding: "var(--space-3) var(--space-5)",
-                  fontSize: "var(--text-sm)",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
-              >
-                {t("common.save")}
-              </button>
-            </div>
-          </Stack>
-        </form>
+            <Field label="E-Mail" htmlFor="email" hint="Die Anmeldeadresse. Änderung folgt.">
+              <Input id="email" value={user.email} readOnly disabled />
+            </Field>
+          </div>
+
+          <div>
+            <SaveButton />
+          </div>
+        </Card>
+      </form>
+
+      <Card className="grid gap-5">
+        <div>
+          <h2 className="text-lg font-semibold">{t("settings.sessions")}</h2>
+          <p className="mt-1.5 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+            Angemeldete Geräte. Abmelden wirkt sofort, auch auf dem betroffenen Gerät.
+          </p>
+        </div>
+        <DeviceList
+          sessions={sessions.map((s) => ({ ...s, lastSeenAt: s.lastSeenAt.toISOString() }))}
+        />
       </Card>
 
-      {/* --- KI-Verarbeitung, ehrlich --- */}
-      <section aria-labelledby="ki">
-        <h2 id="ki" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
-          {t("settings.aiProvider")}
-        </h2>
-        {integrations.ai === "mock" ? (
-          <NotConnected
-            what="Externer KI-Anbieter"
-            detail={t("settings.aiProviderMock")}
-          />
-        ) : (
-          <Card>
-            <p style={{ fontSize: "var(--text-sm)" }}>{t("settings.aiProviderExternal")}</p>
-          </Card>
-        )}
-      </section>
-
-      {/* --- Verbundene Dienste --- */}
-      <section aria-labelledby="dienste">
-        <h2 id="dienste" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
-          {t("settings.integrations")}
-        </h2>
-        <Stack gap={3}>
-          <NotConnected
-            what="E-Mail-Versand"
-            detail={
-              integrations.mail === "draft-only"
-                ? "Es ist kein Postfach verbunden. Bewerbungen werden als Entwurf zum Herunterladen erzeugt und nie automatisch versendet."
-                : "Nicht eingerichtet."
-            }
-          />
-          <NotConnected
-            what="Objektspeicher"
-            detail={
-              integrations.storage === "local"
-                ? "Hochgeladene Dateien liegen lokal auf diesem Gerät, nicht in einer Cloud."
-                : "S3-kompatibler Speicher verbunden."
-            }
-          />
-          <NotConnected
-            what="Sprachanbieter"
-            detail="Nicht verbunden. Der Sprachmodus nutzt, falls vorhanden, die Erkennung deines Browsers."
-          />
-        </Stack>
-      </section>
-
-      {/* --- Privacy Center --- */}
-      <section aria-labelledby="privacy">
-        <h2 id="privacy" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-2)" }}>
-          {t("settings.privacyCenter")}
-        </h2>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-5)", maxWidth: "var(--measure)" }}>
-          Eine eigene Datenbank bedeutet nicht automatisch, dass keine Daten einen externen Anbieter
-          erreichen. Hier steht, was tatsächlich gilt.
-        </p>
-
-        <Stack gap={5}>
-          <Card>
-            <Stack gap={4}>
-              <div>
-                <h3 style={{ fontSize: "var(--text-base)" }}>{t("settings.consents")}</h3>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: "var(--space-2)" }}>
-                  Jede einzeln. Ein Widerruf wirkt sofort und wird protokolliert.
-                </p>
-              </div>
-              <ConsentToggles state={consentState} texts={CONSENT_TEXT} />
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack gap={4}>
-              <div>
-                <h3 style={{ fontSize: "var(--text-base)" }}>{t("settings.memory")}</h3>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: "var(--space-2)" }}>
-                  {brand.assistantName} hat {evidenceCount} Angaben zu dir gespeichert.{" "}
-                  {t("settings.memoryBody")}
-                </p>
-              </div>
-              <a href="/app/profile" style={{ fontSize: "var(--text-sm)", color: "var(--accent-text)" }}>
-                Alle Angaben ansehen und bearbeiten →
-              </a>
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack gap={4}>
-              <div>
-                <h3 style={{ fontSize: "var(--text-base)" }}>{t("settings.sessions")}</h3>
-              </div>
-              <DeviceList sessions={sessions.map((s) => ({ ...s, lastSeenAt: s.lastSeenAt.toISOString() }))} />
-            </Stack>
-          </Card>
-
-          <Card>
-            <Stack gap={4}>
-              <div>
-                <h3 style={{ fontSize: "var(--text-base)" }}>{t("settings.exportData")}</h3>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: "var(--space-2)" }}>
-                  {t("settings.exportBody")}
-                </p>
-              </div>
-              <ExportButton label={t("settings.exportData")} />
-            </Stack>
-          </Card>
-
-          <DangerZone
-            title={t("settings.deleteAccount")}
-            body={t("settings.deleteAccountBody")}
-          />
-        </Stack>
-      </section>
-    </Stack>
+      <Card className="grid gap-4">
+        <h2 className="text-lg font-semibold">Kurzwege</h2>
+        <Separator soft />
+        <ul className="grid gap-3">
+          {[
+            {
+              href: "/app/settings/language-region",
+              label: "Sprache & Region",
+              hint: `Oberfläche ${settings?.locale === "en" ? "Englisch" : "Deutsch"}, Markt ${settings?.jobMarketCountry ?? "DE"}`,
+            },
+            {
+              href: "/app/settings/privacy",
+              label: "Datenschutz & Daten",
+              hint: "Einwilligungen, Export, Löschung",
+            },
+            {
+              href: "/app/settings/integrations",
+              label: "Verbundene Dienste",
+              hint: "Was in Betrieb ist — und was nicht",
+            },
+          ].map((row) => (
+            <li key={row.href}>
+              <Link
+                href={row.href}
+                className="flex items-center justify-between gap-4 rounded-[--radius-md] px-3 py-2.5 transition-colors hover:bg-sunken"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium">{row.label}</span>
+                  <span className="block truncate text-sm text-ink-3">{row.hint}</span>
+                </span>
+                <ArrowRight className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
   );
 }

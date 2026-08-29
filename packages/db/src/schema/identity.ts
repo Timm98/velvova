@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid,
+  boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum,
   privacyRequestKindEnum, privacyRequestStatusEnum, userRoleEnum } from "./enums.ts";
@@ -60,21 +60,56 @@ export const magicLinks = pgTable("magic_links", {
 
 export const userSettings = pgTable("user_settings", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+
+  /* ---- Sprache ----
+     Drei getrennte Sprachen, weil es drei getrennte Entscheidungen sind:
+     Jemand kann die Oberfläche auf Deutsch wollen, mit der Assistenz
+     lieber auf Türkisch sprechen und die Bewerbung auf Englisch
+     schreiben. Ein einziges Feld würde alle drei aneinanderketten. */
   locale: localeEnum("locale").notNull().default("de"),
+  assistantLocale: localeEnum("assistant_locale").notNull().default("de"),
+  documentLocale: localeEnum("document_locale").notNull().default("de"),
+
+  /* ---- Ort und Markt ----
+     Wohnort und Jobmarkt sind nicht dasselbe: wer in Basel wohnt, kann
+     auf den deutschen Markt schauen. */
   country: text("country").notNull().default("DE"),
+  jobMarketCountry: text("job_market_country").notNull().default("DE"),
   currency: text("currency").notNull().default("EUR"),
   timezone: text("timezone").notNull().default("Europe/Berlin"),
-  theme: text("theme").notNull().default("system"),
+  distanceUnit: text("distance_unit").notNull().default("km"),
   baseLocation: text("base_location"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
   searchRadiusKm: integer("search_radius_km"),
   maxCommuteMinutes: integer("max_commute_minutes"),
   commuteMode: text("commute_mode").notNull().default("public_transport"),
   willingToRelocate: boolean("willing_to_relocate").notNull().default(false),
+
+  /* ---- Suche ---- */
+  remotePreference: text("remote_preference").notNull().default("no_preference"),
+  employmentTypes: jsonb("employment_types").$type<string[]>().notNull().default([]),
+  /** Wunschgehalt. Bleibt leer, wenn nichts gesagt wurde — 0 wäre eine Aussage. */
+  desiredSalaryMin: integer("desired_salary_min"),
+  desiredSalaryPeriod: text("desired_salary_period").notNull().default("year"),
+
+  /* ---- Darstellung und Benachrichtigungen ---- */
+  theme: text("theme").notNull().default("system"),
   notificationEmail: boolean("notification_email").notNull().default(true),
   notificationPush: boolean("notification_push").notNull().default(false),
+
+  /* ---- Stimme und Gespräch ---- */
   microphoneEnabled: boolean("microphone_enabled").notNull().default(false),
+  voiceAutoplay: boolean("voice_autoplay").notNull().default(false),
+  voiceCaptions: boolean("voice_captions").notNull().default(true),
+  voiceSpeed: doublePrecision("voice_speed").notNull().default(1),
+  /** Aufnahme nach dem Abtippen löschen. Voreinstellung: ja. */
+  deleteAudioAfterTranscript: boolean("delete_audio_after_transcript").notNull().default(true),
+
   /** Nutzergewichte für den Fit, in Grenzen anpassbar. */
   fitWeights: jsonb("fit_weights").$type<Record<string, number>>(),
+  /** Ist das Onboarding durchlaufen? Steuert die Weiterleitung. */
+  onboardingCompletedAt: timestamp("onboarding_completed_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

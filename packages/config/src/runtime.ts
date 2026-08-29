@@ -31,11 +31,21 @@ const RuntimeSchema = z.object({
   }),
 
   ai: z.object({
-    provider: z.enum(["mock", "anthropic"]).default("mock"),
+    /**
+     * "self_hosted" spricht einen OpenAI-kompatiblen Endpunkt an, der
+     * selbst betrieben wird. Das ist kein Beiwerk: für besonders
+     * schutzbedürftige Verarbeitung muss ein Weg offenstehen, der das
+     * Haus nicht verlässt — und der darf keinen Umbau erfordern.
+     */
+    provider: z.enum(["mock", "openai", "anthropic", "self_hosted"]).default("mock"),
     apiKey: z.string().optional(),
-    modelStrong: z.string().default("claude-opus-5"),
-    modelFast: z.string().default("claude-haiku-4-5-20251001"),
+    baseUrl: z.string().optional(),
+    modelStrong: z.string().default("gpt-5.6"),
+    modelFast: z.string().default("gpt-5.6-mini"),
     modelEmbed: z.string().default("local-hash-embedding"),
+    modelTranscribe: z.string().optional(),
+    modelSpeech: z.string().optional(),
+    speechVoice: z.string().optional(),
     maxTokensPerRun: z.coerce.number().int().positive().default(4096),
     timeoutMs: z.coerce.number().int().positive().default(60_000),
     monthlyBudgetEur: z.coerce.number().nonnegative().default(0),
@@ -93,10 +103,22 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
     },
     ai: {
       provider: env.AI_PROVIDER ?? "mock",
-      apiKey: env.ANTHROPIC_API_KEY,
-      modelStrong: env.AI_MODEL_STRONG ?? "claude-opus-5",
-      modelFast: env.AI_MODEL_FAST ?? "claude-haiku-4-5-20251001",
-      modelEmbed: env.AI_MODEL_EMBED ?? "local-hash-embedding",
+      // Je Anbieter ein eigener Schlüsselname. Ein gemeinsamer wäre die
+      // Sorte Abkürzung, bei der irgendwann der falsche Schlüssel an den
+      // falschen Anbieter geht.
+      apiKey:
+        env.AI_PROVIDER === "anthropic"
+          ? env.ANTHROPIC_API_KEY
+          : env.AI_PROVIDER === "self_hosted"
+            ? (env.SELF_HOSTED_API_KEY ?? "nicht-erforderlich")
+            : env.OPENAI_API_KEY,
+      baseUrl: env.AI_PROVIDER === "self_hosted" ? env.SELF_HOSTED_BASE_URL : undefined,
+      modelStrong: env.AI_MODEL_STRONG ?? env.OPENAI_PRIMARY_MODEL ?? "gpt-5.6",
+      modelFast: env.AI_MODEL_FAST ?? env.OPENAI_FAST_MODEL ?? env.OPENAI_PRIMARY_MODEL ?? "gpt-5.6-mini",
+      modelEmbed: env.AI_MODEL_EMBED ?? env.OPENAI_EMBEDDING_MODEL ?? "local-hash-embedding",
+      modelTranscribe: env.OPENAI_TRANSCRIBE_MODEL,
+      modelSpeech: env.OPENAI_SPEECH_MODEL,
+      speechVoice: env.OPENAI_SPEECH_VOICE,
       maxTokensPerRun: env.AI_MAX_TOKENS_PER_RUN ?? 4096,
       timeoutMs: env.AI_TIMEOUT_MS ?? 60_000,
       monthlyBudgetEur: env.AI_MONTHLY_BUDGET_EUR ?? 0,
@@ -124,7 +146,9 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
  */
 export function integrationStatus(cfg: RuntimeConfig) {
   return {
-    ai: cfg.ai.provider === "anthropic" && !!cfg.ai.apiKey ? "connected" : "mock",
+    ai: cfg.ai.provider !== "mock" && !!cfg.ai.apiKey ? "connected" : "mock",
+    aiProvider: cfg.ai.provider,
+    aiModel: cfg.ai.provider === "mock" ? null : cfg.ai.modelStrong,
     mail:
       cfg.mail.provider === "draft"
         ? "draft-only"

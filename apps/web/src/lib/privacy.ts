@@ -55,31 +55,105 @@ export async function setConsent(
   revalidatePath("/app/settings");
 }
 
+/**
+ * Einstellungen speichern.
+ *
+ * Ein Formular je Bereich, aber eine Aktion für alle: das Formular
+ * schickt nur die Felder, die es selbst enthält, und was nicht
+ * mitkommt, bleibt unangetastet. Das ist der Unterschied zwischen
+ * "Teilformular" und "der Rest wird stillschweigend zurückgesetzt".
+ */
 export async function updateSettings(formData: FormData): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
 
-  const locale = formData.get("locale") === "en" ? "en" : "de";
-  const country = String(formData.get("country") ?? "DE").slice(0, 2).toUpperCase();
-  const baseLocation = String(formData.get("baseLocation") ?? "").trim() || null;
-  const maxCommuteRaw = String(formData.get("maxCommuteMinutes") ?? "").trim();
-  const maxCommuteMinutes = maxCommuteRaw ? Math.max(1, Math.min(600, Number(maxCommuteRaw))) : null;
+  const patch: Record<string, unknown> = { updatedAt: new Date() };
+
+  /** Nur setzen, wenn das Formular das Feld überhaupt geschickt hat. */
+  function ifPresent(field: string, apply: (raw: string) => void): void {
+    if (!formData.has(field)) return;
+    apply(String(formData.get(field) ?? "").trim());
+  }
+
+  /**
+   * Kontrollkästchen melden sich nur, wenn sie an sind. Deshalb braucht
+   * jedes ein verstecktes Feld gleichen Namens mit dem Wert "0" davor —
+   * dann ist "vorhanden" gleichbedeutend mit "das Formular kannte das
+   * Feld", und "an" ist der zweite Wert.
+   */
+  function checkbox(field: string, target: string): void {
+    if (!formData.has(field)) return;
+    const values = formData.getAll(field).map(String);
+    patch[target] = values.includes("on") || values.includes("1");
+  }
+
+  const locales = new Set(["de", "en"]);
+  ifPresent("locale", (v) => { if (locales.has(v)) patch.locale = v; });
+  ifPresent("assistantLocale", (v) => { if (locales.has(v)) patch.assistantLocale = v; });
+  ifPresent("documentLocale", (v) => { if (locales.has(v)) patch.documentLocale = v; });
+
+  ifPresent("country", (v) => { patch.country = v.slice(0, 2).toUpperCase() || "DE"; });
+  ifPresent("jobMarketCountry", (v) => { patch.jobMarketCountry = v.slice(0, 2).toUpperCase() || "DE"; });
+  ifPresent("currency", (v) => { patch.currency = v.slice(0, 3).toUpperCase() || "EUR"; });
+  ifPresent("timezone", (v) => { if (v) patch.timezone = v.slice(0, 64); });
+  ifPresent("distanceUnit", (v) => { patch.distanceUnit = v === "mi" ? "mi" : "km"; });
+  ifPresent("baseLocation", (v) => { patch.baseLocation = v || null; });
+  ifPresent("commuteMode", (v) => { if (v) patch.commuteMode = v.slice(0, 32); });
+  ifPresent("theme", (v) => { patch.theme = ["light", "dark", "system"].includes(v) ? v : "system"; });
+
+  const REMOTE = ["on_site", "hybrid", "remote", "no_preference"];
+  ifPresent("remotePreference", (v) => {
+    patch.remotePreference = REMOTE.includes(v) ? v : "no_preference";
+  });
+
+  ifPresent("searchRadiusKm", (v) => {
+    patch.searchRadiusKm = v ? Math.max(1, Math.min(2000, Number(v))) : null;
+  });
+  ifPresent("maxCommuteMinutes", (v) => {
+    patch.maxCommuteMinutes = v ? Math.max(1, Math.min(600, Number(v))) : null;
+  });
+  // Kein Gehaltswunsch bleibt leer. Eine 0 wäre eine Aussage, und zwar
+  // eine falsche.
+  ifPresent("desiredSalaryMin", (v) => {
+    patch.desiredSalaryMin = v ? Math.max(0, Math.min(10_000_000, Number(v))) : null;
+  });
+  ifPresent("desiredSalaryPeriod", (v) => {
+    patch.desiredSalaryPeriod = ["year", "month", "hour"].includes(v) ? v : "year";
+  });
+  ifPresent("voiceSpeed", (v) => {
+    const n = Number(v);
+    patch.voiceSpeed = Number.isFinite(n) ? Math.max(0.5, Math.min(2, n)) : 1;
+  });
+
+  if (formData.has("employmentTypes")) {
+    const allowed = new Set([
+      "permanent", "fixed_term", "internship", "working_student",
+      "apprenticeship", "freelance", "temp_agency",
+    ]);
+    patch.employmentTypes = formData
+      .getAll("employmentTypes")
+      .map(String)
+      .filter((v) => allowed.has(v));
+  }
+
+  checkbox("willingToRelocate", "willingToRelocate");
+  checkbox("notificationEmail", "notificationEmail");
+  checkbox("notificationPush", "notificationPush");
+  checkbox("microphoneEnabled", "microphoneEnabled");
+  checkbox("voiceAutoplay", "voiceAutoplay");
+  checkbox("voiceCaptions", "voiceCaptions");
+  checkbox("deleteAudioAfterTranscript", "deleteAudioAfterTranscript");
+
+  if (formData.get("completeOnboarding") === "1") {
+    patch.onboardingCompletedAt = new Date();
+  }
 
   await withUser(db, user.id, (tx) =>
-    tx
-      .update(schema.userSettings)
-      .set({
-        locale,
-        country,
-        baseLocation,
-        maxCommuteMinutes,
-        notificationEmail: formData.get("notificationEmail") === "on",
-        updatedAt: new Date(),
-      })
-      .where(eq(schema.userSettings.userId, user.id)),
+    tx.update(schema.userSettings).set(patch).where(eq(schema.userSettings.userId, user.id)),
   );
 
-  revalidatePath("/app/settings");
+  revalidatePath("/app/settings", "layout");
+  revalidatePath("/app");
 }
 
 /**

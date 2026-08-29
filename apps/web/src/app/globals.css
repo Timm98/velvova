@@ -24,6 +24,8 @@
   --color-line-2: hsl(var(--border-default));
   --color-line-3: hsl(var(--border-strong));
 
+  --color-brand: hsl(var(--brand));
+  --color-brand-soft: hsl(var(--brand-soft));
   --color-accent: hsl(var(--accent));
   --color-accent-hover: hsl(var(--accent-hover));
   --color-accent-pressed: hsl(var(--accent-pressed));
@@ -58,9 +60,10 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
 
-  --font-sans: "InterVariable", ui-sans-serif, system-ui, -apple-system,
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
   /*
    * Typografie mit engerem Laufweiten-Ausgleich nach oben. Große Schrift

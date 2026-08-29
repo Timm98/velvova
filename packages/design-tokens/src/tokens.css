@@ -29,31 +29,42 @@
   /* ---- Flächen ----
      Warme Neutralen mit einem Hauch Ocker. Reines Grau wirkt klinisch;
      ein warmer Ton wirkt wertiger und ist über Stunden angenehmer. */
-  --surface-page: 40 33% 98%;
+  --surface-page: 40 31% 94%;
   --surface-raised: 0 0% 100%;
-  --surface-sunken: 40 20% 95%;
-  --surface-inset: 38 18% 91%;
+  --surface-sunken: 37 28% 91%;
+  --surface-inset: 36 24% 87%;
   --surface-overlay: 0 0% 100%;
 
   /* ---- Text ---- */
-  --text-primary: 30 10% 12%;
-  --text-secondary: 30 7% 33%;
-  --text-muted: 32 7% 42%;
-  --text-inverse: 40 33% 98%;
+  --text-primary: 60 6% 7%;
+  --text-secondary: 35 8% 26%;
+  --text-muted: 35 6% 40%;
+  --text-inverse: 38 35% 94%;
 
   /* ---- Linien ---- */
-  --border-subtle: 38 16% 90%;
-  --border-default: 36 13% 83%;
-  --border-strong: 33 11% 68%;
+  --border-subtle: 35 24% 89%;
+  --border-default: 35 20% 84%;
+  --border-strong: 34 15% 68%;
 
-  /* ---- Akzent: gebranntes Terrakotta ----
-     Warm, erwachsen, nicht das übliche Tech-Blau. */
-  --accent: 14 60% 41%;
-  --accent-hover: 14 63% 35%;
-  --accent-pressed: 14 66% 30%;
+  /* ---- Marke und Akzent ----
+     Zwei Werte, nicht einer, und das hat einen Grund.
+
+     --brand ist das Kupfer-Coral der Marke (#D9623E). Es steht auf
+     Logo, Fokusringen und kleinen Markierungen.
+
+     --accent ist die Fläche, auf der Text liegt (#B9472A). Weiße
+     Schrift auf dem helleren Markenton erreicht nur 3,7:1 und wäre
+     damit unter der Schwelle. Statt die Marke zu verwässern, bekommt
+     die klickbare Fläche den tieferen Kupferton — beide Werte stammen
+     aus derselben Familie, der Eindruck bleibt, die Lesbarkeit stimmt. */
+  --brand: 14 67% 55%;
+  --brand-soft: 16 62% 93%;
+  --accent: 12 63% 45%;
+  --accent-hover: 12 66% 38%;
+  --accent-pressed: 12 68% 32%;
   --accent-soft: 18 60% 96%;
-  --accent-border: 16 45% 84%;
-  --accent-text: 14 63% 34%;
+  --accent-border: 16 45% 83%;
+  --accent-text: 12 66% 38%;
   --accent-on: 0 0% 100%;
 
   /* ---- Assistenz: gedämpftes Indigo ----
@@ -107,28 +118,30 @@
 
   /* Tiefes, leicht warmes Anthrazit statt Schwarz. Reines Schwarz
      erzeugt harte Kanten und ermüdet die Augen. */
-  --surface-page: 30 8% 9%;
-  --surface-raised: 30 7% 13%;
-  --surface-sunken: 30 9% 6%;
-  --surface-inset: 30 6% 18%;
-  --surface-overlay: 30 7% 15%;
+  --surface-page: 60 4% 5%;
+  --surface-raised: 40 7% 8%;
+  --surface-sunken: 60 4% 4%;
+  --surface-inset: 36 8% 12%;
+  --surface-overlay: 36 8% 12%;
 
-  --text-primary: 38 22% 92%;
-  --text-secondary: 34 10% 71%;
-  --text-muted: 34 8% 60%;
-  --text-inverse: 30 8% 9%;
+  --text-primary: 38 35% 94%;
+  --text-secondary: 34 10% 76%;
+  --text-muted: 34 8% 62%;
+  --text-inverse: 60 4% 5%;
 
-  --border-subtle: 30 6% 20%;
-  --border-default: 30 6% 27%;
-  --border-strong: 30 5% 40%;
+  --border-subtle: 34 8% 14%;
+  --border-default: 34 8% 17%;
+  --border-strong: 34 7% 32%;
 
-  --accent: 16 70% 63%;
-  --accent-hover: 16 75% 69%;
-  --accent-pressed: 16 78% 74%;
-  --accent-soft: 16 30% 14%;
-  --accent-border: 16 30% 26%;
-  --accent-text: 18 76% 72%;
-  --accent-on: 30 8% 9%;
+  --brand: 14 67% 58%;
+  --brand-soft: 14 30% 13%;
+  --accent: 14 67% 55%;
+  --accent-hover: 14 70% 61%;
+  --accent-pressed: 14 72% 66%;
+  --accent-soft: 14 28% 12%;
+  --accent-border: 14 30% 24%;
+  --accent-text: 16 74% 68%;
+  --accent-on: 60 4% 5%;
 
   --assistant: 226 32% 70%;
   --assistant-soft: 228 22% 15%;
@@ -156,28 +169,30 @@
   :root:not([data-theme="light"]) {
     color-scheme: dark;
 
-    --surface-page: 30 8% 9%;
-    --surface-raised: 30 7% 13%;
-    --surface-sunken: 30 9% 6%;
-    --surface-inset: 30 6% 18%;
-    --surface-overlay: 30 7% 15%;
+    --surface-page: 60 4% 5%;
+    --surface-raised: 40 7% 8%;
+    --surface-sunken: 60 4% 4%;
+    --surface-inset: 36 8% 12%;
+    --surface-overlay: 36 8% 12%;
 
-    --text-primary: 38 22% 92%;
-    --text-secondary: 34 10% 71%;
-    --text-muted: 34 8% 60%;
-    --text-inverse: 30 8% 9%;
+    --text-primary: 38 35% 94%;
+    --text-secondary: 34 10% 76%;
+    --text-muted: 34 8% 62%;
+    --text-inverse: 60 4% 5%;
 
-    --border-subtle: 30 6% 20%;
-    --border-default: 30 6% 27%;
-    --border-strong: 30 5% 40%;
+    --border-subtle: 34 8% 14%;
+    --border-default: 34 8% 17%;
+    --border-strong: 34 7% 32%;
 
-    --accent: 16 70% 63%;
-    --accent-hover: 16 75% 69%;
-    --accent-pressed: 16 78% 74%;
-    --accent-soft: 16 30% 14%;
-    --accent-border: 16 30% 26%;
-    --accent-text: 18 76% 72%;
-    --accent-on: 30 8% 9%;
+    --brand: 14 67% 58%;
+    --brand-soft: 14 30% 13%;
+    --accent: 14 67% 55%;
+    --accent-hover: 14 70% 61%;
+    --accent-pressed: 14 72% 66%;
+    --accent-soft: 14 28% 12%;
+    --accent-border: 14 30% 24%;
+    --accent-text: 16 74% 68%;
+    --accent-on: 60 4% 5%;
 
     --assistant: 226 32% 70%;
     --assistant-soft: 228 22% 15%;

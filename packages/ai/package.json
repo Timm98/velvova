@@ -5,7 +5,9 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -16,7 +18,12 @@
     "@anthropic-ai/sdk": "0.122.0",
     "@paycheck/config": "workspace:*",
     "@paycheck/domain": "workspace:*",
+    "openai": "^7.8.0",
     "zod": "4.5.2"
   },
-  "devDependencies": { "@types/node": "26.4.0", "typescript": "7.0.2", "vitest": "4.1.11" }
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
 }
