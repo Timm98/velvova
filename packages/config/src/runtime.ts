@@ -40,11 +40,22 @@ const RuntimeSchema = z.object({
     provider: z.enum(["mock", "openai", "anthropic", "self_hosted"]).default("mock"),
     apiKey: z.string().optional(),
     baseUrl: z.string().optional(),
-    modelStrong: z.string().default("gpt-5.6"),
-    modelFast: z.string().default("gpt-5.6-mini"),
-    modelEmbed: z.string().default("local-hash-embedding"),
+
+    /*
+     * Vier Stufen statt eines Modells. Die Aufteilung ist nicht
+     * kosmetisch: ein Gespräch braucht Tempo, eine Profilsynthese
+     * braucht Tiefe, eine Klassifikation braucht beides nicht. Alles
+     * über dasselbe Modell laufen zu lassen heißt, für jede Kleinigkeit
+     * das Teuerste zu zahlen und für jede Analyse das Schnellste zu
+     * nehmen.
+     */
+    modelInteractive: z.string().default("gpt-5.6-terra"),
+    modelDeep: z.string().default("gpt-5.6-sol"),
+    modelFast: z.string().default("gpt-5.6-luna"),
+    modelRealtime: z.string().default("gpt-realtime-2.1"),
     modelTranscribe: z.string().optional(),
     modelSpeech: z.string().optional(),
+    modelEmbed: z.string().default("local-hash-embedding"),
     speechVoice: z.string().optional(),
     maxTokensPerRun: z.coerce.number().int().positive().default(4096),
     timeoutMs: z.coerce.number().int().positive().default(60_000),
@@ -113,11 +124,16 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
             ? (env.SELF_HOSTED_API_KEY ?? "nicht-erforderlich")
             : env.OPENAI_API_KEY,
       baseUrl: env.AI_PROVIDER === "self_hosted" ? env.SELF_HOSTED_BASE_URL : undefined,
-      modelStrong: env.AI_MODEL_STRONG ?? env.OPENAI_PRIMARY_MODEL ?? "gpt-5.6",
-      modelFast: env.AI_MODEL_FAST ?? env.OPENAI_FAST_MODEL ?? env.OPENAI_PRIMARY_MODEL ?? "gpt-5.6-mini",
-      modelEmbed: env.AI_MODEL_EMBED ?? env.OPENAI_EMBEDDING_MODEL ?? "local-hash-embedding",
+      modelInteractive: env.OPENAI_MODEL_INTERACTIVE ?? "gpt-5.6-terra",
+      modelDeep: env.OPENAI_MODEL_DEEP ?? "gpt-5.6-sol",
+      modelFast: env.OPENAI_MODEL_FAST ?? "gpt-5.6-luna",
+      modelRealtime: env.OPENAI_REALTIME_MODEL ?? "gpt-realtime-2.1",
       modelTranscribe: env.OPENAI_TRANSCRIBE_MODEL,
       modelSpeech: env.OPENAI_SPEECH_MODEL,
+      // Ohne echten Anbieter bleibt die lokale Hash-Einbettung: sie ist
+      // deterministisch und kostet nichts, taugt aber nur zum Testen der
+      // Pipeline, nicht zur Bedeutungssuche.
+      modelEmbed: env.OPENAI_EMBEDDING_MODEL ?? "local-hash-embedding",
       speechVoice: env.OPENAI_SPEECH_VOICE,
       maxTokensPerRun: env.AI_MAX_TOKENS_PER_RUN ?? 4096,
       timeoutMs: env.AI_TIMEOUT_MS ?? 60_000,
@@ -148,7 +164,7 @@ export function integrationStatus(cfg: RuntimeConfig) {
   return {
     ai: cfg.ai.provider !== "mock" && !!cfg.ai.apiKey ? "connected" : "mock",
     aiProvider: cfg.ai.provider,
-    aiModel: cfg.ai.provider === "mock" ? null : cfg.ai.modelStrong,
+    aiModel: cfg.ai.provider === "mock" ? null : cfg.ai.modelInteractive,
     mail:
       cfg.mail.provider === "draft"
         ? "draft-only"

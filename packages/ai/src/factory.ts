@@ -24,7 +24,7 @@ export interface ProviderSelection {
   fallbackReason: string | null;
 }
 
-let cached: ProviderSelection | null = null;
+let cached: ProviderSelection | undefined;
 
 function missingKey(envName: string): ProviderSelection {
   return {
@@ -64,7 +64,8 @@ export async function selectProvider(
       provider: new OpenAiProvider({
         apiKey: cfg.ai.apiKey,
         baseUrl: cfg.ai.baseUrl,
-        modelStrong: cfg.ai.modelStrong,
+        modelInteractive: cfg.ai.modelInteractive,
+        modelDeep: cfg.ai.modelDeep,
         modelFast: cfg.ai.modelFast,
         modelEmbed: cfg.ai.modelEmbed,
         maxTokens: cfg.ai.maxTokensPerRun,
@@ -88,7 +89,8 @@ export async function selectProvider(
     cached = {
       provider: new AnthropicProvider({
         apiKey: cfg.ai.apiKey,
-        modelStrong: cfg.ai.modelStrong,
+        modelInteractive: cfg.ai.modelInteractive,
+        modelDeep: cfg.ai.modelDeep,
         modelFast: cfg.ai.modelFast,
         maxTokens: cfg.ai.maxTokensPerRun,
         timeoutMs: cfg.ai.timeoutMs,
@@ -105,5 +107,5 @@ export async function selectProvider(
 
 /** Für Tests. */
 export function resetProviderCache(): void {
-  cached = null;
+  cached = undefined;
 }

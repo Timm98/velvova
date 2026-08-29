@@ -22,7 +22,8 @@ import {
 
 export interface AnthropicOptions {
   apiKey: string;
-  modelStrong: string;
+  modelInteractive: string;
+  modelDeep: string;
   modelFast: string;
   maxTokens: number;
   timeoutMs: number;
@@ -42,7 +43,9 @@ export class AnthropicProvider implements AiProvider {
   }
 
   private model(tier: ChatOptions["tier"]): string {
-    return tier === "fast" ? this.options.modelFast : this.options.modelStrong;
+    if (tier === "fast") return this.options.modelFast;
+    if (tier === "deep") return this.options.modelDeep;
+    return this.options.modelInteractive;
   }
 
   async *chatStream(options: ChatOptions): AsyncIterable<string> {
@@ -130,5 +133,17 @@ export class AnthropicProvider implements AiProvider {
 
   async synthesize(_text: string, _locale: string): Promise<ArrayBuffer> {
     throw new AiCapabilityError(this.name, "synthesize");
+  }
+
+  /**
+   * Werkzeuggespräch ist für diesen Anbieter noch nicht umgesetzt.
+   *
+   * Bewusst ein klarer Fehler statt eines stillen Rückfalls auf reinen
+   * Text: ein Gespräch, in dem Nina nichts speichern kann, sieht aus
+   * wie ein Gespräch — und verliert alles.
+   */
+  // eslint-disable-next-line require-yield
+  async *streamConversation(): AsyncIterable<import("../provider.ts").StreamEvent> {
+    throw new AiCapabilityError(this.name, "streamConversation");
   }
 }

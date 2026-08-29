@@ -121,6 +121,8 @@ const GENERIC_REPLIES = [
   "Danke. Damit ich es richtig einordne: Wobei bitten dich andere regelmäßig um Hilfe?",
 ];
 
+import type { ConversationOptions, StreamEvent } from "../provider.ts";
+
 export class MockAiProvider implements AiProvider {
   readonly name = "mock";
   readonly isLocal = true;
@@ -176,5 +178,41 @@ export class MockAiProvider implements AiProvider {
 
   async synthesize(_text: string, _locale: string): Promise<ArrayBuffer> {
     throw new AiCapabilityError(this.name, "synthesize");
+  }
+
+  /**
+   * Gespräch ohne Modell.
+   *
+   * Der Text wird in Stücken ausgegeben, damit die Oberfläche denselben
+   * Weg nimmt wie im Betrieb — Fehler im Strom fallen sonst erst auf,
+   * wenn ein Schlüssel hinterlegt wird.
+   *
+   * Werkzeuge ruft dieser Anbieter nicht auf. Ein Demo-Anbieter, der so
+   * tut, als schriebe er Daten, wäre schlimmer als gar keiner.
+   */
+  async *streamConversation(options: ConversationOptions): AsyncIterable<StreamEvent> {
+    const start = Date.now();
+    const last = options.messages.at(-1)?.content ?? "";
+    const text =
+      "Das ist eine Beispielantwort des lokalen Anbieters — sie hat keine inhaltliche Aussage. " +
+      "Deine Angabe wurde trotzdem gespeichert und fließt in dein Profil ein; die Bewertungslogik " +
+      "braucht kein Sprachmodell. " +
+      (last.length > 0 ? `Aufgenommen: ${last.slice(0, 120)}` : "");
+
+    for (const chunk of text.match(/.{1,24}(\s|$)/g) ?? [text]) {
+      await new Promise((resolve) => setTimeout(resolve, 12));
+      yield { type: "text", delta: chunk };
+    }
+
+    yield {
+      type: "done",
+      usage: {
+        inputTokens: null,
+        outputTokens: null,
+        model: "local-mock",
+        provider: "mock",
+        latencyMs: Date.now() - start,
+      },
+    };
   }
 }

@@ -19,8 +19,15 @@ export interface ChatOptions {
   messages: ChatMessage[];
   maxTokens?: number;
   temperature?: number;
-  /** Welches Leistungsniveau. Die Zuordnung zu Modellen ist Konfiguration. */
-  tier?: "strong" | "fast";
+  /**
+   * Welches Leistungsniveau. Die Zuordnung zu Modellen ist reine
+   * Konfiguration — im Fachcode steht nie ein Modellname.
+   *
+   *   interactive  Gespräch, Rückfragen. Tempo zählt.
+   *   deep         Profilsynthese, Rollenvergleich, Jobanalyse.
+   *   fast         Klassifikation, Extraktion, Normalisierung.
+   */
+  tier?: "interactive" | "deep" | "fast";
   signal?: AbortSignal;
 }
 
@@ -51,6 +58,33 @@ export interface TranscriptChunk {
 }
 
 /**
+ * Ein Ereignis aus einem laufenden Gespräch.
+ *
+ * Der Werkzeugaufruf ist ein eigener Ereignistyp, damit die Oberfläche
+ * zeigen kann, was gerade geschieht — „Profil wird aktualisiert“,
+ * „Stellen werden durchsucht“. Ein Ladebalken ohne Aussage lässt jede
+ * Wartezeit doppelt so lang wirken.
+ */
+export type StreamEvent =
+  | { type: "text"; delta: string }
+  | { type: "tool_call"; id: string; name: string; input: unknown }
+  | { type: "done"; usage: AiUsage }
+  | { type: "error"; message: string };
+
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  /** JSON Schema, aus dem Zod-Schema erzeugt. */
+  parameters: Record<string, unknown>;
+}
+
+export interface ConversationOptions extends ChatOptions {
+  tools?: ToolDefinition[];
+  /** Ergebnisse bereits ausgeführter Werkzeuge aus derselben Runde. */
+  toolResults?: { id: string; name: string; output: unknown }[];
+}
+
+/**
  * Alle Fähigkeiten, die das Produkt von einem Anbieter braucht.
  * Nicht unterstützte Fähigkeiten werfen einen klaren Fehler, statt
  * stillschweigend etwas anderes zu tun.
@@ -61,6 +95,11 @@ export interface AiProvider {
   readonly isLocal: boolean;
 
   chatStream(options: ChatOptions): AsyncIterable<string>;
+  /**
+   * Gespräch mit Werkzeugen. Liefert Text und Werkzeugaufrufe als
+   * Ereignisstrom; ausgeführt wird ausschließlich serverseitig.
+   */
+  streamConversation(options: ConversationOptions): AsyncIterable<StreamEvent>;
   structuredGenerate<T>(options: StructuredOptions<T>): Promise<StructuredResult<T>>;
   embed(texts: string[]): Promise<number[][]>;
   transcribe(audio: ArrayBuffer, locale: string): AsyncIterable<TranscriptChunk>;

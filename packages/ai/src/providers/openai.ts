@@ -34,7 +34,8 @@ import {
 export interface OpenAiOptions {
   apiKey: string;
   /** Das Hauptmodell. Kommt aus OPENAI_PRIMARY_MODEL. */
-  modelStrong: string;
+  modelInteractive: string;
+  modelDeep: string;
   /** Das schnellere Modell für einfache Schritte. */
   modelFast: string;
   modelEmbed: string;
@@ -88,8 +89,25 @@ export class OpenAiProvider implements AiProvider {
     });
   }
 
+  /** Für die Stromfunktion weiter unten. Kein öffentlicher Vertrag. */
+  rawClient(): OpenAI {
+    return this.client;
+  }
+
+  modelFor(tier: ChatOptions["tier"]): string {
+    return this.model(tier);
+  }
+
+  streamConversation(
+    options: import("../provider.ts").ConversationOptions,
+  ): AsyncIterable<import("../provider.ts").StreamEvent> {
+    return streamOpenAiConversation(this, options);
+  }
+
   private model(tier: ChatOptions["tier"]): string {
-    return tier === "fast" ? this.options.modelFast : this.options.modelStrong;
+    if (tier === "fast") return this.options.modelFast;
+    if (tier === "deep") return this.options.modelDeep;
+    return this.options.modelInteractive;
   }
 
   /** Wiederholung mit wachsendem Abstand, höchstens dreimal. */
@@ -224,4 +242,102 @@ export class OpenAiProvider implements AiProvider {
 
     return response.arrayBuffer();
   }
+}
+
+/**
+ * Gespräch mit Werkzeugen — als Ereignisstrom.
+ *
+ * Werkzeugargumente kommen in Teilstücken an. Sie werden je Aufruf
+ * gesammelt und erst beim Abschlussereignis geparst: ein Teilstück ist
+ * kein gültiges JSON, und ein Parseversuch darauf erzeugt genau die
+ * Sorte Fehler, die man später an der falschen Stelle sucht.
+ */
+export async function* streamOpenAiConversation(
+  provider: OpenAiProvider,
+  options: import("../provider.ts").ConversationOptions,
+): AsyncIterable<import("../provider.ts").StreamEvent> {
+  const start = Date.now();
+  const client = provider.rawClient();
+  const model = provider.modelFor(options.tier);
+
+  const stream = await client.responses.stream(
+    {
+      model,
+      instructions: options.system,
+      input: options.messages.map((m) => ({ role: m.role, content: m.content })),
+      max_output_tokens: options.maxTokens ?? 4096,
+      temperature: options.temperature ?? 0.8,
+      tools: (options.tools ?? []).map((tool) => ({
+        type: "function" as const,
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+        strict: false,
+      })),
+    },
+    options.signal ? { signal: options.signal } : undefined,
+  );
+
+  const argumentBuffers = new Map<string, { name: string; args: string }>();
+  let inputTokens: number | null = null;
+  let outputTokens: number | null = null;
+
+  for await (const event of stream) {
+    if (event.type === "response.output_text.delta") {
+      yield { type: "text", delta: event.delta };
+      continue;
+    }
+
+    if (event.type === "response.output_item.added" && event.item.type === "function_call") {
+      argumentBuffers.set(event.item.id ?? String(event.output_index), {
+        name: event.item.name,
+        args: "",
+      });
+      continue;
+    }
+
+    if (event.type === "response.function_call_arguments.delta") {
+      const buffer = argumentBuffers.get(event.item_id);
+      if (buffer) buffer.args += event.delta;
+      continue;
+    }
+
+    if (event.type === "response.function_call_arguments.done") {
+      const buffer = argumentBuffers.get(event.item_id);
+      if (!buffer) continue;
+      argumentBuffers.delete(event.item_id);
+
+      let input: unknown;
+      try {
+        input = JSON.parse(buffer.args || "{}");
+      } catch {
+        // Ungültiges JSON ist kein Grund, das Gespräch abzubrechen: der
+        // Aufruf wird verworfen und der Fehler zurückgemeldet.
+        yield {
+          type: "error",
+          message: `Der Werkzeugaufruf ${buffer.name} war nicht lesbar und wurde verworfen.`,
+        };
+        continue;
+      }
+
+      yield { type: "tool_call", id: event.item_id, name: buffer.name, input };
+      continue;
+    }
+
+    if (event.type === "response.completed") {
+      inputTokens = event.response.usage?.input_tokens ?? null;
+      outputTokens = event.response.usage?.output_tokens ?? null;
+    }
+  }
+
+  yield {
+    type: "done",
+    usage: {
+      inputTokens,
+      outputTokens,
+      model,
+      provider: "openai",
+      latencyMs: Date.now() - start,
+    },
+  };
 }

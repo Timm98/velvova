@@ -5,5 +5,6 @@ export * from "./jsonSchema.ts";
 export * from "./prompts/nina.ts";
 export * from "./interview.ts";
 export * from "./questions.ts";
+export * from "./tools.ts";
 export * from "./providers/mock.ts";
 export { OpenAiConfigurationError } from "./providers/openai.ts";
