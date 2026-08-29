@@ -279,6 +279,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Studio sperrt die Freigabe bei unbelegter Aussage", async ({ page }) => {
+    test.slow(); // Dokument erzeugen und jede Aussage pruefen dauert.
     await page.goto("/app/jobs");
     await page.locator("a", { hasText: "Ansehen" }).first().click();
     await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
@@ -322,11 +323,26 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.goto("/app/settings");
     await expect(page.getByRole("heading", { name: "Privacy Center" })).toBeVisible();
 
-    const checkbox = page.getByRole("checkbox", { name: /Karriereprofil/ }).first();
-    await expect(checkbox).toBeChecked();
-    await checkbox.uncheck();
-    await expect(page.getByText("nicht erteilt").first()).toBeVisible({ timeout: 15_000 });
-    await checkbox.check();
+    // Bewusst zustandsunabhaengig: der aktuelle Wert wird gelesen,
+    // umgeschaltet, geprueft und wiederhergestellt. Ein Test, der einen
+    // bestimmten Ausgangszustand voraussetzt, bricht, sobald ein
+    // frueherer Lauf ihn veraendert hat.
+    // Der Schalter ist an den Serverzustand gebunden: der Klick loest
+    // eine Aktion aus, und erst deren Ergebnis aendert die Anzeige.
+    // Deshalb auf die sichtbare Folge warten, nicht auf den Klick.
+    const row = page.locator("li").filter({ hasText: "Karriereprofil" }).first();
+    const checkbox = row.getByRole("checkbox");
+    const before = await checkbox.isChecked();
+
+    await checkbox.click();
+    await expect(row.getByText(before ? "nicht erteilt" : "erteilt", { exact: true })).toBeVisible({
+      timeout: 25_000,
+    });
+
+    await checkbox.click();
+    await expect(row.getByText(before ? "erteilt" : "nicht erteilt", { exact: true })).toBeVisible({
+      timeout: 25_000,
+    });
   });
 
   test("Kontolöschung verlangt eine Tippbestätigung", async ({ page }) => {

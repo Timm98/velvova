@@ -65,8 +65,15 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
     <Card
       as="li"
       style={{
-        opacity: item.userRejected ? 0.55 : 1,
-        borderColor: item.userConfirmed ? "var(--border-subtle)" : "var(--assistant-border)",
+        // Kein Abblenden ueber Deckkraft: das senkt den Kontrast unter
+        // die Schwelle und macht den Zustand von der Erscheinung
+        // abhaengig. Den Zustand traegt das Etikett, sichtbar als Text.
+        background: item.userRejected ? "var(--surface-sunken)" : "var(--surface-raised)",
+        borderColor: item.userConfirmed
+          ? "var(--border-subtle)"
+          : item.userRejected
+            ? "var(--border-default)"
+            : "var(--assistant-border)",
       }}
     >
       <div style={{ display: "grid", gap: "var(--space-3)" }}>

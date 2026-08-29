@@ -148,7 +148,7 @@ export default async function SettingsPage() {
                 type="submit"
                 style={{
                   background: "var(--accent)",
-                  color: "#fff",
+                  color: "var(--accent-on)",
                   border: "1px solid var(--accent)",
                   borderRadius: "var(--radius-md)",
                   padding: "var(--space-3) var(--space-5)",

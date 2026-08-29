@@ -6,9 +6,9 @@
 
 export const lightTokens = {
   surfacePage: "#faf8f5", surfaceRaised: "#ffffff", surfaceSunken: "#f2eee8", surfaceInset: "#ebe5dc",
-  textPrimary: "#22201d", textSecondary: "#56504a", textMuted: "#7a736b", textInverse: "#faf8f5",
+  textPrimary: "#22201d", textSecondary: "#56504a", textMuted: "#6b645c", textInverse: "#faf8f5",
   borderSubtle: "#e3ddd3", borderDefault: "#d2cabd", borderStrong: "#b3a898",
-  accent: "#a8442a", accentHover: "#8f381f", accentSubtle: "#fbeee9", accentBorder: "#e8c4b6", accentText: "#8f381f",
+  accent: "#a8442a", accentHover: "#8f381f", accentSubtle: "#fbeee9", accentBorder: "#e8c4b6", accentText: "#8f381f", accentOn: "#ffffff",
   assistant: "#4a5578", assistantSubtle: "#eef0f6", assistantBorder: "#ccd2e3", assistantText: "#3b4463",
   positive: "#2f6a45", positiveSubtle: "#e9f2ec",
   caution: "#8a6115", cautionSubtle: "#f9f1e0",
@@ -18,9 +18,9 @@ export const lightTokens = {
 
 export const darkTokens: typeof lightTokens = {
   surfacePage: "#16151a", surfaceRaised: "#201f26", surfaceSunken: "#111014", surfaceInset: "#2a2831",
-  textPrimary: "#ece8e3", textSecondary: "#b5aea6", textMuted: "#8b847c", textInverse: "#16151a",
+  textPrimary: "#ece8e3", textSecondary: "#b5aea6", textMuted: "#9a938b", textInverse: "#16151a",
   borderSubtle: "#2e2c35", borderDefault: "#3d3a45", borderStrong: "#565161",
-  accent: "#e08163", accentHover: "#eb9376", accentSubtle: "#2c1f1a", accentBorder: "#4d3327", accentText: "#f0a184",
+  accent: "#e08163", accentHover: "#eb9376", accentSubtle: "#2c1f1a", accentBorder: "#4d3327", accentText: "#f0a184", accentOn: "#16151a",
   assistant: "#9aa5cc", assistantSubtle: "#1e202c", assistantBorder: "#333853", assistantText: "#aeb8dc",
   positive: "#74c497", positiveSubtle: "#172319",
   caution: "#d9ab5c", cautionSubtle: "#262015",

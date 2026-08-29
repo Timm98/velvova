@@ -136,7 +136,8 @@ test.describe("Tastaturbedienung", () => {
     await loginAsDemo(page);
     await page.goto("/app/profile");
 
-    // Bestaetigt und abgelehnt tragen Text, nicht nur eine Farbe.
-    await expect(page.getByText("bestaetigt").first()).toBeVisible();
+    // Bestaetigt und abgelehnt tragen Text, nicht nur eine Farbe oder
+    // eine abgeblendete Darstellung.
+    await expect(page.getByText("bestätigt").first()).toBeVisible();
   });
 });

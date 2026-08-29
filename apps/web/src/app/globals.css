@@ -45,6 +45,23 @@ ul, ol { margin: 0; padding: 0; }
 a { color: inherit; }
 
 /*
+ * Links im Fliesstext.
+ *
+ * Farbe allein reicht nicht: wer Farben nicht unterscheiden kann, sieht
+ * sonst keinen Link. Innerhalb von Absaetzen und Listen wird deshalb
+ * unterstrichen. Eigenstaendige Links - Navigation, Schaltflaechen -
+ * sind durch ihre Stellung erkennbar und bleiben ohne Linie.
+ */
+p a,
+li a,
+dd a,
+figcaption a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/*
  * Fokus. Immer sichtbar, nie entfernt - Tastaturbedienung ist keine
  * Randbedingung, sondern die Grundlage.
  */

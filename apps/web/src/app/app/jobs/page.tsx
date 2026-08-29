@@ -136,7 +136,16 @@ export default async function JobsPage({
             : `${blockedCount} Stellen sind ausgeschlossen, weil sie einer deiner harten Bedingungen widersprechen.`}{" "}
           <Link
             href={`/app/jobs?sort=${sort}${includeBlocked ? "" : "&blocked=1"}`}
-            style={{ color: "var(--accent-text)" }}
+            style={{
+              color: "var(--accent-text)",
+              // WCAG 2.2 verlangt mindestens 24x24 CSS-Pixel je Ziel.
+              // Ein Link mitten im Fliesstext erreicht das nur mit
+              // ausdruecklicher Hoehe.
+              display: "inline-flex",
+              alignItems: "center",
+              minHeight: 24,
+              padding: "2px 0",
+            }}
           >
             {includeBlocked ? "Ausblenden" : t("jobs.showBlocked")}
           </Link>
@@ -154,7 +163,10 @@ export default async function JobsPage({
                 as="li"
                 key={j.jobId}
                 style={{
-                  opacity: blocked ? 0.7 : 1,
+                  // Ausgeschlossene Stellen werden nicht abgeblendet: das
+                  // senkt den Kontrast. Den Zustand tragen der rote Rahmen
+                  // UND der begruendende Hinweis darunter.
+                  background: blocked ? "var(--surface-sunken)" : "var(--surface-raised)",
                   borderColor: blocked ? "var(--critical)" : "var(--border-subtle)",
                 }}
               >

@@ -9,6 +9,13 @@
  * Die Kontraste sind auf WCAG 2.2 AA ausgelegt: Fliesstext mindestens
  * 4.5:1, grosse Schrift und Bedienelemente mindestens 3:1. Der Hell-Modus
  * ist der Standard, Dunkel und System sind gleichwertig gepflegt.
+ *
+ * --text-muted wurde nachgezogen: der erste Wert hielt 4.5:1 nur gegen
+ * die hellste Flaeche und fiel auf --surface-inset auf 3.73 (hell) und
+ * 3.93 (dunkel). Ein Kontrast muss gegen JEDE Flaeche halten, auf der
+ * die Farbe erscheint - axe hat das aufgedeckt. Die heutigen Werte
+ * halten mindestens 4.66 (hell) und 4.78 (dunkel) auf der jeweils
+ * schwierigsten Flaeche.
  */
 
 :root {
@@ -23,7 +30,7 @@
   /* Text */
   --text-primary: #22201d;
   --text-secondary: #56504a;
-  --text-muted: #7a736b;
+  --text-muted: #6b645c;
   --text-inverse: #faf8f5;
 
   /* Linien */
@@ -37,6 +44,10 @@
   --accent-subtle: #fbeee9;
   --accent-border: #e8c4b6;
   --accent-text: #8f381f;
+  /* Schrift AUF einer Akzentflaeche. Im Hellmodus ist der Akzent dunkel,
+     also weiss (5.96:1). Im Dunkelmodus ist er hell - dort muss die
+     Schrift dunkel werden, sonst bleiben 2.8:1 uebrig. */
+  --accent-on: #ffffff;
 
   /* Assistenz: ruhiges Indigo, bewusst leiser als der Markenakzent */
   --assistant: #4a5578;
@@ -101,7 +112,7 @@
 
   --text-primary: #ece8e3;
   --text-secondary: #b5aea6;
-  --text-muted: #8b847c;
+  --text-muted: #9a938b;
   --text-inverse: #16151a;
 
   --border-subtle: #2e2c35;
@@ -113,6 +124,7 @@
   --accent-subtle: #2c1f1a;
   --accent-border: #4d3327;
   --accent-text: #f0a184;
+  --accent-on: #16151a;
 
   --assistant: #9aa5cc;
   --assistant-subtle: #1e202c;
@@ -148,7 +160,7 @@
 
     --text-primary: #ece8e3;
     --text-secondary: #b5aea6;
-    --text-muted: #8b847c;
+    --text-muted: #9a938b;
     --text-inverse: #16151a;
 
     --border-subtle: #2e2c35;

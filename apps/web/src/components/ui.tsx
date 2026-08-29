@@ -36,7 +36,7 @@ export function Card({
 type ButtonTone = "primary" | "secondary" | "quiet" | "danger";
 
 const TONE_STYLE: Record<ButtonTone, CSSProperties> = {
-  primary: { background: "var(--accent)", color: "#fff", border: "1px solid var(--accent)" },
+  primary: { background: "var(--accent)", color: "var(--accent-on)", border: "1px solid var(--accent)" },
   secondary: {
     background: "var(--surface-raised)",
     color: "var(--text-primary)",
