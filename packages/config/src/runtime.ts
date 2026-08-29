@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { currentEnv, type Env } from "./env.js";
+import { currentEnv, type Env } from "./env.ts";
 
 /**
  * Laufzeitkonfiguration. Wird einmal beim Start validiert, damit ein

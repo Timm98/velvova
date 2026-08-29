@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ContractTypeSchema, WorkModelSchema } from "./constraints.js";
+import { ContractTypeSchema, WorkModelSchema } from "./constraints.ts";
 
 /** Normalisierte Stelle. Jede Quelle wird auf diese Form gebracht. */
 

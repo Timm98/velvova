@@ -1,4 +1,4 @@
-import { currentEnv } from "./env.js";
+import { currentEnv } from "./env.ts";
 
 /**
  * Feature Flags. Standardwerte sind bewusst konservativ: alles, was Geld,

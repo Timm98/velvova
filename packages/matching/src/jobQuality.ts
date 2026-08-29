@@ -1,6 +1,6 @@
 import type { Job, JobQualityResult, ReviewAggregate, ReviewTheme } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
-import { toScore100, weightedScore, type WeightedInput } from "./weighted.js";
+import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
 /**
  * Job Quality steht getrennt vom Fit. Eine Stelle kann fachlich perfekt

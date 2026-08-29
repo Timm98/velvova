@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { checkConstraints } from "./constraints.js";
-import { computeFit, DEFAULT_FIT_WEIGHTS, normaliseWeights } from "./fit.js";
-import { computeConfidence } from "./confidence.js";
-import { computeJobQuality } from "./jobQuality.js";
-import { computeAiTransition } from "./aiTransition.js";
-import { computeListingConfidence } from "./listingConfidence.js";
-import { computeOverall, sortJobs, type RankableJob } from "./ranking.js";
-import { weightedScore } from "./weighted.js";
-import { makeConstraints, makeEvidence, makeJob, makeRequirements, makeSource, testCommute } from "./fixtures.js";
+import { checkConstraints } from "./constraints.ts";
+import { computeFit, DEFAULT_FIT_WEIGHTS, normaliseWeights } from "./fit.ts";
+import { computeConfidence } from "./confidence.ts";
+import { computeJobQuality } from "./jobQuality.ts";
+import { computeAiTransition } from "./aiTransition.ts";
+import { computeListingConfidence } from "./listingConfidence.ts";
+import { computeOverall, sortJobs, type RankableJob } from "./ranking.ts";
+import { weightedScore } from "./weighted.ts";
+import { makeConstraints, makeEvidence, makeJob, makeRequirements, makeSource, testCommute } from "./fixtures.ts";
 
 // ---------------------------------------------------------------------------
 // Das zentrale Versprechen: Unbekanntes ist neutral.

@@ -1,6 +1,6 @@
 import type { EvidenceItem, FitBand, FitResult, Job, JobRequirement, UserConstraints } from "@paycheck/domain";
 import { SCORING_VERSION, isConfirmedFact } from "@paycheck/domain";
-import { toScore100, weightedScore, type WeightedInput } from "./weighted.js";
+import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
 /**
  * Fit Score: fachliche Passung zwischen Mensch und Stelle.

@@ -1,0 +1,32 @@
+{
+  "name": "@paycheck/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": { ".": "./src/index.ts", "./schema": "./src/schema/index.ts" },
+  "scripts": {
+    "generate": "drizzle-kit generate",
+    "migrate": "node --experimental-strip-types src/migrate.ts",
+    "seed": "node --experimental-strip-types src/seed/run.ts",
+    "reset": "node --experimental-strip-types src/reset.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.8",
+    "@paycheck/config": "workspace:*",
+    "@paycheck/domain": "workspace:*",
+    "drizzle-orm": "0.45.2",
+    "pg": "8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.4.0",
+    "@types/pg": "8.15.6",
+    "drizzle-kit": "0.31.10",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

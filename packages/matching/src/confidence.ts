@@ -1,6 +1,6 @@
 import type { ConfidenceResult, Job, ReviewAggregate } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
-import { toScore100, weightedScore, type WeightedInput } from "./weighted.js";
+import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
 /**
  * Confidence steht bewusst neben dem Fit, nicht darin.

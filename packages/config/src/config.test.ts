@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Env } from "./env.js";
-import { brand, withBrand } from "./brand.js";
-import { integrationStatus, loadRuntimeConfig } from "./runtime.js";
+import type { Env } from "./env.ts";
+import { brand, withBrand } from "./brand.ts";
+import { integrationStatus, loadRuntimeConfig } from "./runtime.ts";
 
 describe("brand", () => {
   it("liefert Standardnamen, wenn nichts konfiguriert ist", () => {

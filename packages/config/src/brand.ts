@@ -1,4 +1,4 @@
-import { currentEnv } from "./env.js";
+import { currentEnv } from "./env.ts";
 
 /**
  * Marke und Assistenzname. Beide Namen sind vorlaeufig und koennen sich

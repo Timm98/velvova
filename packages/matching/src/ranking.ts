@@ -3,7 +3,7 @@ import type {
   JobQualityResult, ListingConfidenceResult, OverallRanking,
 } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
-import { toScore100, weightedScore, type WeightedInput } from "./weighted.js";
+import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
 /**
  * Gesamtranking. Harte Bedingungen bleiben vorgelagert: eine blockierte

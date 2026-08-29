@@ -1,6 +1,6 @@
 import type { Job, JobSource, ListingConfidenceResult } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
-import { toScore100 } from "./weighted.js";
+import { toScore100 } from "./weighted.ts";
 
 /**
  * Listing Confidence: wie vertrauenswuerdig ist die Anzeige selbst?

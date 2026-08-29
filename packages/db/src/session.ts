@@ -1,0 +1,36 @@
+import { sql } from "drizzle-orm";
+import type { Database } from "./client.ts";
+
+/**
+ * Jede Datenbankarbeit im Namen eines Menschen laeuft hierdurch.
+ *
+ * Zwei Dinge passieren: die Verbindung legt ihre erhoehten Rechte ab
+ * (`SET LOCAL ROLE paycheck_app`) und setzt die Kennung, an der die
+ * RLS-Richtlinien haengen. Beides ist auf die Transaktion begrenzt, damit
+ * kein Zustand in die naechste Anfrage sickert.
+ *
+ * Ohne diesen Rahmen sieht eine Abfrage keine Nutzerdaten. Das ist
+ * Absicht: der sichere Fall ist der Standardfall.
+ */
+export async function withUser<T>(
+  db: Database,
+  userId: string,
+  fn: (tx: Database) => Promise<T>,
+): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (db as any).transaction(async (tx: Database) => {
+    await tx.execute(sql`SET LOCAL ROLE paycheck_app`);
+    await tx.execute(sql`SELECT set_config('app.user_id', ${userId}, true)`);
+    return fn(tx);
+  });
+}
+
+/**
+ * Fuer Arbeiten ohne Nutzerbezug: Stellenimport, Taxonomie, Wartung.
+ * Beruehrt bewusst keine nutzerbezogenen Tabellen und wird nie fuer
+ * Anfragen aus der Oberflaeche verwendet.
+ */
+export async function withSystem<T>(db: Database, fn: (tx: Database) => Promise<T>): Promise<T> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (db as any).transaction(async (tx: Database) => fn(tx));
+}
