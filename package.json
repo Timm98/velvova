@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "packageManager": "pnpm@11.24.0",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -16,7 +18,8 @@
     "db:reset": "pnpm --filter @paycheck/db reset",
     "eval": "pnpm --filter @paycheck/ai eval",
     "setup": "pnpm install && pnpm db:migrate && pnpm db:seed",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "dev:session": "pnpm --filter @paycheck/db dev:session"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",

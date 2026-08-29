@@ -3,8 +3,7 @@ import Link from "next/link";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { evaluateGate } from "@paycheck/domain";
-import { toInterviewSession } from "@/lib/rows";
+import { loadGate } from "@/lib/gate";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { listJobsForUser, loadProfileContext, countSentApplications } from "@/lib/matching";
 import { diagnoseFunnel } from "@/lib/funnel";
@@ -35,16 +34,7 @@ export default async function DashboardPage() {
     countSentApplications(user.id),
   ]);
 
-  const [sessionRow] = await withUser(db, user.id, (tx) =>
-    tx
-      .select()
-      .from(schema.interviewSessions)
-      .where(eq(schema.interviewSessions.userId, user.id))
-      .orderBy(desc(schema.interviewSessions.updatedAt))
-      .limit(1),
-  );
-
-  const gate = evaluateGate(toInterviewSession(sessionRow), ctx.profileConfirmed);
+  const gate = await loadGate(user.id);
 
   const applications = await withUser(db, user.id, (tx) =>
     tx
@@ -74,11 +64,11 @@ export default async function DashboardPage() {
   // Genau ein naechster Schritt. Die Reihenfolge ist die Rangfolge.
   const nextAction = !gate.unlocked
     ? {
-        title: sessionRow
+        title: gate.hasAnySession
           ? `Dein Profil ist fast fertig — es fehlen noch ${gate.missingStages.length} Themen.`
           : `Lern ${brand.assistantName} kennen`,
         body: gate.reason,
-        cta: sessionRow ? "Gespraech fortsetzen" : "Gespraech beginnen",
+        cta: gate.hasAnySession ? "Gespraech fortsetzen" : "Gespraech beginnen",
         href: "/app/nina",
       }
     : reminders[0]

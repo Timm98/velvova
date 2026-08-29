@@ -5,7 +5,10 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts", "./schema": "./src/schema/index.ts" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "node --experimental-strip-types src/migrate.ts",
@@ -13,7 +16,8 @@
     "reset": "node --experimental-strip-types src/reset.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "dev:session": "node --experimental-strip-types src/dev-session.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.8",
