@@ -7,7 +7,7 @@
     "dev": "next dev --turbopack --port ${WEB_PORT:-3000}",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },

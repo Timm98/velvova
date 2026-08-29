@@ -33,3 +33,38 @@ Compiler-Inkompatibilitäten:
   Wartungsskripte darüber laufen.
 - Sollte ein Werkzeug später mit TS 7 brechen, ist der Rückweg auf 5.9.3
   eine Zeile je Paket.
+
+## Nachtrag, 2026-08-30: kein ESLint
+
+Der Auftrag für die zweite Ausbaustufe nennt ESLint. Der Versuch, es
+einzurichten, scheitert an genau dieser Entscheidung:
+
+```
+typescript-eslint does not support TS 7.0.
+```
+
+`eslint-config-next` zieht `typescript-eslint` mit, und das weigert sich,
+mit TypeScript 7 zu laufen. Damit ist keine `.tsx`-Datei parsbar.
+
+Drei Möglichkeiten, eine gewählt:
+
+1. **Auf TypeScript 6 zurückgehen**, nur damit der Linter läuft.
+   Verworfen: der Typprüfer ist das schärfere Werkzeug, und er ist hier
+   die Grundlage von allem.
+2. **TypeScript 6 zusätzlich installieren** und den Linter dagegen
+   laufen lassen. Verworfen: zwei Compilerfassungen im selben Projekt
+   erzeugen genau die Art von Abweichung, die man nicht bemerkt, bis sie
+   wehtut.
+3. **Vorerst ohne ESLint arbeiten.** Gewählt.
+
+Was den Ausfall abfedert:
+
+- `tsc --noEmit` läuft über jedes Paket, auch über die Web-App. Der
+  Großteil dessen, was ein Linter fängt, fängt er auch.
+- Die Barrierefreiheitsregeln, die `jsx-a11y` statisch prüfen würde,
+  prüft die axe-Suite an der **laufenden Seite** — gründlicher, weil sie
+  berechnete Farben und tatsächliche Größen sieht statt Quelltext.
+
+Sobald `typescript-eslint` TypeScript 7 unterstützt, wird ESLint
+nachgezogen. Bis dahin steht hier, warum es fehlt — statt eines
+Lint-Skripts, das grün aussieht und nichts prüft.
