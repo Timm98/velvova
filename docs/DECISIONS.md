@@ -38,11 +38,19 @@ serverseitig gerenderte HTML sah dabei vollständig korrekt aus, weshalb
 es lange nicht auffiel. Erst ein E2E-Test, der auf die *Wirkung* eines
 Klicks wartete, hat es aufgedeckt.
 
-**3. Vier Barrierefreiheitsverstöße.**
+**3. Sieben Barrierefreiheitsverstöße.**
 Kontrast nur gegen die hellste Fläche geprüft, Zustände über Deckkraft
 signalisiert, Links nur an der Farbe erkennbar, weiße Schrift auf hellem
-Akzent im Dunkelmodus. Alle vier in
+Akzent im Dunkelmodus, die untere Navigation überdeckte Schaltflächen,
+scrollbare Bereiche waren per Tastatur unerreichbar, und die Sprungmarke
+machte die Seite seitlich scrollbar. Alle sieben in
 [ACCESSIBILITY.md](ACCESSIBILITY.md) beschrieben.
+
+Der fünfte ist der lehrreichste: eine sticky Navigation am unteren Rand
+ist ein verbreitetes Muster, und der Inhalt dahinter fällt niemandem
+auf, der scrollen kann. Behoben nicht durch Abschalten der Regel,
+sondern durch ein Rasterlayout, in dem die Navigation neben dem Inhalt
+liegt statt darüber.
 
 Dazu zwei Fehler in der eigenen Arbeit: die Freischaltung hing an einer
 einzelnen Gesprächssitzung statt an der Person (ein zweites Gespräch

@@ -125,7 +125,7 @@ export default async function ApplicationsPage({
       </nav>
 
       {view === "board" && (
-        <div className="scroll-x">
+        <div className="scroll-x" tabIndex={0} role="region" aria-label="Bewerbungen nach Stand">
           <div style={{ display: "flex", gap: "var(--space-4)", alignItems: "flex-start", paddingBottom: "var(--space-3)" }}>
             {byStage.map((group) => (
               <section
@@ -243,10 +243,16 @@ export default async function ApplicationsPage({
           <Stack gap={4}>
             <p style={{ color: "var(--text-secondary)" }}>{funnel.headline}</p>
 
-            <dl
+            {/* Der scrollbare Rahmen liegt UM die Liste, nicht auf ihr:
+                ein role="region" auf dem <dl> nimmt der Liste ihre
+                Semantik, und die <dt>/<dd> verlieren ihren Bezug. */}
+            <div
               className="scroll-x"
-              style={{ display: "flex", gap: "var(--space-6)", margin: 0, paddingBottom: 4 }}
+              tabIndex={0}
+              role="region"
+              aria-label="Zahlen des Bewerbungstrichters"
             >
+            <dl style={{ display: "flex", gap: "var(--space-6)", margin: 0, paddingBottom: 4 }}>
               {[
                 ["Angesehen", funnel.counts.viewed],
                 ["Gemerkt", funnel.counts.saved],
@@ -264,6 +270,7 @@ export default async function ApplicationsPage({
                 </div>
               ))}
             </dl>
+            </div>
 
             {funnel.findings.length > 0 && (
               <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>

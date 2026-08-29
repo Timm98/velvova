@@ -21,7 +21,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { t, brand, locale, isDemoMode } = await getPageContext();
 
   return (
-    <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
+    <div className="app-shell">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
@@ -43,6 +43,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             display: "flex",
             alignItems: "center",
             gap: "var(--space-5)",
+            // Ohne Umbruch schiebt die rechte Gruppe die Seite auf
+            // schmalen Geraeten seitlich hinaus.
+            flexWrap: "wrap",
           }}
         >
           <Link href="/app" style={{ fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap" }}>
@@ -59,7 +62,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             }}
           />
 
-          <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+          <div
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              alignItems: "center",
+              gap: "var(--space-3)",
+              flexWrap: "wrap",
+            }}
+          >
             <div style={{ display: "none" }} className="md-show">
               <LocaleToggle current={locale} />
             </div>
@@ -98,16 +109,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      <main
-        id="inhalt"
-        style={{
-          flex: 1,
-          maxWidth: 1280,
-          width: "100%",
-          margin: "0 auto",
-          padding: "var(--space-6) var(--space-5) var(--space-9)",
-        }}
-      >
+      <main id="inhalt" className="app-main">
         {isDemoMode && (
           <div style={{ marginBottom: "var(--space-5)" }}>
             <DemoBadge />
@@ -127,6 +129,39 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
 
       <p className="sr-only">Angemeldet als {user.email}</p>
+
+      <style>{`
+        /*
+         * Das Geruest als Raster statt als Fluss.
+         *
+         * Mit einer sticky Navigation am unteren Rand liegt der Inhalt an
+         * manchen Scrollpositionen DAHINTER - Schaltflaechen sind dann
+         * teilweise verdeckt, und axe meldet das zu Recht als zu kleines
+         * Beruehrungsziel.
+         *
+         * Als Raster mit drei Zeilen bekommt der Inhaltsbereich seine
+         * eigene Scrollflaeche. Die Navigation liegt daneben, nie
+         * darueber - an keiner Scrollposition.
+         */
+        .app-shell {
+          min-height: 100dvh;
+          display: grid;
+          grid-template-rows: auto minmax(0, 1fr) auto;
+        }
+        .app-main {
+          max-width: 1280px;
+          width: 100%;
+          margin: 0 auto;
+          padding: var(--space-6) var(--space-5) var(--space-9);
+          overflow-y: auto;
+        }
+        @media (min-width: 768px) {
+          /* Auf breiten Geraeten liegt die Navigation oben; der Inhalt
+             darf dann wie gewohnt mit der Seite scrollen. */
+          .app-shell { display: flex; flex-direction: column; }
+          .app-main { flex: 1; overflow-y: visible; }
+        }
+      `}</style>
     </div>
   );
 }

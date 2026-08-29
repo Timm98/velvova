@@ -80,28 +80,56 @@ button, [role="button"], a.tap, input[type="checkbox"], input[type="radio"] {
 }
 button.compact { min-height: 36px; }
 
-/* Sprungmarke: unsichtbar, bis sie den Fokus bekommt */
+/*
+ * Sprungmarke: unsichtbar, bis sie den Fokus bekommt.
+ *
+ * Bewusst ueber Zuschnitt statt ueber "left: -9999px". Die alte Technik
+ * schiebt das Element aus dem Sichtfeld heraus und erzeugt damit eine
+ * horizontale Scrollflaeche - auf schmalen Geraeten laesst sich die
+ * ganze Seite seitlich schieben. Der Zuschnitt nimmt dem Element seine
+ * Flaeche, ohne es aus dem Dokumentfluss zu werfen.
+ */
 .skip-link {
   position: absolute;
-  left: -9999px;
-  top: var(--space-2);
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
   z-index: 100;
+}
+.skip-link:focus {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-4);
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
   padding: var(--space-3) var(--space-4);
   background: var(--surface-raised);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-lg);
 }
-.skip-link:focus { left: var(--space-4); }
 
-/* Nur fuer Screenreader */
+/* Dieselbe Technik fuer rein akustische Inhalte. */
+
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
 }
 
-/* Breite Inhalte scrollen in sich, nie die Seite */
+/*
+ * Breite Inhalte scrollen in sich, nie die Seite.
+ *
+ * Solche Bereiche brauchen tabIndex={0}: sonst laesst sich der Inhalt
+ * per Tastatur nicht erreichen, wenn er keine eigenen Bedienelemente
+ * enthaelt. Der Fokusring macht sichtbar, wo man sich befindet.
+ */
 .scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.scroll-x:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
 @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }

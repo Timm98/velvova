@@ -245,9 +245,19 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Gespräch stellt eine Frage und erklärt, warum", async ({ page }) => {
     await page.goto("/app/nina");
-    await expect(page.getByRole("button", { name: /Warum diese Frage/ })).toBeVisible();
-    await page.getByRole("button", { name: /Warum diese Frage/ }).click();
-    await expect(page.getByText(/Damit klar ist|Vervollständigt das Bild|Grundlage für alles Spätere|Grenzen werden nie/).first()).toBeVisible();
+    const button = page.getByRole("button", { name: /Warum diese Frage/ });
+    await expect(button).toBeVisible();
+    await expect(button).toHaveAttribute("aria-expanded", "false");
+
+    const before = (await page.textContent("main")) ?? "";
+    await button.click();
+
+    // Die Zusage ist, dass eine Erklärung erscheint - nicht, welcher
+    // Satz. Der Text hängt vom aktuellen Thema ab; ihn aufzuzählen
+    // machte den Test zu einer Kopie der Anwendung.
+    await expect(button).toHaveAttribute("aria-expanded", "true");
+    const after = (await page.textContent("main")) ?? "";
+    expect(after.length).toBeGreaterThan(before.length + 20);
   });
 
   test("Fortschritt zählt Themen statt Prozente", async ({ page }) => {
@@ -287,14 +297,35 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.waitForURL(/\/app\/applications\/[0-9a-f-]{36}/, { timeout: 20_000 });
 
     await page.getByRole("button", { name: /Kurze Bewerbungs-E-Mail/ }).click();
-    await expect(page.getByRole("textbox", { name: /Dokumentinhalt/ })).toBeVisible({ timeout: 20_000 });
 
-    // Eine erfundene Kennzahl einfügen und speichern.
-    const editor = page.getByRole("textbox", { name: /Dokumentinhalt/ });
-    await editor.fill("Ich habe den Umsatz meines Teams um 40 Prozent gesteigert.");
-    await page.getByRole("button", { name: "Speichern" }).click();
+    // Auf den INHALT des neuen Dokuments warten, nicht nur auf die
+    // Rueckmeldung: die Meldung erscheint, bevor die Seite neu geladen
+    // ist. Wer frueher tippt, tippt in den alten Editor, der beim
+    // Eintreffen des neuen ersetzt wird - der Text waere weg.
+    const editor = page.locator("#artifact");
+    await expect(editor).toHaveValue(/Guten Tag/, { timeout: 30_000 });
 
-    await expect(page.getByText("nicht belegt").first()).toBeVisible({ timeout: 20_000 });
+    // Warten, bis das Neuladen nach der Erzeugung durch ist. Es landet
+    // NACH der Erfolgsmeldung und setzt den Editor auf den Serverstand
+    // zurück - eine vorher getippte Eingabe wäre weg.
+    await page.waitForLoadState("networkidle");
+
+    // Eine erfundene Kennzahl einfügen und speichern. Die Zahl wechselt
+    // je Lauf: stünde derselbe Satz schon im Dokument, gäbe es nichts zu
+    // speichern, und der Knopf bliebe zu Recht aus.
+    const erfundeneZahl = 20 + (Date.now() % 60);
+    const behauptung = `Ich habe den Umsatz meines Teams um ${erfundeneZahl} Prozent gesteigert.`;
+    await editor.fill(behauptung);
+    await expect(editor).toHaveValue(behauptung);
+
+    // Erst wenn der Knopf freigeschaltet ist, klicken: er haengt am
+    // Zustand "geaendert", und der wird erst nach dem Eingabeereignis
+    // gesetzt.
+    const save = page.getByRole("button", { name: "Speichern" });
+    await expect(save).toBeEnabled({ timeout: 20_000 });
+    await save.click();
+
+    await expect(page.getByText("nicht belegt").first()).toBeVisible({ timeout: 30_000 });
     await expect(page.getByRole("button", { name: "Dokument freigeben" })).toBeDisabled();
   });
 

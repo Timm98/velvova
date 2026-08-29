@@ -115,7 +115,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
       {/* --- Die fünf Bewertungen, getrennt --- */}
       <Card>
-        <div className="scroll-x" style={{ display: "flex", gap: "var(--space-7)", paddingBottom: 4 }}>
+        <div
+          className="scroll-x"
+          tabIndex={0}
+          role="region"
+          aria-label="Die fuenf Bewertungen dieser Stelle"
+          style={{ display: "flex", gap: "var(--space-7)", paddingBottom: 4 }}
+        >
           <FitDisplay fit={fit} t={t} />
           <ConfidenceDisplay confidence={confidence} t={t} />
           <JobQualityDisplay quality={jobQuality} t={t} />

@@ -74,12 +74,15 @@ export function BottomNav({ labels }: { labels: NavLabels }) {
         aria-label="Hauptbereiche"
         className="app-nav-bottom"
         style={{
-          position: "sticky",
-          bottom: 0,
+          // Bewusst NICHT sticky: das App-Geruest ist ein Raster mit drei
+          // Zeilen, und der Inhaltsbereich scrollt in sich. Eine sticky
+          // Navigation wuerde den Inhalt an manchen Scrollpositionen
+          // ueberdecken - axe meldet dann zu Recht verdeckte
+          // Beruehrungsziele, und der Mensch kann eine Schaltflaeche
+          // tatsaechlich nicht treffen.
           background: "var(--surface-raised)",
           borderTop: "1px solid var(--border-subtle)",
           paddingBottom: "env(safe-area-inset-bottom)",
-          zIndex: 20,
         }}
       >
         <ul style={{ display: "flex", listStyle: "none" }}>

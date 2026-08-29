@@ -53,17 +53,25 @@ const TONE_STYLE: Record<ButtonTone, CSSProperties> = {
 export function buttonStyle(tone: ButtonTone = "secondary", full = false): CSSProperties {
   return {
     ...TONE_STYLE[tone],
-    display: "inline-flex",
+    // Block-Element statt inline: bei inline-flex misst axe die Zeilen-
+    // hoehe (rund 17px) statt der tatsaechlichen Hoehe (51px) und meldet
+    // ein zu kleines Beruehrungsziel. width: fit-content haelt die
+    // Darstellung unveraendert.
+    display: "flex",
+    width: full ? "100%" : "fit-content",
     alignItems: "center",
     justifyContent: "center",
     gap: "var(--space-2)",
     padding: "var(--space-3) var(--space-5)",
+    // Mindesthoehe hier, nicht nur global: die CSS-Regel greift fuer
+    // <button>, aber ein <a> mit Knopf-Aussehen bliebe flacher als die
+    // von WCAG 2.2 geforderten 24 Pixel.
+    minHeight: 44,
     borderRadius: "var(--radius-md)",
     fontSize: "var(--text-sm)",
     fontWeight: 500,
     cursor: "pointer",
     textDecoration: "none",
-    width: full ? "100%" : undefined,
     transition: `background var(--duration-fast) var(--ease)`,
   };
 }

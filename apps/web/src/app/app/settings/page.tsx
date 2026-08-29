@@ -82,7 +82,10 @@ export default async function SettingsPage() {
           <Stack gap={5}>
             <h2 style={{ fontSize: "var(--text-lg)" }}>Sprache, Ort und Benachrichtigungen</h2>
 
-            <div style={{ display: "grid", gap: "var(--space-4)", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))" }}>
+            {/* Groesserer Abstand: WCAG 2.2 verlangt, dass benachbarte
+                Ziele einander nicht verdecken. Bei var(--space-4) lagen
+                die Auswahlfelder auf schmalen Geraeten zu eng. */}
+            <div style={{ display: "grid", gap: "var(--space-5)", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 200px), 1fr))" }}>
               <div style={{ display: "grid", gap: "var(--space-2)" }}>
                 <label htmlFor="locale" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
                   {t("settings.language")}

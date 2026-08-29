@@ -42,6 +42,7 @@ export default async function LandingPage() {
             alignItems: "center",
             justifyContent: "space-between",
             gap: "var(--space-4)",
+            flexWrap: "wrap",
           }}
         >
           <Link href="/" style={{ fontWeight: 600, fontSize: "var(--text-lg)", textDecoration: "none" }}>
@@ -50,7 +51,7 @@ export default async function LandingPage() {
 
           <nav
             aria-label="Hauptnavigation"
-            style={{ display: "flex", alignItems: "center", gap: "var(--space-4)" }}
+            style={{ display: "flex", alignItems: "center", gap: "var(--space-4)", flexWrap: "wrap" }}
           >
             <Link
               href="/how-it-works"

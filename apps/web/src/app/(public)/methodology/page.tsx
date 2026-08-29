@@ -88,7 +88,7 @@ export default function MethodologyPage() {
           festgelegten Grenzen anpassen.
         </p>
         <Card padded={false}>
-          <div className="scroll-x">
+          <div className="scroll-x" tabIndex={0} role="region" aria-label="Die sieben Faktoren der Passung">
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
               <thead>
                 <tr style={{ textAlign: "left" }}>

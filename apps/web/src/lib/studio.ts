@@ -103,7 +103,20 @@ export async function loadStudio(applicationId: string): Promise<StudioView | nu
   const provider = selectDeliveryProvider(cfg);
   const evidence = ctx.evidence.map(toDomainEvidence);
 
-  const artifacts = ctx.artifacts.map((a) => {
+  /**
+   * Nur die jeweils neueste Fassung je Art wird geprueft.
+   *
+   * Vorher lief die Claim-Pruefung ueber ALLE Fassungen. Mit jeder
+   * erzeugten Version wurde die Seite langsamer, bis ein E2E-Test in
+   * die Zeitgrenze lief. Angezeigt wird ohnehin immer nur eine Fassung.
+   */
+  const newestPerKind = new Map<string, (typeof ctx.artifacts)[number]>();
+  for (const a of ctx.artifacts) {
+    const seen = newestPerKind.get(a.kind);
+    if (!seen || a.version > seen.version) newestPerKind.set(a.kind, a);
+  }
+
+  const artifacts = [...newestPerKind.values()].map((a) => {
     const analysis = analyseClaims(a.id, a.content, evidence);
     const approval = checkApproval(analysis);
     return {

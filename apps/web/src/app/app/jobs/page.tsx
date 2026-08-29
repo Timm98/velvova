@@ -209,6 +209,9 @@ export default async function JobsPage({
                   {/* Die fünf Bewertungen, getrennt */}
                   <div
                     className="scroll-x"
+                    tabIndex={0}
+                    role="region"
+                    aria-label={`Bewertungen fuer ${j.job.title}`}
                     style={{ display: "flex", gap: "var(--space-6)", paddingBottom: 4 }}
                   >
                     <FitDisplay fit={j.fit} t={t} compact />

@@ -36,6 +36,29 @@ durch ihre Stellung erkennbar.
 2.8:1. Neues Token `--accent-on`: weiß im Hellmodus (5.96:1), dunkel im
 Dunkelmodus (6.48:1).
 
+**5. Die untere Navigation überdeckte Inhalte.**
+Als `position: sticky; bottom: 0` lag sie an manchen Scrollpositionen
+über dem Inhalt — Schaltflächen darunter waren teilweise verdeckt und
+ließen sich nicht sicher treffen. axe meldete das als zu kleines
+Berührungsziel und nannte die Navigationslinks als überdeckende
+Elemente.
+
+Behoben nicht durch Abschalten der Regel, sondern durch ein anderes
+Gerüst: Das App-Layout ist auf schmalen Geräten ein Raster mit drei
+Zeilen (Kopf, scrollender Inhalt, Navigation). Die Navigation liegt
+neben dem Inhalt, nie darüber — an keiner Scrollposition.
+
+**6. Scrollbare Bereiche waren per Tastatur unerreichbar.**
+Die waagerecht scrollenden Bewertungsleisten enthalten keine eigenen
+Bedienelemente. Ohne `tabIndex={0}` konnte man sie mit der Tastatur nicht
+scrollen. Jetzt sind sie fokussierbar, benannt und tragen einen
+sichtbaren Fokusring.
+
+**7. Die Sprungmarke erzeugte eine Scrollfläche.**
+`left: -9999px` schiebt das Element aus dem Sichtfeld und macht die Seite
+seitlich scrollbar. Jetzt über Zuschnitt (`clip-path`), der dem Element
+seine Fläche nimmt, ohne es aus dem Dokumentfluss zu werfen.
+
 ## Umgesetzt
 
 | Kriterium | Umsetzung |

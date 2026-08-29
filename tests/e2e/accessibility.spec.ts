@@ -62,12 +62,17 @@ test.describe("axe im dunklen Modus", () => {
 });
 
 test.describe("Tastaturbedienung", () => {
-  test("Die Sprungmarke ist der erste Fokus und funktioniert", async ({ page }) => {
+  test("Die Sprungmarke ist der erste Fokus und funktioniert", async ({ page, isMobile }) => {
+    // Auf einem Touchgeraet gibt es keine Tabulatortaste. Die Pruefung
+    // gehoert auf Geraete mit Tastatur - dort laeuft sie auch.
+    test.skip(!!isMobile, "Kein Tastaturfokus auf Touchgeraeten");
     await page.goto("/");
     await page.keyboard.press("Tab");
 
-    const focused = await page.evaluate(() => document.activeElement?.textContent?.trim());
-    expect(focused).toMatch(/Zum Inhalt springen/);
+    // Ueber den Locator statt ueber activeElement.textContent: letzteres
+    // liefert bei einem Container den gesamten Seitentext.
+    const skipLink = page.locator("a.skip-link");
+    await expect(skipLink).toBeFocused();
 
     await page.keyboard.press("Enter");
     await expect(page).toHaveURL(/#inhalt/);
@@ -121,6 +126,10 @@ test.describe("Tastaturbedienung", () => {
       const targets = [...document.querySelectorAll("button, a[href], input[type=checkbox]")];
       return targets
         .filter((el) => {
+          // Visuell versteckte Elemente - Sprungmarke, sr-only - sind
+          // keine Beruehrungsziele. Sie werden sichtbar, sobald sie den
+          // Fokus bekommen, und dann gelten die Masse.
+          if (el.classList.contains("skip-link") || el.classList.contains("sr-only")) return false;
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) return false;
           // WCAG 2.2 AA verlangt mindestens 24x24 CSS-Pixel.

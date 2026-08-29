@@ -52,7 +52,7 @@ export default async function OffersPage() {
       <PageHeader title={t("nav.offers")} lead="Nicht nur das Grundgehalt - das bestimmt selten den Alltag." />
 
       <Card padded={false}>
-        <div className="scroll-x">
+        <div className="scroll-x" tabIndex={0} role="region" aria-label="Angebote im Vergleich">
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--text-sm)" }}>
             <thead>
               <tr style={{ textAlign: "left" }}>
