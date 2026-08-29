@@ -1,0 +1,86 @@
+name: Prüfung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.24.0 }
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Abhängigkeiten
+        run: pnpm install --frozen-lockfile
+
+      # Die Datenbank braucht keinen Dienst: PGlite läuft im Prozess.
+      - name: Migrationen und Seed
+        run: pnpm db:migrate && pnpm db:seed
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit- und Integrationstests
+        run: pnpm test
+
+      - name: AI-Eval
+        run: pnpm eval
+
+      - name: Produktionsbuild
+        run: pnpm build
+
+      - name: Browser für E2E
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E und Barrierefreiheit
+        run: pnpm test:e2e --project=desktop-1440 --project=mobile-390
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-bericht
+          path: playwright-report/
+          retention-days: 7
+
+  sicherheit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with: { version: 11.24.0 }
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+
+      - name: Bekannte Schwachstellen in Abhängigkeiten
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
+      # Ein versehentlich eingecheckter Schlüssel ist der häufigste
+      # Sicherheitsvorfall in kleinen Projekten.
+      - name: Nach Secrets suchen
+        run: |
+          if git grep -nE '(sk-ant-|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY)' -- ':!*.md'; then
+            echo "Mögliches Secret im Repository gefunden."
+            exit 1
+          fi
+          echo "Keine Secret-Muster gefunden."
+
+      - name: .env darf nicht versioniert sein
+        run: |
+          if git ls-files --error-unmatch .env 2>/dev/null; then
+            echo ".env liegt im Repository."
+            exit 1
+          fi
+          echo ".env ist nicht versioniert."

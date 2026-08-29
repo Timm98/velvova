@@ -1,0 +1,28 @@
+{
+  "name": "@paycheck/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "dev": "expo start",
+    "ios": "expo start --ios",
+    "android": "expo start --android",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@paycheck/design-tokens": "workspace:*",
+    "@paycheck/domain": "workspace:*",
+    "@paycheck/i18n": "workspace:*",
+    "expo": "57.0.18",
+    "expo-secure-store": "~15.0.7",
+    "expo-status-bar": "~3.0.8",
+    "react": "19.2.8",
+    "react-native": "0.83.2"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.7",
+    "typescript": "7.0.2"
+  }
+}

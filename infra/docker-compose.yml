@@ -1,0 +1,56 @@
+# Optionale lokale Dienste.
+#
+# Wichtig: fuer die Entwicklung wird NICHTS davon gebraucht. Das Projekt
+# laeuft mit PGlite ohne Docker (siehe docs/adr/0003). Diese Datei ist
+# fuer den Fall gedacht, dass jemand gegen einen echten Postgres-Server
+# arbeiten oder den E-Mail-Weg tatsaechlich ausprobieren will.
+#
+#   docker compose -f infra/docker-compose.yml up -d
+#   # dann in .env: DATABASE_DRIVER=pg und DATABASE_URL setzen
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: paycheck-postgres
+    environment:
+      POSTGRES_USER: paycheck
+      POSTGRES_PASSWORD: nur-lokal-nicht-produktiv
+      POSTGRES_DB: paycheck
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U paycheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Faengt ausgehende E-Mail ab, statt sie zuzustellen. Damit laesst sich
+  # der Versandweg pruefen, ohne dass eine Nachricht jemanden erreicht.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: paycheck-mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Weboberflaeche
+    environment:
+      MP_MAX_MESSAGES: 500
+
+  # S3-kompatibler Speicher fuer Uploads.
+  minio:
+    image: minio/minio:latest
+    container_name: paycheck-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: paycheck
+      MINIO_ROOT_PASSWORD: nur-lokal-nicht-produktiv
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+volumes:
+  postgres-data:
+  minio-data:
