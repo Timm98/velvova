@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getPageContext } from "@/lib/locale";
+import { supabaseStatus } from "@/lib/supabase/config";
 import { sourceStatuses } from "@paycheck/jobs";
 import { Badge, Card } from "@/components/ui";
 import { RefreshJobs } from "./RefreshJobs";
@@ -17,8 +18,23 @@ export const dynamic = "force-dynamic";
 export default async function IntegrationsPage() {
   const { integrations } = await getPageContext();
   const sources = sourceStatuses();
+  const supabase = supabaseStatus();
 
   const services = [
+    {
+      name: "Supabase",
+      state: supabase.configured
+        ? supabase.serviceRole
+          ? "verbunden"
+          : "teilweise"
+        : "nicht verbunden",
+      ok: supabase.configured && supabase.serviceRole,
+      detail: supabase.summary,
+      env:
+        supabase.missing.length > 0
+          ? supabase.missing.join(", ")
+          : "NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY",
+    },
     {
       name: "KI-Anbieter",
       state: integrations.ai === "connected" ? "verbunden" : "nicht verbunden",
