@@ -1,0 +1,196 @@
+/*
+ * Farbtokens.
+ *
+ * Warme, neutrale Grundtoene statt des ueblichen kuehlen Blaugrau. Ein
+ * einziger warmer Markenakzent, sparsam eingesetzt, plus ein deutlich
+ * zurueckhaltenderer Ton fuer alles, was von der Assistenz kommt - so
+ * bleibt unterscheidbar, was das Produkt sagt und was ein Mensch tut.
+ *
+ * Die Kontraste sind auf WCAG 2.2 AA ausgelegt: Fliesstext mindestens
+ * 4.5:1, grosse Schrift und Bedienelemente mindestens 3:1. Der Hell-Modus
+ * ist der Standard, Dunkel und System sind gleichwertig gepflegt.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Flaechen */
+  --surface-page: #faf8f5;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2eee8;
+  --surface-inset: #ebe5dc;
+
+  /* Text */
+  --text-primary: #22201d;
+  --text-secondary: #56504a;
+  --text-muted: #7a736b;
+  --text-inverse: #faf8f5;
+
+  /* Linien */
+  --border-subtle: #e3ddd3;
+  --border-default: #d2cabd;
+  --border-strong: #b3a898;
+
+  /* Markenakzent: warmes Terrakotta */
+  --accent: #a8442a;
+  --accent-hover: #8f381f;
+  --accent-subtle: #fbeee9;
+  --accent-border: #e8c4b6;
+  --accent-text: #8f381f;
+
+  /* Assistenz: ruhiges Indigo, bewusst leiser als der Markenakzent */
+  --assistant: #4a5578;
+  --assistant-subtle: #eef0f6;
+  --assistant-border: #ccd2e3;
+  --assistant-text: #3b4463;
+
+  /* Bedeutungsfarben. Nie alleiniger Traeger einer Information. */
+  --positive: #2f6a45;
+  --positive-subtle: #e9f2ec;
+  --caution: #8a6115;
+  --caution-subtle: #f9f1e0;
+  --critical: #9c2f2f;
+  --critical-subtle: #f8eaea;
+  --neutral: #5b5751;
+  --neutral-subtle: #f0ece6;
+
+  /* Schatten statt harter Rahmen */
+  --shadow-sm: 0 1px 2px rgb(34 32 29 / 0.05);
+  --shadow-md: 0 2px 8px rgb(34 32 29 / 0.07), 0 1px 2px rgb(34 32 29 / 0.04);
+  --shadow-lg: 0 8px 24px rgb(34 32 29 / 0.09), 0 2px 6px rgb(34 32 29 / 0.05);
+
+  /* Radien */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Abstaende: 4px-Raster */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 24px;  --space-6: 32px;  --space-7: 48px;  --space-8: 64px;
+  --space-9: 96px;
+
+  /* Typografie */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-xs: 0.8125rem;   --leading-xs: 1.5;
+  --text-sm: 0.9375rem;   --leading-sm: 1.6;
+  --text-base: 1.0625rem; --leading-base: 1.65;
+  --text-lg: 1.25rem;     --leading-lg: 1.5;
+  --text-xl: 1.5rem;      --leading-xl: 1.35;
+  --text-2xl: 1.9375rem;  --leading-2xl: 1.25;
+  --text-3xl: 2.5rem;     --leading-3xl: 1.15;
+  --text-4xl: 3.25rem;    --leading-4xl: 1.08;
+
+  --measure: 68ch;
+
+  /* Bewegung, nur funktional */
+  --ease: cubic-bezier(0.2, 0, 0.15, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-page: #16151a;
+  --surface-raised: #201f26;
+  --surface-sunken: #111014;
+  --surface-inset: #2a2831;
+
+  --text-primary: #ece8e3;
+  --text-secondary: #b5aea6;
+  --text-muted: #8b847c;
+  --text-inverse: #16151a;
+
+  --border-subtle: #2e2c35;
+  --border-default: #3d3a45;
+  --border-strong: #565161;
+
+  --accent: #e08163;
+  --accent-hover: #eb9376;
+  --accent-subtle: #2c1f1a;
+  --accent-border: #4d3327;
+  --accent-text: #f0a184;
+
+  --assistant: #9aa5cc;
+  --assistant-subtle: #1e202c;
+  --assistant-border: #333853;
+  --assistant-text: #aeb8dc;
+
+  --positive: #74c497;
+  --positive-subtle: #172319;
+  --caution: #d9ab5c;
+  --caution-subtle: #262015;
+  --critical: #e08585;
+  --critical-subtle: #2a1a1a;
+  --neutral: #a09a92;
+  --neutral-subtle: #232128;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
+}
+
+/*
+ * Systemvorgabe. Greift nur, wenn der Mensch nichts anderes gewaehlt hat -
+ * eine ausdrueckliche Wahl gewinnt in beide Richtungen.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --surface-page: #16151a;
+    --surface-raised: #201f26;
+    --surface-sunken: #111014;
+    --surface-inset: #2a2831;
+
+    --text-primary: #ece8e3;
+    --text-secondary: #b5aea6;
+    --text-muted: #8b847c;
+    --text-inverse: #16151a;
+
+    --border-subtle: #2e2c35;
+    --border-default: #3d3a45;
+    --border-strong: #565161;
+
+    --accent: #e08163;
+    --accent-hover: #eb9376;
+    --accent-subtle: #2c1f1a;
+    --accent-border: #4d3327;
+    --accent-text: #f0a184;
+
+    --assistant: #9aa5cc;
+    --assistant-subtle: #1e202c;
+    --assistant-border: #333853;
+    --assistant-text: #aeb8dc;
+
+    --positive: #74c497;
+    --positive-subtle: #172319;
+    --caution: #d9ab5c;
+    --caution-subtle: #262015;
+    --critical: #e08585;
+    --critical-subtle: #2a1a1a;
+    --neutral: #a09a92;
+    --neutral-subtle: #232128;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-md: 0 2px 8px rgb(0 0 0 / 0.45), 0 1px 2px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 8px 24px rgb(0 0 0 / 0.5), 0 2px 6px rgb(0 0 0 / 0.35);
+  }
+}
+
+/* Wer weniger Bewegung eingestellt hat, bekommt weniger Bewegung. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
