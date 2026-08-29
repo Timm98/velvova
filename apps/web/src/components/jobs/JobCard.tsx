@@ -104,7 +104,7 @@ export function JobCard({
         blocked ? "border-critical/25" : "border-line",
       )}
     >
-      <div className="flex flex-col gap-5 p-5 sm:flex-row sm:gap-6">
+      <div className="flex flex-col gap-5 p-5 lg:flex-row lg:gap-6">
         <div className="min-w-0 flex-1">
           <div className="flex items-start gap-3.5">
             <CompanyMark name={job.companyName} />
@@ -181,10 +181,10 @@ export function JobCard({
         </div>
 
         {/* Die Bewertung rechts, deutlich abgesetzt. */}
-        <div className="flex shrink-0 flex-row items-start gap-6 border-line sm:w-[180px] sm:flex-col sm:gap-5 sm:border-l sm:pl-6">
+        <div className="flex shrink-0 flex-row flex-wrap items-start gap-x-8 gap-y-4 border-t border-line pt-4 lg:w-[180px] lg:flex-col lg:gap-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
           <ScoreRing value={fit.score} label={t("jobs.fit")} band={bandText} />
           <ConfidenceMeter level={confidence.level} label={t("jobs.confidence")} />
-          {action && <div className="relative z-10 sm:mt-auto">{action}</div>}
+          {action && <div className="relative z-10 ml-auto lg:ml-0 lg:mt-auto">{action}</div>}
         </div>
       </div>
     </article>

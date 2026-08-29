@@ -19,6 +19,7 @@ const VIEWPORTS = [
 
 const PUBLIC_PAGES = [
   ["landing", "/"],
+  ["product", "/product"],
   ["how-it-works", "/how-it-works"],
   ["login", "/login"],
   ["register", "/register"],
@@ -31,6 +32,8 @@ const APP_PAGES = [
   ["profile", "/app/profile"],
   ["applications", "/app/applications"],
   ["settings", "/app/settings"],
+  ["settings-language", "/app/settings/language-region"],
+  ["settings-integrations", "/app/settings/integrations"],
 ];
 
 const dir = `docs/screenshots/${LABEL}`;
@@ -59,6 +62,16 @@ for (const vp of VIEWPORTS) {
     }
   } else {
     console.warn(`Anmeldung fehlgeschlagen (${login?.status()}) — App-Seiten übersprungen.`);
+  }
+
+  const jobLink = await page
+    .goto(`${BASE}/app/jobs`, { waitUntil: "networkidle" })
+    .then(() => page.locator("article h3 a").first().getAttribute("href"))
+    .catch(() => null);
+
+  if (jobLink) {
+    await page.goto(`${BASE}${jobLink}`, { waitUntil: "networkidle" });
+    await page.screenshot({ path: `${dir}/${vp.name}--job-detail.png`, fullPage: true });
   }
 
   await context.close();

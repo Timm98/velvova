@@ -247,7 +247,7 @@ export function AppShell({
       </div>
 
       {/* ── Inhalt ──────────────────────────────────────────────── */}
-      <div className="grid min-h-dvh grid-rows-[auto_minmax(0,1fr)_auto] md:block md:min-h-0">
+      <div className="grid min-h-dvh min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] md:block md:min-h-0">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-line bg-page/85 px-4 py-2.5 backdrop-blur-md md:px-7 md:py-3">
           {/* Marke nur schmal — auf dem Desktop steht sie in der Leiste. */}
           <Link href="/app" className="flex items-center gap-2 md:hidden">
@@ -324,7 +324,7 @@ export function AppShell({
         {/* Navigation unten — im Raster, nicht darüber */}
         <nav
           aria-label="Hauptbereiche"
-          className="border-t border-line bg-raised pb-[env(safe-area-inset-bottom)] md:hidden"
+          className="app-nav-bottom border-t border-line bg-raised pb-[env(safe-area-inset-bottom)] md:hidden"
         >
           <ul className="flex">
             {PRIMARY.filter((i) => i.mobile).map((item) => {

@@ -302,6 +302,11 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
     await expect(page.getByText(answer.slice(0, 40), { exact: false }).first()).toBeVisible({ timeout: 20_000 });
 
+    // Das Absenden loest eine Server Action mit anschliessender
+    // Neuvalidierung aus. Faehrt man sofort weiter, faellt die eigene
+    // Navigation der noch laufenden in den Ruecken - der Fehler sah wie
+    // ein Produktfehler aus und war einer im Test.
+    await page.waitForLoadState("networkidle");
     await page.goto("/app/profile");
     await expect(page.getByText(answer.slice(0, 40), { exact: false }).first()).toBeVisible();
   });

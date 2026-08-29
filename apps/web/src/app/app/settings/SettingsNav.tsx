@@ -19,7 +19,7 @@ export function SettingsNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Einstellungsbereiche">
+    <nav aria-label="Einstellungsbereiche" className="min-w-0">
       {/* Auf schmalen Geräten waagerecht scrollbar — mit Tastaturzugang,
           sonst ist der überstehende Teil ohne Maus unerreichbar. */}
       {/* Der scrollbare Bereich ist ein eigenes Element. Setzt man
