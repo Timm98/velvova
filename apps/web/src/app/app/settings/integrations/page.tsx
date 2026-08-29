@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getPageContext } from "@/lib/locale";
 import { sourceStatuses } from "@paycheck/jobs";
 import { Badge, Card } from "@/components/ui";
+import { RefreshJobs } from "./RefreshJobs";
 
 export const metadata: Metadata = { title: "Verbundene Dienste" };
 export const dynamic = "force-dynamic";
@@ -102,6 +103,10 @@ export default async function IntegrationsPage() {
             Eine Quelle läuft nur, wenn sie ausgewählt, eingerichtet und rechtlich geklärt ist.
             Portale, die das Auslesen untersagen, werden nicht abgefragt.
           </p>
+        </div>
+
+        <div className="border-b border-line px-6 py-5">
+          <RefreshJobs />
         </div>
 
         <ul className="divide-y divide-line">

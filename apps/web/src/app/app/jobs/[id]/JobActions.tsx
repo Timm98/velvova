@@ -2,13 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Bookmark, BookmarkCheck, FileText, MessageSquare } from "lucide-react";
 import { startApplication, toggleSaveJob } from "@/lib/jobActions";
-import { buttonClass } from "@/components/ui";
+import { Button } from "@/components/ui";
 
 /**
- * Die Handlungen an einer Stelle. Eine primäre - Bewerbung vorbereiten -
- * und daneben die leiseren.
+ * Die Handlungen an einer Stelle.
  *
+ * Eine primäre — Bewerbung vorbereiten — und daneben die leiseren.
  * "Vorbereiten" legt eine Bewerbung im Zustand "In Vorbereitung" an.
  * Versendet wird dabei nichts; das geschieht ausschließlich nach einer
  * ausdrücklichen Bestätigung im Studio.
@@ -16,53 +17,68 @@ import { buttonClass } from "@/components/ui";
 export function JobActions({
   jobId,
   blocked,
+  initiallySaved = false,
   labels,
 }: {
   jobId: string;
   blocked: boolean;
+  initiallySaved?: boolean;
   labels: Record<"prepare" | "save" | "saved" | "discuss", string>;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [saved, setSaved] = useState(false);
+  const [saved, setSaved] = useState(initiallySaved);
 
   return (
-    <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center" }}>
-      <button
+    <div className="grid gap-2.5">
+      <Button
         type="button"
+        variant="primary"
+        full
+        disabled={pending}
         onClick={() =>
           startTransition(async () => {
             const id = await startApplication(jobId);
             router.push(`/app/applications/${id}`);
           })
         }
-        disabled={pending}
-        className={buttonClass("primary")}
       >
-        {pending ? "…" : labels.prepare}
-      </button>
+        <FileText className="size-4" strokeWidth={1.9} />
+        {pending ? "Wird vorbereitet …" : labels.prepare}
+      </Button>
 
-      <button
-        type="button"
-        aria-pressed={saved}
-        onClick={() =>
-          startTransition(async () => {
-            const r = await toggleSaveJob(jobId);
-            setSaved(r.saved);
-          })
-        }
-        disabled={pending}
-        className={buttonClass("secondary")}
-      >
-        {saved ? `✓ ${labels.saved}` : labels.save}
-      </button>
+      <div className="grid grid-cols-2 gap-2.5">
+        <Button
+          type="button"
+          variant="secondary"
+          aria-pressed={saved}
+          disabled={pending}
+          onClick={() => {
+            setSaved((v) => !v);
+            startTransition(async () => {
+              const r = await toggleSaveJob(jobId);
+              setSaved(r.saved);
+            });
+          }}
+        >
+          {saved ? (
+            <BookmarkCheck className="size-4 text-accent" strokeWidth={2} />
+          ) : (
+            <Bookmark className="size-4" strokeWidth={1.9} />
+          )}
+          {saved ? labels.saved : labels.save}
+        </Button>
 
-      <a href="/app/nina" className={buttonClass("quiet")}>
-        {labels.discuss}
-      </a>
+        <Button asChild variant="secondary">
+          <a href="/app/nina">
+            <MessageSquare className="size-4" strokeWidth={1.9} />
+            {labels.discuss}
+          </a>
+        </Button>
+      </div>
 
       {blocked && (
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", width: "100%" }}>
+        <p className="text-sm leading-relaxed text-ink-2">
           Diese Stelle widerspricht einer deiner harten Bedingungen. Du kannst dich trotzdem
           bewerben — die Entscheidung liegt bei dir, nicht bei uns.
         </p>

@@ -1,273 +1,289 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { Compass, Sparkles, Target } from "lucide-react";
+import { eq } from "drizzle-orm";
+import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { getDb, schema, withUser } from "@paycheck/db";
-import { eq } from "drizzle-orm";
-import { listJobsForUser, loadProfileContext } from "@/lib/matching";
+import { listJobsForUser, loadProfileContext, type ScoredJob } from "@/lib/matching";
 import { loadGate } from "@/lib/gate";
-import type { SortKey } from "@paycheck/matching";
-import { Badge, buttonClass, Card, DemoBadge, EmptyState, PageHeader, Stack } from "@/components/ui";
-import {
-  AiTransitionDisplay,
-  ConfidenceDisplay,
-  FitDisplay,
-  JobQualityDisplay,
-  ListingConfidenceDisplay,
-} from "@/components/scores";
+import { Badge, Button, Card, SkeletonText } from "@/components/ui";
+import { EmptyState, PageHeader, Section } from "@/components/ui/states";
+import { GroupNote, JobCard } from "@/components/jobs/JobCard";
+import { JobFilters } from "./JobFilters";
 import { SaveJobButton } from "./SaveJobButton";
 
-export const metadata: Metadata = { title: "Jobs" };
+export const metadata: Metadata = { title: "Matches" };
 export const dynamic = "force-dynamic";
 
-const SORT_KEYS: SortKey[] = [
-  "best_overall", "highest_fit", "best_job_quality", "highest_salary",
-  "future_robust", "shortest_commute", "newest",
-];
-
 /**
- * Die Jobliste.
+ * Die Stellenliste.
  *
- * Standardmäßig eine begründete Auswahl, nicht "alle Jobs". Jede Karte
- * zeigt genau so viel, wie für eine Entscheidung nötig ist: Passung und
- * Sicherheit getrennt, ein Grund, ein Vorbehalt.
+ * Keine endlose Ergebnisseite, sondern drei begründete Gruppen:
  *
- * Ausgeschlossene Stellen erscheinen nicht in der Auswahl - aber sie sind
- * auf Wunsch sichtbar, mit konkretem Grund. Etwas stillschweigend
- * wegzufiltern wäre schlechter als es zu begründen.
+ *   1. Beste Treffer — wenige, mit Grund und Vorbehalt.
+ *   2. Mutige Alternativen — angrenzende Rollen, auf die man beim
+ *      Suchen nach dem eigenen Jobtitel nie stößt. Das ist der eigentliche
+ *      Grund, warum vorher ein Gespräch stattfindet.
+ *   3. Neu diese Woche — was seit Kurzem dazugekommen ist.
+ *
+ * Ausgeschlossene Stellen erscheinen nicht in der Auswahl, sind aber auf
+ * Wunsch sichtbar — mit konkretem Grund. Etwas stillschweigend
+ * wegzufiltern wäre schlechter, als es zu begründen.
  */
 export default async function JobsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string; blocked?: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const user = await requireUser();
-  const { t, isDemoMode } = await getPageContext();
+  const { t, brand } = await getPageContext();
   const params = await searchParams;
-
-  const sort = (SORT_KEYS as string[]).includes(params.sort ?? "")
-    ? (params.sort as SortKey)
-    : "best_overall";
-  const includeBlocked = params.blocked === "1";
-
-  const db = await getDb();
-  const ctx = await loadProfileContext(user.id);
-
   const gate = await loadGate(user.id);
 
   // Der Riegel: ohne bestätigtes Mindestprofil keine personalisierten
-  // Vorschläge. Das ist kein Gimmick, sondern der Unterschied zwischen
+  // Vorschläge. Kein Gimmick, sondern der Unterschied zwischen
   // Empfehlung und Zufall.
   if (!gate.unlocked) {
     return (
-      <Stack gap={6}>
-        <PageHeader title={t("jobs.title")} />
+      <div className="grid gap-8">
+        <PageHeader eyebrow="Matches" title="Deine besten Möglichkeiten" />
         <EmptyState
-          title={t("jobs.locked")}
-          body={`${t("jobs.lockedBody")} ${gate.reason}`}
+          icon={<Target className="size-5" strokeWidth={1.7} />}
+          title={`${brand.assistantName} braucht noch etwas mehr von dir`}
+          body={gate.reason}
           action={
-            <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"} className={buttonClass("primary")}>
-              {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
-            </Link>
+            <Button asChild variant="primary">
+              <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"}>
+                {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
+              </Link>
+            </Button>
           }
         />
-      </Stack>
+      </div>
     );
   }
 
-  const saved = await withUser(db, user.id, (tx) =>
-    tx.select({ jobId: schema.savedJobs.jobId }).from(schema.savedJobs).where(eq(schema.savedJobs.userId, user.id)),
-  );
-  const savedIds = new Set(saved.map((s) => s.jobId));
+  const db = await getDb();
+  const ctx = await loadProfileContext(user.id);
+  const includeBlocked = params.blocked === "1";
 
-  const { jobs, blockedCount } = await listJobsForUser(user.id, ctx, { sort, includeBlocked });
+  const [saved, { jobs, blockedCount }] = await Promise.all([
+    withUser(db, user.id, (tx) =>
+      tx
+        .select({ jobId: schema.savedJobs.jobId })
+        .from(schema.savedJobs)
+        .where(eq(schema.savedJobs.userId, user.id)),
+    ),
+    listJobsForUser(user.id, ctx, { sort: "best_overall", includeBlocked }),
+  ]);
+
+  const savedIds = new Set(saved.map((s) => s.jobId));
+  const filtered = applyFilters(jobs, params);
+
+  // Drei Gruppen, überschneidungsfrei: was oben steht, steht nicht
+  // unten noch einmal.
+  const top = filtered.slice(0, 8);
+  const topIds = new Set(top.map((j) => j.jobId));
+
+  const alternatives = filtered
+    .filter((j) => !topIds.has(j.jobId) && j.fit.band === "exploratory")
+    .slice(0, 4);
+  const altIds = new Set(alternatives.map((j) => j.jobId));
+
+  const weekAgo = Date.now() - 7 * 86_400_000;
+  const fresh = filtered
+    .filter(
+      (j) =>
+        !topIds.has(j.jobId) &&
+        !altIds.has(j.jobId) &&
+        (j.job.publishedAt?.getTime() ?? 0) >= weekAgo,
+    )
+    .slice(0, 6);
+
+  const realCount = filtered.filter((j) => !j.job.isDemo).length;
+  const demoCount = filtered.length - realCount;
 
   return (
-    <Stack gap={6}>
-      <PageHeader title={t("jobs.title")} />
+    <div className="grid gap-9">
+      <PageHeader
+        eyebrow="Matches"
+        title="Deine besten Möglichkeiten"
+        lead={`${brand.assistantName} hat ${jobs.length + blockedCount} Stellen gegen dein bestätigtes Profil geprüft. Sortiert nach begründeter Passung — nicht nach Werbebudget.`}
+      />
 
-      {isDemoMode && <DemoBadge />}
+      <Suspense fallback={<SkeletonText lines={2} />}>
+        <JobFilters resultCount={filtered.length} />
+      </Suspense>
 
-      {/* Sortierung */}
-      <nav aria-label={t("jobs.sortBy")} className="scroll-x">
-        <ul style={{ listStyle: "none", display: "flex", gap: "var(--space-2)", paddingBottom: 4 }}>
-          {SORT_KEYS.map((key) => {
-            const active = key === sort;
-            const label = {
-              best_overall: t("jobs.sortBestOverall"),
-              highest_fit: t("jobs.sortHighestFit"),
-              best_job_quality: t("jobs.sortBestQuality"),
-              highest_salary: t("jobs.sortHighestSalary"),
-              future_robust: t("jobs.sortFutureRobust"),
-              shortest_commute: t("jobs.sortShortestCommute"),
-              newest: t("jobs.sortNewest"),
-            }[key];
-            return (
-              <li key={key}>
-                <Link
-                  href={`/app/jobs?sort=${key}${includeBlocked ? "&blocked=1" : ""}`}
-                  aria-current={active ? "true" : undefined}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    minHeight: 40,
-                    padding: "var(--space-2) var(--space-4)",
-                    borderRadius: "var(--radius-full)",
-                    border: `1px solid ${active ? "var(--accent)" : "var(--border-default)"}`,
-                    background: active ? "var(--accent-subtle)" : "var(--surface-raised)",
-                    color: active ? "var(--accent-text)" : "var(--text-secondary)",
-                    fontSize: "var(--text-sm)",
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      {/* Herkunft, immer sichtbar. */}
+      <div className="flex flex-wrap items-center gap-3 rounded-[--radius-md] border border-line bg-sunken px-4 py-3 text-sm">
+        {realCount > 0 && (
+          <Badge tone="positive">
+            <span aria-hidden className="size-1.5 rounded-full bg-positive" />
+            {realCount} echte Stellen
+          </Badge>
+        )}
+        {demoCount > 0 && <Badge tone="caution">{demoCount} Demo-Datensätze</Badge>}
+        <span className="text-ink-2">
+          Echte Anzeigen stammen aus offen angebotenen Quellen und verlinken auf das Original.
+        </span>
+        <Link
+          href="/app/settings/integrations"
+          className="ml-auto text-sm text-accent-text underline underline-offset-[3px]"
+        >
+          Quellen
+        </Link>
+      </div>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          icon={<Compass className="size-5" strokeWidth={1.7} />}
+          title="Zu diesen Filtern gibt es nichts"
+          body="Nimm einen Filter weg oder formuliere die Suche anders. Es wird nichts ausgedacht, um die Liste zu füllen."
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/app/jobs">Filter zurücksetzen</Link>
+            </Button>
+          }
+        />
+      ) : (
+        <>
+          <Section title="Beste Treffer" description="Die begründetsten Übereinstimmungen zuerst.">
+            <ul className="grid gap-4">
+              {top.map((scored) => (
+                <li key={scored.jobId}>
+                  <JobCard
+                    scored={scored}
+                    t={t}
+                    saved={savedIds.has(scored.jobId)}
+                    action={
+                      <SaveJobButton
+                        jobId={scored.jobId}
+                        initiallySaved={savedIds.has(scored.jobId)}
+                        labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
+                        />
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+          </Section>
+
+          {alternatives.length > 0 && (
+            <Section title="Mutige Alternativen">
+              <GroupNote>
+                Diese Rollen liegen neben deinem bisherigen Weg. Die Passung ist unsicherer — aber
+                sie stützt sich auf Tätigkeiten, die du belegt hast, nicht auf deinen Jobtitel.
+                Genau dafür hat {brand.assistantName} vorher gefragt.
+              </GroupNote>
+              <ul className="mt-4 grid gap-4">
+                {alternatives.map((scored) => (
+                  <li key={scored.jobId}>
+                    <JobCard
+                      scored={scored}
+                      t={t}
+                      saved={savedIds.has(scored.jobId)}
+                      action={
+                        <SaveJobButton
+                          jobId={scored.jobId}
+                          initiallySaved={savedIds.has(scored.jobId)}
+                          labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
+                          />
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {fresh.length > 0 && (
+            <Section title="Neu diese Woche" description="In den letzten sieben Tagen veröffentlicht.">
+              <ul className="grid gap-4">
+                {fresh.map((scored) => (
+                  <li key={scored.jobId}>
+                    <JobCard
+                      scored={scored}
+                      t={t}
+                      saved={savedIds.has(scored.jobId)}
+                      action={
+                        <SaveJobButton
+                          jobId={scored.jobId}
+                          initiallySaved={savedIds.has(scored.jobId)}
+                          labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
+                          />
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+        </>
+      )}
 
       {blockedCount > 0 && (
-        <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-          {includeBlocked
-            ? `${blockedCount} Stellen widersprechen einer deiner harten Bedingungen. Sie sind unten mit Begründung sichtbar.`
-            : `${blockedCount} Stellen sind ausgeschlossen, weil sie einer deiner harten Bedingungen widersprechen.`}{" "}
-          <Link
-            href={`/app/jobs?sort=${sort}${includeBlocked ? "" : "&blocked=1"}`}
-            style={{
-              color: "var(--accent-text)",
-              // WCAG 2.2 verlangt mindestens 24x24 CSS-Pixel je Ziel.
-              // Ein Link mitten im Fliesstext erreicht das nur mit
-              // ausdruecklicher Hoehe.
-              display: "inline-flex",
-              alignItems: "center",
-              minHeight: 24,
-              padding: "2px 0",
-            }}
-          >
-            {includeBlocked ? "Ausblenden" : t("jobs.showBlocked")}
-          </Link>
-        </p>
+        <Card className="grid gap-3">
+          <h2 className="text-base font-semibold">
+            {blockedCount} {blockedCount === 1 ? "Stelle wurde" : "Stellen wurden"} ausgeschlossen
+          </h2>
+          <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+            Sie verletzen eine Bedingung, die du als nicht verhandelbar angegeben hast. Weiche
+            Stärken können eine harte Bedingung nicht aufwiegen — deshalb stehen sie nicht in der
+            Liste. Du kannst sie trotzdem ansehen, jeweils mit dem konkreten Grund.
+          </p>
+          <p>
+            <Button asChild variant="secondary" size="sm">
+              <Link href={includeBlocked ? "/app/jobs" : "/app/jobs?blocked=1"}>
+                {includeBlocked ? "Wieder ausblenden" : "Mit Begründung anzeigen"}
+              </Link>
+            </Button>
+          </p>
+        </Card>
       )}
-
-      {jobs.length === 0 ? (
-        <EmptyState title={t("states.emptyTitle")} body={t("jobs.empty")} />
-      ) : (
-        <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>
-          {jobs.map((j) => {
-            const blocked = j.constraints.overall === "blocked";
-            return (
-              <Card
-                as="li"
-                key={j.jobId}
-                style={{
-                  // Ausgeschlossene Stellen werden nicht abgeblendet: das
-                  // senkt den Kontrast. Den Zustand tragen der rote Rahmen
-                  // UND der begruendende Hinweis darunter.
-                  background: blocked ? "var(--surface-sunken)" : "var(--surface-raised)",
-                  borderColor: blocked ? "var(--critical)" : "var(--border-subtle)",
-                }}
-              >
-                <Stack gap={4}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: "var(--space-4)", flexWrap: "wrap" }}>
-                    <div style={{ minWidth: 0 }}>
-                      <Link href={`/app/jobs/${j.jobId}`} style={{ textDecoration: "none" }}>
-                        <h2 style={{ fontSize: "var(--text-lg)" }}>{j.job.title}</h2>
-                      </Link>
-                      <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)", marginTop: 2 }}>
-                        {j.job.companyName} · {j.job.location} ·{" "}
-                        {j.job.workModel === "remote" ? "remote" : j.job.workModel === "hybrid" ? "hybrid" : "vor Ort"}
-                        {j.commuteMinutes !== null && j.commuteMinutes > 0 && ` · ca. ${j.commuteMinutes} Min Weg`}
-                      </p>
-                      <p style={{ fontSize: "var(--text-sm)", marginTop: "var(--space-2)" }}>
-                        {j.job.salary.disclosed && j.salaryPerYear ? (
-                          <strong>
-                            {new Intl.NumberFormat("de-DE", {
-                              style: "currency",
-                              currency: j.job.salary.currency,
-                              maximumFractionDigits: 0,
-                            }).format(j.job.salary.min ?? j.salaryPerYear)}
-                            {j.job.salary.max && j.job.salary.min && j.job.salary.max !== j.job.salary.min
-                              ? ` – ${new Intl.NumberFormat("de-DE", { style: "currency", currency: j.job.salary.currency, maximumFractionDigits: 0 }).format(j.job.salary.max)}`
-                              : ""}
-                          </strong>
-                        ) : (
-                          <span style={{ color: "var(--text-muted)" }}>Gehalt nicht angegeben</span>
-                        )}
-                      </p>
-                    </div>
-
-                    <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "flex-start", flexWrap: "wrap" }}>
-                      {j.job.isDemo && <Badge tone="caution">Demo</Badge>}
-                      {j.listingConfidence.possiblyStale && <Badge tone="caution">evtl. veraltet</Badge>}
-                      {j.listingConfidence.possibleRepost && <Badge tone="neutral">Wiederveröffentlichung</Badge>}
-                    </div>
-                  </div>
-
-                  {/* Die fünf Bewertungen, getrennt */}
-                  <div
-                    className="scroll-x"
-                    tabIndex={0}
-                    role="region"
-                    aria-label={`Bewertungen fuer ${j.job.title}`}
-                    style={{ display: "flex", gap: "var(--space-6)", paddingBottom: 4 }}
-                  >
-                    <FitDisplay fit={j.fit} t={t} compact />
-                    <ConfidenceDisplay confidence={j.confidence} t={t} />
-                    <JobQualityDisplay quality={j.jobQuality} t={t} />
-                    <AiTransitionDisplay ai={j.aiTransition} t={t} />
-                    <ListingConfidenceDisplay listing={j.listingConfidence} t={t} />
-                  </div>
-
-                  {/* Ein Grund, ein Vorbehalt. Immer beide. */}
-                  <div style={{ display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)" }}>
-                    <p>
-                      <strong style={{ color: "var(--positive)" }}>{t("jobs.mainReason")}:</strong>{" "}
-                      {j.fit.topReason}
-                    </p>
-                    <p>
-                      <strong style={{ color: "var(--caution)" }}>{t("jobs.mainReservation")}:</strong>{" "}
-                      {j.fit.topReservation}
-                    </p>
-                  </div>
-
-                  {blocked && (
-                    <div
-                      role="note"
-                      style={{
-                        background: "var(--critical-subtle)",
-                        border: "1px solid var(--critical)",
-                        borderRadius: "var(--radius-md)",
-                        padding: "var(--space-3) var(--space-4)",
-                        fontSize: "var(--text-sm)",
-                      }}
-                    >
-                      <strong style={{ color: "var(--critical)" }}>{t("jobs.blockedBecause")}: </strong>
-                      {j.constraints.checks
-                        .filter((c) => c.verdict === "blocked")
-                        .map((c) => c.reason)
-                        .join(" ")}
-                    </div>
-                  )}
-
-                  <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap" }}>
-                    <Link href={`/app/jobs/${j.jobId}`} className={buttonClass("secondary")}>
-                      {t("jobs.view")}
-                    </Link>
-                    <SaveJobButton
-                      jobId={j.jobId}
-                      initiallySaved={savedIds.has(j.jobId)}
-                      labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
-                    />
-                  </div>
-                </Stack>
-              </Card>
-            );
-          })}
-        </ul>
-      )}
-    </Stack>
+    </div>
   );
+}
+
+/**
+ * Filter auf der bereits bewerteten Liste.
+ *
+ * Das Suchfeld nimmt normale Sprache: gesucht wird über Titel,
+ * Unternehmen, Ort und Aufgaben. Bewusst keine Deutung von Absichten —
+ * eine Suche, die etwas anderes tut als eingegeben, ist schlimmer als
+ * eine, die zu wenig findet.
+ */
+function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefined>): ScoredJob[] {
+  let result = jobs;
+
+  const q = params.q?.trim().toLowerCase();
+  if (q) {
+    const words = q.split(/\s+/).filter((w) => w.length > 2);
+    result = result.filter((j) => {
+      const haystack = [
+        j.job.title,
+        j.job.companyName,
+        j.job.location,
+        j.job.industry ?? "",
+        ...j.job.coreTasks,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return words.every((w) => haystack.includes(w));
+    });
+  }
+
+  if (params.remote) result = result.filter((j) => j.job.workModel === params.remote);
+  if (params.contract) result = result.filter((j) => j.job.contractType === params.contract);
+  if (params.salary === "disclosed") result = result.filter((j) => j.job.salary.disclosed);
+
+  const sinceDays = Number(params.since);
+  if (Number.isFinite(sinceDays) && sinceDays > 0) {
+    const cutoff = Date.now() - sinceDays * 86_400_000;
+    result = result.filter((j) => (j.job.publishedAt?.getTime() ?? 0) >= cutoff);
+  }
+
+  return result;
 }
