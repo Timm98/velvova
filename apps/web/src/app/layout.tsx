@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { brand } from "@paycheck/config";
 import { cookies } from "next/headers";
 import { isLocale } from "@paycheck/i18n";
+import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -35,7 +36,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} data-theme={theme === "light" || theme === "dark" ? theme : undefined}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <ServiceWorker />
+      </body>
     </html>
   );
 }
