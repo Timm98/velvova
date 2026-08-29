@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import type { Database } from "./client.ts";
 
 /**
- * Jede Datenbankarbeit im Namen eines Menschen laeuft hierdurch.
+ * Jede Datenbankarbeit im Namen eines Menschen läuft hierdurch.
  *
  * Zwei Dinge passieren: die Verbindung legt ihre erhoehten Rechte ab
  * (`SET LOCAL ROLE paycheck_app`) und setzt die Kennung, an der die
@@ -25,9 +25,9 @@ export async function withUser<T>(
 }
 
 /**
- * Fuer Arbeiten ohne Nutzerbezug: Stellenimport, Taxonomie, Wartung.
- * Beruehrt bewusst keine nutzerbezogenen Tabellen und wird nie fuer
- * Anfragen aus der Oberflaeche verwendet.
+ * Für Arbeiten ohne Nutzerbezug: Stellenimport, Taxonomie, Wartung.
+ * Berührt bewusst keine nutzerbezogenen Tabellen und wird nie für
+ * Anfragen aus der Oberfläche verwendet.
  */
 export async function withSystem<T>(db: Database, fn: (tx: Database) => Promise<T>): Promise<T> {
   return db.transaction(async (tx) => fn(tx as unknown as Database));

@@ -33,7 +33,7 @@ export function interpolate(
 }
 
 /**
- * Uebersetzer fuer eine Sprache. Der Pfad wird als Punktnotation
+ * Uebersetzer für eine Sprache. Der Pfad wird als Punktnotation
  * angegeben, damit Aufrufstellen kurz bleiben.
  */
 export interface Translator {
@@ -53,7 +53,7 @@ export function getTranslator(locale: Locale): Translator {
         messages,
       );
       if (typeof raw !== "string") {
-        // Ein fehlender Schluessel ist ein Fehler im Code, kein Laufzeitfall.
+        // Ein fehlender Schlüssel ist ein Fehler im Code, kein Laufzeitfall.
         // Sichtbar machen statt leer anzeigen.
         return `[fehlender Text: ${path}]`;
       }
@@ -62,7 +62,7 @@ export function getTranslator(locale: Locale): Translator {
   };
 }
 
-/** Zahl-, Datums- und Waehrungsformate nach Sprache und Land. */
+/** Zahl-, Datums- und Währungsformate nach Sprache und Land. */
 export function formatters(locale: Locale, currency = "EUR") {
   const tag = locale === "en" ? "en-GB" : "de-DE";
   return {

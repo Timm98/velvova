@@ -10,24 +10,24 @@ export const metadata: Metadata = { title: "Methodik" };
  *
  * Wer eine Zahl zeigt, sollte sagen koennen, wie sie entsteht. Die
  * Gewichte hier kommen aus dem Code, nicht aus einer Tabelle im Text -
- * eine Aenderung der Logik aendert diese Seite mit.
+ * eine Änderung der Logik aendert diese Seite mit.
  */
 export default function MethodologyPage() {
   const fitRows: [string, number, string][] = [
-    ["Belegte Faehigkeiten und Qualifikationen", DEFAULT_FIT_WEIGHTS.provenSkills,
-     "Abgleich der bestaetigten Erfahrungen mit den Muss- und Kann-Anforderungen. Muss zaehlt dreifach."],
-    ["Taetigkeiten, die Energie geben", DEFAULT_FIT_WEIGHTS.preferredTasks,
+    ["Belegte Fähigkeiten und Qualifikationen", DEFAULT_FIT_WEIGHTS.provenSkills,
+     "Abgleich der bestaetigten Erfahrungen mit den Muss- und Kann-Anforderungen. Muss zählt dreifach."],
+    ["Tätigkeiten, die Energie geben", DEFAULT_FIT_WEIGHTS.preferredTasks,
      "Vergleich der Kernaufgaben mit dem, was Energie gibt und was auslaugt."],
     ["Arbeitsweise und Umfeld", DEFAULT_FIT_WEIGHTS.workStyle,
      "Bevorzugte Arbeitsweise gegen die Beschreibung der Stelle."],
     ["Werte und Motive", DEFAULT_FIT_WEIGHTS.valuesAndMotives,
-     "Die wichtigsten Werte gegen das, was die Stelle ausdruecklich bietet."],
+     "Die wichtigsten Werte gegen das, was die Stelle ausdrücklich bietet."],
     ["Entwicklungspotenzial", DEFAULT_FIT_WEIGHTS.growthPotential,
-     "Wie gross der Schritt vom heutigen Stand aus waere. Ein Schritt nach oben zaehlt am meisten."],
+     "Wie gross der Schritt vom heutigen Stand aus wäre. Ein Schritt nach oben zählt am meisten."],
     ["Umsetzbarkeit", DEFAULT_FIT_WEIGHTS.marketRealism,
-     "Anteil der zwingenden Anforderungen, die heute schon erfuellt sind."],
-    ["Ausdrueckliches Interesse", DEFAULT_FIT_WEIGHTS.statedInterest,
-     "Naehe zu den selbst genannten Zielrollen."],
+     "Anteil der zwingenden Anforderungen, die heute schon erfüllt sind."],
+    ["Ausdrückliches Interesse", DEFAULT_FIT_WEIGHTS.statedInterest,
+     "Nähe zu den selbst genannten Zielrollen."],
   ];
 
   return (
@@ -48,10 +48,10 @@ export default function MethodologyPage() {
             Was keiner dieser Werte ist
           </h2>
           <p style={{ color: "var(--text-secondary)" }}>
-            <strong>Keine Einstellungswahrscheinlichkeit.</strong> Wer eingeladen wird, haengt an
+            <strong>Keine Einstellungswahrscheinlichkeit.</strong> Wer eingeladen wird, hängt an
             Dingen, die wir nicht kennen und nicht kennen koennen: dem Bewerberfeld, dem Zeitpunkt,
             internen Kandidatinnen, der Tagesform der Person, die liest. Ein Fit-Wert beantwortet
-            eine andere Frage - passt die Taetigkeit zu dem, was dieser Mensch belegbar kann und will.
+            eine andere Frage - passt die Tätigkeit zu dem, was dieser Mensch belegbar kann und will.
           </p>
         </Stack>
       </Card>
@@ -63,17 +63,17 @@ export default function MethodologyPage() {
         <Card>
           <Stack gap={3}>
             <p style={{ color: "var(--text-secondary)" }}>
-              Ein Faktor ohne Daten wird nicht als null gewertet. Das wuerde eine Stelle bestrafen,
-              nur weil ihre Anzeige unvollstaendig ist - und Anzeigen sind fast immer unvollstaendig.
+              Ein Faktor ohne Daten wird nicht als null gewertet. Das würde eine Stelle bestrafen,
+              nur weil ihre Anzeige unvollständig ist - und Anzeigen sind fast immer unvollständig.
             </p>
             <p style={{ color: "var(--text-secondary)" }}>
               Stattdessen wird das Gewicht eines unbekannten Faktors anteilig auf die bekannten
-              verteilt. Das Fehlen schlaegt sich ausschliesslich in der <strong>Abdeckung</strong>{" "}
+              verteilt. Das Fehlen schlägt sich ausschließlich in der <strong>Abdeckung</strong>{" "}
               nieder, und die fliesst in die <strong>Sicherheit</strong>, nicht in die Passung.
             </p>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
               Praktisch heisst das: eine Anzeige ohne Gehaltsangabe wird nicht schlechter bewertet.
-              Sie fuehrt zu einer niedrigeren Sicherheit und zu einer vorbereiteten Rueckfrage.
+              Sie führt zu einer niedrigeren Sicherheit und zu einer vorbereiteten Rückfrage.
             </p>
           </Stack>
         </Card>
@@ -84,7 +84,7 @@ export default function MethodologyPage() {
           Fit: die sieben Faktoren
         </h2>
         <p style={{ marginBottom: "var(--space-4)", color: "var(--text-secondary)" }}>
-          Die Startgewichtung ist eine begruendete Annahme, keine Messung. Sie laesst sich in
+          Die Startgewichtung ist eine begründete Annahme, keine Messung. Sie lässt sich in
           festgelegten Grenzen anpassen.
         </p>
         <Card padded={false}>
@@ -112,14 +112,14 @@ export default function MethodologyPage() {
       </section>
 
       <section>
-        <h2 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-3)" }}>Die fuenf getrennten Werte</h2>
+        <h2 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-3)" }}>Die fünf getrennten Werte</h2>
         <Stack gap={4}>
           {[
-            ["Fit", "Passt die Taetigkeit fachlich zu dir? Zeigt eine Zahl nur, wenn genug Faktoren bekannt sind - sonst ein Band wie \"explorativ\"."],
-            ["Sicherheit", "Wie belastbar ist diese Aussage? Aus Profilabdeckung, Vollstaendigkeit der Anzeige, Quellenalter und externen Informationen."],
-            ["Jobqualitaet", "Wie gut ist die Stelle als Arbeitsplatz? Einkommen, Sicherheit, Belastung, Flexibilitaet, Kultur, Entwicklung. Bei zu duenner Datenlage: \"nicht ausreichend beurteilbar\" statt eines schlechten Werts."],
+            ["Fit", "Passt die Tätigkeit fachlich zu dir? Zeigt eine Zahl nur, wenn genug Faktoren bekannt sind - sonst ein Band wie \"explorativ\"."],
+            ["Sicherheit", "Wie belastbar ist diese Aussage? Aus Profilabdeckung, Vollständigkeit der Anzeige, Quellenalter und externen Informationen."],
+            ["Jobqualität", "Wie gut ist die Stelle als Arbeitsplatz? Einkommen, Sicherheit, Belastung, Flexibilität, Kultur, Entwicklung. Bei zu duenner Datenlage: \"nicht ausreichend beurteilbar\" statt eines schlechten Werts."],
             ["Entwicklung durch KI", "Bewertet werden die Aufgaben der konkreten Rolle, nicht der Berufstitel. Ausgabe sind Szenarien, nie eine Prognose mit Jahreszahl."],
-            ["Vertrauen in die Anzeige", "Quelle, Alter, Linkcheck, Vollstaendigkeit, moegliche Wiederveroeffentlichung. Das Wort \"Fake\" faellt nicht - aus der Ferne laesst sich Betrug nicht feststellen."],
+            ["Vertrauen in die Anzeige", "Quelle, Alter, Linkcheck, Vollständigkeit, moegliche Wiederveröffentlichung. Das Wort \"Fake\" fällt nicht - aus der Ferne lässt sich Betrug nicht feststellen."],
           ].map(([name, body]) => (
             <Card key={name}>
               <Stack gap={2}>
@@ -136,18 +136,18 @@ export default function MethodologyPage() {
         <Card>
           <Stack gap={3}>
             <p style={{ color: "var(--text-secondary)" }}>
-              Harte Bedingungen werden vor jedem Wert geprueft. Eine Stelle, die eine davon verletzt,
+              Harte Bedingungen werden vor jedem Wert geprüft. Eine Stelle, die eine davon verletzt,
               bekommt gar keinen Gesamtwert - &bdquo;72 von 100, aber du darfst dort nicht arbeiten&ldquo;
-              waere eine sinnlose Zahl.
+              wäre eine sinnlose Zahl.
             </p>
             <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)" }}>
               <li>· Fachliche Passung: {Math.round(DEFAULT_RANKING_WEIGHTS.fit * 100)} %</li>
-              <li>· Jobqualitaet: {Math.round(DEFAULT_RANKING_WEIGHTS.jobQuality * 100)} %</li>
+              <li>· Jobqualität: {Math.round(DEFAULT_RANKING_WEIGHTS.jobQuality * 100)} %</li>
               <li>· Entwicklung durch KI: {Math.round(DEFAULT_RANKING_WEIGHTS.aiOutlook * 100)} %</li>
               <li>· Vertrauen in die Anzeige: {Math.round(DEFAULT_RANKING_WEIGHTS.listingConfidence * 100)} %</li>
             </ul>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-              Sind mehr als die Haelfte der Bestandteile unbekannt, wird kein Gesamtwert gebildet.
+              Sind mehr als die Hälfte der Bestandteile unbekannt, wird kein Gesamtwert gebildet.
               Lieber keine Zahl als eine, die Sicherheit vortaeuscht.
             </p>
           </Stack>
@@ -164,16 +164,16 @@ export default function MethodologyPage() {
               kann uebersehen werden.
             </li>
             <li>
-              · Reisezeiten werden aus einer kleinen Tabelle geschaetzt, nicht mit einem Routendienst
+              · Reisezeiten werden aus einer kleinen Tabelle geschätzt, nicht mit einem Routendienst
               berechnet. Unbekannte Verbindungen liefern keinen Wert - keine erfundene Zahl.
             </li>
             <li>
-              · Die Einordnung der Aufgabenveraenderung durch KI beruht auf Merkmalen des
+              · Die Einordnung der Aufgabenveränderung durch KI beruht auf Merkmalen des
               Aufgabentexts, nicht auf einer validierten Studie zu dieser konkreten Rolle.
             </li>
             <li>
               · Es gibt keine wissenschaftliche Validierung dieser Verfahren. Wo Eignungsdiagnostik
-              belastbare Aussagen verlangt, waere eine externe Pruefung noetig - die hat nicht
+              belastbare Aussagen verlangt, wäre eine externe Prüfung noetig - die hat nicht
               stattgefunden, und deshalb behaupten wir sie nicht.
             </li>
           </ul>

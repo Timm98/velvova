@@ -5,17 +5,17 @@ import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
  * Versandwege.
  *
  * Die wichtigste Zeile dieses Moduls ist eine Regel, keine Funktion:
- * ohne ausdrueckliche Bestaetigung des Menschen verlaesst nichts das
+ * ohne ausdrueckliche Bestätigung des Menschen verlässt nichts das
  * System. Der Standardweg erzeugt einen Entwurf zum Herunterladen und
  * versendet gar nichts.
  */
 
 export interface DeliveryResult {
   status: "draft_created" | "sent" | "not_connected" | "refused";
-  /** true, wenn tatsaechlich nichts versendet wurde. */
+  /** true, wenn tatsächlich nichts versendet wurde. */
   isDemo: boolean;
   messageId: string | null;
-  /** Verstaendliche Rueckmeldung fuer den Menschen. */
+  /** Verständliche Rückmeldung für den Menschen. */
   message: string;
   /** Bei Entwuerfen: der Inhalt zum Herunterladen. */
   draft?: { filename: string; mimeType: string; content: string };
@@ -24,7 +24,7 @@ export interface DeliveryResult {
 export interface ApplicationDeliveryProvider {
   readonly key: string;
   readonly displayName: string;
-  /** false heisst: in der Oberflaeche erscheint "nicht verbunden". */
+  /** false heisst: in der Oberfläche erscheint "nicht verbunden". */
   isConnected(): boolean;
   /** Erzeugt die Vorschau, die der Mensch vor der Freigabe sieht. */
   preview(input: DeliveryPreview): DeliveryPreview;
@@ -36,20 +36,20 @@ const NOT_CONFIRMED: DeliveryResult = {
   isDemo: true,
   messageId: null,
   message:
-    "Es wurde nichts versendet: die ausdrueckliche Bestaetigung fehlt. " +
+    "Es wurde nichts versendet: die ausdrueckliche Bestätigung fehlt. " +
     "Das ist kein Fehler, sondern Absicht.",
 };
 
 /**
  * Standardweg. Erzeugt eine .eml-Datei, die sich in jedem Mailprogramm
- * oeffnen laesst - der Mensch versendet selbst und behaelt die Kontrolle.
+ * öffnen lässt - der Mensch versendet selbst und behält die Kontrolle.
  */
 export class DraftDeliveryProvider implements ApplicationDeliveryProvider {
   readonly key = "draft";
   readonly displayName = "Entwurf zum Herunterladen";
 
   isConnected(): boolean {
-    // Dieser Weg ist immer verfuegbar - er braucht nichts.
+    // Dieser Weg ist immer verfügbar - er braucht nichts.
     return true;
   }
 
@@ -84,12 +84,16 @@ export class DraftDeliveryProvider implements ApplicationDeliveryProvider {
   }
 }
 
-/** Lokaler Testserver in der Entwicklung. Verlaesst das Geraet nicht. */
+/** Lokaler Testserver in der Entwicklung. Verlässt das Gerät nicht. */
 export class MailpitDeliveryProvider implements ApplicationDeliveryProvider {
   readonly key = "mailpit";
   readonly displayName = "Lokaler Testserver (Mailpit)";
 
-  constructor(private readonly smtpUrl: string | undefined) {}
+  private readonly smtpUrl: string | undefined;
+
+  constructor(smtpUrl: string | undefined) {
+    this.smtpUrl = smtpUrl;
+  }
 
   isConnected(): boolean {
     return !!this.smtpUrl;
@@ -114,24 +118,28 @@ export class MailpitDeliveryProvider implements ApplicationDeliveryProvider {
       isDemo: true,
       messageId: `mailpit-${Date.now()}`,
       message:
-        "An den lokalen Testserver uebergeben. Die Nachricht hat dieses Geraet nicht verlassen " +
-        "und keine echte Empfaengerin erreicht.",
+        "An den lokalen Testserver uebergeben. Die Nachricht hat dieses Gerät nicht verlassen " +
+        "und keine echte Empfängerin erreicht.",
     };
   }
 }
 
 /**
- * Echte Postfaecher. Bewusst nicht implementiert, solange keine
+ * Echte Postfächer. Bewusst nicht implementiert, solange keine
  * OAuth-Anwendung eingerichtet ist: eine halbfertige Anbindung, die
- * scheinbar funktioniert, waere schlimmer als eine, die ehrlich sagt,
+ * scheinbar funktioniert, wäre schlimmer als eine, die ehrlich sagt,
  * dass sie nicht verbunden ist.
  */
 export class OAuthMailProvider implements ApplicationDeliveryProvider {
-  constructor(
-    readonly key: "gmail" | "outlook",
-    readonly displayName: string,
-    private readonly connected: boolean,
-  ) {}
+  readonly key: "gmail" | "outlook";
+  readonly displayName: string;
+  private readonly connected: boolean;
+
+  constructor(key: "gmail" | "outlook", displayName: string, connected: boolean) {
+    this.key = key;
+    this.displayName = displayName;
+    this.connected = connected;
+  }
 
   isConnected(): boolean {
     return this.connected;

@@ -1,6 +1,6 @@
 /**
- * Demo-Unternehmen. Ausschliesslich erfunden. Keine reale Firma bekommt
- * hier erfundene Bewertungen - das waere rufschaedigend und schlicht
+ * Demo-Unternehmen. Ausschließlich erfunden. Keine reale Firma bekommt
+ * hier erfundene Bewertungen - das wäre rufschaedigend und schlicht
  * falsch. Alle Namen tragen erkennbare Fantasiebestandteile, alle
  * Domains enden auf .invalid.
  */
@@ -21,13 +21,13 @@ export const seedCompanies: SeedCompany[] = [
   { key: "hafenblick", name: "Hafenblick Logistik AG (Demo)", website: "https://hafenblick.invalid",
     industry: "Logistik", sizeBand: "201-1000", headquarters: "Hamburg", registryVerified: true },
   { key: "kranzberg", name: "Kranzberg Beratung (Demo)", website: "https://kranzberg.invalid",
-    industry: "Beratung", sizeBand: "11-50", headquarters: "Luebeck", registryVerified: false },
+    industry: "Beratung", sizeBand: "11-50", headquarters: "Lübeck", registryVerified: false },
   { key: "wellenform", name: "Wellenform Medien GmbH (Demo)", website: "https://wellenform.invalid",
     industry: "Medien", sizeBand: "11-50", headquarters: "Hamburg", registryVerified: true },
-  { key: "gruenspan", name: "Gruenspan Energie eG (Demo)", website: "https://gruenspan.invalid",
+  { key: "grünspan", name: "Grünspan Energie eG (Demo)", website: "https://grünspan.invalid",
     industry: "Energie", sizeBand: "201-1000", headquarters: "Kiel", registryVerified: true },
   { key: "sturmvogel", name: "Sturmvogel Handel KG (Demo)", website: "https://sturmvogel.invalid",
-    industry: "Handel", sizeBand: "1000+", headquarters: "Muenchen", registryVerified: true },
+    industry: "Handel", sizeBand: "1000+", headquarters: "München", registryVerified: true },
   { key: "leuchtturm", name: "Leuchtturm Bildung gGmbH (Demo)", website: "https://leuchtturm.invalid",
     industry: "Bildung", sizeBand: "51-200", headquarters: "Hamburg", registryVerified: true },
 ];

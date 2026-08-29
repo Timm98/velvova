@@ -24,7 +24,7 @@ export default async function ForgotPasswordPage() {
       />
       <p style={{ textAlign: "center", fontSize: "var(--text-sm)" }}>
         <Link href="/login" style={{ color: "var(--text-secondary)" }}>
-          Zurueck zur Anmeldung
+          Zurück zur Anmeldung
         </Link>
       </p>
     </div>

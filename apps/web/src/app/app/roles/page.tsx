@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 /**
  * Rollencluster.
  *
- * Die Antwort auf "in welche Richtung ueberhaupt?" - und ausdruecklich
+ * Die Antwort auf "in welche Richtung ueberhaupt?" - und ausdrücklich
  * auch auf Rollen, die man selbst nicht genannt haette. Genau dort liegt
  * der Wert: naheliegende Titel kennt man schon.
  */
@@ -32,7 +32,7 @@ export default async function RolesPage() {
         <PageHeader title={t("profile.roleClusters")} />
         <EmptyState
           title={t("states.emptyTitle")}
-          body="Richtungen entstehen aus dem Gespraech. Sobald genug Themen abgedeckt sind, erscheinen sie hier."
+          body="Richtungen entstehen aus dem Gespräch. Sobald genug Themen abgedeckt sind, erscheinen sie hier."
           action={<Link href="/app/nina" style={buttonStyle("primary")}>{t("jobs.lockedCta")}</Link>}
         />
       </Stack>
@@ -45,7 +45,7 @@ export default async function RolesPage() {
     <Stack gap={7}>
       <PageHeader
         title={t("profile.roleClusters")}
-        lead="Jede Richtung mit Begruendung, Luecken und einem konkreten naechsten Schritt zur Ueberpruefung."
+        lead="Jede Richtung mit Begründung, Lücken und einem konkreten naechsten Schritt zur Überprüfung."
       />
 
       {[
@@ -79,7 +79,7 @@ export default async function RolesPage() {
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
           Diese Richtungen sind Hypothesen mit Unsicherheit, keine Diagnosen. Der naechste Schritt
-          steht bei jeder dabei, weil eine Richtung sich nur durch Ausprobieren bestaetigt - nicht
+          steht bei jeder dabei, weil eine Richtung sich nur durch Ausprobieren bestätigt - nicht
           durch eine Berechnung.
         </p>
       </Card>

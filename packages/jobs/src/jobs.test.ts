@@ -31,10 +31,10 @@ describe("Normalisierung", () => {
     expect(classifyRequirement("Idealerweise erste Berufserfahrung")).toBe("nice");
   });
 
-  it("zieht Aufgaben aus dem Fliesstext", () => {
+  it("zieht Aufgaben aus dem Fließtext", () => {
     const tasks = extractCoreTasks(
       "Du betreust unsere Kundinnen und Kunden nach dem Start.\n" +
-        "Du erstellst monatliche Auswertungen fuer das Team.\n" +
+        "Du erstellst monatliche Auswertungen für das Team.\n" +
         "Kurz.",
     );
     expect(tasks.length).toBeGreaterThanOrEqual(2);
@@ -43,13 +43,13 @@ describe("Normalisierung", () => {
 });
 
 describe("Reposts", () => {
-  it("erkennt inhaltsgleiche Anzeigen unabhaengig vom Datum", () => {
+  it("erkennt inhaltsgleiche Anzeigen unabhängig vom Datum", () => {
     const a = computeContentHash({ title: "X", companyName: "Y", location: "Z", description: "Text  hier" });
     const b = computeContentHash({ title: "X", companyName: "Y", location: "Z", description: "TEXT hier" });
     expect(a).toBe(b);
   });
 
-  it("behaelt die neueste Anzeige und merkt sich die frueheren", () => {
+  it("behält die neueste Anzeige und merkt sich die frueheren", () => {
     const items = [
       { contentHash: "h1", publishedAt: new Date("2026-01-01"), id: "alt" },
       { contentHash: "h1", publishedAt: new Date("2026-08-01"), id: "neu" },

@@ -5,16 +5,16 @@ import { loadInterview } from "@/lib/interview";
 import { InterviewChat } from "./InterviewChat";
 import { Badge, Card, Disclosure, NotConnected, Stack } from "@/components/ui";
 
-export const metadata: Metadata = { title: "Gespraech" };
+export const metadata: Metadata = { title: "Gespräch" };
 export const dynamic = "force-dynamic";
 
 /**
- * Das Karrieregespraech.
+ * Das Karrieregespräch.
  *
  * Nina steht im Mittelpunkt, nicht eine Formularwand. Eine Hauptfrage,
  * daneben sichtbar, was bisher verstanden wurde und was noch Vermutung
- * ist. Der Fortschritt zaehlt Themen, keine Prozente - eine Prozentzahl
- * waere hier scheingenau.
+ * ist. Der Fortschritt zählt Themen, keine Prozente - eine Prozentzahl
+ * wäre hier scheingenau.
  */
 export default async function NinaPage() {
   const { t, brand } = await getPageContext();
@@ -23,7 +23,7 @@ export default async function NinaPage() {
   return (
     <div style={{ display: "grid", gap: "var(--space-6)", gridTemplateColumns: "minmax(0, 1fr)" }}>
       <div className="nina-grid">
-        {/* --- Gespraech --- */}
+        {/* --- Gespräch --- */}
         <div style={{ display: "grid", gap: "var(--space-5)", alignContent: "start", minWidth: 0 }}>
           <header style={{ display: "grid", gap: "var(--space-3)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexWrap: "wrap" }}>
@@ -120,7 +120,7 @@ export default async function NinaPage() {
             <NotConnected
               what="KI-Anbieter"
               detail={
-                "Es laeuft der lokale Demo-Anbieter. Seine Antworten sind Beispiele ohne inhaltliche " +
+                "Es läuft der lokale Demo-Anbieter. Seine Antworten sind Beispiele ohne inhaltliche " +
                 "Aussage. Deine Angaben werden trotzdem richtig gespeichert und ausgewertet - die " +
                 "Bewertungslogik braucht kein Sprachmodell."
               }
@@ -132,7 +132,7 @@ export default async function NinaPage() {
               <h2 style={{ fontSize: "var(--text-base)" }}>{t("interview.recognisedSoFar")}</h2>
               {view.confirmedFacts.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Noch nichts bestaetigt. Deine Antworten warten im Profil auf deine Bestaetigung.
+                  Noch nichts bestätigt. Deine Antworten warten im Profil auf deine Bestätigung.
                 </p>
               ) : (
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
@@ -152,7 +152,7 @@ export default async function NinaPage() {
               <Stack gap={3}>
                 <h2 style={{ fontSize: "var(--text-base)" }}>{t("interview.openHypotheses")}</h2>
                 <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                  Nichts davon zaehlt, bevor du es bestaetigt hast.
+                  Nichts davon zählt, bevor du es bestätigt hast.
                 </p>
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
                   {view.openHypotheses.slice(0, 6).map((h) => (
@@ -162,7 +162,7 @@ export default async function NinaPage() {
                   ))}
                 </ul>
                 <Link href="/app/profile" style={{ fontSize: "var(--text-sm)", color: "var(--accent-text)" }}>
-                  Im Profil pruefen
+                  Im Profil prüfen
                 </Link>
               </Stack>
             </Card>
@@ -172,10 +172,10 @@ export default async function NinaPage() {
             <div style={{ display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
               <p>
                 Jede Antwort wird als <strong>unbestaetigte</strong> Angabe gespeichert. Sie fliesst
-                erst in Empfehlungen ein, wenn du sie im Profil bestaetigt hast.
+                erst in Empfehlungen ein, wenn du sie im Profil bestätigt hast.
               </p>
               <p>
-                Du kannst jede Angabe bearbeiten, ablehnen oder loeschen - auch spaeter. Wird ein
+                Du kannst jede Angabe bearbeiten, ablehnen oder löschen - auch später. Wird ein
                 Beleg geloescht, verlieren die Aussagen, die darauf beruhten, ihre Grundlage.
               </p>
               <p>

@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
  * Career Evidence Profile.
  *
  * Jede Aussage steht einzeln, mit ihrer Herkunft und ihrem Zustand.
- * Bestaetigen, bearbeiten, ablehnen, loeschen sind gleichrangig - das
- * Produkt draengt nicht zur Bestaetigung.
+ * Bestätigen, bearbeiten, ablehnen, löschen sind gleichrangig - das
+ * Produkt draengt nicht zur Bestätigung.
  */
 export default async function ProfilePage() {
   const user = await requireUser();
@@ -48,7 +48,7 @@ export default async function ProfilePage() {
           body={t("profile.empty")}
           action={
             <Link href="/app/nina" style={{ color: "var(--accent-text)" }}>
-              Gespraech beginnen
+              Gespräch beginnen
             </Link>
           }
         />
@@ -101,13 +101,13 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* Bestaetigte Staerken, nach Bereich gruppiert */}
-      <section aria-labelledby="bestaetigt">
-        <h2 id="bestaetigt" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
+      {/* Bestätigte Stärken, nach Bereich gruppiert */}
+      <section aria-labelledby="bestätigt">
+        <h2 id="bestätigt" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
           {t("profile.confirmedStrengths")}
         </h2>
         {confirmed.length === 0 ? (
-          <EmptyState title="Noch nichts bestaetigt" body="Bestaetige oben, was zutrifft." />
+          <EmptyState title="Noch nichts bestätigt" body="Bestätige oben, was zutrifft." />
         ) : (
           <Stack gap={5}>
             {[
@@ -161,7 +161,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* Abgelehnt: bleibt sichtbar, zaehlt nie */}
+      {/* Abgelehnt: bleibt sichtbar, zählt nie */}
       {rejected.length > 0 && (
         <section aria-labelledby="abgelehnt">
           <h2 id="abgelehnt" style={{ fontSize: "var(--text-base)", marginBottom: "var(--space-3)", color: "var(--text-muted)" }}>
@@ -174,7 +174,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* Bestaetigung des Gesamtprofils */}
+      {/* Bestätigung des Gesamtprofils */}
       <Card style={{ borderColor: "var(--accent-border)" }}>
         <Stack gap={4}>
           <div>

@@ -5,9 +5,9 @@ import { eq } from "drizzle-orm";
  * Application Funnel Debugger.
  *
  * Die wichtigste Eigenschaft dieses Moduls ist, wann es schweigt. Unter
- * einer belastbaren Stichprobe sagt es ausdruecklich nichts - aus drei
- * Bewerbungen ohne Antwort laesst sich kein Muster lesen, und eine
- * Diagnose daraus waere geraten.
+ * einer belastbaren Stichprobe sagt es ausdrücklich nichts - aus drei
+ * Bewerbungen ohne Antwort lässt sich kein Muster lesen, und eine
+ * Diagnose daraus wäre geraten.
  *
  * Und es empfiehlt nie "bewirb dich mehr". Menge ist selten das Problem.
  */
@@ -40,7 +40,7 @@ export interface FunnelDiagnosis {
   hasEnoughData: boolean;
   headline: string;
   findings: FunnelFinding[];
-  /** Ausdruecklicher Hinweis, was NICHT gesagt werden kann. */
+  /** Ausdrücklicher Hinweis, was NICHT gesagt werden kann. */
   limits: string;
 }
 
@@ -70,11 +70,11 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
       counts,
       hasEnoughData: false,
       headline:
-        `Fuer eine Diagnose reicht die Datenlage noch nicht. Bisher ${counts.sent} versendete ` +
+        `Für eine Diagnose reicht die Datenlage noch nicht. Bisher ${counts.sent} versendete ` +
         `Bewerbungen; ab etwa ${MIN_SENT_FOR_DIAGNOSIS} wird ein Muster lesbar.`,
       findings: [],
       limits:
-        "Aus wenigen Bewerbungen laesst sich kein Muster ableiten. Alles andere waere geraten.",
+        "Aus wenigen Bewerbungen lässt sich kein Muster ableiten. Alles andere wäre geraten.",
     };
   }
 
@@ -88,7 +88,7 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
       title: "Viele Ansichten, wenige Merkungen",
       observation: `Von ${counts.viewed} angesehenen Stellen hast du ${counts.saved} gespeichert.`,
       suggestion:
-        "Die Vorschlaege treffen offenbar nicht. Pruef deine Zielrollen im Profil - vielleicht " +
+        "Die Vorschläge treffen offenbar nicht. Prüf deine Zielrollen im Profil - vielleicht " +
         "sucht die Auswahl gerade in die falsche Richtung.",
       certainty: counts.viewed >= 30 ? "muster" : "hinweis",
     });
@@ -111,12 +111,12 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
   if (counts.sent >= MIN_SENT_FOR_DIAGNOSIS && counts.interviews === 0) {
     findings.push({
       key: "sent_no_interview",
-      title: "Bewerbungen ohne Gespraech",
-      observation: `${counts.sent} versendet, bisher kein Gespraech.`,
+      title: "Bewerbungen ohne Gespräch",
+      observation: `${counts.sent} versendet, bisher kein Gespräch.`,
       suggestion:
-        "Drei Dinge lohnen die Pruefung, in dieser Reihenfolge: passen die Zielrollen zu deiner " +
+        "Drei Dinge lohnen die Prüfung, in dieser Reihenfolge: passen die Zielrollen zu deiner " +
         "belegten Erfahrung, ist die Seniorstufe realistisch, und decken deine Unterlagen die " +
-        "Muss-Anforderungen sichtbar ab. Mehr Bewerbungen desselben Zuschnitts aendern daran nichts.",
+        "Muss-Anforderungen sichtbar ab. Mehr Bewerbungen desselben Zuschnitts ändern daran nichts.",
       certainty: counts.sent >= 20 ? "muster" : "hinweis",
     });
   }
@@ -125,11 +125,11 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
   if (counts.interviews >= 3 && counts.offers === 0) {
     findings.push({
       key: "interview_no_offer",
-      title: "Gespraeche ohne Angebot",
-      observation: `${counts.interviews} Gespraeche, bisher kein Angebot.`,
+      title: "Gespräche ohne Angebot",
+      observation: `${counts.interviews} Gespräche, bisher kein Angebot.`,
       suggestion:
-        "Bis zum Gespraech stimmt offenbar viel. Lohnend sind jetzt konkrete Beispiele mit " +
-        "benanntem Ergebnis und eigene Rueckfragen - oder die ehrliche Frage, ob die Rollen " +
+        "Bis zum Gespräch stimmt offenbar viel. Lohnend sind jetzt konkrete Beispiele mit " +
+        "benanntem Ergebnis und eigene Rückfragen - oder die ehrliche Frage, ob die Rollen " +
         "wirklich passen.",
       certainty: counts.interviews >= 5 ? "muster" : "hinweis",
     });
@@ -143,15 +143,15 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
       observation: `${counts.offers} Angebote erhalten.`,
       suggestion:
         "Wenn Angebote kommen, aber nicht passen, liegt es meist an Gehalt, Bedingungen oder " +
-        "Jobqualitaet. Es lohnt sich, diese Kriterien vorher schaerfer zu setzen statt nachher.",
+        "Jobqualität. Es lohnt sich, diese Kriterien vorher schaerfer zu setzen statt nachher.",
       certainty: "hinweis",
     });
   }
 
   const headline =
     findings.length === 0
-      ? `${counts.sent} Bewerbungen, ${counts.interviews} Gespraeche. Kein auffaelliges Muster.`
-      : `${counts.sent} Bewerbungen, ${counts.interviews} Gespraeche. ${findings.length} Auffaelligkeit${findings.length === 1 ? "" : "en"}.`;
+      ? `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. Kein auffaelliges Muster.`
+      : `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. ${findings.length} Auffälligkeit${findings.length === 1 ? "" : "en"}.`;
 
   return {
     counts,

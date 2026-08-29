@@ -13,7 +13,7 @@ import { QUESTIONS_BY_STAGE, STAGE_LABELS, followUpText, questionText, type Ques
  * Adaptiv heisst hier: was schon sicher bekannt ist, wird nicht noch einmal
  * gefragt. Wer im Lebenslauf zwei Jahre Kundenservice stehen hat, soll nicht
  * gefragt werden, ob er Berufserfahrung hat - das ist der haeufigste Grund,
- * warum solche Gespraeche sich wie Formulare anfuehlen.
+ * warum solche Gespräche sich wie Formulare anfuehlen.
  *
  * Umgekehrt gilt: wo etwas unsicher ist, wird gezielt nachgefragt statt
  * angenommen.
@@ -34,7 +34,7 @@ export interface NextStep {
   stage: InterviewStage;
   questionKey: string | null;
   text: string;
-  /** Verstaendlicher Themenname fuer die Fortschrittsanzeige. */
+  /** Verständlicher Themenname für die Fortschrittsanzeige. */
   stageLabel: string;
   /** Was dieses Thema beitragen soll - wird im Produkt angezeigt. */
   purpose: string;
@@ -47,11 +47,11 @@ const PURPOSE: Record<string, { de: string; en: string }> = {
     en: "So it is clear what the search is aiming at.",
   },
   experience_episodes: {
-    de: "Konkrete Beispiele sind die Grundlage fuer alles Spaetere - ohne sie bleibt jede Bewerbung allgemein.",
+    de: "Konkrete Beispiele sind die Grundlage für alles Spätere - ohne sie bleibt jede Bewerbung allgemein.",
     en: "Concrete examples underpin everything later - without them every application stays generic.",
   },
   tasks_and_energy: {
-    de: "Was du kannst und was dir gut tut, sind zwei verschiedene Dinge. Beides zaehlt.",
+    de: "Was du kannst und was dir gut tut, sind zwei verschiedene Dinge. Beides zählt.",
     en: "What you can do and what suits you are two different things. Both count.",
   },
   hard_constraints: {
@@ -59,7 +59,7 @@ const PURPOSE: Record<string, { de: string; en: string }> = {
     en: "These limits are never quietly overridden.",
   },
   location_and_logistics: {
-    de: "Der Arbeitsweg entscheidet oft mehr ueber Zufriedenheit als der Jobtitel.",
+    de: "Der Arbeitsweg entscheidet oft mehr über Zufriedenheit als der Jobtitel.",
     en: "The commute often decides more about satisfaction than the job title.",
   },
 };
@@ -67,7 +67,7 @@ const PURPOSE: Record<string, { de: string; en: string }> = {
 function purposeFor(stage: InterviewStage, locale: "de" | "en"): string {
   const p = PURPOSE[stage];
   if (p) return locale === "en" ? p.en : p.de;
-  return locale === "en" ? "Helps complete the picture." : "Vervollstaendigt das Bild.";
+  return locale === "en" ? "Helps complete the picture." : "Vervollständigt das Bild.";
 }
 
 /**
@@ -140,7 +140,7 @@ export function nextStep(state: InterviewState): NextStep {
         text:
           locale === "en"
             ? `We can come back to this later - it does not have to be settled now.`
-            : `Darauf koennen wir spaeter zurueckkommen, das muss jetzt nicht geklaert sein.`,
+            : `Darauf koennen wir später zurueckkommen, das muss jetzt nicht geklaert sein.`,
         stageLabel: STAGE_LABELS[stage]![locale],
         purpose: purposeFor(stage, locale),
         canSkip: false,
@@ -166,18 +166,18 @@ export function nextStep(state: InterviewState): NextStep {
     text:
       locale === "en"
         ? "That is enough for a first picture. Let me summarise what I understood - you can correct anything."
-        : "Das reicht fuer ein erstes Bild. Ich fasse zusammen, was ich verstanden habe - du kannst alles korrigieren.",
+        : "Das reicht für ein erstes Bild. Ich fasse zusammen, was ich verstanden habe - du kannst alles korrigieren.",
     stageLabel: STAGE_LABELS.synthesis![locale],
     purpose:
       locale === "en"
         ? "Nothing counts until you have confirmed it."
-        : "Nichts davon zaehlt, bevor du es bestaetigt hast.",
+        : "Nichts davon zählt, bevor du es bestätigt hast.",
     canSkip: false,
   };
 }
 
 /**
- * Braucht eine Antwort eine Vertiefung? Kriterium ist nicht die Laenge
+ * Braucht eine Antwort eine Vertiefung? Kriterium ist nicht die Länge
  * allein, sondern ob etwas Konkretes darin steht - eine Handlung, ein
  * Ergebnis, ein Beispiel.
  */
@@ -208,7 +208,7 @@ export function followUpStep(question: Question, state: InterviewState): NextSte
 export interface ProgressView {
   understood: number;
   total: number;
-  /** Themen mit Namen und Zustand - fuer die Anzeige "3 von 7 verstanden". */
+  /** Themen mit Namen und Zustand - für die Anzeige "3 von 7 verstanden". */
   topics: { stage: InterviewStage; label: string; state: "done" | "skipped" | "open" }[];
   minimumProfileReached: boolean;
   missingForMinimum: string[];

@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 /**
  * Angebotsvergleich.
  *
- * Gehalt ist eine Zahl unter mehreren. Wer zwei Angebote nur ueber das
+ * Gehalt ist eine Zahl unter mehreren. Wer zwei Angebote nur über das
  * Grundgehalt vergleicht, uebersieht meistens das, was den Alltag
  * bestimmt: Stunden, Remote-Anteil, Urlaub, Probezeit.
  */
@@ -37,7 +37,7 @@ export default async function OffersPage() {
         <PageHeader title={t("nav.offers")} />
         <EmptyState
           title={t("states.emptyTitle")}
-          body="Sobald du ein Angebot erhaeltst, kannst du es hier eintragen und vergleichen."
+          body="Sobald du ein Angebot erhältst, kannst du es hier eintragen und vergleichen."
           action={<Link href="/app/applications" style={buttonStyle("secondary")}>{t("applications.title")}</Link>}
         />
       </Stack>
@@ -93,7 +93,7 @@ export default async function OffersPage() {
           <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
             <li>· Nenn zuerst, was du bringst - mit einem konkreten Beispiel aus deinem Profil.</li>
             <li>· Verhandle nicht nur das Gehalt. Stunden, Remote-Anteil und Lernbudget sind oft beweglicher.</li>
-            <li>· Frag nach der Frist, bevor du eine Zusage gibst. Eine Woche Bedenkzeit ist ueblich.</li>
+            <li>· Frag nach der Frist, bevor du eine Zusage gibst. Eine Woche Bedenkzeit ist üblich.</li>
             <li>· Was dir nicht wichtig ist, muss nicht verhandelt werden. Weniger Punkte, klarer vorgetragen.</li>
           </ul>
         </Stack>

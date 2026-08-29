@@ -9,8 +9,8 @@ import { destroySession, requireUser, revokeSession } from "./auth";
 /**
  * Privacy Center.
  *
- * Vier Dinge muessen tatsaechlich funktionieren, nicht nur dastehen:
- * einsehen, aendern, exportieren, loeschen. Und jede Einwilligung muss
+ * Vier Dinge müssen tatsächlich funktionieren, nicht nur dastehen:
+ * einsehen, ändern, exportieren, löschen. Und jede Einwilligung muss
  * einzeln widerrufbar sein - sonst ist es keine Einwilligung, sondern
  * ein Haken.
  */
@@ -31,7 +31,7 @@ export async function setConsent(
 
     if (existing) {
       // Der Widerruf wird protokolliert, nicht die Zeile geloescht -
-      // sonst waere spaeter nicht nachvollziehbar, was wann galt.
+      // sonst wäre später nicht nachvollziehbar, was wann galt.
       await tx
         .update(schema.consents)
         .set({
@@ -83,7 +83,7 @@ export async function updateSettings(formData: FormData): Promise<void> {
 }
 
 /**
- * Vollstaendiger Export. Alles, was zu diesem Menschen gespeichert ist -
+ * Vollständiger Export. Alles, was zu diesem Menschen gespeichert ist -
  * ohne Passworthash und ohne Sitzungstoken, weil beides Geheimnisse sind
  * und im Export nichts zu suchen hat.
  */
@@ -94,7 +94,7 @@ export async function exportData(): Promise<string> {
   const data = await withUser(db, user.id, async (tx) => ({
     exportiertAm: new Date().toISOString(),
     hinweis:
-      "Dieser Export enthaelt alle zu dir gespeicherten Inhalte. Passwort und Sitzungstoken " +
+      "Dieser Export enthält alle zu dir gespeicherten Inhalte. Passwort und Sitzungstoken " +
       "sind bewusst nicht enthalten - es sind Geheimnisse, keine Inhalte.",
     konto: (
       await tx
@@ -118,7 +118,7 @@ export async function exportData(): Promise<string> {
       await tx.select().from(schema.userConstraints).where(eq(schema.userConstraints.userId, user.id))
     )[0],
     rollencluster: await tx.select().from(schema.roleClusters).where(eq(schema.roleClusters.userId, user.id)),
-    gespraeche: await tx
+    gespräche: await tx
       .select()
       .from(schema.interviewSessions)
       .where(eq(schema.interviewSessions.userId, user.id)),
@@ -151,18 +151,18 @@ export async function exportData(): Promise<string> {
 }
 
 /**
- * Konto loeschen.
+ * Konto löschen.
  *
  * Zweistufig: erst Soft Delete, damit ein Versehen noch korrigierbar ist,
- * und der harte Loeschlauf raeumt spaeter auf. Der Mensch erfaehrt das -
- * "sofort und unwiederbringlich" zu behaupten, waere unwahr.
+ * und der harte Löschlauf raeumt später auf. Der Mensch erfaehrt das -
+ * "sofort und unwiederbringlich" zu behaupten, wäre unwahr.
  */
 export async function deleteAccount(confirmation: string): Promise<{ ok: boolean; message: string }> {
   const user = await requireUser();
-  if (confirmation.trim().toLowerCase() !== "loeschen") {
+  if (confirmation.trim().toLowerCase() !== "löschen") {
     return {
       ok: false,
-      message: 'Zur Bestaetigung bitte das Wort "loeschen" eingeben. Es wurde nichts geloescht.',
+      message: 'Zur Bestätigung bitte das Wort "löschen" eingeben. Es wurde nichts geloescht.',
     };
   }
 
@@ -197,7 +197,7 @@ export async function signOutDevice(sessionId: string): Promise<void> {
   revalidatePath("/app/settings");
 }
 
-/** Einen einzelnen Beleg endgueltig entfernen. */
+/** Einen einzelnen Beleg endgültig entfernen. */
 export async function deleteSingleItem(evidenceId: string): Promise<void> {
   const user = await requireUser();
   const db = await getDb();

@@ -5,9 +5,9 @@ import { UserTextImportAdapter } from "./sources/userImport.ts";
 /**
  * Welche Quellen aktiv sind.
  *
- * Eine Quelle laeuft nur, wenn sie konfiguriert UND lizenziert ist. Beides
- * wird hier geprueft, nicht im Aufrufer - sonst schleicht sich frueher
- * oder spaeter eine Stelle ein, an der es vergessen wird.
+ * Eine Quelle läuft nur, wenn sie konfiguriert UND lizenziert ist. Beides
+ * wird hier geprüft, nicht im Aufrufer - sonst schleicht sich früher
+ * oder später eine Stelle ein, an der es vergessen wird.
  */
 
 export interface SourceStatus {
@@ -45,7 +45,7 @@ export function sourceStatuses(cfg: RuntimeConfig = loadRuntimeConfig()): Source
       key: "seed",
       displayName: "Demo-Datensatz",
       active: true,
-      reason: "aktiv - ausschliesslich synthetische Stellen",
+      reason: "aktiv - ausschließlich synthetische Stellen",
     });
   }
 

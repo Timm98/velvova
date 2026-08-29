@@ -1,6 +1,6 @@
 import type { EvidenceItem, Job, JobRequirement, JobSource, UserConstraints } from "@paycheck/domain";
 
-/** Testbausteine. Ausschliesslich synthetisch, keine realen Firmen. */
+/** Testbausteine. Ausschließlich synthetisch, keine realen Firmen. */
 
 const T0 = new Date("2026-08-01T00:00:00Z");
 
@@ -17,7 +17,7 @@ export function makeJob(over: Partial<Job> = {}): Job {
       "Kundinnen und Kunden nach dem Onboarding betreuen",
       "Nutzungsdaten auswerten und Berichte erstellen",
       "Bei Eskalationen zwischen Kunde und Produktteam vermitteln",
-      "Schulungen vorbereiten und praesentieren",
+      "Schulungen vorbereiten und präsentieren",
     ],
     description:
       "Du begleitest unsere Kundinnen und Kunden nach dem Start. Du arbeitest eng mit Produkt " +
@@ -53,7 +53,7 @@ export function makeEvidence(over: Partial<EvidenceItem>[] = []): EvidenceItem[]
     },
     {
       id: "ev-2", userId: "u1", type: "skill",
-      statement: "Auswertungen und Berichte in Tabellen erstellt und monatlich praesentiert",
+      statement: "Auswertungen und Berichte in Tabellen erstellt und monatlich präsentiert",
       sourceType: "user_stated", sourceRef: "turn-7", confidence: 0.8, userConfirmed: true,
       userRejected: false, sensitivityLevel: "normal", retentionClass: "profile",
       createdAt: T0, updatedAt: T0, deletedAt: null,
@@ -92,12 +92,12 @@ export function makeSource(over: Partial<JobSource> = {}): JobSource {
   };
 }
 
-/** Schaetzt Reisezeiten fuer Tests deterministisch. */
+/** Schätzt Reisezeiten für Tests deterministisch. */
 export const testCommute = {
   estimateMinutes(from: string, to: string): number | null {
     if (from === to) return 20;
-    if (from === "Hamburg" && to === "Luebeck") return 70;
-    if (from === "Hamburg" && to === "Muenchen") return 400;
+    if (from === "Hamburg" && to === "Lübeck") return 70;
+    if (from === "Hamburg" && to === "München") return 400;
     return null;
   },
 };

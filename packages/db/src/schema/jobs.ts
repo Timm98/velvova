@@ -29,7 +29,7 @@ export const companies = pgTable("companies", {
   industry: text("industry"),
   sizeBand: text("size_band"),
   headquarters: text("headquarters"),
-  /** Nur true, wenn aus einem offiziellen Register bestaetigt. */
+  /** Nur true, wenn aus einem offiziellen Register bestätigt. */
   registryVerified: boolean("registry_verified").notNull().default(false),
   registryRef: text("registry_ref"),
   isDemo: boolean("is_demo").notNull().default(false),
@@ -73,7 +73,7 @@ export const jobs = pgTable("jobs", {
   lastLinkCheckOk: boolean("last_link_check_ok"),
   originalUrl: text("original_url"),
   sourceId: uuid("source_id").notNull().references(() => jobSources.id),
-  /** Erkennt Reposts derselben Stelle ueber Quellen hinweg. */
+  /** Erkennt Reposts derselben Stelle über Quellen hinweg. */
   contentHash: text("content_hash").notNull(),
   /** Zeigt die Stelle als Demo-Datensatz aus, nie als Live-Angebot. */
   isDemo: boolean("is_demo").notNull().default(false),
@@ -83,7 +83,7 @@ export const jobs = pgTable("jobs", {
   index("jobs_company_idx").on(t.companyId),
 ]);
 
-/** Rohfassung je Abruf. Erlaubt spaeter zu zeigen, was sich geaendert hat. */
+/** Rohfassung je Abruf. Erlaubt später zu zeigen, was sich geaendert hat. */
 export const jobSnapshots = pgTable("job_snapshots", {
   id: uuid("id").primaryKey().defaultRandom(),
   jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
@@ -117,7 +117,7 @@ export const reviewAggregates = pgTable("review_aggregates", {
   id: uuid("id").primaryKey().defaultRandom(),
   companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   /** Art der Quelle steht immer sichtbar dabei: Kundenurteile sind keine
-   *  Aussage ueber die Arbeitskultur. */
+   *  Aussage über die Arbeitskultur. */
   sourceKind: reviewSourceKindEnum("source_kind").notNull(),
   sourceName: text("source_name").notNull(),
   sourceUrl: text("source_url"),

@@ -25,7 +25,7 @@ export const InterviewStageSchema = z.enum([
 ]);
 export type InterviewStage = z.infer<typeof InterviewStageSchema>;
 
-/** Reihenfolge der Themen. Mindestens diese Bereiche muessen abgedeckt sein. */
+/** Reihenfolge der Themen. Mindestens diese Bereiche müssen abgedeckt sein. */
 export const INTERVIEW_STAGE_ORDER: readonly InterviewStage[] = [
   "consent_and_goal", "current_situation", "background", "experience_episodes",
   "tasks_and_energy", "feedback_and_recognition", "work_style_and_environment",
@@ -63,7 +63,7 @@ export const InterviewTurnSchema = z.object({
   index: z.number().int().nonnegative(),
   role: z.enum(["assistant", "user", "system"]),
   stage: InterviewStageSchema,
-  /** Schluessel der gestellten Frage, damit Auswertung stabil bleibt. */
+  /** Schlüssel der gestellten Frage, damit Auswertung stabil bleibt. */
   questionKey: z.string().nullable(),
   content: z.string(),
   /** Bei Sprachmodus: wurde das Transkript gespeichert? Braucht Einwilligung. */
@@ -76,7 +76,7 @@ export type InterviewTurn = z.infer<typeof InterviewTurnSchema>;
 export interface InterviewProgress {
   understoodTopics: number;
   totalTopics: number;
-  /** Was als Naechstes fehlt, in der Sprache des Menschen. */
+  /** Was als Nächstes fehlt, in der Sprache des Menschen. */
   nextTopicLabel: string | null;
   minimumProfileReached: boolean;
 }
@@ -98,7 +98,7 @@ export function computeProgress(session: InterviewSession, labels: Record<Interv
 
 /**
  * Personalisierte Jobempfehlungen bleiben gesperrt, bis ein Mindestprofil
- * vorliegt und der Mensch es ausdruecklich bestaetigt hat.
+ * vorliegt und der Mensch es ausdrücklich bestätigt hat.
  */
 export interface MinimumProfileGate {
   unlocked: boolean;
@@ -116,7 +116,7 @@ export function evaluateGate(
       unlocked: false,
       missingStages: [...REQUIRED_STAGES],
       profileConfirmed: false,
-      reason: "Es wurde noch kein Karrieregespraech begonnen.",
+      reason: "Es wurde noch kein Karrieregespräch begonnen.",
     };
   }
   const handled = new Set(session.completedStages);
@@ -134,8 +134,8 @@ export function evaluateGate(
       unlocked: false,
       missingStages: [],
       profileConfirmed: false,
-      reason: "Das Profil muss noch von dir bestaetigt werden.",
+      reason: "Das Profil muss noch von dir bestätigt werden.",
     };
   }
-  return { unlocked: true, missingStages: [], profileConfirmed: true, reason: "Profil bestaetigt." };
+  return { unlocked: true, missingStages: [], profileConfirmed: true, reason: "Profil bestätigt." };
 }

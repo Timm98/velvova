@@ -1,10 +1,10 @@
 /**
- * Demo-Bewertungen. Vollstaendig erfunden, zu erfundenen Firmen.
+ * Demo-Bewertungen. Vollständig erfunden, zu erfundenen Firmen.
  *
- * Der Datensatz ist bewusst so gebaut, dass die Oberflaeche die Trennung
+ * Der Datensatz ist bewusst so gebaut, dass die Oberfläche die Trennung
  * der Quellenarten zeigen muss: Kundenbewertungen stehen neben
  * Mitarbeiterstimmen, mit unterschiedlichen Stichproben und Zeitraeumen.
- * Eine Google-artige Standortbewertung sagt nichts ueber die Arbeitskultur
+ * Eine Google-artige Standortbewertung sagt nichts über die Arbeitskultur
  * - genau das soll sichtbar werden.
  */
 
@@ -35,11 +35,11 @@ export const seedReviews: SeedReview[] = [
     roleScope: "alle Rollen",
     periodDays: 540,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
-    selectionNote: "Alle Beitraege des Zeitraums, ohne Vorauswahl.",
+    selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Weiterbildung und Entwicklung", sentiment: "positive", mentionCount: 22,
         summary: "Das Lernbudget wird haeufig genannt und offenbar auch genutzt." },
-      { theme: "Fuehrung", sentiment: "positive", mentionCount: 15,
+      { theme: "Führung", sentiment: "positive", mentionCount: 15,
         summary: "Direkte Vorgesetzte werden ueberwiegend als erreichbar beschrieben." },
       { theme: "Arbeitsbelastung", sentiment: "mixed", mentionCount: 18,
         summary: "Zum Quartalsende wird wiederholt von hoher Belastung berichtet." },
@@ -59,7 +59,7 @@ export const seedReviews: SeedReview[] = [
     periodDays: 900,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
     selectionNote:
-      "Standortbewertungen von Kundinnen und Kunden. Sie sagen nichts ueber die " +
+      "Standortbewertungen von Kundinnen und Kunden. Sie sagen nichts über die " +
       "Arbeitsbedingungen und duerfen dafuer nicht herangezogen werden.",
     themes: [
       { theme: "Kundenservice", sentiment: "positive", mentionCount: 88,
@@ -77,16 +77,16 @@ export const seedReviews: SeedReview[] = [
     roleScope: "Operations und Verwaltung",
     periodDays: 720,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
-    selectionNote: "Alle Beitraege des Zeitraums, ohne Vorauswahl.",
+    selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Arbeitsbelastung", sentiment: "negative", mentionCount: 31,
         summary: "Ueberstunden im Schichtbetrieb werden wiederholt genannt." },
-      { theme: "Kollegialitaet im Team", sentiment: "positive", mentionCount: 24,
+      { theme: "Kollegialität im Team", sentiment: "positive", mentionCount: 24,
         summary: "Der Zusammenhalt im unmittelbaren Team wird gelobt." },
-      { theme: "Fuehrung", sentiment: "mixed", mentionCount: 19,
-        summary: "Die Einschaetzung faellt je nach Abteilung deutlich unterschiedlich aus." },
+      { theme: "Führung", sentiment: "mixed", mentionCount: 19,
+        summary: "Die Einschätzung fällt je nach Abteilung deutlich unterschiedlich aus." },
       { theme: "Entwicklung", sentiment: "negative", mentionCount: 14,
-        summary: "Aufstiegsmoeglichkeiten werden als begrenzt beschrieben." },
+        summary: "Aufstiegsmöglichkeiten werden als begrenzt beschrieben." },
     ],
   },
   {
@@ -96,46 +96,46 @@ export const seedReviews: SeedReview[] = [
     sourceUrl: "https://demo.invalid/arbeitgeber/kranzberg",
     ratingAverage: 3.4,
     sampleSize: 6,
-    locationScope: "Luebeck",
+    locationScope: "Lübeck",
     roleScope: null,
     periodDays: 1100,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
     selectionNote:
-      "Sehr kleine Stichprobe ueber einen langen Zeitraum. Einzelne Beitraege " +
-      "wiegen hier stark; eine Verallgemeinerung ist nicht zulaessig.",
+      "Sehr kleine Stichprobe über einen langen Zeitraum. Einzelne Beiträge " +
+      "wiegen hier stark; eine Verallgemeinerung ist nicht zulässig.",
     themes: [
-      { theme: "Reisetaetigkeit", sentiment: "negative", mentionCount: 4,
-        summary: "Zwei Beitraege nennen haeufige Reisen als Belastung. Sehr kleine Grundlage." },
+      { theme: "Reisetätigkeit", sentiment: "negative", mentionCount: 4,
+        summary: "Zwei Beiträge nennen haeufige Reisen als Belastung. Sehr kleine Grundlage." },
     ],
   },
   {
-    companyKey: "gruenspan",
+    companyKey: "grünspan",
     sourceKind: "employee_reviews",
     sourceName: "Demo-Arbeitgeberportal",
-    sourceUrl: "https://demo.invalid/arbeitgeber/gruenspan",
+    sourceUrl: "https://demo.invalid/arbeitgeber/grünspan",
     ratingAverage: 4.2,
     sampleSize: 38,
     locationScope: "Kiel und remote",
     roleScope: "alle Rollen",
     periodDays: 500,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
-    selectionNote: "Alle Beitraege des Zeitraums, ohne Vorauswahl.",
+    selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
-      { theme: "Flexibilitaet und Homeoffice", sentiment: "positive", mentionCount: 29,
+      { theme: "Flexibilität und Homeoffice", sentiment: "positive", mentionCount: 29,
         summary: "Die Remote-Regelung wird durchgaengig positiv beschrieben." },
       { theme: "Entwicklung und Lernen", sentiment: "positive", mentionCount: 17,
-        summary: "Weiterbildung wird als tatsaechlich zugaenglich beschrieben." },
+        summary: "Weiterbildung wird als tatsächlich zugänglich beschrieben." },
       { theme: "Arbeitsbelastung", sentiment: "mixed", mentionCount: 12,
         summary: "Projektspitzen werden genannt, aber als planbar beschrieben." },
-      { theme: "Fuehrung", sentiment: "positive", mentionCount: 13,
+      { theme: "Führung", sentiment: "positive", mentionCount: 13,
         summary: "Entscheidungswege werden als nachvollziehbar beschrieben." },
     ],
   },
   {
-    companyKey: "gruenspan",
+    companyKey: "grünspan",
     sourceKind: "official_registry",
     sourceName: "Demo-Unternehmensregister",
-    sourceUrl: "https://demo.invalid/register/gruenspan",
+    sourceUrl: "https://demo.invalid/register/grünspan",
     ratingAverage: null,
     sampleSize: null,
     locationScope: null,
@@ -144,7 +144,7 @@ export const seedReviews: SeedReview[] = [
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
     selectionNote: "Registerdaten, keine Bewertung.",
     themes: [
-      { theme: "Rechtsform und Sitz bestaetigt", sentiment: "positive", mentionCount: 1,
+      { theme: "Rechtsform und Sitz bestätigt", sentiment: "positive", mentionCount: 1,
         summary: "Eintragung und Sitz stimmen mit den Angaben der Anzeige ueberein." },
     ],
   },
@@ -159,11 +159,11 @@ export const seedReviews: SeedReview[] = [
     roleScope: "Vertrieb",
     periodDays: 800,
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
-    selectionNote: "Alle Beitraege des Zeitraums, ohne Vorauswahl.",
+    selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Druck auf Zielvorgaben", sentiment: "negative", mentionCount: 67,
         summary: "Der Druck durch Abschlussziele wird sehr haeufig genannt." },
-      { theme: "Verguetung", sentiment: "mixed", mentionCount: 41,
+      { theme: "Vergütung", sentiment: "mixed", mentionCount: 41,
         summary: "Die Provision wird als erreichbar, aber schwankend beschrieben." },
       { theme: "Einarbeitung", sentiment: "negative", mentionCount: 23,
         summary: "Die Einarbeitung wird wiederholt als zu kurz beschrieben." },

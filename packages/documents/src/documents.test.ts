@@ -24,7 +24,7 @@ const job = {
 describe("Claim-Provenienz", () => {
   const evidence = [
     ev("e1", "Zwei Jahre Kundenbetreuung im Kundenservice, taeglich rund 40 Anfragen bearbeitet"),
-    ev("e2", "Monatliche Auswertung der Anfragegruende erstellt und im Team praesentiert"),
+    ev("e2", "Monatliche Auswertung der Anfragegründe erstellt und im Team präsentiert"),
   ];
 
   it("erkennt eine belegte Aussage", () => {
@@ -50,20 +50,20 @@ describe("Claim-Provenienz", () => {
     expect(checkApproval(a).canApprove).toBe(true);
   });
 
-  it("zaehlt unbestaetigte Hypothesen nicht als Beleg", () => {
+  it("zählt unbestaetigte Hypothesen nicht als Beleg", () => {
     const nurHypothese = [ev("h1", "Zwei Jahre Kundenbetreuung im Kundenservice", false)];
     const a = analyseClaims("art1", "Ich habe zwei Jahre Kundenbetreuung im Kundenservice gemacht.", nurHypothese);
     expect(a.claims[0]!.status).toBe("unsupported");
   });
 
-  it("prueft Anreden und Grussformeln nicht als Behauptung", () => {
+  it("prüft Anreden und Grußformeln nicht als Behauptung", () => {
     expect(isCheckableClaim("Sehr geehrte Damen und Herren,")).toBe(false);
-    expect(isCheckableClaim("Mit freundlichen Gruessen")).toBe(false);
+    expect(isCheckableClaim("Mit freundlichen Grüßen")).toBe(false);
     expect(isCheckableClaim("Ich habe zwei Jahre im Kundenservice gearbeitet.")).toBe(true);
   });
 
-  it("behandelt eine Absichtserklaerung nicht als Tatsachenbehauptung", () => {
-    expect(isCheckableClaim("Ich moechte mich in diesem Bereich weiterentwickeln.")).toBe(false);
+  it("behandelt eine Absichtserklärung nicht als Tatsachenbehauptung", () => {
+    expect(isCheckableClaim("Ich möchte mich in diesem Bereich weiterentwickeln.")).toBe(false);
   });
 });
 
@@ -73,13 +73,13 @@ describe("Versand", () => {
     attachments: [], locale: "de" as const, isDemo: true, providerName: "x",
   };
 
-  it("versendet ohne Bestaetigung nichts", async () => {
+  it("versendet ohne Bestätigung nichts", async () => {
     const r = await new DraftDeliveryProvider().send(preview, false);
     expect(r.status).toBe("refused");
     expect(r.isDemo).toBe(true);
   });
 
-  it("erzeugt mit Bestaetigung einen Entwurf, sendet aber nicht", async () => {
+  it("erzeugt mit Bestätigung einen Entwurf, sendet aber nicht", async () => {
     const r = await new DraftDeliveryProvider().send(preview, true);
     expect(r.status).toBe("draft_created");
     expect(r.isDemo).toBe(true);

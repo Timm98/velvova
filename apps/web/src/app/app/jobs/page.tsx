@@ -28,13 +28,13 @@ const SORT_KEYS: SortKey[] = [
 /**
  * Die Jobliste.
  *
- * Standardmaessig eine begruendete Auswahl, nicht "alle Jobs". Jede Karte
- * zeigt genau so viel, wie fuer eine Entscheidung noetig ist: Passung und
+ * Standardmäßig eine begründete Auswahl, nicht "alle Jobs". Jede Karte
+ * zeigt genau so viel, wie für eine Entscheidung noetig ist: Passung und
  * Sicherheit getrennt, ein Grund, ein Vorbehalt.
  *
  * Ausgeschlossene Stellen erscheinen nicht in der Auswahl - aber sie sind
  * auf Wunsch sichtbar, mit konkretem Grund. Etwas stillschweigend
- * wegzufiltern waere schlechter als es zu begruenden.
+ * wegzufiltern wäre schlechter als es zu begründen.
  */
 export default async function JobsPage({
   searchParams,
@@ -55,8 +55,8 @@ export default async function JobsPage({
 
   const gate = await loadGate(user.id);
 
-  // Der Riegel: ohne bestaetigtes Mindestprofil keine personalisierten
-  // Vorschlaege. Das ist kein Gimmick, sondern der Unterschied zwischen
+  // Der Riegel: ohne bestätigtes Mindestprofil keine personalisierten
+  // Vorschläge. Das ist kein Gimmick, sondern der Unterschied zwischen
   // Empfehlung und Zufall.
   if (!gate.unlocked) {
     return (
@@ -67,7 +67,7 @@ export default async function JobsPage({
           body={`${t("jobs.lockedBody")} ${gate.reason}`}
           action={
             <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"} style={buttonStyle("primary")}>
-              {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestaetigen"}
+              {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
             </Link>
           }
         />
@@ -132,7 +132,7 @@ export default async function JobsPage({
       {blockedCount > 0 && (
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
           {includeBlocked
-            ? `${blockedCount} Stellen widersprechen einer deiner harten Bedingungen. Sie sind unten mit Begruendung sichtbar.`
+            ? `${blockedCount} Stellen widersprechen einer deiner harten Bedingungen. Sie sind unten mit Begründung sichtbar.`
             : `${blockedCount} Stellen sind ausgeschlossen, weil sie einer deiner harten Bedingungen widersprechen.`}{" "}
           <Link
             href={`/app/jobs?sort=${sort}${includeBlocked ? "" : "&blocked=1"}`}
@@ -190,11 +190,11 @@ export default async function JobsPage({
                     <div style={{ display: "flex", gap: "var(--space-2)", alignItems: "flex-start", flexWrap: "wrap" }}>
                       {j.job.isDemo && <Badge tone="caution">Demo</Badge>}
                       {j.listingConfidence.possiblyStale && <Badge tone="caution">evtl. veraltet</Badge>}
-                      {j.listingConfidence.possibleRepost && <Badge tone="neutral">Wiederveroeffentlichung</Badge>}
+                      {j.listingConfidence.possibleRepost && <Badge tone="neutral">Wiederveröffentlichung</Badge>}
                     </div>
                   </div>
 
-                  {/* Die fuenf Bewertungen, getrennt */}
+                  {/* Die fünf Bewertungen, getrennt */}
                   <div
                     className="scroll-x"
                     style={{ display: "flex", gap: "var(--space-6)", paddingBottom: 4 }}

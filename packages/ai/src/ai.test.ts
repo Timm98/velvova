@@ -54,7 +54,7 @@ describe("externe Texte sind Daten, keine Anweisungen", () => {
     expect(signals.length).toBeGreaterThan(0);
   });
 
-  it("schlaegt bei harmlosen Anzeigen nicht an", () => {
+  it("schlägt bei harmlosen Anzeigen nicht an", () => {
     const signals = detectInjection(
       "Du betreust Kundinnen und Kunden, wertest Nutzungsdaten aus und bereitest Schulungen vor. " +
         "Wir bieten flexible Arbeitszeit und ein Lernbudget.",
@@ -79,13 +79,13 @@ describe("externe Texte sind Daten, keine Anweisungen", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Geschuetzte Merkmale
+// Geschützte Merkmale
 // ---------------------------------------------------------------------------
 describe("keine Zuschreibung geschuetzter Merkmale", () => {
   it.each([
     ["Die Bewerberin wirkt vermutlich psychisch belastet.", "Gesundheit"],
     ["Dem Namen nach vermutlich mit Migrationshintergrund.", "ethnische Herkunft"],
-    ["Der Akzent deutet auf eine Herkunft aus dem Sueden.", "Herkunft aus der Stimme"],
+    ["Der Akzent deutet auf eine Herkunft aus dem Süden.", "Herkunft aus der Stimme"],
     ["Die Antwort klingt unehrlich.", "Ehrlichkeit"],
   ])("verwirft: %s", (text, attribute) => {
     const violations = checkOutput(text);
@@ -93,10 +93,10 @@ describe("keine Zuschreibung geschuetzter Merkmale", () => {
     expect(violations.map((v) => v.attribute)).toContain(attribute);
   });
 
-  it("laesst eine fachliche Einschaetzung durch", () => {
+  it("lässt eine fachliche Einschätzung durch", () => {
     expect(
       checkOutput(
-        "Zwei Muss-Anforderungen sind durch bestaetigte Erfahrungen gedeckt, eine ist offen. " +
+        "Zwei Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt, eine ist offen. " +
           "Zur Arbeitszeit macht die Anzeige keine Angabe.",
       ),
     ).toHaveLength(0);
@@ -118,7 +118,7 @@ describe("Datenminimierung vor externer Verarbeitung", () => {
     expect(out).toContain("[E-Mail entfernt]");
   });
 
-  it("laesst den fachlichen Inhalt unangetastet", () => {
+  it("lässt den fachlichen Inhalt unangetastet", () => {
     const text = "Zwei Jahre Kundenservice, monatliche Auswertungen erstellt.";
     expect(minimiseForExternalProvider(text)).toBe(text);
   });
@@ -131,7 +131,7 @@ describe("Ninas Systemprompt", () => {
   const base = {
     locale: "de" as const,
     confirmedFacts: ["Zwei Jahre Kundenservice"],
-    openHypotheses: ["Koennte Projektkoordination liegen"],
+    openHypotheses: ["Könnte Projektkoordination liegen"],
     hardConstraints: ["mindestens 42.000 EUR"],
     rejectedStatements: [],
     currentStage: "experience_episodes",
@@ -146,7 +146,7 @@ describe("Ninas Systemprompt", () => {
     expect(p).toContain("Zwei Jahre Kundenservice");
   });
 
-  it("verbietet die Verbote ausdruecklich", () => {
+  it("verbietet die Verbote ausdrücklich", () => {
     const p = buildNinaSystemPrompt(base).toLowerCase();
     for (const rule of ["erfinden", "einstellungswahrscheinlichkeit", "emotionen", "ehrlichkeit", "harte bedingung"]) {
       expect(p, `Regel fehlt: ${rule}`).toContain(rule);
@@ -154,9 +154,9 @@ describe("Ninas Systemprompt", () => {
   });
 
   it("nennt abgelehnte Aussagen, damit sie nicht wiederkehren", () => {
-    const p = buildNinaSystemPrompt({ ...base, rejectedStatements: ["Fuehrungsambition"] });
+    const p = buildNinaSystemPrompt({ ...base, rejectedStatements: ["Führungsambition"] });
     expect(p).toContain("ABGELEHNT");
-    expect(p).toContain("Fuehrungsambition");
+    expect(p).toContain("Führungsambition");
   });
 
   it("weist auf externe Verarbeitung hin, wenn sie stattfindet", () => {
@@ -218,14 +218,14 @@ describe("Interview-Maschine", () => {
     expect(step.text.toLowerCase()).not.toMatch(/ehrenamt/);
   });
 
-  it("verlangt mindestens zwei belegte Episoden fuer das Kernthema", () => {
+  it("verlangt mindestens zwei belegte Episoden für das Kernthema", () => {
     const one = [ev({ id: "a" })];
     const two = [ev({ id: "a" }), ev({ id: "b" })];
     expect(stageIsCovered("experience_episodes", one)).toBe(false);
     expect(stageIsCovered("experience_episodes", two)).toBe(true);
   });
 
-  it("zaehlt abgelehnte und geloeschte Evidenz nicht mit", () => {
+  it("zählt abgelehnte und geloeschte Evidenz nicht mit", () => {
     const rejected = [ev({ id: "a", userRejected: true }), ev({ id: "b", deletedAt: T0 })];
     expect(stageIsCovered("experience_episodes", rejected)).toBe(false);
   });
@@ -255,7 +255,7 @@ describe("Interview-Maschine", () => {
     expect(p.minimumProfileReached).toBe(true);
   });
 
-  it("hat eindeutige Fragenschluessel", () => {
+  it("hat eindeutige Fragenschlüssel", () => {
     const keys = QUESTIONS.map((q) => q.key);
     expect(new Set(keys).size).toBe(keys.length);
   });
@@ -267,8 +267,8 @@ describe("Interview-Maschine", () => {
     }
   });
 
-  it("fragt nach Situationen statt nach Selbsteinschaetzungen", () => {
-    // Stichprobe der Kernfragen: keine Ja-Nein-Selbsteinschaetzung.
+  it("fragt nach Situationen statt nach Selbsteinschätzungen", () => {
+    // Stichprobe der Kernfragen: keine Ja-Nein-Selbsteinschätzung.
     const core = QUESTIONS.filter((q) => q.stage === "experience_episodes");
     for (const q of core) {
       expect(q.de.toLowerCase(), q.key).not.toMatch(/^bist du (gut|stark)/);
@@ -307,7 +307,7 @@ describe("Demo-Anbieter", () => {
     expect(() => schema.parse(r.data)).not.toThrow();
   });
 
-  it("scheitert ehrlich bei Faehigkeiten, die er nicht hat", async () => {
+  it("scheitert ehrlich bei Fähigkeiten, die er nicht hat", async () => {
     await expect(provider.synthesize("Text", "de")).rejects.toThrow(/unterstuetzt/);
   });
 

@@ -5,15 +5,15 @@ export const metadata: Metadata = { title: "Sicherheit" };
 
 export default function SecurityPage() {
   const measures: [string, string][] = [
-    ["Verschluesselte Uebertragung", "TLS fuer jede Verbindung. Sitzungs-Cookies sind httpOnly, SameSite und in Produktion secure."],
-    ["Passwoerter", "Gespeichert wird ausschliesslich ein scrypt-Hash mit zufaelligem Salt. Der Vergleich laeuft in konstanter Zeit. Verlangt werden mindestens zwoelf Zeichen - Laenge schuetzt besser als erzwungene Sonderzeichen."],
+    ["Verschlüsselte Uebertragung", "TLS für jede Verbindung. Sitzungs-Cookies sind httpOnly, SameSite und in Produktion secure."],
+    ["Passwörter", "Gespeichert wird ausschließlich ein scrypt-Hash mit zufaelligem Salt. Der Vergleich läuft in konstanter Zeit. Verlangt werden mindestens zwölf Zeichen - Länge schuetzt besser als erzwungene Sonderzeichen."],
     ["Sitzungen", "Im Cookie steht ein zufaelliges Token, in der Datenbank nur dessen Hash. Wer die Datenbank liest, kann sich damit nicht anmelden. Jede Sitzung ist einzeln widerrufbar."],
-    ["Zugriffskontrolle in der Datenbank", "Row Level Security ueber eine eingeschraenkte Anwendungsrolle. Jede Anfrage laeuft in einer Transaktion, die zuerst die erhoehten Rechte ablegt und die Nutzerkennung setzt. Ohne diesen Rahmen sind keine Nutzerdaten sichtbar."],
-    ["Trennung sensibler Inhalte", "Besonders schutzbeduerftige Freitexte koennen verschluesselt abgelegt werden; die Aufbewahrungsklasse steht an jeder Angabe."],
-    ["Uploads", "Pruefung von Typ und Groesse, Anbindung fuer einen Schadsoftware-Scan, verschluesselter Objektspeicher, kurzlebige signierte Links statt oeffentlicher Adressen."],
+    ["Zugriffskontrolle in der Datenbank", "Row Level Security über eine eingeschraenkte Anwendungsrolle. Jede Anfrage läuft in einer Transaktion, die zuerst die erhoehten Rechte ablegt und die Nutzerkennung setzt. Ohne diesen Rahmen sind keine Nutzerdaten sichtbar."],
+    ["Trennung sensibler Inhalte", "Besonders schutzbeduerftige Freitexte koennen verschlüsselt abgelegt werden; die Aufbewahrungsklasse steht an jeder Angabe."],
+    ["Uploads", "Prüfung von Typ und Größe, Anbindung für einen Schadsoftware-Scan, verschluesselter Objektspeicher, kurzlebige signierte Links statt oeffentlicher Adressen."],
     ["Kein Personenbezug in Protokollen", "Chattexte, Dokumentinhalte und Freitexte erscheinen nicht in Logs oder in der Nutzungsmessung."],
-    ["Nachvollziehbarkeit", "Supportzugriff auf Nutzerinhalte ist nur ueber einen begruendeten, protokollierten Ausnahmezugriff moeglich - nicht beilaeufig."],
-    ["Externe Texte", "Stellenanzeigen, Bewertungen und Lebenslaeufe werden als Daten behandelt, nie als Anweisungen. Auffaellige Formulierungen werden markiert und angezeigt statt still entfernt."],
+    ["Nachvollziehbarkeit", "Supportzugriff auf Nutzerinhalte ist nur über einen begruendeten, protokollierten Ausnahmezugriff möglich - nicht beilaeufig."],
+    ["Externe Texte", "Stellenanzeigen, Bewertungen und Lebensläufe werden als Daten behandelt, nie als Anweisungen. Auffällige Formulierungen werden markiert und angezeigt statt still entfernt."],
   ];
 
   return (
@@ -21,7 +21,7 @@ export default function SecurityPage() {
       <header>
         <h1 style={{ fontSize: "var(--text-3xl)", lineHeight: "var(--leading-3xl)" }}>Sicherheit</h1>
         <p style={{ marginTop: "var(--space-4)", fontSize: "var(--text-lg)", color: "var(--text-secondary)" }}>
-          Welche Massnahmen tatsaechlich umgesetzt sind - und was noch aussteht.
+          Welche Maßnahmen tatsächlich umgesetzt sind - und was noch aussteht.
         </p>
       </header>
 

@@ -3,14 +3,14 @@ import { evaluateGate, type InterviewStage, type MinimumProfileGate } from "@pay
 import { eq } from "drizzle-orm";
 
 /**
- * Der Riegel vor personalisierten Jobvorschlaegen.
+ * Der Riegel vor personalisierten Jobvorschlägen.
  *
  * Wichtig: die Abdeckung ist eine Eigenschaft des Menschen, nicht einer
- * einzelnen Gespraechssitzung. Wer ein zweites Gespraech beginnt, verliert
+ * einzelnen Gesprächssitzung. Wer ein zweites Gespräch beginnt, verliert
  * sein Profil nicht - genau das ist beim ersten Rauchtest passiert, weil
- * die Pruefung an der zuletzt aktualisierten Sitzung hing.
+ * die Prüfung an der zuletzt aktualisierten Sitzung hing.
  *
- * Deshalb werden die abgeschlossenen Themen ueber ALLE Sitzungen
+ * Deshalb werden die abgeschlossenen Themen über ALLE Sitzungen
  * zusammengefasst.
  */
 export async function loadGate(userId: string): Promise<MinimumProfileGate & { hasAnySession: boolean }> {
@@ -47,7 +47,7 @@ export async function loadGate(userId: string): Promise<MinimumProfileGate & { h
     return { ...evaluateGate(null, false), hasAnySession: false };
   }
 
-  // Vereinigung ueber alle Sitzungen.
+  // Vereinigung über alle Sitzungen.
   const completed = new Set<string>();
   const skipped = new Set<string>();
   for (const s of sessions) {

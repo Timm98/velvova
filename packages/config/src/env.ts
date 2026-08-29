@@ -1,7 +1,7 @@
 /**
  * Eigener Umgebungstyp statt des globalen NodeJS-Namensraums. Das haelt
  * die Konfiguration testbar - ein Test uebergibt einfach ein Objekt - und
- * unabhaengig davon, ob gerade Node-, Browser- oder Edge-Typen geladen sind.
+ * unabhängig davon, ob gerade Node-, Browser- oder Edge-Typen geladen sind.
  */
 export type Env = Readonly<Record<string, string | undefined>>;
 

@@ -10,8 +10,8 @@ import { buttonStyle } from "@/components/ui";
  * und daneben die leiseren.
  *
  * "Vorbereiten" legt eine Bewerbung im Zustand "In Vorbereitung" an.
- * Versendet wird dabei nichts; das geschieht ausschliesslich nach einer
- * ausdruecklichen Bestaetigung im Studio.
+ * Versendet wird dabei nichts; das geschieht ausschließlich nach einer
+ * ausdruecklichen Bestätigung im Studio.
  */
 export function JobActions({
   jobId,

@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 /**
- * Navigation. Dieselben fuenf Punkte oben auf dem Desktop und unten auf
- * dem Telefon - wer das Produkt auf beiden Geraeten nutzt, soll nicht
- * umlernen muessen.
+ * Navigation. Dieselben fünf Punkte oben auf dem Desktop und unten auf
+ * dem Telefon - wer das Produkt auf beiden Geräten nutzt, soll nicht
+ * umlernen müssen.
  */
 
 type NavLabels = Record<"home" | "assistant" | "jobs" | "applications" | "profile", string>;

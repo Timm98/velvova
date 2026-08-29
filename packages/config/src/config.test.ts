@@ -20,7 +20,7 @@ describe("brand", () => {
 });
 
 describe("runtime config", () => {
-  it("startet ohne einen einzigen Schluessel im Demo-Modus", () => {
+  it("startet ohne einen einzigen Schlüssel im Demo-Modus", () => {
     const cfg = loadRuntimeConfig({} as Env);
     expect(cfg.mode).toBe("demo");
     expect(cfg.db.driver).toBe("pglite");
@@ -30,11 +30,11 @@ describe("runtime config", () => {
 
   it("meldet Integrationen ehrlich als nicht verbunden", () => {
     const cfg = loadRuntimeConfig({ AI_PROVIDER: "anthropic" } as Env);
-    // Provider gewaehlt, aber kein Schluessel: darf nicht als verbunden gelten.
+    // Provider gewählt, aber kein Schlüssel: darf nicht als verbunden gelten.
     expect(integrationStatus(cfg).ai).toBe("mock");
   });
 
-  it("erkennt einen echten Provider erst mit Schluessel", () => {
+  it("erkennt einen echten Provider erst mit Schlüssel", () => {
     const cfg = loadRuntimeConfig({
       AI_PROVIDER: "anthropic",
       ANTHROPIC_API_KEY: "test-schluessel",
@@ -42,7 +42,7 @@ describe("runtime config", () => {
     expect(integrationStatus(cfg).ai).toBe("connected");
   });
 
-  it("weist eine unbekannte Datenbank-Auswahl zurueck", () => {
+  it("weist eine unbekannte Datenbank-Auswahl zurück", () => {
     expect(() => loadRuntimeConfig({ DATABASE_DRIVER: "mysql" } as Env)).toThrow();
   });
 });

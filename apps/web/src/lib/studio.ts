@@ -15,7 +15,7 @@ import { recordEvent } from "./matching";
  * Die zentrale Regel steht in checkApproval: ein Dokument mit einer
  * unbelegten Aussage kann nicht freigegeben werden. Und ohne Freigabe
  * versendet der Provider nichts - das sind zwei getrennte Riegel, weil
- * beide fuer sich versagen koennten.
+ * beide für sich versagen könnten.
  */
 
 export interface StudioView {
@@ -158,8 +158,8 @@ export async function loadStudio(applicationId: string): Promise<StudioView | nu
 }
 
 /**
- * Ein Dokument erzeugen. Ausschliesslich aus bestaetigter Evidenz - was
- * fehlt, wird als Luecke benannt und nicht mit einer Formulierung
+ * Ein Dokument erzeugen. Ausschließlich aus bestaetigter Evidenz - was
+ * fehlt, wird als Lücke benannt und nicht mit einer Formulierung
  * ueberdeckt.
  */
 export async function generateArtifact(
@@ -177,8 +177,8 @@ export async function generateArtifact(
     return {
       ok: false,
       message:
-        "Es gibt noch keine bestaetigten Erfahrungen in deinem Profil. Ohne Belege koennte hier " +
-        "nur Erfundenes stehen - deshalb wird nichts erzeugt. Bestaetige zuerst dein Profil.",
+        "Es gibt noch keine bestaetigten Erfahrungen in deinem Profil. Ohne Belege könnte hier " +
+        "nur Erfundenes stehen - deshalb wird nichts erzeugt. Bestätige zuerst dein Profil.",
     };
   }
 
@@ -201,7 +201,7 @@ export async function generateArtifact(
     content =
       `Guten Tag,\n\nich bewerbe mich auf die Stelle "${job.title}".\n\n` +
       strongest.map((e) => `${e.statement}.`).join("\n\n") +
-      `\n\nGern erlaeutere ich das in einem Gespraech.\n\nMit freundlichen Gruessen\n` +
+      `\n\nGern erlaeutere ich das in einem Gespräch.\n\nMit freundlichen Grüßen\n` +
       `${user.displayName ?? ""}\n\n` +
       `[Hinweis: ${advice.reason}]`;
   }
@@ -250,7 +250,7 @@ export async function generateArtifact(
   });
 
   revalidatePath(`/app/applications/${applicationId}`);
-  return { ok: true, message: "Entwurf erstellt. Pruef die markierten Aussagen." };
+  return { ok: true, message: "Entwurf erstellt. Prüf die markierten Aussagen." };
 }
 
 export async function updateArtifact(artifactId: string, content: string): Promise<void> {
@@ -261,7 +261,7 @@ export async function updateArtifact(artifactId: string, content: string): Promi
       .update(schema.generatedArtifacts)
       .set({
         content,
-        // Eine Aenderung setzt die Freigabe zurueck. Was freigegeben wurde,
+        // Eine Änderung setzt die Freigabe zurück. Was freigegeben wurde,
         // muss das sein, was auch versendet wird.
         approvedByUser: false,
       })
@@ -300,7 +300,7 @@ export async function approveArtifact(
         ok: false,
         message:
           `${approval.blockers.length} Aussage(n) haben keinen Beleg. ` +
-          `Ergaenze einen Beleg im Profil oder formuliere sie vorsichtiger.`,
+          `Ergänze einen Beleg im Profil oder formuliere sie vorsichtiger.`,
       };
     }
 
@@ -314,8 +314,8 @@ export async function approveArtifact(
 }
 
 /**
- * Versand. Zwei Bedingungen muessen erfuellt sein: das Dokument ist
- * freigegeben, UND der Mensch hat den Versand ausdruecklich bestaetigt.
+ * Versand. Zwei Bedingungen müssen erfüllt sein: das Dokument ist
+ * freigegeben, UND der Mensch hat den Versand ausdrücklich bestätigt.
  * Fehlt eines von beidem, passiert nichts.
  */
 export async function sendApplication(

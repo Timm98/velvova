@@ -5,15 +5,15 @@ import { isConfirmedFact } from "@paycheck/domain";
  * Claim-Provenienz.
  *
  * Der technische Riegel gegen erfundene Bewerbungsaussagen. Jeder Satz in
- * einem erzeugten Dokument wird gegen die bestaetigte Evidenz gehalten.
+ * einem erzeugten Dokument wird gegen die bestätigte Evidenz gehalten.
  * Ohne Beleg bekommt er den Status "unsupported" - und ein Dokument mit
  * einer unbelegten Aussage kann nicht freigegeben werden.
  *
  * Das ist bewusst haerter als eine Warnung. Eine Warnung klickt man weg;
- * eine gesperrte Freigabe zwingt zur Entscheidung: belegen oder abschwaechen.
+ * eine gesperrte Freigabe zwingt zur Entscheidung: belegen oder abschwächen.
  */
 
-/** Saetze, die keine ueberpruefbare Behauptung enthalten. */
+/** Sätze, die keine ueberpruefbare Behauptung enthalten. */
 const NON_CLAIM_PATTERNS = [
   /^(sehr geehrte|mit freundlichen|liebe[rs]?\b|hallo\b|guten tag)/i,
   /^(anlage|anlagen|betreff|datum)\s*:/i,
@@ -21,13 +21,13 @@ const NON_CLAIM_PATTERNS = [
 ];
 
 /** Formulierungen, die eine Behauptung bereits als Wunsch kennzeichnen. */
-const HEDGED = /\b(moechte|wuerde gern|interessiere mich|reizt mich|suche|freue mich|kann ich mir vorstellen)\b/i;
+const HEDGED = /\b(möchte|würde gern|interessiere mich|reizt mich|suche|freue mich|kann ich mir vorstellen)\b/i;
 
 export function isCheckableClaim(sentence: string): boolean {
   const s = sentence.trim();
   if (s.length < 20) return false;
   if (NON_CLAIM_PATTERNS.some((p) => p.test(s))) return false;
-  // Absichtserklaerungen sind keine Tatsachenbehauptungen.
+  // Absichtserklärungen sind keine Tatsachenbehauptungen.
   if (HEDGED.test(s)) return false;
   return true;
 }
@@ -39,7 +39,7 @@ export function splitIntoSentences(text: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-/** Wortueberlappung als Naeherung. Kein semantisches Modell, aber pruefbar. */
+/** Wortueberlappung als Näherung. Kein semantisches Modell, aber pruefbar. */
 function overlapScore(claim: string, evidence: string): number {
   const tokenise = (s: string) =>
     new Set(
@@ -88,8 +88,8 @@ export function analyseClaims(
         evidenceIds: [],
         status: "unsupported",
         note:
-          "Fuer diese Aussage gibt es keinen bestaetigten Beleg in deinem Profil. " +
-          "Ergaenze einen Beleg oder formuliere sie vorsichtiger.",
+          "Für diese Aussage gibt es keinen bestaetigten Beleg in deinem Profil. " +
+          "Ergänze einen Beleg oder formuliere sie vorsichtiger.",
       };
     }
 
@@ -101,8 +101,8 @@ export function analyseClaims(
       evidenceIds: matches.slice(0, 3).map((m) => m.id),
       status: strong ? "supported" : "weakened",
       note: strong
-        ? "Belegt durch eine von dir bestaetigte Erfahrung."
-        : "Nur teilweise belegt. Pruefe, ob die Formulierung nicht mehr behauptet als der Beleg hergibt.",
+        ? "Belegt durch eine von dir bestätigte Erfahrung."
+        : "Nur teilweise belegt. Prüfe, ob die Formulierung nicht mehr behauptet als der Beleg hergibt.",
     };
   });
 
@@ -120,7 +120,7 @@ export interface ApprovalCheck {
 }
 
 /**
- * Die Freigabepruefung. Genau eine Regel, aber sie gilt ausnahmslos.
+ * Die Freigabeprüfung. Genau eine Regel, aber sie gilt ausnahmslos.
  */
 export function checkApproval(analysis: ClaimAnalysis): ApprovalCheck {
   return {
@@ -130,7 +130,7 @@ export function checkApproval(analysis: ClaimAnalysis): ApprovalCheck {
 }
 
 /**
- * Schwaecht eine unbelegte Aussage ab, statt sie zu loeschen. Der Mensch
+ * Schwächt eine unbelegte Aussage ab, statt sie zu löschen. Der Mensch
  * entscheidet, ob er das uebernimmt - vorgeschlagen wird es aber, weil
  * "loesch den Satz" selten der richtige Rat ist.
  */
@@ -139,5 +139,5 @@ export function suggestSofterWording(sentence: string): string {
   if (/^ich (habe|bin|kann|verfuege)/i.test(trimmed)) {
     return `${trimmed.replace(/^Ich /i, "Ich ")} — hier fehlt noch ein konkretes Beispiel.`;
   }
-  return `${trimmed}. (Fuer diese Aussage brauchst du noch einen Beleg.)`;
+  return `${trimmed}. (Für diese Aussage brauchst du noch einen Beleg.)`;
 }

@@ -7,11 +7,11 @@ import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
 import { VoicePanel } from "./VoicePanel";
 
 /**
- * Das Gespraech.
+ * Das Gespräch.
  *
  * Genau eine Hauptfrage sichtbar. Text- und Sprachmodus jederzeit
  * wechselbar. Jede Frage kann uebersprungen werden - das steht direkt
- * daneben und nicht in einem Menue.
+ * daneben und nicht in einem Menü.
  */
 
 type Turn = { id: string; role: "assistant" | "user" | "system"; content: string; questionKey: string | null };
@@ -101,7 +101,7 @@ export function InterviewChat({
       {/* --- Verlauf --- */}
       {initialTurns.length > 0 && (
         <ol
-          aria-label="Bisheriges Gespraech"
+          aria-label="Bisheriges Gespräch"
           style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}
         >
           {initialTurns.map((turn) => (
@@ -307,7 +307,7 @@ export function InterviewChat({
 
           {isComplete && (
             <a href="/app/profile" style={buttonStyle("primary")}>
-              Profil ansehen und bestaetigen
+              Profil ansehen und bestätigen
             </a>
           )}
         </Stack>

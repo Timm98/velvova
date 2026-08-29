@@ -11,7 +11,7 @@ export const careerProfiles = pgTable("career_profiles", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   /** In der Sprache des Menschen zusammengefasst, nicht in Modellsprache. */
   careerCompass: text("career_compass"),
-  /** Der Mensch hat das Profil geprueft und bestaetigt. Ohne dieses Flag
+  /** Der Mensch hat das Profil geprüft und bestätigt. Ohne dieses Flag
    *  bleiben personalisierte Jobempfehlungen gesperrt. */
   confirmedByUser: boolean("confirmed_by_user").notNull().default(false),
   confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
@@ -34,7 +34,7 @@ export const evidenceItems = pgTable("evidence_items", {
   userRejected: boolean("user_rejected").notNull().default(false),
   sensitivityLevel: sensitivityEnum("sensitivity_level").notNull().default("normal"),
   retentionClass: retentionClassEnum("retention_class").notNull().default("profile"),
-  /** Fuer besonders schutzbeduerftige Freitexte: verschluesselt abgelegt,
+  /** Für besonders schutzbeduerftige Freitexte: verschlüsselt abgelegt,
    *  statement bleibt dann leer. Siehe docs/PRIVACY_SECURITY.md. */
   statementEncrypted: text("statement_encrypted"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -83,7 +83,7 @@ export const profileSkills = pgTable("profile_skills", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   skillKey: text("skill_key").notNull().references(() => skills.key),
-  /** Selbsteinschaetzung, ausdruecklich getrennt vom Beleg. */
+  /** Selbsteinschätzung, ausdrücklich getrennt vom Beleg. */
   selfAssessedLevel: integer("self_assessed_level"),
   evidenceItemId: uuid("evidence_item_id").references(() => evidenceItems.id, { onDelete: "set null" }),
   userConfirmed: boolean("user_confirmed").notNull().default(false),
@@ -101,7 +101,7 @@ export const preferences = pgTable("preferences", {
 
 export const userConstraints = pgTable("user_constraints", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
-  /** Vollstaendiges Constraint-Objekt, validiert ueber UserConstraintsSchema. */
+  /** Vollständiges Constraint-Objekt, validiert über UserConstraintsSchema. */
   data: jsonb("data").$type<Record<string, unknown>>().notNull().default({}),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

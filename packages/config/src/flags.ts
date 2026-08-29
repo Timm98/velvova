@@ -2,23 +2,23 @@ import { currentEnv } from "./env.ts";
 
 /**
  * Feature Flags. Standardwerte sind bewusst konservativ: alles, was Geld,
- * Zugangsdaten oder eine noch offene Produktentscheidung beruehrt, ist aus.
+ * Zugangsdaten oder eine noch offene Produktentscheidung berührt, ist aus.
  */
 
 export interface FeatureFlags {
-  /** /pricing bleibt verborgen, bis das Geschaeftsmodell entschieden ist. */
+  /** /pricing bleibt verborgen, bis das Geschäftsmodell entschieden ist. */
   readonly pricingPage: boolean;
-  /** Native App-Bruecke und Push-Adapter. */
+  /** Native App-Brücke und Push-Adapter. */
   readonly mobilePush: boolean;
   /** Freiwillige Micro-Work-Samples im Interview. */
   readonly microWorkSamples: boolean;
-  /** Echter E-Mail-Versand. Erfordert verbundenes Konto und Bestaetigung. */
+  /** Echter E-Mail-Versand. Erfordert verbundenes Konto und Bestätigung. */
   readonly liveApplicationSending: boolean;
   /** Angebotsvergleich und Verhandlungsvorbereitung. */
   readonly offers: boolean;
   /** 30/60/90-Tage-Check-ins nach Jobstart. */
   readonly checkIns: boolean;
-  /** Interner Admin-Bereich. Nur fuer Rolle "operator". */
+  /** Interner Admin-Bereich. Nur für Rolle "operator". */
   readonly adminArea: boolean;
   /** Sprachmodus im Interview und Coaching. */
   readonly voiceMode: boolean;

@@ -1,12 +1,12 @@
 /**
  * Demo-Stellen. Der Datensatz ist absichtlich uneinheitlich, damit die
- * Oberflaeche ihre ehrlichen Zustaende zeigen muss:
+ * Oberfläche ihre ehrlichen Zustaende zeigen muss:
  *
  *  - gute, mittlere und explorative Passung
  *  - fehlende Gehaltsangabe, fehlende Aufgaben, fehlende Vertragsart
  *  - eine veraltete Anzeige und ein Repost desselben Inhalts
  *  - eine Stelle, die an einer harten Bedingung scheitert
- *  - Rollen mit unterschiedlicher Aufgabenstruktur fuer das AI-Radar
+ *  - Rollen mit unterschiedlicher Aufgabenstruktur für das AI-Radar
  */
 
 export interface SeedJob {
@@ -54,7 +54,7 @@ export const seedJobs: SeedJob[] = [
       "Kundinnen und Kunden nach dem Onboarding betreuen",
       "Nutzungsdaten auswerten und monatliche Berichte erstellen",
       "Bei Eskalationen zwischen Kunde und Produktteam vermitteln",
-      "Schulungen vorbereiten und praesentieren",
+      "Schulungen vorbereiten und präsentieren",
     ],
     description:
       "Du begleitest unsere Kundinnen und Kunden nach dem Start und sorgst dafuer, dass sie mit " +
@@ -80,22 +80,22 @@ export const seedJobs: SeedJob[] = [
     experienceLevel: "junior", industry: "Bildung",
     languageRequirements: { de: "C1" }, requiredLicenses: [], workPermitRequired: false,
     coreTasks: [
-      "Termine und Ablaeufe mehrerer Programme koordinieren",
-      "Mit Traegern und Ehrenamtlichen abstimmen",
-      "Foerdermittelberichte erstellen und dokumentieren",
+      "Termine und Abläufe mehrerer Programme koordinieren",
+      "Mit Trägern und Ehrenamtlichen abstimmen",
+      "Fördermittelberichte erstellen und dokumentieren",
       "Veranstaltungen vor Ort begleiten",
     ],
     description:
       "Du haeltst mehrere Bildungsprogramme zusammen: Du koordinierst Termine, stimmst dich mit " +
-      "Traegern ab und sorgst dafuer, dass Berichte rechtzeitig fertig werden. Die Stelle ist " +
-      "zunaechst auf zwei Jahre befristet, eine Entfristung ist ausdruecklich vorgesehen.",
+      "Trägern ab und sorgst dafuer, dass Berichte rechtzeitig fertig werden. Die Stelle ist " +
+      "zunaechst auf zwei Jahre befristet, eine Entfristung ist ausdrücklich vorgesehen.",
     benefits: ["Weiterbildung", "sinnstiftende Arbeit", "flexible Arbeitszeit"],
     applyMethod: "portal", applyTarget: "https://leuchtturm.invalid/karriere/1234",
     publishedDaysAgo: 14, expiresInDays: 20, linkCheckOk: true,
     requirements: [
       { kind: "must", text: "Organisationserfahrung, gern aus Studium oder Ehrenamt", category: "experience" },
       { kind: "must", text: "Sicherer Umgang mit Tabellen und Dokumentation", category: "skill" },
-      { kind: "nice", text: "Erfahrung mit Foerdermitteln", category: "skill" },
+      { kind: "nice", text: "Erfahrung mit Fördermitteln", category: "skill" },
     ],
   },
   {
@@ -107,7 +107,7 @@ export const seedJobs: SeedJob[] = [
     experienceLevel: "entry", industry: "Medien",
     languageRequirements: { de: "C1" }, requiredLicenses: [], workPermitRequired: false,
     coreTasks: [
-      "Content fuer Kampagnen erstellen und texte schreiben",
+      "Content für Kampagnen erstellen und texte schreiben",
       "Kampagnen auswerten und Reporting aufbereiten",
       "Social-Media-Kanaele betreuen",
     ],
@@ -124,25 +124,25 @@ export const seedJobs: SeedJob[] = [
   },
   {
     key: "vertrieb-sturmvogel", companyKey: "sturmvogel",
-    title: "Vertriebsmitarbeiter Neukundengewinnung", location: "Muenchen",
+    title: "Vertriebsmitarbeiter Neukundengewinnung", location: "München",
     workModel: "on_site", remotePercent: 0,
     salaryMin: 36000, salaryMax: 40000, salaryDisclosed: true,
     contractType: "permanent", weeklyHours: 40, shiftWork: false, travelPercent: 50,
     experienceLevel: "entry", industry: "Handel",
-    languageRequirements: { de: "C1" }, requiredLicenses: ["Fuehrerschein B"], workPermitRequired: false,
+    languageRequirements: { de: "C1" }, requiredLicenses: ["Führerschein B"], workPermitRequired: false,
     coreTasks: [
       "Neukunden telefonisch ansprechen und Termine vereinbaren",
-      "Kundengespraeche vor Ort fuehren",
+      "Kundengespräche vor Ort führen",
       "Angebote erstellen und nachfassen",
     ],
     description:
-      "Du gewinnst neue Kunden fuer unser Sortiment. Der Schwerpunkt liegt auf der telefonischen " +
+      "Du gewinnst neue Kunden für unser Sortiment. Der Schwerpunkt liegt auf der telefonischen " +
       "Erstansprache und Terminvereinbarung.",
     benefits: ["Dienstwagen", "Provision"],
     applyMethod: "portal", applyTarget: "https://sturmvogel.invalid/jobs/9911",
     publishedDaysAgo: 9, expiresInDays: 60, linkCheckOk: true,
     requirements: [
-      { kind: "must", text: "Fuehrerschein Klasse B", category: "license" },
+      { kind: "must", text: "Führerschein Klasse B", category: "license" },
       { kind: "must", text: "Freude an Kaltakquise", category: "other" },
     ],
   },
@@ -155,24 +155,24 @@ export const seedJobs: SeedJob[] = [
     experienceLevel: "junior", industry: "Logistik",
     languageRequirements: { de: "B2", en: "B2" }, requiredLicenses: [], workPermitRequired: false,
     coreTasks: [
-      "Auftraege erfassen und Stammdaten pflegen",
+      "Aufträge erfassen und Stammdaten pflegen",
       "Sendungen disponieren und Abweichungen dokumentieren",
       "Mit Fahrern und Kunden telefonisch abstimmen",
     ],
     description:
-      "Du haeltst den taeglichen Betrieb am Laufen: Du erfasst Auftraege, disponierst Sendungen " +
+      "Du haeltst den taeglichen Betrieb am Laufen: Du erfasst Aufträge, disponierst Sendungen " +
       "und klaerst Abweichungen. Die Arbeit erfolgt im Zweischichtsystem.",
     benefits: ["Schichtzulage", "Kantine"],
     applyMethod: "email", applyTarget: "personal@hafenblick.invalid",
     publishedDaysAgo: 11, expiresInDays: 30, linkCheckOk: true,
     requirements: [
       { kind: "must", text: "Bereitschaft zur Schichtarbeit", category: "other" },
-      { kind: "must", text: "Sorgfaeltige Arbeitsweise mit Daten", category: "skill" },
+      { kind: "must", text: "Sorgfältige Arbeitsweise mit Daten", category: "skill" },
       { kind: "nice", text: "Erfahrung in Logistik oder Spedition", category: "experience" },
     ],
   },
   {
-    key: "kundenerfolg-gruenspan", companyKey: "gruenspan",
+    key: "kundenerfolg-grünspan", companyKey: "grünspan",
     title: "Referent:in Kundenbetreuung Energiewende", location: "Kiel",
     workModel: "remote", remotePercent: 100,
     salaryMin: 45000, salaryMax: 53000, salaryDisclosed: true,
@@ -181,26 +181,26 @@ export const seedJobs: SeedJob[] = [
     languageRequirements: { de: "C1" }, requiredLicenses: [], workPermitRequired: false,
     coreTasks: [
       "Mitglieder beraten und bei Fragen begleiten",
-      "Komplexe Foerderbedingungen verstaendlich erklaeren",
+      "Komplexe Förderbedingungen verstaendlich erklären",
       "Anliegen dokumentieren und auswerten",
       "Bei Konflikten zwischen Mitgliedern und Technik vermitteln",
     ],
     description:
       "Du betreust unsere Mitglieder rund um Beteiligungen an Energieprojekten. Du erklaerst " +
       "komplizierte Sachverhalte verstaendlich und vermittelst, wenn es hakt. Die Stelle ist " +
-      "vollstaendig remote moeglich.",
-    benefits: ["vollstaendig remote", "Weiterbildung", "Lernbudget", "sinnstiftende Arbeit"],
-    applyMethod: "email", applyTarget: "karriere@gruenspan.invalid",
+      "vollständig remote möglich.",
+    benefits: ["vollständig remote", "Weiterbildung", "Lernbudget", "sinnstiftende Arbeit"],
+    applyMethod: "email", applyTarget: "karriere@grünspan.invalid",
     publishedDaysAgo: 2, expiresInDays: 45, linkCheckOk: true,
     requirements: [
       { kind: "must", text: "Erfahrung in Beratung, Betreuung oder Kundenservice", category: "experience" },
-      { kind: "must", text: "Faehigkeit, komplexe Themen verstaendlich zu erklaeren", category: "skill" },
-      { kind: "nice", text: "Interesse an Energie- und Foerderthemen", category: "other" },
+      { kind: "must", text: "Fähigkeit, komplexe Themen verstaendlich zu erklären", category: "skill" },
+      { kind: "nice", text: "Interesse an Energie- und Förderthemen", category: "other" },
     ],
   },
   {
     key: "beratung-kranzberg-alt", companyKey: "kranzberg",
-    title: "Junior Consultant Prozessberatung", location: "Luebeck",
+    title: "Junior Consultant Prozessberatung", location: "Lübeck",
     workModel: "hybrid", remotePercent: 30,
     salaryMin: 42000, salaryMax: 46000, salaryDisclosed: true,
     contractType: null, weeklyHours: null, shiftWork: null, travelPercent: 40,
@@ -209,7 +209,7 @@ export const seedJobs: SeedJob[] = [
     coreTasks: [
       "Prozesse aufnehmen und dokumentieren",
       "Workshops vorbereiten und Ergebnisse zusammenfassen",
-      "Praesentationen erstellen",
+      "Präsentationen erstellen",
     ],
     description:
       "Du unterstuetzt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
@@ -221,12 +221,12 @@ export const seedJobs: SeedJob[] = [
     requirements: [
       { kind: "must", text: "Abgeschlossenes Studium", category: "qualification" },
       { kind: "must", text: "Sehr gute Englischkenntnisse", category: "language" },
-      { kind: "nice", text: "Erfahrung mit Praesentationen", category: "skill" },
+      { kind: "nice", text: "Erfahrung mit Präsentationen", category: "skill" },
     ],
   },
   {
     key: "beratung-kranzberg-neu", companyKey: "kranzberg",
-    title: "Junior Consultant Prozessberatung", location: "Luebeck",
+    title: "Junior Consultant Prozessberatung", location: "Lübeck",
     workModel: "hybrid", remotePercent: 30,
     salaryMin: 42000, salaryMax: 46000, salaryDisclosed: true,
     contractType: null, weeklyHours: null, shiftWork: null, travelPercent: 40,
@@ -235,7 +235,7 @@ export const seedJobs: SeedJob[] = [
     coreTasks: [
       "Prozesse aufnehmen und dokumentieren",
       "Workshops vorbereiten und Ergebnisse zusammenfassen",
-      "Praesentationen erstellen",
+      "Präsentationen erstellen",
     ],
     description:
       "Du unterstuetzt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
@@ -247,7 +247,7 @@ export const seedJobs: SeedJob[] = [
     requirements: [
       { kind: "must", text: "Abgeschlossenes Studium", category: "qualification" },
       { kind: "must", text: "Sehr gute Englischkenntnisse", category: "language" },
-      { kind: "nice", text: "Erfahrung mit Praesentationen", category: "skill" },
+      { kind: "nice", text: "Erfahrung mit Präsentationen", category: "skill" },
     ],
   },
   {
@@ -260,13 +260,13 @@ export const seedJobs: SeedJob[] = [
     languageRequirements: { de: "B2" }, requiredLicenses: [], workPermitRequired: false,
     coreTasks: [
       "Stammdaten erfassen und pflegen",
-      "Rechnungen pruefen und dokumentieren",
+      "Rechnungen prüfen und dokumentieren",
       "Berichte erstellen und formatieren",
       "Daten aus verschiedenen Quellen zusammenfuehren und sortieren",
     ],
     description:
       "Du pflegst unsere Stammdaten, pruefst Rechnungen und erstellst wiederkehrende Berichte.",
-    benefits: ["Homeoffice moeglich", "geregelte Arbeitszeit"],
+    benefits: ["Homeoffice möglich", "geregelte Arbeitszeit"],
     applyMethod: "email", applyTarget: "personal@hafenblick.invalid",
     publishedDaysAgo: 20, expiresInDays: 25, linkCheckOk: true,
     requirements: [
@@ -284,7 +284,7 @@ export const seedJobs: SeedJob[] = [
     languageRequirements: {}, requiredLicenses: [], workPermitRequired: null,
     coreTasks: [],
     description:
-      "Wir suchen Verstaerkung fuer unser Support-Team. Details besprechen wir gern im Gespraech.",
+      "Wir suchen Verstärkung für unser Support-Team. Details besprechen wir gern im Gespräch.",
     benefits: [],
     applyMethod: "email", applyTarget: "bewerbung@nordlicht.invalid",
     publishedDaysAgo: 30, expiresInDays: null, linkCheckOk: null,

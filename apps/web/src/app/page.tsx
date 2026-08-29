@@ -7,7 +7,7 @@ import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
 /**
  * Landing Page.
  *
- * In fuenf Sekunden muss klar sein, dass hier vor der Jobboerse angesetzt
+ * In fünf Sekunden muss klar sein, dass hier vor der Jobbörse angesetzt
  * wird und bis nach der Bewerbung begleitet. Kein erfundenes Kundenlogo,
  * kein Testimonial, keine Erfolgsquote - was wir nicht belegen koennen,
  * steht nicht hier. Die gezeigten Beispiele sind als Beispiel beschriftet.
@@ -203,7 +203,7 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* --- Erklaerbarer Match, als Beispiel gekennzeichnet --- */}
+        {/* --- Erklärbarer Match, als Beispiel gekennzeichnet --- */}
         <section
           aria-labelledby="match"
           style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}
@@ -264,7 +264,7 @@ export default async function LandingPage() {
                 <div style={{ display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)" }}>
                   <p>
                     <strong style={{ color: "var(--positive)" }}>Warum sie passt:</strong>{" "}
-                    Zwei von zwei Muss-Anforderungen sind durch bestaetigte Erfahrungen gedeckt.
+                    Zwei von zwei Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.
                   </p>
                   <p>
                     <strong style={{ color: "var(--caution)" }}>Was du bedenken solltest:</strong>{" "}
@@ -325,14 +325,14 @@ export default async function LandingPage() {
                 <Stack gap={2}>
                   <Badge tone="assistant">was gefragt wird</Badge>
                   <p style={{ fontSize: "var(--text-sm)" }}>
-                    „Erzaehl von einer Eskalation, die du uebernommen hast. Was hast du getan?"
+                    „Erzähl von einer Eskalation, die du übernommen hast. Was hast du getan?"
                   </p>
                 </Stack>
               </Card>
 
               <Card>
                 <Stack gap={2}>
-                  <Badge tone="positive">belegte Staerke</Badge>
+                  <Badge tone="positive">belegte Stärke</Badge>
                   <p style={{ fontSize: "var(--text-sm)" }}>
                     Vermittelt zwischen Kunde und Technik unter Druck — belegt durch eine konkrete
                     Situation mit benanntem Ergebnis.
@@ -368,10 +368,10 @@ export default async function LandingPage() {
             }}
           >
             {[
-              { kind: "Mitarbeiterstimmen", note: "Sagen etwas ueber die Arbeit. Stichprobe und Zeitraum stehen dabei." },
-              { kind: "Kundenbewertungen", note: "Sagen etwas ueber das Produkt oder den Standort. Nicht ueber die Kultur." },
+              { kind: "Mitarbeiterstimmen", note: "Sagen etwas über die Arbeit. Stichprobe und Zeitraum stehen dabei." },
+              { kind: "Kundenbewertungen", note: "Sagen etwas über das Produkt oder den Standort. Nicht über die Kultur." },
               { kind: "Arbeitgeberangaben", note: "Die Selbstdarstellung. Wichtig, aber eine Partei." },
-              { kind: "Register und Behoerden", note: "Harte Fakten wie Rechtsform und Sitz." },
+              { kind: "Register und Behörden", note: "Harte Fakten wie Rechtsform und Sitz." },
             ].map((s) => (
               <Card as="li" key={s.kind}>
                 <Stack gap={2}>
@@ -447,7 +447,7 @@ export default async function LandingPage() {
         >
           <span>
             {brand.name} · {brand.assistantName}
-            <span style={{ color: "var(--text-muted)" }}> — beide Namen sind vorlaeufig</span>
+            <span style={{ color: "var(--text-muted)" }}> — beide Namen sind vorläufig</span>
           </span>
           <nav aria-label="Rechtliches" style={{ display: "flex", gap: "var(--space-5)", flexWrap: "wrap" }}>
             <Link href="/methodology" style={{ textDecoration: "none" }}>Methodik</Link>

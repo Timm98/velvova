@@ -9,13 +9,13 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
  * Authentifizierung.
  *
  * Bewusst ohne fremde Auth-Bibliothek: der Umfang ist klein (E-Mail und
- * Passwort, Magic Link, Sitzungen), und jede Bibliothek waere eine
- * Abhaengigkeit an genau der Stelle, an der spaeter ein Betreiber
+ * Passwort, Magic Link, Sitzungen), und jede Bibliothek wäre eine
+ * Abhängigkeit an genau der Stelle, an der später ein Betreiber
  * eigene Anforderungen hat. Die Entscheidung steht in docs/adr/0004.
  *
- * Grundsaetze:
+ * Grundsätze:
  *  - Im Cookie steht ein zufaelliges Token, in der Datenbank nur sein Hash.
- *  - Passwoerter mit scrypt, Vergleich in konstanter Zeit.
+ *  - Passwörter mit scrypt, Vergleich in konstanter Zeit.
  *  - Antwortverhalten verraet nicht, ob eine Adresse existiert.
  */
 
@@ -30,7 +30,7 @@ export interface SessionUser {
   locale: "de" | "en";
 }
 
-// --- Passwoerter ---------------------------------------------------------
+// --- Passwörter ---------------------------------------------------------
 
 export function hashPassword(plain: string): string {
   const salt = randomBytes(16);
@@ -54,8 +54,8 @@ export interface PasswordCheck {
 }
 
 export function checkPassword(plain: string): PasswordCheck {
-  // Laenge statt Zeichenklassen. Erzwungene Sonderzeichen erzeugen
-  // vorhersehbare Muster und schlechter merkbare Passwoerter.
+  // Länge statt Zeichenklassen. Erzwungene Sonderzeichen erzeugen
+  // vorhersehbare Muster und schlechter merkbare Passwörter.
   if (plain.length < MIN_PASSWORD_LENGTH) return { ok: false, reason: "too_short" };
   return { ok: true };
 }
@@ -70,19 +70,31 @@ function tokenHash(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export async function createSession(userId: string, userAgent?: string): Promise<void> {
-  const cfg = loadRuntimeConfig();
+/**
+ * Legt eine Sitzung an und gibt das Token zurück, ohne ein Cookie zu
+ * setzen. Getrennt von createSession, weil Route Handler das Cookie
+ * ausdrücklich auf ihre eigene Antwort setzen müssen - über cookies()
+ * gesetzte Werte landen nicht auf einer selbst gebauten NextResponse.
+ */
+export async function issueSessionToken(userId: string, userAgent?: string): Promise<string> {
   const db = await getDb();
   const token = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000);
 
   await db.insert(schema.sessions).values({
     userId,
     tokenHash: tokenHash(token),
     userAgent: userAgent?.slice(0, 200) ?? null,
     deviceLabel: describeDevice(userAgent),
-    expiresAt,
+    expiresAt: new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000),
   });
+
+  return token;
+}
+
+export async function createSession(userId: string, userAgent?: string): Promise<void> {
+  const cfg = loadRuntimeConfig();
+  const token = await issueSessionToken(userId, userAgent);
+  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000);
 
   const store = await cookies();
   store.set(cfg.auth.cookieName, token, {
@@ -95,7 +107,7 @@ export async function createSession(userId: string, userAgent?: string): Promise
 }
 
 function describeDevice(userAgent?: string): string {
-  if (!userAgent) return "Unbekanntes Geraet";
+  if (!userAgent) return "Unbekanntes Gerät";
   if (/iPhone|iPad/i.test(userAgent)) return "iOS";
   if (/Android/i.test(userAgent)) return "Android";
   if (/Macintosh/i.test(userAgent)) return "Mac";
@@ -105,7 +117,7 @@ function describeDevice(userAgent?: string): string {
 }
 
 /**
- * Die aktuelle Sitzung. Gibt null zurueck, statt zu werfen - Aufrufer
+ * Die aktuelle Sitzung. Gibt null zurück, statt zu werfen - Aufrufer
  * entscheiden selbst, ob Anmeldung noetig ist.
  */
 export async function currentUser(): Promise<SessionUser | null> {
@@ -155,7 +167,7 @@ export async function currentUser(): Promise<SessionUser | null> {
   };
 }
 
-/** Fuer Seiten, die ohne Anmeldung keinen Sinn ergeben. */
+/** Für Seiten, die ohne Anmeldung keinen Sinn ergeben. */
 export async function requireUser(): Promise<SessionUser> {
   const user = await currentUser();
   if (!user) redirect("/login");
@@ -194,7 +206,7 @@ export async function createMagicLink(email: string): Promise<string | null> {
     .limit(1);
 
   // Kein Hinweis darauf, ob die Adresse existiert. Der Aufrufer zeigt in
-  // beiden Faellen dieselbe Meldung.
+  // beiden Fällen dieselbe Meldung.
   if (!users[0]) return null;
 
   const token = randomBytes(32).toString("base64url");
@@ -284,7 +296,7 @@ export async function authenticate(email: string, password: string): Promise<str
   return verifyPassword(password, row.passwordHash) ? row.id : null;
 }
 
-/** Aktive Sitzungen des Menschen, fuer die Geraeteverwaltung. */
+/** Aktive Sitzungen des Menschen, für die Geräteverwaltung. */
 export async function listSessions(userId: string) {
   const cfg = loadRuntimeConfig();
   const store = await cookies();
@@ -303,7 +315,7 @@ export async function listSessions(userId: string) {
 
   return rows.map((r) => ({
     id: r.id,
-    deviceLabel: r.deviceLabel ?? "Unbekanntes Geraet",
+    deviceLabel: r.deviceLabel ?? "Unbekanntes Gerät",
     lastSeenAt: r.lastSeenAt,
     isCurrent: r.tokenHash === currentHash,
   }));

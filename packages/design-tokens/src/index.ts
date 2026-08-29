@@ -1,7 +1,7 @@
 /**
  * Tokens auch als Werte, damit die native App dieselben Farben nutzt.
- * Die CSS-Datei bleibt die Quelle fuer das Web; diese Tabelle wird von
- * apps/mobile gelesen, wo keine CSS-Variablen zur Verfuegung stehen.
+ * Die CSS-Datei bleibt die Quelle für das Web; diese Tabelle wird von
+ * apps/mobile gelesen, wo keine CSS-Variablen zur Verfügung stehen.
  */
 
 export const lightTokens = {

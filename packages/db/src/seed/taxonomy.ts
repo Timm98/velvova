@@ -2,9 +2,9 @@
  * Interne Starttaxonomie.
  *
  * Bewusst klein und als `taxonomy: "internal"` gekennzeichnet. ESCO und
- * KldB sind ueber Adapter vorgesehen (siehe packages/jobs/src/taxonomy),
+ * KldB sind über Adapter vorgesehen (siehe packages/jobs/src/taxonomy),
  * ihre Daten werden aber nicht mitgeliefert: sie unterliegen eigenen
- * Nutzungsbedingungen und muessen aus der offiziellen Quelle geladen
+ * Nutzungsbedingungen und müssen aus der offiziellen Quelle geladen
  * werden. Was hier steht, traegt die Demo und nichts weiter.
  */
 
@@ -14,11 +14,11 @@ export const seedTaxonomy = {
       synonyms: ["Kundenservice", "Support", "Kundenkontakt"], kind: "domain",
       relatedKeys: ["conflict_resolution", "communication"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
-    { key: "communication", labelDe: "Verstaendliche Kommunikation", labelEn: "Clear communication",
-      synonyms: ["Erklaeren", "Praesentieren"], kind: "social",
+    { key: "communication", labelDe: "Verständliche Kommunikation", labelEn: "Clear communication",
+      synonyms: ["Erklären", "Präsentieren"], kind: "social",
       relatedKeys: ["training", "customer_service"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
-    { key: "conflict_resolution", labelDe: "Konfliktklaerung", labelEn: "Conflict resolution",
+    { key: "conflict_resolution", labelDe: "Konfliktklärung", labelEn: "Conflict resolution",
       synonyms: ["Eskalation", "Vermitteln"], kind: "social",
       relatedKeys: ["customer_service"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
@@ -26,7 +26,7 @@ export const seedTaxonomy = {
       synonyms: ["Reporting", "Auswertung", "Tabellen"], kind: "method",
       relatedKeys: ["data_handling"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
-    { key: "data_handling", labelDe: "Sorgfaeltiger Umgang mit Daten", labelEn: "Careful data handling",
+    { key: "data_handling", labelDe: "Sorgfältiger Umgang mit Daten", labelEn: "Careful data handling",
       synonyms: ["Stammdaten", "Datenpflege"], kind: "method",
       relatedKeys: ["reporting"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
@@ -42,7 +42,7 @@ export const seedTaxonomy = {
       synonyms: ["Enablement", "Onboarding", "Schulung"], kind: "domain",
       relatedKeys: ["communication"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
-    { key: "marketing_content", labelDe: "Inhalte fuer Marketing", labelEn: "Marketing content",
+    { key: "marketing_content", labelDe: "Inhalte für Marketing", labelEn: "Marketing content",
       synonyms: ["Content", "Texte", "Kampagne"], kind: "domain",
       relatedKeys: ["communication"], escoUri: null,
       taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
@@ -65,12 +65,12 @@ export const seedTaxonomy = {
       escoUri: null, kldbCode: null, taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
     { key: "enablement_specialist", labelDe: "Enablement und Schulung", labelEn: "Enablement specialist",
       synonyms: ["Trainer", "Wissensmanagement", "Onboarding-Verantwortliche"],
-      tasks: ["Schulungen entwickeln", "erklaeren", "Wissen dokumentieren", "anleiten"],
+      tasks: ["Schulungen entwickeln", "erklären", "Wissen dokumentieren", "anleiten"],
       skillKeys: ["training", "communication"],
       escoUri: null, kldbCode: null, taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
     { key: "operations_coordinator", labelDe: "Operations Coordinator", labelEn: "Operations coordinator",
       synonyms: ["Disposition", "Sachbearbeitung Betrieb"],
-      tasks: ["Auftraege erfassen", "disponieren", "Abweichungen dokumentieren"],
+      tasks: ["Aufträge erfassen", "disponieren", "Abweichungen dokumentieren"],
       skillKeys: ["data_handling", "coordination"],
       escoUri: null, kldbCode: null, taxonomy: "internal" as const, taxonomyVersion: "2026.08" },
     { key: "marketing_manager_junior", labelDe: "Junior Marketing Manager", labelEn: "Junior marketing manager",
@@ -87,18 +87,18 @@ export const seedTaxonomy = {
       titleEn: "Prioritise a small inbox",
       purposeDe:
         "Zeigt, wie du unter Zeitdruck ordnest und deine Reihenfolge begruendest. " +
-        "Das Ergebnis ist kein Test deiner Faehigkeiten, sondern ein Gespraechsanlass.",
+        "Das Ergebnis ist kein Test deiner Fähigkeiten, sondern ein Gesprächsanlass.",
       purposeEn:
         "Shows how you order things under time pressure and justify your sequence. " +
         "The result is not a test of ability but a starting point for conversation.",
       rubric: [
         { criterion: "Struktur", description: "Ist eine erkennbare Reihenfolge da?" },
-        { criterion: "Begruendung", description: "Wird die Reihenfolge nachvollziehbar erklaert?" },
+        { criterion: "Begründung", description: "Wird die Reihenfolge nachvollziehbar erklärt?" },
         { criterion: "Umgang mit Unsicherheit", description: "Werden fehlende Angaben benannt?" },
       ],
       estimatedMinutes: 4,
       promptDe:
-        "Fuenf Nachrichten liegen vor: eine Kundenbeschwerde, eine Rechnungsfrage, eine Einladung " +
+        "Fünf Nachrichten liegen vor: eine Kundenbeschwerde, eine Rechnungsfrage, eine Einladung " +
         "zu einem internen Termin, eine Nachfrage einer Kollegin und eine Werbemail. Du hast " +
         "dreissig Minuten. In welcher Reihenfolge gehst du vor und warum?",
       promptEn:
@@ -106,7 +106,7 @@ export const seedTaxonomy = {
         "invitation, a colleague's follow-up and a marketing email. You have thirty minutes. " +
         "In what order do you work through them, and why?",
       accessibleAlternativeDe:
-        "Die Nachrichten stehen als nummerierte Liste zur Verfuegung. Du kannst die Reihenfolge " +
+        "Die Nachrichten stehen als nummerierte Liste zur Verfügung. Du kannst die Reihenfolge " +
         "als Text angeben, statt Elemente zu verschieben.",
     },
     {
@@ -120,9 +120,9 @@ export const seedTaxonomy = {
         "Shows how you handle unclear requests: ask, assume or escalate. There is no single " +
         "correct answer.",
       rubric: [
-        { criterion: "Klaerung", description: "Wird das Unklare erkannt und angesprochen?" },
+        { criterion: "Klärung", description: "Wird das Unklare erkannt und angesprochen?" },
         { criterion: "Ton", description: "Bleibt die Antwort freundlich und klar?" },
-        { criterion: "Naechster Schritt", description: "Ist ein konkreter naechster Schritt genannt?" },
+        { criterion: "Nächster Schritt", description: "Ist ein konkreter nächster Schritt genannt?" },
       ],
       estimatedMinutes: 4,
       promptDe:
@@ -135,23 +135,23 @@ export const seedTaxonomy = {
     },
     {
       key: "explain_complex",
-      titleDe: "Einen komplizierten Sachverhalt erklaeren",
+      titleDe: "Einen komplizierten Sachverhalt erklären",
       titleEn: "Explain something complicated",
       purposeDe:
-        "Zeigt, wie du Fachliches verstaendlich machst - eine Faehigkeit, die in Anzeigen selten " +
+        "Zeigt, wie du Fachliches verstaendlich machst - eine Fähigkeit, die in Anzeigen selten " +
         "steht und im Alltag staendig gebraucht wird.",
       purposeEn:
         "Shows how you make specialist content understandable - a skill job ads rarely name and " +
         "daily work constantly needs.",
       rubric: [
-        { criterion: "Verstaendlichkeit", description: "Waere es fuer einen Laien klar?" },
+        { criterion: "Verständlichkeit", description: "Wäre es für einen Laien klar?" },
         { criterion: "Aufbau", description: "Beginnt es beim Wesentlichen?" },
         { criterion: "Beispiel", description: "Wird es an einem konkreten Fall greifbar?" },
       ],
       estimatedMinutes: 5,
       promptDe:
-        "Erklaere jemandem ohne Vorkenntnisse in hoechstens fuenf Saetzen, warum eine Rechnung " +
-        "manchmal spaeter kommt als die Lieferung.",
+        "Erkläre jemandem ohne Vorkenntnisse in höchstens fünf Sätzen, warum eine Rechnung " +
+        "manchmal später kommt als die Lieferung.",
       promptEn:
         "In at most five sentences, explain to someone with no background why an invoice sometimes " +
         "arrives later than the delivery.",

@@ -1,0 +1,23 @@
+{
+  "name": "@paycheck/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types --watch src/index.ts",
+    "start": "node --experimental-strip-types src/index.ts",
+    "once": "node --experimental-strip-types src/index.ts --once",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@paycheck/config": "workspace:*",
+    "@paycheck/db": "workspace:*",
+    "@paycheck/domain": "workspace:*",
+    "@paycheck/jobs": "workspace:*",
+    "drizzle-orm": "0.45.2"
+  },
+  "devDependencies": { "@types/node": "26.4.0", "typescript": "7.0.2", "vitest": "4.1.11" }
+}

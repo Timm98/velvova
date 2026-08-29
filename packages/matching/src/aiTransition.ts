@@ -5,12 +5,12 @@ import { SCORING_VERSION } from "@paycheck/domain";
  * AI Transition Radar.
  *
  * Die Frage "verschwindet dieser Beruf?" ist die falsche Frage. Generative
- * KI trifft Aufgabenbuendel, nicht Berufsbezeichnungen: derselbe Jobtitel
+ * KI trifft Aufgabenbündel, nicht Berufsbezeichnungen: derselbe Jobtitel
  * kann zu 70 % aus standardisierbarer Informationsarbeit bestehen oder zu
  * 70 % aus Aushandlung mit Menschen. Deshalb bewerten wir Aufgaben.
  *
  * Ausgabe sind Szenarien, nie ein Datum. Ein Satz wie "dieser Beruf ist in
- * fuenf Jahren weg" ist im gesamten Produkt unzulaessig.
+ * fünf Jahren weg" ist im gesamten Produkt unzulaessig.
  */
 
 /** Merkmale, die eine Aufgabe automatisierbar machen. */
@@ -21,10 +21,10 @@ const AUTOMATABLE = [
   "termine koordinieren", "stammdaten", "rechnungen", "reporting",
 ];
 
-/** Merkmale, die menschlich bleiben: Urteil, Verantwortung, Beziehung, Koerper. */
+/** Merkmale, die menschlich bleiben: Urteil, Verantwortung, Beziehung, Körper. */
 const HUMAN_CORE = [
-  "verhandeln", "entscheiden", "verantwortung", "beraten", "betreuen", "fuehren",
-  "konflikt", "vertrauen", "beziehung", "vor ort", "montage", "pflege", "praesentieren",
+  "verhandeln", "entscheiden", "verantwortung", "beraten", "betreuen", "führen",
+  "konflikt", "vertrauen", "beziehung", "vor ort", "montage", "pflege", "präsentieren",
   "ueberzeugen", "eskalation", "kunde persoenlich", "team anleiten", "priorisieren",
 ];
 
@@ -50,14 +50,14 @@ function classifyTask(task: string): TaskExposure {
   const humanCore = human > 0
     ? "Urteil, Verantwortung und der direkte Umgang mit Menschen bleiben bei dir."
     : auto > 0
-      ? "Der menschliche Anteil liegt vor allem in Priorisierung und Qualitaetskontrolle."
+      ? "Der menschliche Anteil liegt vor allem in Priorisierung und Qualitätskontrolle."
       : "Der menschliche Anteil dieser Aufgabe ist aus der Anzeige nicht klar erkennbar.";
 
   const likelyChange = automationExposure > 0.55
-    ? "Der Routineanteil duerfte deutlich schrumpfen. Was bleibt, ist Pruefen, Einordnen und Verantworten."
+    ? "Der Routineanteil duerfte deutlich schrumpfen. Was bleibt, ist Prüfen, Einordnen und Verantworten."
     : augmentationPotential > 0.55
-      ? "Werkzeuge duerften den ersten Entwurf uebernehmen. Die Qualitaet haengt dann staerker an deinem Urteil."
-      : "Kurzfristig ist wenig Veraenderung erkennbar; die Datenlage traegt aber keine starke Aussage.";
+      ? "Werkzeuge duerften den ersten Entwurf übernehmen. Die Qualität hängt dann staerker an deinem Urteil."
+      : "Kurzfristig ist wenig Veränderung erkennbar; die Datenlage traegt aber keine starke Aussage.";
 
   return { task, automationExposure: round2(automationExposure), augmentationPotential: round2(augmentationPotential), humanCore, likelyChange };
 }
@@ -84,10 +84,10 @@ export function computeAiTransition(input: AiTransitionInput): AiTransitionResul
       dataAsOf: input.dataAsOf ?? null,
       confidence: "low",
       scenarios: [{
-        title: "Keine Aussage moeglich",
+        title: "Keine Aussage möglich",
         description:
-          "Die Anzeige beschreibt keine konkreten Aufgaben. Ohne Aufgaben laesst sich nicht sagen, " +
-          "was sich veraendern koennte. Frag im Gespraech, wie ein typischer Arbeitstag aussieht.",
+          "Die Anzeige beschreibt keine konkreten Aufgaben. Ohne Aufgaben lässt sich nicht sagen, " +
+          "was sich verändern könnte. Frag im Gespräch, wie ein typischer Arbeitstag aussieht.",
       }],
       version: SCORING_VERSION,
     };
@@ -106,12 +106,12 @@ export function computeAiTransition(input: AiTransitionInput): AiTransitionResul
         : "partly_transformable";
 
   const complementarySkills = category === "relatively_robust"
-    ? ["Werkzeuge sinnvoll auswaehlen", "Ergebnisse pruefen statt uebernehmen"]
+    ? ["Werkzeuge sinnvoll auswaehlen", "Ergebnisse prüfen statt übernehmen"]
     : [
         "Aufgaben so beschreiben, dass Werkzeuge sie zuverlaessig loesen",
-        "Ergebnisse fachlich pruefen und Fehler erkennen",
-        "Entscheidungen begruenden und verantworten",
-        ...(avgAuto > 0.5 ? ["Prozesse gestalten statt Schritte ausfuehren"] : []),
+        "Ergebnisse fachlich prüfen und Fehler erkennen",
+        "Entscheidungen begründen und verantworten",
+        ...(avgAuto > 0.5 ? ["Prozesse gestalten statt Schritte ausführen"] : []),
       ];
 
   const reskillingEffort = avgAuto >= 0.6 ? "medium" : avgAuto >= 0.4 ? "low" : "low";
@@ -119,23 +119,23 @@ export function computeAiTransition(input: AiTransitionInput): AiTransitionResul
   // Bewusst mehrere Szenarien statt einer Prognose.
   const scenarios = [
     {
-      title: "Werkzeuge uebernehmen den ersten Entwurf",
+      title: "Werkzeuge übernehmen den ersten Entwurf",
       description:
         `Die wiederkehrenden Anteile dieser Rolle laufen zunehmend werkzeuggestuetzt. ` +
-        `Dein Beitrag verschiebt sich zum Pruefen, Einordnen und Entscheiden. ` +
+        `Dein Beitrag verschiebt sich zum Prüfen, Einordnen und Entscheiden. ` +
         `Das ist die heute wahrscheinlichste Richtung, keine Gewissheit.`,
     },
     {
       title: "Der Zuschnitt der Rolle bleibt weitgehend",
       description:
-        `Wo Verantwortung, Aushandlung oder Praesenz im Mittelpunkt stehen, aendert sich der Kern wenig. ` +
+        `Wo Verantwortung, Aushandlung oder Präsenz im Mittelpunkt stehen, aendert sich der Kern wenig. ` +
         `Die Werkzeuge treten daneben, nicht an die Stelle.`,
     },
     {
       title: "Die Rolle waechst um neue Aufgaben",
       description:
-        `Wenn Routine wegfaellt, entsteht Raum. In vielen Faellen fuellt er sich mit Aufgaben, ` +
-        `die vorher liegen blieben - Qualitaet, Abstimmung, Weiterentwicklung.`,
+        `Wenn Routine wegfaellt, entsteht Raum. In vielen Fällen füllt er sich mit Aufgaben, ` +
+        `die vorher liegen blieben - Qualität, Abstimmung, Weiterentwicklung.`,
     },
   ];
 

@@ -38,7 +38,7 @@ export const documents = pgTable("documents", {
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
-  /** Schluessel im Objektspeicher, nie ein direkter oeffentlicher Link. */
+  /** Schlüssel im Objektspeicher, nie ein direkter oeffentlicher Link. */
   storageKey: text("storage_key").notNull(),
   sha256: text("sha256").notNull(),
   malwareScanStatus: text("malware_scan_status").notNull().default("pending"),
@@ -60,14 +60,14 @@ export const generatedArtifacts = pgTable("generated_artifacts", {
   content: text("content").notNull(),
   promptVersion: text("prompt_version"),
   aiRunId: uuid("ai_run_id"),
-  /** Ohne diese Freigabe verlaesst nichts das System. */
+  /** Ohne diese Freigabe verlässt nichts das System. */
   approvedByUser: boolean("approved_by_user").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("generated_artifacts_app_idx").on(t.applicationId, t.kind, t.version)]);
 
 /**
  * Claim-Provenienz. Der technische Riegel gegen erfundene Aussagen:
- * ein Satz ohne verknuepfte, bestaetigte Evidenz erreicht den Status
+ * ein Satz ohne verknuepfte, bestätigte Evidenz erreicht den Status
  * "unsupported" und blockiert die Freigabe des Dokuments.
  */
 export const claimEvidenceLinks = pgTable("claim_evidence_links", {
@@ -84,7 +84,7 @@ export const deliveries = pgTable("deliveries", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   applicationId: uuid("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
   provider: text("provider").notNull(),
-  /** true = nichts wurde tatsaechlich versendet. Im UI deutlich markiert. */
+  /** true = nichts wurde tatsächlich versendet. Im UI deutlich markiert. */
   isDemo: boolean("is_demo").notNull().default(true),
   recipient: text("recipient").notNull(),
   subject: text("subject").notNull(),
@@ -121,7 +121,7 @@ export const coachingTurns = pgTable("coaching_turns", {
 }, (t) => [index("coaching_turns_session_idx").on(t.sessionId, t.index)]);
 
 /**
- * Rueckmeldung ausschliesslich zu Inhalt und Struktur. Bewusst keine
+ * Rückmeldung ausschließlich zu Inhalt und Struktur. Bewusst keine
  * Bewertung von Stimme, Akzent, Gesicht, Emotion oder Ehrlichkeit.
  */
 export const coachingFeedback = pgTable("coaching_feedback", {
@@ -164,7 +164,7 @@ export const checkIns = pgTable("check_ins", {
   leadershipAndTeam: text("leadership_and_team"),
   learningOpportunities: text("learning_opportunities"),
   overallFit: integer("overall_fit"),
-  /** Bleibt privat, solange nicht ausdruecklich geteilt. */
+  /** Bleibt privat, solange nicht ausdrücklich geteilt. */
   sharedWithPartner: boolean("shared_with_partner").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -5,9 +5,9 @@ import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 /**
  * Fit Score: fachliche Passung zwischen Mensch und Stelle.
  *
- * Ausdruecklich KEINE Einstellungswahrscheinlichkeit. Wer eingeladen wird,
- * haengt an Dingen, die wir nicht kennen - Bewerberfeld, Timing, interne
- * Kandidaten. Diese Zahl beantwortet nur: passt die Taetigkeit zu dem,
+ * Ausdrücklich KEINE Einstellungswahrscheinlichkeit. Wer eingeladen wird,
+ * hängt an Dingen, die wir nicht kennen - Bewerberfeld, Timing, interne
+ * Kandidaten. Diese Zahl beantwortet nur: passt die Tätigkeit zu dem,
  * was dieser Mensch belegt kann und will?
  */
 
@@ -70,9 +70,9 @@ export interface FitInput {
   requirements: JobRequirement[];
   evidence: EvidenceItem[];
   constraints: UserConstraints;
-  /** Taetigkeiten, die Energie geben - aus dem Interview bestaetigt. */
+  /** Tätigkeiten, die Energie geben - aus dem Interview bestätigt. */
   energisingTasks: string[];
-  /** Taetigkeiten, die gemieden werden. */
+  /** Tätigkeiten, die gemieden werden. */
   drainingTasks: string[];
   /** Bevorzugte Arbeitsweise, z. B. "fokussierte Tiefe" oder "viel Austausch". */
   workStylePreferences: string[];
@@ -84,7 +84,7 @@ export interface FitInput {
 }
 
 /** Sehr einfache Wortueberlappung. Ersetzt kein semantisches Modell,
- *  reicht aber fuer eine nachvollziehbare Grundbewertung ohne Netzzugriff. */
+ *  reicht aber für eine nachvollziehbare Grundbewertung ohne Netzzugriff. */
 function overlap(a: string, b: string): number {
   const norm = (s: string) =>
     new Set(s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((w) => w.length > 3));
@@ -104,7 +104,7 @@ export function computeFit(input: FitInput): FitResult {
   const w = normaliseWeights(input.weights ?? {});
   const confirmed = input.evidence.filter(isConfirmedFact);
 
-  // --- Belegte Faehigkeiten gegen Muss- und Kann-Anforderungen ---
+  // --- Belegte Fähigkeiten gegen Muss- und Kann-Anforderungen ---
   const musts = input.requirements.filter((r) => r.kind === "must");
   const nices = input.requirements.filter((r) => r.kind === "nice");
   const evidenceTexts = confirmed.map((e) => e.statement);
@@ -135,7 +135,7 @@ export function computeFit(input: FitInput): FitResult {
   }
   if (confirmed.length === 0) skillRaw = null; // Ohne Belege keine Aussage.
 
-  // --- Taetigkeiten und Energie ---
+  // --- Tätigkeiten und Energie ---
   let taskRaw: number | null = null;
   if (input.job.coreTasks.length > 0 && (input.energisingTasks.length > 0 || input.drainingTasks.length > 0)) {
     const energising = input.job.coreTasks.map((t) => bestOverlap(t, input.energisingTasks));
@@ -157,7 +157,7 @@ export function computeFit(input: FitInput): FitResult {
   let valuesRaw: number | null = null;
   if (input.rankedValues.length > 0 && input.job.benefits.length > 0) {
     const haystack = [...input.job.benefits, input.job.description].join(" ");
-    // Frueh genannte Werte wiegen mehr.
+    // Früh genannte Werte wiegen mehr.
     let sum = 0, wsum = 0;
     input.rankedValues.forEach((v, i) => {
       const weight = 1 / (i + 1);
@@ -172,7 +172,7 @@ export function computeFit(input: FitInput): FitResult {
   if (input.job.experienceLevel !== null) {
     const ladder = { entry: 0, junior: 1, mid: 2, senior: 3, lead: 4 } as const;
     const jobLevel = ladder[input.job.experienceLevel];
-    // Ein Schritt ueber dem heutigen Stand ist die beste Lernkurve.
+    // Ein Schritt über dem heutigen Stand ist die beste Lernkurve.
     const userLevel = confirmed.length >= 12 ? 2 : confirmed.length >= 6 ? 1 : 0;
     const gap = jobLevel - userLevel;
     growthRaw = gap === 1 ? 1 : gap === 0 ? 0.8 : gap === 2 ? 0.5 : gap < 0 ? 0.35 : 0.2;
@@ -184,19 +184,19 @@ export function computeFit(input: FitInput): FitResult {
     realismRaw = Math.min(1, mustCovered / musts.length + 0.15);
   }
 
-  // --- Ausdrueckliches Interesse ---
+  // --- Ausdrückliches Interesse ---
   let interestRaw: number | null = null;
   if (input.statedInterests.length > 0) {
     interestRaw = bestOverlap(input.job.title, input.statedInterests);
   }
 
   const inputs: WeightedInput[] = [
-    { key: "proven_skills", label: "Belegte Faehigkeiten und Qualifikationen", raw: skillRaw,
+    { key: "proven_skills", label: "Belegte Fähigkeiten und Qualifikationen", raw: skillRaw,
       weight: w.provenSkills, evidenceIds: [...new Set(skillEvidenceIds)],
       explanation: skillRaw === null
         ? "Es liegen noch keine bestaetigten Belege vor, an denen sich die Anforderungen messen liessen."
-        : `${mustCovered} von ${musts.length} Muss-Anforderungen sind durch bestaetigte Erfahrungen gedeckt.` },
-    { key: "preferred_tasks", label: "Taetigkeiten, die dir Energie geben", raw: taskRaw,
+        : `${mustCovered} von ${musts.length} Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.` },
+    { key: "preferred_tasks", label: "Tätigkeiten, die dir Energie geben", raw: taskRaw,
       weight: w.preferredTasks,
       explanation: taskRaw === null
         ? "Die Anzeige beschreibt keine konkreten Aufgaben, oder es fehlen deine Angaben dazu."
@@ -206,16 +206,16 @@ export function computeFit(input: FitInput): FitResult {
         : "Abgleich deiner bevorzugten Arbeitsweise mit der Beschreibung der Stelle." },
     { key: "values", label: "Werte und Motive", raw: valuesRaw, weight: w.valuesAndMotives,
       explanation: valuesRaw === null ? "Die Anzeige nennt zu wenig, um deine Werte abzugleichen."
-        : "Deine wichtigsten Werte gegen das, was die Stelle ausdruecklich bietet." },
+        : "Deine wichtigsten Werte gegen das, was die Stelle ausdrücklich bietet." },
     { key: "growth", label: "Entwicklungspotenzial", raw: growthRaw, weight: w.growthPotential,
       explanation: growthRaw === null ? "Die Anzeige nennt kein Erfahrungsniveau."
-        : "Wie gross der Schritt von deinem heutigen Stand aus waere." },
+        : "Wie gross der Schritt von deinem heutigen Stand aus wäre." },
     { key: "realism", label: "Umsetzbarkeit", raw: realismRaw, weight: w.marketRealism,
       explanation: realismRaw === null ? "Ohne Muss-Anforderungen oder Belege nicht einschaetzbar."
         : "Wie viele zwingende Anforderungen du heute schon erfuellst." },
-    { key: "interest", label: "Dein ausdrueckliches Interesse", raw: interestRaw, weight: w.statedInterest,
+    { key: "interest", label: "Dein ausdrückliches Interesse", raw: interestRaw, weight: w.statedInterest,
       explanation: interestRaw === null ? "Du hast noch keine Zielrollen genannt."
-        : "Naehe zu den Rollen, die du selbst genannt hast." },
+        : "Nähe zu den Rollen, die du selbst genannt hast." },
   ];
 
   const { value, coverage, factors } = weightedScore(inputs);
@@ -236,13 +236,13 @@ export function computeFit(input: FitInput): FitResult {
 
   const topReason = known[0]
     ? `${known[0].label}: ${known[0].explanation}`
-    : "Es liegen noch zu wenige bestaetigte Angaben vor, um eine Passung zu begruenden.";
+    : "Es liegen noch zu wenige bestätigte Angaben vor, um eine Passung zu begründen.";
 
   const topReservation = unknown[0]
     ? `${unknown[0].label} ist unbekannt. ${unknown[0].explanation}`
     : weakest
-      ? `Am schwaechsten faellt aus: ${weakest.label.toLowerCase()}. ${weakest.explanation}`
-      : "Kein einzelner Vorbehalt sticht heraus - pruefe die Anforderungen dennoch selbst.";
+      ? `Am schwaechsten fällt aus: ${weakest.label.toLowerCase()}. ${weakest.explanation}`
+      : "Kein einzelner Vorbehalt sticht heraus - prüfe die Anforderungen dennoch selbst.";
 
   return {
     score: showNumber ? toScore100(value) : null,

@@ -6,7 +6,7 @@ import { loadCoaching } from "@/lib/coaching";
 import { CoachingSession } from "./CoachingSession";
 import { Badge, Card, PageHeader, Stack } from "@/components/ui";
 
-export const metadata: Metadata = { title: "Gespraechsvorbereitung" };
+export const metadata: Metadata = { title: "Gesprächsvorbereitung" };
 export const dynamic = "force-dynamic";
 
 /**
@@ -26,7 +26,7 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
       <div>
         <p style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-2)" }}>
           <Link href={`/app/applications/${id}`} style={{ color: "var(--accent-text)" }}>
-            ← Zurueck zur Bewerbung
+            ← Zurück zur Bewerbung
           </Link>
         </p>
         <PageHeader
@@ -35,7 +35,7 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
         />
       </div>
 
-      {/* Was ausdruecklich nicht bewertet wird */}
+      {/* Was ausdrücklich nicht bewertet wird */}
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
           {t("coaching.noBehaviourScoring")}
@@ -67,7 +67,7 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
             <Stack gap={3}>
               <h2 style={{ fontSize: "var(--text-base)" }}>{t("coaching.starStories")}</h2>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                Ausschliesslich aus deinen bestaetigten Erfahrungen. Nichts davon ist erfunden.
+                Ausschließlich aus deinen bestaetigten Erfahrungen. Nichts davon ist erfunden.
               </p>
               {view.starStories.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
@@ -106,7 +106,7 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
               <Stack gap={2}>
                 <Badge tone="neutral">Demo-Anbieter</Badge>
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                  Die Rueckmeldung entsteht aus festen, offen gezeigten Kriterien - nicht aus einem
+                  Die Rückmeldung entsteht aus festen, offen gezeigten Kriterien - nicht aus einem
                   Sprachmodell. Sie ist dadurch schlichter, aber nachvollziehbar.
                 </p>
               </Stack>

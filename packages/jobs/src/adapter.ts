@@ -40,7 +40,7 @@ export interface RawListing {
   publishedAt?: Date | null;
   expiresAt?: Date | null;
   originalUrl?: string | null;
-  /** Rohdaten fuer den Snapshot. Erlaubt spaeter, Aenderungen zu zeigen. */
+  /** Rohdaten für den Snapshot. Erlaubt später, Änderungen zu zeigen. */
   raw?: Record<string, unknown>;
 }
 
@@ -60,7 +60,7 @@ export interface JobSourceAdapter {
   readonly attributionText: string | null;
   readonly termsUrl: string | null;
 
-  /** Ist die Quelle einsatzbereit? Fehlt ein Schluessel, ist sie es nicht. */
+  /** Ist die Quelle einsatzbereit? Fehlt ein Schlüssel, ist sie es nicht. */
   isConfigured(): boolean;
   fetchListings(options?: FetchOptions): Promise<RawListing[]>;
 }
@@ -78,9 +78,9 @@ export class SourceNotConfiguredError extends Error {
 // --- Normalisierung ------------------------------------------------------
 
 /**
- * Aufgaben aus dem Fliesstext ziehen. Absichtlich schlicht und
+ * Aufgaben aus dem Fließtext ziehen. Absichtlich schlicht und
  * konservativ: lieber wenige, sichere Aufgaben als viele geratene.
- * Das AI Transition Radar baut darauf auf - falsche Aufgaben waeren
+ * Das AI Transition Radar baut darauf auf - falsche Aufgaben wären
  * schlimmer als gar keine.
  */
 export function extractCoreTasks(description: string): string[] {
@@ -97,7 +97,7 @@ export function extractCoreTasks(description: string): string[] {
 }
 
 const MUST_MARKERS = /\b(zwingend|voraussetzung|erforderlich|must|required|unbedingt|setzen wir voraus)\b/i;
-const NICE_MARKERS = /\b(von vorteil|wuenschenswert|idealerweise|nice to have|plus|gerne)\b/i;
+const NICE_MARKERS = /\b(von vorteil|wünschenswert|idealerweise|nice to have|plus|gerne)\b/i;
 
 export function classifyRequirement(text: string): "must" | "nice" {
   if (NICE_MARKERS.test(text)) return "nice";
@@ -117,9 +117,9 @@ export function normaliseWorkModel(raw: string | undefined): Job["workModel"] {
 }
 
 /**
- * Inhaltshash zur Erkennung von Reposts. Bewusst ueber den inhaltlichen
- * Kern gebildet, nicht ueber die ganze Anzeige - Datum und Kennung
- * aendern sich bei einer Wiederveroeffentlichung, der Text nicht.
+ * Inhaltshash zur Erkennung von Reposts. Bewusst über den inhaltlichen
+ * Kern gebildet, nicht über die ganze Anzeige - Datum und Kennung
+ * ändern sich bei einer Wiederveröffentlichung, der Text nicht.
  */
 export function computeContentHash(listing: {
   title: string;
@@ -219,9 +219,9 @@ export function normalise(listing: RawListing, fetchedAt = new Date()): Normalis
 }
 
 /**
- * Deduplizierung. Gleicher Inhalt heisst nicht: wegwerfen. Die spaetere
+ * Deduplizierung. Gleicher Inhalt heisst nicht: wegwerfen. Die spätere
  * Anzeige bleibt, die frueheren werden als Vorgeschichte vermerkt - so
- * kann die Oberflaeche sagen "das gab es schon einmal", statt still eine
+ * kann die Oberfläche sagen "das gab es schon einmal", statt still eine
  * Version verschwinden zu lassen.
  */
 export interface DeduplicationResult<T extends { contentHash: string; publishedAt: Date | null }> {

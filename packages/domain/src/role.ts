@@ -6,19 +6,19 @@ export const RoleClusterSchema = z.object({
   id: z.string(),
   userId: z.string(),
   title: z.string(),
-  /** Warum diese Richtung passt - in ganzen Saetzen, nicht als Score. */
+  /** Warum diese Richtung passt - in ganzen Sätzen, nicht als Score. */
   rationale: z.string(),
-  /** Bestaetigte Evidenz, die die Richtung stuetzt. */
+  /** Bestätigte Evidenz, die die Richtung stuetzt. */
   supportingEvidenceIds: z.array(z.string()),
   /** Was noch fehlt oder unsicher ist. */
   gaps: z.array(z.string()),
-  /** Bedingungen, die in dieser Richtung kritisch werden koennten. */
+  /** Bedingungen, die in dieser Richtung kritisch werden könnten. */
   criticalConstraints: z.array(z.string()),
   /** Wie realistisch der Einstieg heute ist. */
   entryRealism: z.enum(["direct", "with_bridge", "longer_path", "unclear"]),
-  /** Eine konkrete naechste Handlung zur Ueberpruefung. */
+  /** Eine konkrete naechste Handlung zur Überprüfung. */
   nextValidationStep: z.string(),
-  /** Naheliegend oder angrenzend? Nischenrollen sind ausdruecklich gewollt. */
+  /** Naheliegend oder angrenzend? Nischenrollen sind ausdrücklich gewollt. */
   kind: z.enum(["obvious", "adjacent", "niche"]),
   /** Abbildung auf Taxonomien. */
   escoUris: z.array(z.string()).default([]),
@@ -33,7 +33,7 @@ export const OccupationSchema = z.object({
   labelDe: z.string(),
   labelEn: z.string(),
   synonyms: z.array(z.string()).default([]),
-  /** Kerntaetigkeiten - Grundlage fuer Matching und AI Transition. */
+  /** Kerntätigkeiten - Grundlage für Matching und AI Transition. */
   tasks: z.array(z.string()).default([]),
   skillKeys: z.array(z.string()).default([]),
   escoUri: z.string().nullable(),
@@ -50,7 +50,7 @@ export const SkillSchema = z.object({
   labelEn: z.string(),
   synonyms: z.array(z.string()).default([]),
   kind: z.enum(["technical", "method", "social", "language", "license", "domain"]),
-  /** Verwandte Faehigkeiten fuer Uebertragbarkeit. */
+  /** Verwandte Fähigkeiten für Übertragbarkeit. */
   relatedKeys: z.array(z.string()).default([]),
   escoUri: z.string().nullable(),
   taxonomy: z.enum(["esco", "kldb", "internal"]),

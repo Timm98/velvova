@@ -10,11 +10,11 @@ import { toInterviewSession } from "./rows";
 import { requireUser } from "./auth";
 
 /**
- * Der Ablauf des Karrieregespraechs auf der Serverseite.
+ * Der Ablauf des Karrieregesprächs auf der Serverseite.
  *
  * Was hier NICHT passiert: aus einer Antwort wird nicht automatisch ein
  * bestaetigter Fakt. Jede abgeleitete Aussage entsteht als unbestaetigte
- * Evidenz und wartet auf die Bestaetigung des Menschen im Profil. Genau
+ * Evidenz und wartet auf die Bestätigung des Menschen im Profil. Genau
  * das ist der Unterschied zu einem Chatprofil.
  */
 
@@ -39,7 +39,7 @@ export interface InterviewView {
   };
   confirmedFacts: { id: string; statement: string }[];
   openHypotheses: { id: string; statement: string }[];
-  /** Ehrlicher Zustand: laeuft ein echtes Modell oder der Demo-Anbieter? */
+  /** Ehrlicher Zustand: läuft ein echtes Modell oder der Demo-Anbieter? */
   providerIsMock: boolean;
   voiceAvailable: boolean;
 }
@@ -180,8 +180,8 @@ export async function submitAnswer(
       content: trimmed,
     });
 
-    // Die Antwort wird als unbestaetigte Evidenz abgelegt. Sie zaehlt
-    // erst, wenn der Mensch sie im Profil bestaetigt.
+    // Die Antwort wird als unbestaetigte Evidenz abgelegt. Sie zählt
+    // erst, wenn der Mensch sie im Profil bestätigt.
     const question = QUESTIONS.find((q) => q.key === questionKey);
     if (question && trimmed.length >= 20) {
       const type = (question.yields[0] ?? "experience_episode") as (typeof schema.evidenceItems.$inferInsert)["type"];
@@ -192,7 +192,7 @@ export async function submitAnswer(
         sourceType: "user_stated",
         sourceRef: `interview:${stage}:${questionKey}`,
         confidence: 0.8,
-        // Ausdruecklich nicht bestaetigt. Das ist der ganze Punkt.
+        // Ausdrücklich nicht bestätigt. Das ist der ganze Punkt.
         userConfirmed: false,
       });
     }
@@ -271,7 +271,7 @@ export async function pauseSession(): Promise<void> {
 }
 
 /**
- * Die naechste Aeusserung der Assistenz. Der Systemprompt bekommt nur,
+ * Die naechste Äußerung der Assistenz. Der Systemprompt bekommt nur,
  * was er braucht - und vor der Uebergabe an einen externen Anbieter
  * werden direkte Identifikatoren entfernt.
  */
@@ -302,13 +302,13 @@ export async function assistantReply(userMessage: string): Promise<string> {
     text += chunk;
   }
 
-  // Ausgabepruefung: eine Zuschreibung geschuetzter Merkmale wird
+  // Ausgabeprüfung: eine Zuschreibung geschuetzter Merkmale wird
   // verworfen, nicht bereinigt.
   const violations = checkOutput(text);
   if (violations.length > 0) {
     return (
       "Diese Antwort wurde verworfen, weil sie eine unzulaessige Zuschreibung enthielt. " +
-      "Lass uns bei dem bleiben, was du selbst gesagt hast: erzaehl mir mehr zu deiner letzten Antwort."
+      "Lass uns bei dem bleiben, was du selbst gesagt hast: erzähl mir mehr zu deiner letzten Antwort."
     );
   }
 

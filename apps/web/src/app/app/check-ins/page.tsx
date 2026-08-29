@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  * Wichtig ist der Rahmen: das hier ist keine Ueberwachung. Die Antworten
  * bleiben privat und werden nur auf ausdrueckliche Freigabe geteilt. Der
  * Zweck ist, das Versprechen der Anzeige mit der Erfahrung abzugleichen -
- * fuer den Menschen selbst, nicht fuer irgendjemanden sonst.
+ * für den Menschen selbst, nicht für irgendjemanden sonst.
  */
 export default async function CheckInsPage() {
   const user = await requireUser();
@@ -37,7 +37,7 @@ export default async function CheckInsPage() {
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
           Diese Antworten bleiben privat. Sie werden nicht an Arbeitgeber, nicht an Partner und
-          nicht in Auswertungen weitergegeben - es sei denn, du gibst sie ausdruecklich frei.
+          nicht in Auswertungen weitergegeben - es sei denn, du gibst sie ausdrücklich frei.
         </p>
       </Card>
 
@@ -95,14 +95,14 @@ export default async function CheckInsPage() {
                   {m === 60 && (
                     <>
                       <li>· Welche Aufgaben geben Energie, welche kosten sie?</li>
-                      <li>· Wie laeuft es mit Fuehrung und Team?</li>
-                      <li>· Was lernst du tatsaechlich?</li>
+                      <li>· Wie läuft es mit Führung und Team?</li>
+                      <li>· Was lernst du tatsächlich?</li>
                     </>
                   )}
                   {m === 90 && (
                     <>
                       <li>· Wuerdest du dich noch einmal so entscheiden?</li>
-                      <li>· Was solltest du fuer das Probezeitgespraech vorbereiten?</li>
+                      <li>· Was solltest du für das Probezeitgespräch vorbereiten?</li>
                       <li>· Was gehoert jetzt in dein Profil?</li>
                     </>
                   )}

@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 /**
  * Gemeinsame Bausteine. Bewusst wenige und schlicht gehalten - feine
- * Schatten statt harter Rahmen, grosszuegige Abstaende, eine primaere
+ * Schatten statt harter Rahmen, grosszuegige Abstände, eine primaere
  * Handlung je Bildschirm.
  */
 
@@ -185,7 +185,7 @@ export function Skeleton({ lines = 3 }: { lines?: number }) {
   );
 }
 
-/** Aufklappbarer Bereich. Details bleiben zugaenglich, ohne zu erschlagen. */
+/** Aufklappbarer Bereich. Details bleiben zugänglich, ohne zu erschlagen. */
 export function Disclosure({
   summary,
   children,
@@ -316,7 +316,7 @@ export function SourceNote({
         <>
           {" · "}
           <a href={sourceUrl} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-text)" }}>
-            Im Original oeffnen
+            Im Original öffnen
           </a>
         </>
       )}

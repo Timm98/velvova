@@ -4,9 +4,9 @@ import { z } from "zod";
  * Alle Bewertungen des Produkts. Bewusst getrennt gehalten:
  *
  *   Fit         - fachliche Passung zwischen Mensch und Stelle
- *   Confidence  - wie belastbar die Datenlage fuer diese Aussage ist
+ *   Confidence  - wie belastbar die Datenlage für diese Aussage ist
  *   Job Quality - wie gut die Stelle als Arbeitsplatz ist
- *   AI Transition - wie sich die Aufgaben durch KI veraendern duerften
+ *   AI Transition - wie sich die Aufgaben durch KI verändern duerften
  *   Listing Confidence - wie vertrauenswuerdig die Anzeige selbst ist
  *
  * Keiner davon ist eine Einstellungswahrscheinlichkeit. Diese Aussage
@@ -17,7 +17,7 @@ import { z } from "zod";
  *  altes Ergebnis nachvollziehbar bleibt, wenn die Formel sich aendert. */
 export const SCORING_VERSION = "2026.08.1";
 
-/** Wenn die Datenbasis duenn ist, zeigen wir keine Zahl, sondern ein Band. */
+/** Wenn die Datenbasis dünn ist, zeigen wir keine Zahl, sondern ein Band. */
 export const FitBandSchema = z.enum(["high", "medium", "exploratory", "insufficient_data"]);
 export type FitBand = z.infer<typeof FitBandSchema>;
 
@@ -40,10 +40,10 @@ export const FitResultSchema = z.object({
   /** 0..100. Nur zeigen, wenn coverage ausreicht - sonst band verwenden. */
   score: z.number().int().min(0).max(100).nullable(),
   band: FitBandSchema,
-  /** Anteil der Gewichte, fuer die ueberhaupt Daten vorlagen. 0..1 */
+  /** Anteil der Gewichte, für die ueberhaupt Daten vorlagen. 0..1 */
   coverage: z.number().min(0).max(1),
   factors: z.array(ScoreFactorSchema),
-  /** Der wichtigste Grund fuer die Passung. */
+  /** Der wichtigste Grund für die Passung. */
   topReason: z.string(),
   /** Der wichtigste Vorbehalt. Immer gefuellt - auch bei guter Passung. */
   topReservation: z.string(),
@@ -72,7 +72,7 @@ export type JobQualityResult = z.infer<typeof JobQualityResultSchema>;
 
 export const AiTransitionCategorySchema = z.enum([
   "strongly_augmentable",   // KI verstaerkt die Rolle deutlich
-  "partly_transformable",   // Teile des Aufgabenbuendels verschieben sich
+  "partly_transformable",   // Teile des Aufgabenbündels verschieben sich
   "relatively_robust",      // Kern bleibt weitgehend menschlich
   "unclear_data",           // Datenlage traegt keine Aussage
 ]);
@@ -84,7 +84,7 @@ export const TaskExposureSchema = z.object({
   automationExposure: z.number().min(0).max(1),
   /** 0..1 wie stark KI die Aufgabe verstaerken statt ersetzen duerfte. */
   augmentationPotential: z.number().min(0).max(1),
-  /** Was menschlich bleibt: Urteil, Verantwortung, Beziehung, Koerper. */
+  /** Was menschlich bleibt: Urteil, Verantwortung, Beziehung, Körper. */
   humanCore: z.string(),
   likelyChange: z.string(),
 });
@@ -93,7 +93,7 @@ export type TaskExposure = z.infer<typeof TaskExposureSchema>;
 export const AiTransitionResultSchema = z.object({
   category: AiTransitionCategorySchema,
   tasks: z.array(TaskExposureSchema),
-  /** Ergaenzende Faehigkeiten, die die Rolle robuster machen. */
+  /** Ergänzende Fähigkeiten, die die Rolle robuster machen. */
   complementarySkills: z.array(z.string()),
   reskillingEffort: z.enum(["low", "medium", "high", "unknown"]),
   country: z.string().length(2),
@@ -101,7 +101,7 @@ export const AiTransitionResultSchema = z.object({
   /** Stand der zugrunde liegenden Daten. Immer sichtbar machen. */
   dataAsOf: z.date().nullable(),
   confidence: z.enum(["high", "medium", "low"]),
-  /** Szenarien statt Prognose. Nie eine Jahreszahl fuer "verschwindet". */
+  /** Szenarien statt Prognose. Nie eine Jahreszahl für "verschwindet". */
   scenarios: z.array(z.object({ title: z.string(), description: z.string() })),
   version: z.string().default(SCORING_VERSION),
 });
@@ -113,7 +113,7 @@ export const ListingConfidenceResultSchema = z.object({
   signals: z.array(
     z.object({ key: z.string(), label: z.string(), ok: z.boolean().nullable(), detail: z.string() }),
   ),
-  /** Anzeige moeglicherweise veraltet. Nie das Wort "Fake" ohne Beleg. */
+  /** Anzeige möglicherweise veraltet. Nie das Wort "Fake" ohne Beleg. */
   possiblyStale: z.boolean(),
   possibleRepost: z.boolean(),
   version: z.string().default(SCORING_VERSION),

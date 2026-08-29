@@ -16,7 +16,7 @@ import type { Translator } from "@paycheck/i18n";
  * erscheint keine Zahl - sondern der Grund.
  *
  * Farbe traegt nirgends allein die Information: jeder farbige Zustand hat
- * zusaetzlich Text.
+ * zusätzlich Text.
  */
 
 const box = {
@@ -89,7 +89,7 @@ export function ConfidenceDisplay({
     <div style={box}>
       <span style={label}>{t("jobs.confidence")}</span>
       <span style={{ display: "flex", alignItems: "center", gap: "var(--space-2)" }}>
-        {/* Drei Balken statt einer Zahl: Sicherheit ist keine Praezision. */}
+        {/* Drei Balken statt einer Zahl: Sicherheit ist keine Präzision. */}
         <span aria-hidden style={{ display: "flex", gap: "2px" }}>
           {[0, 1, 2].map((i) => (
             <span
@@ -195,9 +195,9 @@ export function BlockedNotice({ constraints, t }: { constraints: ConstraintResul
 }
 
 /**
- * Faktorenaufschluesselung. Unbekannte Faktoren werden ausdruecklich als
+ * Faktorenaufschlüsselung. Unbekannte Faktoren werden ausdrücklich als
  * unbekannt gezeigt, nicht weggelassen - sonst entsteht der Eindruck, sie
- * seien geprueft und schlecht ausgefallen.
+ * seien geprüft und schlecht ausgefallen.
  */
 export function FactorBreakdown({
   factors,

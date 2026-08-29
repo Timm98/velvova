@@ -5,9 +5,9 @@ import { toScore100 } from "./weighted.ts";
 /**
  * Listing Confidence: wie vertrauenswuerdig ist die Anzeige selbst?
  *
- * Das Wort "Fake" faellt hier nie. Wir koennen aus der Ferne nicht
+ * Das Wort "Fake" fällt hier nie. Wir koennen aus der Ferne nicht
  * feststellen, ob eine Anzeige betruegerisch ist - wohl aber, ob die
- * Quelle nachvollziehbar, die Anzeige vollstaendig und der Link noch
+ * Quelle nachvollziehbar, die Anzeige vollständig und der Link noch
  * erreichbar ist. Genau das wird gesagt, nicht mehr.
  */
 
@@ -36,7 +36,7 @@ export function computeListingConfidence(input: ListingConfidenceInput): Listing
   };
 
   add("original_url", "Originalquelle vorhanden", job.originalUrl !== null,
-    job.originalUrl ? "Die Anzeige laesst sich im Original oeffnen." : "Es liegt kein Link zur Originalanzeige vor.", 20);
+    job.originalUrl ? "Die Anzeige lässt sich im Original öffnen." : "Es liegt kein Link zur Originalanzeige vor.", 20);
 
   add("employer_identity", "Arbeitgeber nachvollziehbar",
     source === null ? null : source.kind === "employer_feed" || source.licenseStatus === "licensed",
@@ -49,9 +49,9 @@ export function computeListingConfidence(input: ListingConfidenceInput): Listing
     const ageDays = Math.round((now.getTime() - job.publishedAt.getTime()) / DAY);
     possiblyStale = ageDays > 60;
     add("age", "Alter der Anzeige", ageDays <= 30 ? true : ageDays <= 60 ? null : false,
-      `Veroeffentlicht vor ${ageDays} Tagen.`, 20);
+      `Veröffentlicht vor ${ageDays} Tagen.`, 20);
   } else {
-    add("age", "Alter der Anzeige", null, "Kein Veroeffentlichungsdatum angegeben.", 20);
+    add("age", "Alter der Anzeige", null, "Kein Veröffentlichungsdatum angegeben.", 20);
   }
 
   if (job.expiresAt && job.expiresAt.getTime() < now.getTime()) {
@@ -65,18 +65,18 @@ export function computeListingConfidence(input: ListingConfidenceInput): Listing
 
   add("link_check", "Letzter Linkcheck", job.lastLinkCheckOk,
     job.lastLinkCheckAt
-      ? `Zuletzt geprueft am ${job.lastLinkCheckAt.toISOString().slice(0, 10)}: ${job.lastLinkCheckOk ? "erreichbar" : "nicht erreichbar"}.`
-      : "Der Link wurde noch nicht geprueft.", 15);
+      ? `Zuletzt geprüft am ${job.lastLinkCheckAt.toISOString().slice(0, 10)}: ${job.lastLinkCheckOk ? "erreichbar" : "nicht erreichbar"}.`
+      : "Der Link wurde noch nicht geprüft.", 15);
 
   const dupes = input.earlierDuplicateCount ?? 0;
   const possibleRepost = dupes > 0;
-  add("repost", "Wiederveroeffentlichung", dupes === 0 ? true : false,
-    dupes === 0 ? "Kein Hinweis auf eine frueher identische Anzeige."
-      : `Es gibt ${dupes} frueher erfasste Anzeige(n) mit gleichem Inhalt. Das kann Nachbesetzung oder blosse Wiedervorlage bedeuten.`, 10);
+  add("repost", "Wiederveröffentlichung", dupes === 0 ? true : false,
+    dupes === 0 ? "Kein Hinweis auf eine früher identische Anzeige."
+      : `Es gibt ${dupes} früher erfasste Anzeige(n) mit gleichem Inhalt. Das kann Nachbesetzung oder bloße Wiedervorlage bedeuten.`, 10);
 
   const complete = [job.salary.disclosed, job.coreTasks.length > 0, job.contractType !== null, job.description.length > 200];
   const completeCount = complete.filter(Boolean).length;
-  add("completeness", "Vollstaendigkeit", completeCount >= 3 ? true : completeCount >= 2 ? null : false,
+  add("completeness", "Vollständigkeit", completeCount >= 3 ? true : completeCount >= 2 ? null : false,
     `${completeCount} von 4 Grundangaben sind vorhanden.`, 10);
 
   const score = toScore100(max > 0 ? points / max : 0);

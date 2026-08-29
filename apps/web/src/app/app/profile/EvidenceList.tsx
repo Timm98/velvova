@@ -6,12 +6,12 @@ import { confirmEvidence, deleteEvidence, editEvidence, rejectEvidence } from "@
 import { Badge, buttonStyle, Card } from "@/components/ui";
 
 /**
- * Eine Liste von Evidenz-Eintraegen.
+ * Eine Liste von Evidenz-Einträgen.
  *
- * Vier gleichrangige Handlungen: bestaetigen, bearbeiten, ablehnen,
- * loeschen. Bewusst kein hervorgehobenes "Bestaetigen" - das Produkt
- * soll nicht in eine Richtung draengen, die dem Menschen spaeter im
- * Bewerbungsgespraech um die Ohren fliegt.
+ * Vier gleichrangige Handlungen: bestätigen, bearbeiten, ablehnen,
+ * löschen. Bewusst kein hervorgehobenes "Bestätigen" - das Produkt
+ * soll nicht in eine Richtung draengen, die dem Menschen später im
+ * Bewerbungsgespräch um die Ohren fliegt.
  */
 
 export interface EvidenceView {
@@ -27,7 +27,7 @@ export interface EvidenceView {
 
 const SOURCE_LABEL: Record<string, { text: string; tone: "positive" | "assistant" | "neutral" | "caution" }> = {
   user_stated: { text: "von dir gesagt", tone: "neutral" },
-  user_confirmed: { text: "von dir bestaetigt", tone: "positive" },
+  user_confirmed: { text: "von dir bestätigt", tone: "positive" },
   document_extract: { text: "aus deinen Unterlagen", tone: "neutral" },
   ai_hypothesis: { text: "Vermutung", tone: "assistant" },
   external_source: { text: "externe Quelle", tone: "caution" },
@@ -72,7 +72,7 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
       <div style={{ display: "grid", gap: "var(--space-3)" }}>
         <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", alignItems: "center" }}>
           <Badge tone={source.tone}>{source.text}</Badge>
-          {item.userConfirmed && <Badge tone="positive">bestaetigt</Badge>}
+          {item.userConfirmed && <Badge tone="positive">bestätigt</Badge>}
           {item.userRejected && <Badge tone="neutral">abgelehnt</Badge>}
         </div>
 
@@ -126,7 +126,7 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
 
         {item.sourceRef && (
           <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-            Beleg: {item.sourceRef.replace("interview:", "aus dem Gespraech, Thema ").replace(/:/g, " · ")}
+            Beleg: {item.sourceRef.replace("interview:", "aus dem Gespräch, Thema ").replace(/:/g, " · ")}
           </p>
         )}
 
@@ -170,7 +170,7 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
               disabled={pending}
               style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-4)", color: "var(--critical)" }}
             >
-              Loeschen
+              Löschen
             </button>
           </div>
         )}

@@ -14,9 +14,9 @@ import {
 } from "@/lib/auth";
 
 /**
- * Server Actions fuer Anmeldung und Registrierung.
+ * Server Actions für Anmeldung und Registrierung.
  *
- * Fehler werden als Rueckgabewert gemeldet, nicht geworfen: das Formular
+ * Fehler werden als Rückgabewert gemeldet, nicht geworfen: das Formular
  * soll die Eingabe behalten und den Grund am Feld zeigen, statt auf eine
  * Fehlerseite zu springen.
  */
@@ -61,7 +61,7 @@ export async function magicLinkAction(_prev: FormState, formData: FormData): Pro
 
   // In der Entwicklung ohne verbundenen Mailversand wird der Link
   // ausgegeben, damit der Weg ueberhaupt begehbar ist. Das steht auch so
-  // in der Oberflaeche - er wird nicht als versendet ausgegeben.
+  // in der Oberfläche - er wird nicht als versendet ausgegeben.
   if (token && process.env.NODE_ENV !== "production") {
     return {
       notice: "sent",
@@ -98,7 +98,7 @@ export async function saveSetupAction(formData: FormData): Promise<void> {
     const consentDefs: { kind: (typeof schema.consents.$inferInsert)["kind"]; purpose: string }[] = [
       { kind: "career_profile", purpose: "Erstellung und Pflege des Karriereprofils" },
       { kind: "document_analysis", purpose: "Auswertung hochgeladener Unterlagen" },
-      { kind: "voice_input", purpose: "Spracheingabe im Gespraech" },
+      { kind: "voice_input", purpose: "Spracheingabe im Gespräch" },
       { kind: "transcript_storage", purpose: "Speicherung des gesprochenen Textes" },
       { kind: "external_ai_processing", purpose: "Verarbeitung durch einen externen KI-Anbieter" },
     ];
@@ -132,7 +132,7 @@ export async function saveSetupAction(formData: FormData): Promise<void> {
       }
     }
 
-    // Arbeitsmodelle in die Bedingungen uebernehmen.
+    // Arbeitsmodelle in die Bedingungen übernehmen.
     const [row] = await tx
       .select()
       .from(schema.userConstraints)

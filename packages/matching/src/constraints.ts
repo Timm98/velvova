@@ -3,10 +3,10 @@ import type {
 } from "@paycheck/domain";
 
 /**
- * Harte Bedingungen. Laeuft vor jedem Score.
+ * Harte Bedingungen. Läuft vor jedem Score.
  *
- * Drei Ausgaenge je Bedingung:
- *   eligible  - die Stelle erfuellt sie nachweislich
+ * Drei Ausgänge je Bedingung:
+ *   eligible  - die Stelle erfüllt sie nachweislich
  *   uncertain - die Anzeige sagt nichts dazu; das ist kein Ausschluss
  *   blocked   - die Stelle widerspricht der Bedingung nachweislich
  *
@@ -15,7 +15,7 @@ import type {
  * ein Grund, danach zu fragen.
  */
 
-/** Grobe Schaetzung der Reisezeit. Ersetzt keinen Routendienst. */
+/** Grobe Schätzung der Reisezeit. Ersetzt keinen Routendienst. */
 export interface CommuteEstimator {
   estimateMinutes(
     from: string,
@@ -54,11 +54,11 @@ export function checkConstraints(
       "Du darfst in diesem Land arbeiten.", job.country, c.workPermitCountries.join(", ")));
   } else if (c.needsVisaSponsorship) {
     checks.push(check("work_permit", "Arbeitserlaubnis", "uncertain",
-      "Du brauchst eine Unterstuetzung beim Visum. Ob der Arbeitgeber das anbietet, steht nicht in der Anzeige.",
-      job.country, "Visum-Unterstuetzung noetig"));
+      "Du brauchst eine Unterstützung beim Visum. Ob der Arbeitgeber das anbietet, steht nicht in der Anzeige.",
+      job.country, "Visum-Unterstützung noetig"));
   } else {
     checks.push(check("work_permit", "Arbeitserlaubnis", "blocked",
-      `Fuer ${job.country} liegt keine Arbeitserlaubnis vor.`, job.country,
+      `Für ${job.country} liegt keine Arbeitserlaubnis vor.`, job.country,
       c.workPermitCountries.join(", ") || "keine hinterlegt"));
   }
 
@@ -110,27 +110,27 @@ export function checkConstraints(
   // --- Standort und Pendelzeit ---
   if (job.workModel === "remote") {
     checks.push(check("commute", "Arbeitsweg", "eligible",
-      "Vollstaendig remote, kein Arbeitsweg.", "remote", null));
+      "Vollständig remote, kein Arbeitsweg.", "remote", null));
   } else if (c.maxCommuteMinutes === null || c.baseLocation === null) {
     checks.push(check("commute", "Arbeitsweg", "uncertain",
-      "Es ist keine Obergrenze fuer den Arbeitsweg hinterlegt.", job.location, null));
+      "Es ist keine Obergrenze für den Arbeitsweg hinterlegt.", job.location, null));
   } else {
     const minutes = commute?.estimateMinutes(c.baseLocation, job.location, c.commuteMode) ?? null;
     if (minutes === null) {
       checks.push(check("commute", "Arbeitsweg", "uncertain",
-        "Die Reisezeit laesst sich aus den vorliegenden Daten nicht schaetzen.",
+        "Die Reisezeit lässt sich aus den vorliegenden Daten nicht schaetzen.",
         job.location, `maximal ${c.maxCommuteMinutes} Minuten`));
     } else if (minutes <= c.maxCommuteMinutes) {
       checks.push(check("commute", "Arbeitsweg", "eligible",
-        `Geschaetzt ${minutes} Minuten, deine Grenze liegt bei ${c.maxCommuteMinutes}.`,
+        `Geschätzt ${minutes} Minuten, deine Grenze liegt bei ${c.maxCommuteMinutes}.`,
         `${minutes} Min`, `maximal ${c.maxCommuteMinutes} Min`));
     } else if (c.willingToRelocate) {
       checks.push(check("commute", "Arbeitsweg", "uncertain",
-        `Geschaetzt ${minutes} Minuten. Das liegt ueber deiner Grenze, aber du bist umzugsbereit.`,
+        `Geschätzt ${minutes} Minuten. Das liegt über deiner Grenze, aber du bist umzugsbereit.`,
         `${minutes} Min`, `maximal ${c.maxCommuteMinutes} Min`));
     } else {
       checks.push(check("commute", "Arbeitsweg", "blocked",
-        `Geschaetzt ${minutes} Minuten. Deine Grenze liegt bei ${c.maxCommuteMinutes}.`,
+        `Geschätzt ${minutes} Minuten. Deine Grenze liegt bei ${c.maxCommuteMinutes}.`,
         `${minutes} Min`, `maximal ${c.maxCommuteMinutes} Min`));
     }
   }
@@ -140,24 +140,24 @@ export function checkConstraints(
     checks.push(check("salary", "Gehalt", "eligible", "Du hast keine Untergrenze festgelegt.", null, null));
   } else if (!job.salary.disclosed) {
     checks.push(check("salary", "Gehalt", "uncertain",
-      "Die Anzeige nennt kein Gehalt. Frag im Erstgespraech danach.",
+      "Die Anzeige nennt kein Gehalt. Frag im Erstgespräch danach.",
       "nicht angegeben", `mindestens ${c.minSalaryPerYear} ${c.currency}`));
   } else {
-    // Die Obergrenze zaehlt: erreicht sie das Minimum, ist Verhandlung moeglich.
+    // Die Obergrenze zählt: erreicht sie das Minimum, ist Verhandlung möglich.
     const top = job.salary.max ?? job.salary.min;
     const yearly = top === null ? null : normaliseSalaryToYear(top, job.salary.period);
     if (yearly === null) {
-      checks.push(check("salary", "Gehalt", "uncertain", "Die Gehaltsangabe ist unvollstaendig.",
-        "unvollstaendig", `mindestens ${c.minSalaryPerYear} ${c.currency}`));
+      checks.push(check("salary", "Gehalt", "uncertain", "Die Gehaltsangabe ist unvollständig.",
+        "unvollständig", `mindestens ${c.minSalaryPerYear} ${c.currency}`));
     } else if (yearly >= c.minSalaryPerYear) {
       checks.push(check("salary", "Gehalt", "eligible",
-        `Bis ${yearly} ${job.salary.currency} moeglich, deine Grenze liegt bei ${c.minSalaryPerYear}.`,
+        `Bis ${yearly} ${job.salary.currency} möglich, deine Grenze liegt bei ${c.minSalaryPerYear}.`,
         `${yearly} ${job.salary.currency}`, `mindestens ${c.minSalaryPerYear} ${c.currency}`));
     } else {
       const tradeOff = c.salaryTradeOffs.length > 0
-        ? ` Du hast genannt, was das ausgleichen koennte: ${c.salaryTradeOffs.join(", ")}.` : "";
+        ? ` Du hast genannt, was das ausgleichen könnte: ${c.salaryTradeOffs.join(", ")}.` : "";
       checks.push(check("salary", "Gehalt", "blocked",
-        `Hoechstens ${yearly} ${job.salary.currency}, deine Untergrenze liegt bei ${c.minSalaryPerYear}.${tradeOff}`,
+        `Höchstens ${yearly} ${job.salary.currency}, deine Untergrenze liegt bei ${c.minSalaryPerYear}.${tradeOff}`,
         `${yearly} ${job.salary.currency}`, `mindestens ${c.minSalaryPerYear} ${c.currency}`));
     }
   }
@@ -167,7 +167,7 @@ export function checkConstraints(
     checks.push(check("shift", "Schichtarbeit", "uncertain", "Die Anzeige sagt nichts zu Schichten.", null, null));
   } else if (!job.shiftWork || c.acceptsShiftWork) {
     checks.push(check("shift", "Schichtarbeit", "eligible",
-      job.shiftWork ? "Schichtarbeit ist fuer dich in Ordnung." : "Keine Schichtarbeit.",
+      job.shiftWork ? "Schichtarbeit ist für dich in Ordnung." : "Keine Schichtarbeit.",
       job.shiftWork ? "ja" : "nein", c.acceptsShiftWork ? "akzeptiert" : "ausgeschlossen"));
   } else {
     checks.push(check("shift", "Schichtarbeit", "blocked",

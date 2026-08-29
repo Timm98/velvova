@@ -6,7 +6,7 @@ import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum
   privacyRequestKindEnum, privacyRequestStatusEnum, userRoleEnum } from "./enums.ts";
 
 /**
- * Identitaet, Einwilligungen und Datenschutzanfragen.
+ * Identität, Einwilligungen und Datenschutzanfragen.
  *
  * Jede Tabelle mit Nutzerbezug traegt user_id. Darauf setzt die
  * Zugriffskontrolle auf (siehe migrate.ts, Row Level Security).
@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   displayName: text("display_name"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  /** Soft Delete. Der harte Loeschlauf raeumt spaeter kontrolliert auf. */
+  /** Soft Delete. Der harte Löschlauf raeumt später kontrolliert auf. */
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("users_email_unique").on(t.email)]);
 
@@ -37,7 +37,7 @@ export const authAccounts = pgTable("auth_accounts", {
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  /** Nur der Hash des Tokens. Das Token selbst steht ausschliesslich im Cookie. */
+  /** Nur der Hash des Tokens. Das Token selbst steht ausschließlich im Cookie. */
   tokenHash: text("token_hash").notNull(),
   userAgent: text("user_agent"),
   ipHash: text("ip_hash"),
@@ -73,7 +73,7 @@ export const userSettings = pgTable("user_settings", {
   notificationEmail: boolean("notification_email").notNull().default(true),
   notificationPush: boolean("notification_push").notNull().default(false),
   microphoneEnabled: boolean("microphone_enabled").notNull().default(false),
-  /** Nutzergewichte fuer den Fit, in Grenzen anpassbar. */
+  /** Nutzergewichte für den Fit, in Grenzen anpassbar. */
   fitWeights: jsonb("fit_weights").$type<Record<string, number>>(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -108,7 +108,7 @@ export const memberships = pgTable("memberships", {
   organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: text("role").notNull().default("member"),
-  /** Standardmaessig sieht ein Partner ausschliesslich aggregierte Daten. */
+  /** Standardmäßig sieht ein Partner ausschließlich aggregierte Daten. */
   canSeeIndividualProfiles: boolean("can_see_individual_profiles").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("memberships_unique").on(t.organizationId, t.userId)]);
@@ -119,7 +119,7 @@ export const integrations = pgTable("integrations", {
   kind: integrationKindEnum("kind").notNull(),
   status: integrationStatusEnum("status").notNull().default("not_connected"),
   displayName: text("display_name"),
-  /** Verschluesselt abgelegt. Nie im Klartext, nie in Logs. */
+  /** Verschlüsselt abgelegt. Nie im Klartext, nie in Logs. */
   credentialsEncrypted: text("credentials_encrypted"),
   scopes: jsonb("scopes").$type<string[]>().notNull().default([]),
   connectedAt: timestamp("connected_at", { withTimezone: true }),

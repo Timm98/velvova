@@ -12,7 +12,7 @@ export const JobRequirementSchema = z.object({
   kind: RequirementKindSchema,
   /** Wortlaut aus der Anzeige, damit der Mensch es wiedererkennt. */
   text: z.string(),
-  /** Auf die Taxonomie abgebildet, soweit moeglich. */
+  /** Auf die Taxonomie abgebildet, soweit möglich. */
   skillKey: z.string().nullable(),
   category: z.enum(["skill", "qualification", "language", "license", "experience", "other"]),
 });
@@ -49,7 +49,7 @@ export const JobSchema = z.object({
   languageRequirements: z.record(z.string(), z.string()).default({}),
   requiredLicenses: z.array(z.string()).default([]),
   workPermitRequired: z.boolean().nullable(),
-  /** Was die Rolle tatsaechlich tut - Grundlage des AI Transition Radar. */
+  /** Was die Rolle tatsächlich tut - Grundlage des AI Transition Radar. */
   coreTasks: z.array(z.string()).default([]),
   description: z.string(),
   benefits: z.array(z.string()).default([]),
@@ -57,7 +57,7 @@ export const JobSchema = z.object({
   applyTarget: z.string().nullable(),
   publishedAt: z.date().nullable(),
   expiresAt: z.date().nullable(),
-  /** Wann wir die Anzeige zuletzt tatsaechlich gesehen haben. */
+  /** Wann wir die Anzeige zuletzt tatsächlich gesehen haben. */
   fetchedAt: z.date(),
   lastLinkCheckAt: z.date().nullable(),
   lastLinkCheckOk: z.boolean().nullable(),
@@ -91,7 +91,7 @@ export const CompanySchema = z.object({
   industry: z.string().nullable(),
   sizeBand: z.enum(["1-10", "11-50", "51-200", "201-1000", "1000+"]).nullable(),
   headquarters: z.string().nullable(),
-  /** Aus einem offiziellen Register bestaetigt, nicht aus der Anzeige. */
+  /** Aus einem offiziellen Register bestätigt, nicht aus der Anzeige. */
   registryVerified: z.boolean().default(false),
   isDemo: z.boolean().default(false),
 });
@@ -99,8 +99,8 @@ export type Company = z.infer<typeof CompanySchema>;
 
 /**
  * Bewertungsquellen. Die Art der Quelle wird immer sichtbar getrennt:
- * Google-Bewertungen sind ueberwiegend Kundenurteile und sagen fuer sich
- * genommen nichts ueber die Arbeitskultur.
+ * Google-Bewertungen sind ueberwiegend Kundenurteile und sagen für sich
+ * genommen nichts über die Arbeitskultur.
  */
 export const ReviewSourceKindSchema = z.enum([
   "employee_reviews", "customer_reviews", "employer_statement",
@@ -117,7 +117,7 @@ export const ReviewAggregateSchema = z.object({
   ratingAverage: z.number().nullable(),
   ratingScaleMax: z.number().default(5),
   sampleSize: z.number().int().nonnegative().nullable(),
-  /** Fuer welchen Standort und welche Rollen die Stichprobe gilt. */
+  /** Für welchen Standort und welche Rollen die Stichprobe gilt. */
   locationScope: z.string().nullable(),
   roleScope: z.string().nullable(),
   periodFrom: z.date().nullable(),

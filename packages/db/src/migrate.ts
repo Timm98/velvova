@@ -17,8 +17,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.join(here, "..", "drizzle");
 
 /**
- * Der Treiber fuehrt je Aufruf genau eine Anweisung aus. Auf ";" zu
- * trennen waere falsch - Semikolons stehen auch innerhalb von $$-Bloecken.
+ * Der Treiber führt je Aufruf genau eine Anweisung aus. Auf ";" zu
+ * trennen wäre falsch - Semikolons stehen auch innerhalb von $$-Blöcken.
  * Deshalb derselbe explizite Marker, den drizzle-kit ohnehin setzt.
  */
 function splitStatements(raw: string): string[] {
@@ -37,7 +37,7 @@ export async function runMigrations(db: Database): Promise<{ applied: string[]; 
   `);
 
   // Der generische Treibertyp kennt die Zeilenform nicht. Sie steht direkt
-  // ueber der Abfrage, deshalb ist die Angabe hier belegt und nicht geraten.
+  // über der Abfrage, deshalb ist die Angabe hier belegt und nicht geraten.
   const result = (await db.execute(sql`SELECT name FROM _migrations`)) as unknown as {
     rows: { name: string }[];
   };
@@ -59,7 +59,7 @@ export async function runMigrations(db: Database): Promise<{ applied: string[]; 
     applied.push(file);
   }
 
-  // RLS zuletzt, damit die Tabellen existieren. Idempotent, laeuft immer.
+  // RLS zuletzt, damit die Tabellen existieren. Idempotent, läuft immer.
   const rls = await readFile(path.join(here, "rls.sql"), "utf8");
   for (const statement of splitStatements(rls)) {
     await db.execute(sql.raw(statement));

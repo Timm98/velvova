@@ -8,10 +8,10 @@ import { requireUser } from "./auth";
 /**
  * Aktionen am Karriereprofil.
  *
- * Der Mensch entscheidet: bestaetigen, bearbeiten, ablehnen, loeschen.
- * Das ist keine Nebenfunktion, sondern der Kern - ohne Bestaetigung
- * zaehlt keine Aussage, und ohne Bestaetigung des Gesamtprofils gibt es
- * keine personalisierten Jobvorschlaege.
+ * Der Mensch entscheidet: bestätigen, bearbeiten, ablehnen, löschen.
+ * Das ist keine Nebenfunktion, sondern der Kern - ohne Bestätigung
+ * zählt keine Aussage, und ohne Bestätigung des Gesamtprofils gibt es
+ * keine personalisierten Jobvorschläge.
  */
 
 export async function confirmEvidence(evidenceId: string): Promise<void> {
@@ -30,8 +30,8 @@ export async function confirmEvidence(evidenceId: string): Promise<void> {
 export async function rejectEvidence(evidenceId: string): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
-  // Abgelehnt heisst: bleibt sichtbar, zaehlt aber nie wieder. Loeschen
-  // waere etwas anderes - und muss ausdruecklich gewaehlt werden.
+  // Abgelehnt heisst: bleibt sichtbar, zählt aber nie wieder. Löschen
+  // wäre etwas anderes - und muss ausdrücklich gewählt werden.
   await withUser(db, user.id, (tx) =>
     tx
       .update(schema.evidenceItems)
@@ -54,7 +54,7 @@ export async function editEvidence(evidenceId: string, statement: string): Promi
       .set({
         statement: trimmed,
         // Eine bearbeitete Aussage gilt als vom Menschen formuliert und
-        // damit als bestaetigt - er hat sie ja gerade selbst geschrieben.
+        // damit als bestätigt - er hat sie ja gerade selbst geschrieben.
         sourceType: "user_confirmed",
         userConfirmed: true,
         userRejected: false,
@@ -113,8 +113,8 @@ export async function confirmRoleCluster(clusterId: string, confirmed: boolean):
 }
 
 /**
- * Das Profil bestaetigen. Erst danach erscheinen personalisierte
- * Jobvorschlaege - vorher waeren es Zufallstreffer.
+ * Das Profil bestätigen. Erst danach erscheinen personalisierte
+ * Jobvorschläge - vorher wären es Zufallstreffer.
  */
 export async function confirmProfile(): Promise<void> {
   const user = await requireUser();
@@ -147,7 +147,7 @@ export async function confirmProfile(): Promise<void> {
 
 /**
  * Abdeckung neu bestimmen. Sie misst, wie viel des Profils belegt ist -
- * und fliesst ausschliesslich in die Confidence, nie in den Fit.
+ * und fliesst ausschließlich in die Confidence, nie in den Fit.
  */
 export async function recomputeCoverage(userId: string): Promise<number> {
   const db = await getDb();
@@ -160,7 +160,7 @@ export async function recomputeCoverage(userId: string): Promise<number> {
 
     const confirmed = evidence.filter((e) => e.userConfirmed && !e.userRejected);
 
-    // Abdeckung ueber die Bereiche, die ein tragfaehiges Profil braucht.
+    // Abdeckung über die Bereiche, die ein tragfaehiges Profil braucht.
     const areas = [
       "experience_episodes", "tasks_and_energy", "hard_constraints",
       "location_and_logistics", "work_style_and_environment",

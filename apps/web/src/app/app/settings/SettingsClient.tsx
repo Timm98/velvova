@@ -61,7 +61,7 @@ export function ConsentToggles({
   );
 }
 
-/** Angemeldete Geraete. Jede Sitzung einzeln beendbar. */
+/** Angemeldete Geräte. Jede Sitzung einzeln beendbar. */
 export function DeviceList({
   sessions,
 }: {
@@ -83,7 +83,7 @@ export function DeviceList({
         >
           <span style={{ fontSize: "var(--text-sm)" }}>
             <strong>{s.deviceLabel}</strong>
-            {s.isCurrent && <Badge tone="positive"> dieses Geraet</Badge>}
+            {s.isCurrent && <Badge tone="positive"> dieses Gerät</Badge>}
             <br />
             <span style={{ color: "var(--text-muted)" }}>
               zuletzt aktiv {new Intl.DateTimeFormat("de-DE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(s.lastSeenAt))}
@@ -153,10 +153,10 @@ export function ExportButton({ label }: { label: string }) {
 }
 
 /**
- * Kontoloeschung.
+ * Kontolöschung.
  *
- * Bewusst mit Tippbestaetigung statt mit einem Knopf. Und die Beschreibung
- * sagt, was tatsaechlich passiert - nicht mehr.
+ * Bewusst mit Tippbestätigung statt mit einem Knopf. Und die Beschreibung
+ * sagt, was tatsächlich passiert - nicht mehr.
  */
 export function DangerZone({ title, body }: { title: string; body: string }) {
   const [confirmation, setConfirmation] = useState("");
@@ -169,15 +169,15 @@ export function DangerZone({ title, body }: { title: string; body: string }) {
         <div>
           <h3 style={{ fontSize: "var(--text-base)", color: "var(--critical)" }}>{title}</h3>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: "var(--space-2)", maxWidth: "var(--measure)" }}>
-            {body} Deine Inhalte werden sofort unzugaenglich; die endgueltige Entfernung erfolgt
-            durch einen nachgelagerten Loeschlauf. Diesen Ablauf nennen wir dir, statt
+            {body} Deine Inhalte werden sofort unzugänglich; die endgueltige Entfernung erfolgt
+            durch einen nachgelagerten Löschlauf. Diesen Ablauf nennen wir dir, statt
             &bdquo;sofort und unwiederbringlich&ldquo; zu behaupten.
           </p>
         </div>
 
         <div style={{ display: "grid", gap: "var(--space-2)", maxWidth: 320 }}>
           <label htmlFor="delete-confirm" style={{ fontSize: "var(--text-sm)" }}>
-            Tippe <strong>loeschen</strong> zur Bestaetigung
+            Tippe <strong>löschen</strong> zur Bestätigung
           </label>
           <input
             id="delete-confirm"
@@ -204,7 +204,7 @@ export function DangerZone({ title, body }: { title: string; body: string }) {
         <div>
           <button
             type="button"
-            disabled={pending || confirmation.trim().toLowerCase() !== "loeschen"}
+            disabled={pending || confirmation.trim().toLowerCase() !== "löschen"}
             onClick={() =>
               startTransition(async () => {
                 const r = await deleteAccount(confirmation);
@@ -213,8 +213,8 @@ export function DangerZone({ title, body }: { title: string; body: string }) {
             }
             style={{
               ...buttonStyle("danger"),
-              opacity: confirmation.trim().toLowerCase() === "loeschen" ? 1 : 0.5,
-              cursor: confirmation.trim().toLowerCase() === "loeschen" ? "pointer" : "not-allowed",
+              opacity: confirmation.trim().toLowerCase() === "löschen" ? 1 : 0.5,
+              cursor: confirmation.trim().toLowerCase() === "löschen" ? "pointer" : "not-allowed",
             }}
           >
             {pending ? "…" : title}

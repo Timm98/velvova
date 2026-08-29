@@ -13,13 +13,13 @@ import {
  * Deterministischer lokaler Provider.
  *
  * Er ist kein Platzhalter, sondern der Standardweg: ohne konfigurierten
- * Schluessel laeuft das gesamte Produkt hierueber. Das hat zwei Gruende.
+ * Schlüssel läuft das gesamte Produkt hierueber. Das hat zwei Gründe.
  * Erstens muss ein neuer Entwickler ohne Zugangsdaten arbeiten koennen.
  * Zweitens brauchen Tests reproduzierbare Antworten - ein echtes Modell
  * liefert bei gleichem Eingang nicht zweimal dasselbe.
  *
  * Er gibt sich nie als echtes Modell aus: `name` ist "mock", und die
- * Oberflaeche zeigt das an.
+ * Oberfläche zeigt das an.
  */
 
 function seededNumber(input: string): number {
@@ -36,7 +36,7 @@ function pick<T>(items: readonly T[], seed: string): T {
  * Bewusst schlicht gehalten: es geht um Struktur, nicht um Inhalt.
  */
 function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
-  // Zod 4 stellt die interne Form ueber _zod.def bereit.
+  // Zod 4 stellt die interne Form über _zod.def bereit.
   const walk = (s: unknown, path: string): unknown => {
     const def = (s as { _zod?: { def?: Record<string, unknown> } })?._zod?.def;
     const type = def?.type as string | undefined;
@@ -51,7 +51,7 @@ function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
       case "array":
         return [walk(def!.element, `${path}[0]`), walk(def!.element, `${path}[1]`)];
       case "string":
-        return `Demo-Antwort fuer ${path.split(".").pop() ?? "Feld"}`;
+        return `Demo-Antwort für ${path.split(".").pop() ?? "Feld"}`;
       case "number":
         return Math.round(seededNumber(path + seed) * 100) / 100;
       case "boolean":
@@ -83,10 +83,10 @@ function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
   const raw = walk(schema, "root");
   const parsed = schema.safeParse(raw);
   if (parsed.success) return parsed.data;
-  // Schlaegt die Synthese fehl, ist das ein Fehler im Schema oder hier -
+  // Schlägt die Synthese fehl, ist das ein Fehler im Schema oder hier -
   // und soll laut auffallen, nicht stillschweigend etwas Falsches liefern.
   throw new Error(
-    `Der Demo-Anbieter konnte kein gueltiges Objekt fuer "${(schema as { description?: string }).description ?? "Schema"}" ` +
+    `Der Demo-Anbieter konnte kein gueltiges Objekt für "${(schema as { description?: string }).description ?? "Schema"}" ` +
       `erzeugen: ${parsed.error.message}`,
   );
 }
@@ -94,31 +94,31 @@ function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
 /** Antworten, die zum jeweiligen Interviewthema passen. */
 const STAGE_REPLIES: Record<string, string[]> = {
   consent_and_goal: [
-    "Bevor ich dir Jobs zeige, moechte ich verstehen, was du wirklich kannst, was dir Energie gibt und welche Bedingungen du brauchst. Was soll sich durch deine naechste berufliche Entscheidung konkret veraendern?",
+    "Bevor ich dir Jobs zeige, möchte ich verstehen, was du wirklich kannst, was dir Energie gibt und welche Bedingungen du brauchst. Was soll sich durch deine naechste berufliche Entscheidung konkret verändern?",
   ],
   current_situation: [
-    "Danke. Erzaehl mir kurz, wo du gerade stehst: Was machst du im Moment, und seit wann?",
+    "Danke. Erzähl mir kurz, wo du gerade stehst: Was machst du im Moment, und seit wann?",
   ],
   experience_episodes: [
-    "Erzaehl von einer Aufgabe, bei der du die Zeit vergessen hast. Was hast du dabei tatsaechlich getan?",
-    "Welches Problem hast du zuletzt selbststaendig geloest? Mich interessiert vor allem, welche Schritte du gewaehlt hast.",
+    "Erzähl von einer Aufgabe, bei der du die Zeit vergessen hast. Was hast du dabei tatsächlich getan?",
+    "Welches Problem hast du zuletzt selbststaendig geloest? Mich interessiert vor allem, welche Schritte du gewählt hast.",
   ],
   tasks_and_energy: [
-    "Welche Taetigkeit faellt dir leicht, die andere haeufig schwierig finden? Und gibt es dafuer ein konkretes Beispiel?",
+    "Welche Tätigkeit fällt dir leicht, die andere haeufig schwierig finden? Und gibt es dafuer ein konkretes Beispiel?",
     "Welche Aufgaben kannst du gut, obwohl sie dich viel Energie kosten?",
   ],
   hard_constraints: [
-    "Jetzt zu den Grenzen: Welche drei Bedingungen sind fuer deinen naechsten Job nicht verhandelbar?",
+    "Jetzt zu den Grenzen: Welche drei Bedingungen sind für deinen naechsten Job nicht verhandelbar?",
   ],
   location_and_logistics: [
-    "Welche Standorte, Pendelzeiten und Remote-Anteile kommen fuer dich in Frage?",
+    "Welche Standorte, Pendelzeiten und Remote-Anteile kommen für dich in Frage?",
   ],
 };
 
 const GENERIC_REPLIES = [
   "Verstanden. Kannst du mir dazu ein konkretes Beispiel nennen - was genau war dein Anteil daran?",
   "Das notiere ich als deine Angabe. Was ist daraus am Ende geworden?",
-  "Danke. Damit ich es richtig einordne: Wobei bitten dich andere regelmaessig um Hilfe?",
+  "Danke. Damit ich es richtig einordne: Wobei bitten dich andere regelmäßig um Hilfe?",
 ];
 
 export class MockAiProvider implements AiProvider {
@@ -132,7 +132,7 @@ export class MockAiProvider implements AiProvider {
     const pool = STAGE_REPLIES[stage] ?? GENERIC_REPLIES;
     const reply = pick(pool, last + stage);
 
-    // In Woertern ausgeben, damit die Oberflaeche denselben Streaming-Weg
+    // In Woertern ausgeben, damit die Oberfläche denselben Streaming-Weg
     // nutzt wie bei einem echten Anbieter.
     for (const word of reply.split(" ")) {
       yield word + " ";
@@ -159,9 +159,9 @@ export class MockAiProvider implements AiProvider {
 
   /**
    * Deterministische Vektoren aus einem Hash. Sie tragen keine Semantik -
-   * aehnliche Texte liegen nicht beieinander. Fuer die Demo reicht das,
-   * fuer echte semantische Suche braucht es einen richtigen Anbieter.
-   * Genau das steht auch in der Oberflaeche.
+   * aehnliche Texte liegen nicht beieinander. Für die Demo reicht das,
+   * für echte semantische Suche braucht es einen richtigen Anbieter.
+   * Genau das steht auch in der Oberfläche.
    */
   async embed(texts: string[]): Promise<number[][]> {
     return texts.map((t) => {

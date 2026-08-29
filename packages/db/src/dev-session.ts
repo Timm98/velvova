@@ -5,11 +5,15 @@ import { getDbHandle } from "./client.ts";
 import * as s from "./schema/index.ts";
 
 /**
- * Erzeugt eine Anmeldung fuer die Demo-Persona und gibt das Cookie aus.
+ * Erzeugt eine Anmeldung für die Demo-Persona und gibt das Cookie aus.
  *
- * Nur fuer die lokale Entwicklung gedacht - gegen eine Produktionsdatenbank
- * verweigert das Skript den Dienst. Es ersetzt keine Anmeldung im Browser,
- * sondern erspart sie beim Testen und in Rauchtests.
+ * WICHTIG: PGlite ist eine eingebettete Einzelprozess-Datenbank. Läuft
+ * der Entwicklungsserver bereits, schreibt dieses Skript in eine ANDERE
+ * Instanz - das Cookie wäre dort unbekannt. Für diesen Fall gibt es
+ * den Endpunkt /api/dev/login, der die Sitzung im Serverprozess anlegt.
+ *
+ * Dieses Skript ist damit für den Fall gedacht, dass kein Server läuft:
+ * Wartung, Prüfungen, Skripte. Nur lokal, nur mit PGlite.
  */
 
 const cfg = loadRuntimeConfig();
@@ -17,7 +21,7 @@ const cfg = loadRuntimeConfig();
 if (cfg.nodeEnv === "production" || cfg.db.driver !== "pglite") {
   console.error(
     "Abbruch: dieses Skript legt eine Sitzung ohne Passwortpruefung an und " +
-      "ist ausschliesslich fuer die lokale Entwicklung mit PGlite gedacht.",
+      "ist ausschließlich für die lokale Entwicklung mit PGlite gedacht.",
   );
   process.exit(1);
 }
@@ -27,7 +31,7 @@ const { db, close } = await getDbHandle(cfg);
 
 const [user] = await db.select().from(s.users).where(eq(s.users.email, email)).limit(1);
 if (!user) {
-  console.error(`Kein Konto zu "${email}". Zuerst "pnpm db:seed" ausfuehren.`);
+  console.error(`Kein Konto zu "${email}". Zuerst "pnpm db:seed" ausführen.`);
   await close();
   process.exit(1);
 }

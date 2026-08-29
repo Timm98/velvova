@@ -5,17 +5,17 @@ import { MockAiProvider } from "./providers/mock.ts";
 /**
  * Anbieterauswahl.
  *
- * Grundsatz: ein Anbieter gilt nur als verfuegbar, wenn er wirklich
- * benutzbar ist. Wer AI_PROVIDER=anthropic setzt, aber keinen Schluessel
+ * Grundsatz: ein Anbieter gilt nur als verfügbar, wenn er wirklich
+ * benutzbar ist. Wer AI_PROVIDER=anthropic setzt, aber keinen Schlüssel
  * hinterlegt, bekommt den lokalen Anbieter und einen Hinweis - nicht
  * einen Fehler beim ersten Klick und nicht die Illusion echten Betriebs.
  */
 
 export interface ProviderSelection {
   provider: AiProvider;
-  /** Wurde der gewuenschte Anbieter tatsaechlich verwendet? */
+  /** Wurde der gewuenschte Anbieter tatsächlich verwendet? */
   usingRequested: boolean;
-  /** Verstaendlicher Grund, falls nicht. Wird in der Oberflaeche gezeigt. */
+  /** Verständlicher Grund, falls nicht. Wird in der Oberfläche gezeigt. */
   fallbackReason: string | null;
 }
 
@@ -30,7 +30,7 @@ export async function selectProvider(cfg: RuntimeConfig = loadRuntimeConfig()): 
         provider: new MockAiProvider(),
         usingRequested: false,
         fallbackReason:
-          "Es ist kein Zugangsschluessel hinterlegt. Es laeuft der lokale Demo-Anbieter; " +
+          "Es ist kein Zugangsschlüssel hinterlegt. Es läuft der lokale Demo-Anbieter; " +
           "die Antworten sind Beispiele ohne inhaltliche Aussage.",
       };
       return cached;
@@ -54,7 +54,7 @@ export async function selectProvider(cfg: RuntimeConfig = loadRuntimeConfig()): 
   return cached;
 }
 
-/** Fuer Tests. */
+/** Für Tests. */
 export function resetProviderCache(): void {
   cached = null;
 }

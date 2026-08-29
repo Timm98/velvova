@@ -7,12 +7,12 @@ import * as s from "./schema/index.ts";
 
 /**
  * Row Level Security ist eine Sicherheitsbehauptung. Behauptungen dieser
- * Art gehoeren getestet, nicht dokumentiert: hier laeuft echtes Postgres
- * (PGlite), es werden zwei Nutzer angelegt, und es wird geprueft, dass
+ * Art gehoeren getestet, nicht dokumentiert: hier läuft echtes Postgres
+ * (PGlite), es werden zwei Nutzer angelegt, und es wird geprüft, dass
  * keiner die Daten des anderen sieht.
  *
  * Der erste Anlauf dieses Tests ist fehlgeschlagen, und zwar zu Recht:
- * eine Verbindung als Superuser umgeht RLS vollstaendig. Erst die eigene,
+ * eine Verbindung als Superuser umgeht RLS vollständig. Erst die eigene,
  * eingeschraenkte Anwendungsrolle macht die Richtlinien wirksam.
  */
 
@@ -39,7 +39,7 @@ afterAll(async () => {
 });
 
 describe("Row Level Security", () => {
-  it("laesst jeden nur die eigene Evidenz sehen", async () => {
+  it("lässt jeden nur die eigene Evidenz sehen", async () => {
     await withUser(db, userA, (tx) =>
       tx.insert(s.evidenceItems).values({
         userId: userA, type: "skill", statement: "Geheimnis von A",
@@ -73,7 +73,7 @@ describe("Row Level Security", () => {
     ).rejects.toThrow();
   });
 
-  it("verhindert das Loeschen fremder Daten", async () => {
+  it("verhindert das Löschen fremder Daten", async () => {
     await withUser(db, userB, (tx) => tx.delete(s.evidenceItems));
     const stillThere = await withUser(db, userA, (tx) => tx.select().from(s.evidenceItems));
     expect(stillThere).toHaveLength(1);
@@ -87,7 +87,7 @@ describe("Row Level Security", () => {
     expect(rows).toHaveLength(0);
   });
 
-  it("laesst Stellendaten offen lesbar - sie sind nicht personenbezogen", async () => {
+  it("lässt Stellendaten offen lesbar - sie sind nicht personenbezogen", async () => {
     const rows = await db.transaction(async (tx) => {
       await tx.execute(sql`SET LOCAL ROLE paycheck_app`);
       return tx.select().from(s.jobSources);
@@ -95,22 +95,22 @@ describe("Row Level Security", () => {
     expect(Array.isArray(rows)).toBe(true);
   });
 
-  it("laesst die Rolle nach der Transaktion nicht bestehen", async () => {
+  it("lässt die Rolle nach der Transaktion nicht bestehen", async () => {
     await withUser(db, userA, async (tx) => tx.select().from(s.evidenceItems));
-    const who = await db.execute(sql`SELECT current_user AS u`);
-    expect((who.rows[0] as { u: string }).u).not.toBe("paycheck_app");
+    const who = (await db.execute(sql`SELECT current_user AS u`)) as unknown as { rows: { u: string }[] };
+    expect(who.rows[0]!.u).not.toBe("paycheck_app");
   });
 });
 
 describe("Migration", () => {
   it("legt alle erwarteten Tabellen an", async () => {
-    const r = await db.execute(sql`
+    const r = (await db.execute(sql`
       SELECT count(*)::int AS n FROM information_schema.tables WHERE table_schema = 'public'
-    `);
-    expect((r.rows[0] as { n: number }).n).toBeGreaterThanOrEqual(50);
+    `)) as unknown as { rows: { n: number }[] };
+    expect(r.rows[0]!.n).toBeGreaterThanOrEqual(50);
   });
 
-  it("laeuft ein zweites Mal, ohne etwas doppelt anzulegen", async () => {
+  it("läuft ein zweites Mal, ohne etwas doppelt anzulegen", async () => {
     const second = await runMigrations(db);
     expect(second.applied).toHaveLength(0);
   });

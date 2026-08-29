@@ -17,7 +17,7 @@ const CONSENT_TEXT: Record<string, { title: string; body: string }> = {
   },
   document_analysis: {
     title: "Unterlagen auswerten",
-    body: "Text aus hochgeladenen Dokumenten wird ausgewertet, um das Profil vorzubefuellen.",
+    body: "Text aus hochgeladenen Dokumenten wird ausgewertet, um das Profil vorzubefüllen.",
   },
   voice_input: {
     title: "Spracheingabe",
@@ -29,23 +29,23 @@ const CONSENT_TEXT: Record<string, { title: string; body: string }> = {
   },
   external_ai_processing: {
     title: "Externer KI-Anbieter",
-    body: "Texte werden zur Analyse an einen externen Anbieter uebermittelt. Direkte Identifikatoren werden vorher entfernt.",
+    body: "Texte werden zur Analyse an einen externen Anbieter übermittelt. Direkte Identifikatoren werden vorher entfernt.",
   },
   model_training: {
     title: "Training von Modellen",
-    body: "Standardmaessig aus. Ohne diese ausdrueckliche Zustimmung werden deine Daten nicht fuer Modelltraining verwendet.",
+    body: "Standardmäßig aus. Ohne diese ausdrueckliche Zustimmung werden deine Daten nicht für Modelltraining verwendet.",
   },
   partner_sharing: {
     title: "Weitergabe an Partner",
-    body: "Standardmaessig aus. Ohne diese Zustimmung sehen institutionelle Partner ausschliesslich aggregierte Zahlen, nie dein Profil.",
+    body: "Standardmäßig aus. Ohne diese Zustimmung sehen institutionelle Partner ausschließlich aggregierte Zahlen, nie dein Profil.",
   },
 };
 
 /**
  * Einstellungen und Privacy Center.
  *
- * Der wichtigste Teil ist der untere: einsehen, exportieren, loeschen -
- * und zwar so, dass es tatsaechlich funktioniert.
+ * Der wichtigste Teil ist der untere: einsehen, exportieren, löschen -
+ * und zwar so, dass es tatsächlich funktioniert.
  */
 export default async function SettingsPage() {
   const user = await requireUser();
@@ -119,7 +119,7 @@ export default async function SettingsPage() {
 
               <div style={{ display: "grid", gap: "var(--space-2)" }}>
                 <label htmlFor="maxCommuteMinutes" style={{ fontSize: "var(--text-sm)", fontWeight: 500 }}>
-                  Hoechste Pendelzeit (Minuten)
+                  Höchste Pendelzeit (Minuten)
                 </label>
                 <input
                   id="maxCommuteMinutes"
@@ -199,7 +199,7 @@ export default async function SettingsPage() {
             what="Objektspeicher"
             detail={
               integrations.storage === "local"
-                ? "Hochgeladene Dateien liegen lokal auf diesem Geraet, nicht in einer Cloud."
+                ? "Hochgeladene Dateien liegen lokal auf diesem Gerät, nicht in einer Cloud."
                 : "S3-kompatibler Speicher verbunden."
             }
           />
@@ -217,7 +217,7 @@ export default async function SettingsPage() {
         </h2>
         <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-5)", maxWidth: "var(--measure)" }}>
           Eine eigene Datenbank bedeutet nicht automatisch, dass keine Daten einen externen Anbieter
-          erreichen. Hier steht, was tatsaechlich gilt.
+          erreichen. Hier steht, was tatsächlich gilt.
         </p>
 
         <Stack gap={5}>

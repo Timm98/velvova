@@ -27,24 +27,24 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 /**
  * Bringt Datenbank und Bewertungslogik zusammen.
  *
- * Die Berechnung laeuft bewusst bei jeder Anfrage neu, statt gespeicherte
- * Werte auszuliefern: aendert der Mensch eine Bedingung oder bestaetigt
- * eine Evidenz, muss sich das Ergebnis sofort aendern. Persistiert werden
- * die Ergebnisse zusaetzlich (Tabelle job_matches), damit ein Score spaeter
+ * Die Berechnung läuft bewusst bei jeder Anfrage neu, statt gespeicherte
+ * Werte auszuliefern: aendert der Mensch eine Bedingung oder bestätigt
+ * eine Evidenz, muss sich das Ergebnis sofort ändern. Persistiert werden
+ * die Ergebnisse zusätzlich (Tabelle job_matches), damit ein Score später
  * nachvollziehbar bleibt - nicht als Cache.
  */
 
 /**
- * Schaetzt Reisezeiten aus einer kleinen Tabelle. Ein Routendienst waere
+ * Schätzt Reisezeiten aus einer kleinen Tabelle. Ein Routendienst wäre
  * genauer, braucht aber einen Vertrag und schickt den Wohnort an Dritte.
- * Solange keiner verbunden ist, sagt die Oberflaeche "geschaetzt" - und
+ * Solange keiner verbunden ist, sagt die Oberfläche "geschätzt" - und
  * unbekannte Verbindungen liefern null, nicht eine erfundene Zahl.
  */
 const DISTANCE_MINUTES: Record<string, Record<string, number>> = {
-  Hamburg: { Hamburg: 25, Luebeck: 70, Kiel: 85, Bremen: 75, Hannover: 100, Berlin: 110, Muenchen: 380 },
-  Berlin: { Berlin: 30, Hamburg: 110, Leipzig: 75, Muenchen: 260 },
-  Muenchen: { Muenchen: 30, Augsburg: 45, Nuernberg: 70, Berlin: 260, Hamburg: 380 },
-  Koeln: { Koeln: 25, Duesseldorf: 35, Bonn: 30, Dortmund: 60 },
+  Hamburg: { Hamburg: 25, Lübeck: 70, Kiel: 85, Bremen: 75, Hannover: 100, Berlin: 110, München: 380 },
+  Berlin: { Berlin: 30, Hamburg: 110, Leipzig: 75, München: 260 },
+  München: { München: 30, Augsburg: 45, Nürnberg: 70, Berlin: 260, Hamburg: 380 },
+  Köln: { Köln: 25, Düsseldorf: 35, Bonn: 30, Dortmund: 60 },
 };
 
 export const commuteEstimator: CommuteEstimator = {
@@ -169,7 +169,7 @@ export async function loadProfileContext(userId: string): Promise<UserProfileCon
     const evidence = evidenceRows.map(rowToEvidence);
     const alive = evidence.filter((e) => !e.userRejected);
 
-    // Aus der Evidenz ableiten, was der Fit an Praeferenzen braucht.
+    // Aus der Evidenz ableiten, was der Fit an Präferenzen braucht.
     const byRef = (needle: string) =>
       alive.filter((e) => e.sourceRef?.includes(needle)).map((e) => e.statement);
 
@@ -183,7 +183,7 @@ export async function loadProfileContext(userId: string): Promise<UserProfileCon
     let constraints = EMPTY_CONSTRAINTS;
     if (constraintRow?.data) {
       const parsed = UserConstraintsSchema.safeParse(constraintRow.data);
-      // Ein ungueltiger Datensatz darf nicht dazu fuehren, dass Bedingungen
+      // Ein ungueltiger Datensatz darf nicht dazu führen, dass Bedingungen
       // stillschweigend wegfallen. Lieber die leere, sichere Fassung.
       if (parsed.success) constraints = parsed.data;
     }
@@ -227,7 +227,7 @@ export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Pro
   const reviewRows = await db.select().from(schema.reviewAggregates);
   const themeRows = await db.select().from(schema.reviewThemes);
 
-  // Reposts erkennen: gleiche Inhalte, frueher erfasst.
+  // Reposts erkennen: gleiche Inhalte, früher erfasst.
   const byHash = new Map<string, Date[]>();
   for (const { job } of jobRows) {
     const list = byHash.get(job.contentHash) ?? [];
@@ -363,7 +363,7 @@ export async function loadScoredJob(userId: string, jobId: string): Promise<Scor
 }
 
 /**
- * Schreibt das Ergebnis fort, damit ein spaeter angezeigter Wert erklaerbar
+ * Schreibt das Ergebnis fort, damit ein später angezeigter Wert erklärbar
  * bleibt - mitsamt der Fassung der Bewertungslogik, die ihn erzeugt hat.
  */
 export async function persistMatch(userId: string, scored: ScoredJob): Promise<void> {

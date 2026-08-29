@@ -10,8 +10,8 @@ import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
  * Das Studio.
  *
  * Links die Anforderungen und Belege, in der Mitte das Dokument, rechts
- * die Pruefung. Eine unbelegte Aussage sperrt die Freigabe - das steht
- * nicht als Warnung da, sondern der Knopf ist tatsaechlich aus.
+ * die Prüfung. Eine unbelegte Aussage sperrt die Freigabe - das steht
+ * nicht als Warnung da, sondern der Knopf ist tatsächlich aus.
  */
 
 type Labels = Record<
@@ -125,8 +125,8 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
             <Stack gap={3}>
               <h2 style={{ fontSize: "var(--text-base)" }}>{labels.yourEvidence}</h2>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                {confirmedEvidence.length} bestaetigt von {view.evidence.length} insgesamt. Nur
-                Bestaetigtes kann eine Aussage tragen.
+                {confirmedEvidence.length} bestätigt von {view.evidence.length} insgesamt. Nur
+                Bestätigtes kann eine Aussage tragen.
               </p>
               <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)" }}>
                 {confirmedEvidence.slice(0, 8).map((e) => (
@@ -227,21 +227,21 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                   onSave={(text) =>
                     startTransition(async () => {
                       await updateArtifact(active.id, text);
-                      setMessage({ tone: "ok", text: "Gespeichert. Die Freigabe wurde zurueckgesetzt." });
+                      setMessage({ tone: "ok", text: "Gespeichert. Die Freigabe wurde zurückgesetzt." });
                       router.refresh();
                     })
                   }
                 />
               ) : (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Noch kein Dokument. Waehl oben, was du erstellen moechtest.
+                  Noch kein Dokument. Wähl oben, was du erstellen moechtest.
                 </p>
               )}
             </Stack>
           </Card>
         </div>
 
-        {/* --- Rechts: Pruefung --- */}
+        {/* --- Rechts: Prüfung --- */}
         <aside style={{ display: "grid", gap: "var(--space-4)", alignContent: "start", minWidth: 0 }}>
           <Card>
             <Stack gap={3}>
@@ -249,7 +249,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
 
               {!active ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Sobald ein Dokument da ist, pruefe ich jede Aussage.
+                  Sobald ein Dokument da ist, prüfe ich jede Aussage.
                 </p>
               ) : active.claims.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
@@ -446,7 +446,7 @@ function ArtifactEditor({
         </button>
         {changed && (
           <span style={{ fontSize: "var(--text-xs)", color: "var(--caution)" }}>
-            Ungespeicherte Aenderung. Speichern setzt die Freigabe zurueck.
+            Ungespeicherte Änderung. Speichern setzt die Freigabe zurück.
           </span>
         )}
       </div>

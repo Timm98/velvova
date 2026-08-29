@@ -16,8 +16,8 @@ export const dynamic = "force-dynamic";
 /**
  * Dashboard.
  *
- * Ueber der Falz stehen hoechstens drei Dinge: der naechste sinnvolle
- * Schritt, die besten Moeglichkeiten, der Stand der Bewerbungen. Alles
+ * Ueber der Falz stehen höchstens drei Dinge: der naechste sinnvolle
+ * Schritt, die besten Möglichkeiten, der Stand der Bewerbungen. Alles
  * Weitere kommt darunter.
  *
  * Bewusst nicht enthalten: Streaks, Tagesziele, Countdown-Zaehler. Wer
@@ -61,20 +61,20 @@ export default async function DashboardPage() {
 
   const funnel = await diagnoseFunnel(user.id);
 
-  // Genau ein naechster Schritt. Die Reihenfolge ist die Rangfolge.
+  // Genau ein nächster Schritt. Die Reihenfolge ist die Rangfolge.
   const nextAction = !gate.unlocked
     ? {
         title: gate.hasAnySession
           ? `Dein Profil ist fast fertig — es fehlen noch ${gate.missingStages.length} Themen.`
           : `Lern ${brand.assistantName} kennen`,
         body: gate.reason,
-        cta: gate.hasAnySession ? "Gespraech fortsetzen" : "Gespraech beginnen",
+        cta: gate.hasAnySession ? "Gespräch fortsetzen" : "Gespräch beginnen",
         href: "/app/nina",
       }
     : reminders[0]
       ? {
           title: reminders[0].label,
-          body: `Faellig am ${new Intl.DateTimeFormat("de-DE").format(reminders[0].dueAt)}.`,
+          body: `Fällig am ${new Intl.DateTimeFormat("de-DE").format(reminders[0].dueAt)}.`,
           cta: "Vorbereiten",
           href: "/app/applications",
         }
@@ -87,17 +87,17 @@ export default async function DashboardPage() {
           }
         : {
             title: "Sieh dir deine Auswahl an",
-            body: "Dein Profil steht. Die Vorschlaege sind freigeschaltet.",
+            body: "Dein Profil steht. Die Vorschläge sind freigeschaltet.",
             cta: t("nav.jobs"),
             href: "/app/jobs",
           };
 
   return (
     <Stack gap={7}>
-      {/* --- 1. Naechster Schritt --- */}
-      <section aria-labelledby="naechster-schritt">
-        <h2 id="naechster-schritt" style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--space-3)" }}>
-          Dein naechster Schritt
+      {/* --- 1. Nächster Schritt --- */}
+      <section aria-labelledby="nächster-schritt">
+        <h2 id="nächster-schritt" style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "var(--space-3)" }}>
+          Dein nächster Schritt
         </h2>
         <Card style={{ borderColor: "var(--assistant-border)", background: "var(--assistant-subtle)" }}>
           <Stack gap={4}>
@@ -117,11 +117,11 @@ export default async function DashboardPage() {
         </Card>
       </section>
 
-      {/* --- 2. Beste Moeglichkeiten --- */}
+      {/* --- 2. Beste Möglichkeiten --- */}
       <section aria-labelledby="moeglichkeiten">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-4)" }}>
           <h2 id="moeglichkeiten" style={{ fontSize: "var(--text-lg)" }}>
-            Deine besten aktuellen Moeglichkeiten
+            Deine besten aktuellen Möglichkeiten
           </h2>
           {gate.unlocked && (
             <Link href="/app/jobs" style={{ fontSize: "var(--text-sm)", color: "var(--accent-text)" }}>

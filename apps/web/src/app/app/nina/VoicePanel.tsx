@@ -6,14 +6,14 @@ import { Badge, buttonStyle } from "@/components/ui";
 /**
  * Sprachmodus.
  *
- * Zwei Wege stehen zur Verfuegung, und beide werden ehrlich benannt:
+ * Zwei Wege stehen zur Verfügung, und beide werden ehrlich benannt:
  * die Spracherkennung des Browsers, sofern vorhanden, oder gar keine.
  * Ein serverseitiger Anbieter ist vorgesehen, aber nicht verbunden -
  * das steht dann auch da, statt einen Knopf anzubieten, der nichts tut.
  *
- * Ausdruecklich nicht enthalten und auch nicht geplant: Auswertung von
+ * Ausdrücklich nicht enthalten und auch nicht geplant: Auswertung von
  * Stimme, Betonung, Akzent oder Emotion. Aus einer Stimme wird hier
- * ausschliesslich Text.
+ * ausschließlich Text.
  */
 
 type SpeechRecognitionLike = {
@@ -128,7 +128,7 @@ export function VoicePanel({
         }}
       >
         <strong style={{ display: "block", marginBottom: "var(--space-2)" }}>
-          Sprachmodus nicht verfuegbar
+          Sprachmodus nicht verfügbar
         </strong>
         {labels.voiceUnavailable} Dein Browser bietet ausserdem keine eigene Spracherkennung an.
       </div>
@@ -225,7 +225,7 @@ export function VoicePanel({
       </div>
 
       <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textAlign: "center", maxWidth: "48ch" }}>
-        Aus deiner Stimme wird ausschliesslich Text. Es findet keine Auswertung von Betonung,
+        Aus deiner Stimme wird ausschließlich Text. Es findet keine Auswertung von Betonung,
         Akzent oder Stimmung statt.
       </p>
     </div>

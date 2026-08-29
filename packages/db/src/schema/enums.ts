@@ -1,6 +1,6 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-/** Aufzaehlungen der Datenbank. Spiegeln die Typen aus @paycheck/domain. */
+/** Aufzählungen der Datenbank. Spiegeln die Typen aus @paycheck/domain. */
 
 export const localeEnum = pgEnum("locale", ["de", "en"]);
 export const userRoleEnum = pgEnum("user_role", ["candidate", "operator", "admin"]);

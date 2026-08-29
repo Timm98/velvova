@@ -5,17 +5,17 @@ import { z } from "zod";
  *
  * Der Kern des Produkts. Nicht der Chatverlauf ist die Wahrheit, sondern
  * eine Menge einzeln pruefbarer Aussagen mit Herkunft, Sicherheit und
- * ausdruecklicher Nutzerbestaetigung.
+ * ausdrücklicher Nutzerbestätigung.
  *
  * Zwei Regeln haengen technisch daran:
- *  1. Kein Bewerbungsclaim ohne verknuepfte, bestaetigte Evidenz.
+ *  1. Kein Bewerbungsclaim ohne verknuepfte, bestätigte Evidenz.
  *  2. Fehlende Daten senken die Confidence, nie den Fit.
  */
 
 /** Woher eine Aussage stammt. Bestimmt, wie stark sie zaehlen darf. */
 export const SourceTypeSchema = z.enum([
   "user_stated",      // Der Mensch hat es selbst gesagt.
-  "user_confirmed",   // Der Mensch hat eine Ableitung ausdruecklich bestaetigt.
+  "user_confirmed",   // Der Mensch hat eine Ableitung ausdrücklich bestätigt.
   "document_extract", // Aus Lebenslauf oder Nachweis gelesen, noch unbestaetigt.
   "ai_hypothesis",    // Vermutung der Assistenz. Nie als Tatsache darstellen.
   "external_source",  // Markt-, Taxonomie- oder Unternehmensdaten.
@@ -37,7 +37,7 @@ export const EvidenceRelationSchema = z.enum([
 export type EvidenceRelation = z.infer<typeof EvidenceRelationSchema>;
 
 /**
- * Wie schutzbeduerftig der Inhalt ist. Steuert Feldverschluesselung,
+ * Wie schutzbedürftig der Inhalt ist. Steuert Feldverschlüsselung,
  * Weitergabe an externe KI-Provider und Aufbewahrung.
  */
 export const SensitivitySchema = z.enum(["low", "normal", "high"]);
@@ -61,9 +61,9 @@ export const EvidenceItemSchema = z.object({
   sourceRef: z.string().nullable(),
   /** 0..1. Wie sicher ist die Aussage selbst - nicht wie gut sie ist. */
   confidence: z.number().min(0).max(1),
-  /** Nur bestaetigte Evidenz darf einen Bewerbungsclaim tragen. */
+  /** Nur bestätigte Evidenz darf einen Bewerbungsclaim tragen. */
   userConfirmed: z.boolean(),
-  /** Vom Menschen ausdruecklich abgelehnt. Bleibt sichtbar, zaehlt nie. */
+  /** Vom Menschen ausdrücklich abgelehnt. Bleibt sichtbar, zählt nie. */
   userRejected: z.boolean().default(false),
   sensitivityLevel: SensitivitySchema.default("normal"),
   retentionClass: RetentionClassSchema.default("profile"),
@@ -90,7 +90,7 @@ export function isConfirmedFact(item: EvidenceItem): boolean {
   return item.userConfirmed && item.sourceType !== "ai_hypothesis";
 }
 
-/** Aussagen, die noch Bestaetigung brauchen, bevor sie irgendwo auftauchen. */
+/** Aussagen, die noch Bestätigung brauchen, bevor sie irgendwo auftauchen. */
 export function isOpenHypothesis(item: EvidenceItem): boolean {
   if (item.deletedAt !== null || item.userRejected) return false;
   return !item.userConfirmed;

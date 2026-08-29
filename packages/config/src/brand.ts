@@ -1,8 +1,8 @@
 import { currentEnv } from "./env.ts";
 
 /**
- * Marke und Assistenzname. Beide Namen sind vorlaeufig und koennen sich
- * aendern, deshalb steht hier die einzige Quelle der Wahrheit. Kein
+ * Marke und Assistenzname. Beide Namen sind vorläufig und koennen sich
+ * ändern, deshalb steht hier die einzige Quelle der Wahrheit. Kein
  * anderer Teil des Codes darf "Paycheck" oder "Nina" hart schreiben.
  */
 
@@ -11,7 +11,7 @@ export interface BrandConfig {
   readonly name: string;
   /** Name der Karriereassistenz. */
   readonly assistantName: string;
-  /** Kurzform fuer enge Stellen wie das Favicon-Wort oder Mobile-Header. */
+  /** Kurzform für enge Stellen wie das Favicon-Wort oder Mobile-Header. */
   readonly shortName: string;
   /** Ein Satz, der das Produkt beschreibt. Wird in Metadaten verwendet. */
   readonly tagline: { de: string; en: string };

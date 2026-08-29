@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
  * andere Datenbank an - ein Fehler, der schwer zu bemerken ist.
  *
  * Vorrang hat PAYCHECK_REPO_ROOT. Das ist kein Umweg: der Bundler kann
- * einen aufgeloesten Pfad nicht statisch nachvollziehen und wuerde sonst
+ * einen aufgeloesten Pfad nicht statisch nachvollziehen und würde sonst
  * das gesamte Projekt in die Ausgabe ziehen.
  */
 
@@ -39,7 +39,7 @@ export function repoRoot(): string {
   return cachedRoot;
 }
 
-/** Loest einen Pfad gegen die Repo-Wurzel auf und legt ihn bei Bedarf an. */
+/** Löst einen Pfad gegen die Repo-Wurzel auf und legt ihn bei Bedarf an. */
 export function resolveDataDir(configured: string): string {
   const abs = path.isAbsolute(configured)
     ? configured

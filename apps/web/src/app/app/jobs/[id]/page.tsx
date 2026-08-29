@@ -33,17 +33,17 @@ const SOURCE_KIND_LABEL: Record<string, string> = {
   employer_statement: "Angabe des Arbeitgebers",
   official_registry: "Offizielles Register",
   journalistic: "Journalistische Quelle",
-  regulatory: "Behoerdliche Quelle",
+  regulatory: "Behördliche Quelle",
   user_report: "Hinweis von Nutzenden",
 };
 
 /**
  * Job Intelligence.
  *
- * Diese Seite ist ausdruecklich keine kopierte Stellenanzeige. Sie
+ * Diese Seite ist ausdrücklich keine kopierte Stellenanzeige. Sie
  * beantwortet vier Fragen, die eine Anzeige nicht beantwortet: passt das
  * zu mir und wie sicher ist das, wie gut ist die Stelle als Arbeitsplatz,
- * wie veraendern sich die Aufgaben, und wie vertrauenswuerdig ist die
+ * wie verändern sich die Aufgaben, und wie vertrauenswuerdig ist die
  * Anzeige selbst.
  */
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -113,7 +113,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </Stack>
       </Card>
 
-      {/* --- Die fuenf Bewertungen, getrennt --- */}
+      {/* --- Die fünf Bewertungen, getrennt --- */}
       <Card>
         <div className="scroll-x" style={{ display: "flex", gap: "var(--space-7)", paddingBottom: 4 }}>
           <FitDisplay fit={fit} t={t} />
@@ -124,7 +124,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </div>
         {confidence.reducedBy.length > 0 && (
           <p style={{ marginTop: "var(--space-4)", fontSize: "var(--text-sm)", color: "var(--text-secondary)", borderTop: "1px solid var(--border-subtle)", paddingTop: "var(--space-3)" }}>
-            <strong>Warum die Sicherheit nicht hoeher ist: </strong>
+            <strong>Warum die Sicherheit nicht höher ist: </strong>
             {confidence.reducedBy.join(" ")}
           </p>
         )}
@@ -141,7 +141,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         }}
       />
 
-      {/* --- Ueberblick --- */}
+      {/* --- Überblick --- */}
       <section aria-labelledby="ueberblick">
         <h2 id="ueberblick" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
           {t("jobDetail.tabOverview")}
@@ -166,13 +166,13 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
               <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
                 Die Anzeige beschreibt keine konkreten Aufgaben. Das ist der wichtigste Punkt,
-                den du im Erstgespraech klaeren solltest — ohne Aufgaben laesst sich weder Passung
+                den du im Erstgespräch klären solltest — ohne Aufgaben lässt sich weder Passung
                 noch Entwicklung einschaetzen.
               </p>
             </Card>
           )}
 
-          <Disclosure summary="Vollstaendige Stellenbeschreibung">
+          <Disclosure summary="Vollständige Stellenbeschreibung">
             <p style={{ whiteSpace: "pre-wrap", fontSize: "var(--text-sm)", lineHeight: 1.7, color: "var(--text-secondary)" }}>
               {job.description}
             </p>
@@ -232,7 +232,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {/* Harte Bedingungen einzeln */}
           <Card>
             <Stack gap={4}>
-              <h3 style={{ fontSize: "var(--text-base)" }}>Deine Bedingungen, einzeln geprueft</h3>
+              <h3 style={{ fontSize: "var(--text-base)" }}>Deine Bedingungen, einzeln geprüft</h3>
               <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
                 {constraints.checks.map((c) => (
                   <li key={c.key} style={{ display: "flex", gap: "var(--space-3)", alignItems: "flex-start" }}>
@@ -240,7 +240,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                       <Badge
                         tone={c.verdict === "eligible" ? "positive" : c.verdict === "blocked" ? "critical" : "neutral"}
                       >
-                        {c.verdict === "eligible" ? "erfuellt" : c.verdict === "blocked" ? "verletzt" : "unbekannt"}
+                        {c.verdict === "eligible" ? "erfüllt" : c.verdict === "blocked" ? "verletzt" : "unbekannt"}
                       </Badge>
                     </span>
                     <span style={{ fontSize: "var(--text-sm)" }}>
@@ -254,7 +254,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </Stack>
       </section>
 
-      {/* --- Jobqualitaet --- */}
+      {/* --- Jobqualität --- */}
       <section aria-labelledby="qualitaet">
         <h2 id="qualitaet" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
           {t("jobDetail.tabQuality")}
@@ -263,7 +263,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {jobQuality.insufficientData ? (
             <Stack gap={3}>
               <p style={{ color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
-                Die Jobqualitaet laesst sich hier nicht ausreichend beurteilen. Das ist ausdruecklich
+                Die Jobqualität lässt sich hier nicht ausreichend beurteilen. Das ist ausdrücklich
                 <strong> kein schlechtes Ergebnis</strong> — es liegen schlicht zu wenige belastbare
                 Angaben vor.
               </p>
@@ -286,7 +286,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <Stack gap={4}>
               <p style={{ color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
                 Bewertet werden die Aufgaben dieser Rolle, nicht der Berufstitel. Ob sich etwas
-                aendert, haengt daran, woraus die Arbeit tatsaechlich besteht — nicht daran, wie
+                aendert, hängt daran, woraus die Arbeit tatsächlich besteht — nicht daran, wie
                 sie heisst.{" "}
                 {aiTransition.dataAsOf
                   ? `Datenstand: ${new Intl.DateTimeFormat("de-DE").format(aiTransition.dataAsOf)}.`
@@ -295,7 +295,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
               {aiTransition.tasks.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Ohne beschriebene Aufgaben ist keine Aussage moeglich.
+                  Ohne beschriebene Aufgaben ist keine Aussage möglich.
                 </p>
               ) : (
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>
@@ -359,7 +359,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
               Zu diesem Unternehmen liegen keine externen Informationen vor. Das senkt die
-              Sicherheit der Einschaetzung, sagt aber nichts ueber das Unternehmen aus.
+              Sicherheit der Einschätzung, sagt aber nichts über das Unternehmen aus.
             </p>
           </Card>
         ) : (
@@ -389,8 +389,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
                     {r.sourceKind === "customer_reviews" && (
                       <p style={{ fontSize: "var(--text-sm)", color: "var(--caution)", background: "var(--caution-subtle)", padding: "var(--space-3)", borderRadius: "var(--radius-md)" }}>
-                        Das sind Kundenurteile ueber den Standort oder das Produkt. Sie sagen nichts
-                        ueber Arbeitsbedingungen und duerfen dafuer nicht herangezogen werden.
+                        Das sind Kundenurteile über den Standort oder das Produkt. Sie sagen nichts
+                        über Arbeitsbedingungen und duerfen dafuer nicht herangezogen werden.
                       </p>
                     )}
 
@@ -459,7 +459,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         )}
       </section>
 
-      {/* --- Fragen fuer das Gespraech --- */}
+      {/* --- Fragen für das Gespräch --- */}
       <section aria-labelledby="fragen">
         <h2 id="fragen" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
           {t("jobDetail.questionsToAsk")}
@@ -492,7 +492,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               <Row label="Quelle" value={source?.displayName ?? "unbekannt"} />
               <Row label="Lizenzstatus" value={source?.licenseStatus ?? "unklar"} />
               <Row
-                label="Veroeffentlicht"
+                label="Veröffentlicht"
                 value={job.publishedAt ? new Intl.DateTimeFormat("de-DE").format(job.publishedAt) : "nicht angegeben"}
               />
               <Row label="Zuletzt abgerufen" value={new Intl.DateTimeFormat("de-DE").format(job.fetchedAt)} />
@@ -501,7 +501,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 value={
                   job.lastLinkCheckAt
                     ? `${new Intl.DateTimeFormat("de-DE").format(job.lastLinkCheckAt)} — ${job.lastLinkCheckOk ? "erreichbar" : "nicht erreichbar"}`
-                    : "noch nicht geprueft"
+                    : "noch nicht geprüft"
                 }
               />
             </dl>
@@ -537,7 +537,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
       <p style={{ fontSize: "var(--text-sm)" }}>
         <Link href="/app/jobs" style={{ color: "var(--accent-text)" }}>
-          ← Zurueck zur Auswahl
+          ← Zurück zur Auswahl
         </Link>
         {" · "}
         <span style={{ color: "var(--text-muted)" }}>
@@ -570,7 +570,7 @@ function buildQuestions(scored: Awaited<ReturnType<typeof loadScoredJob>>): stri
   const { job, constraints, jobQuality, aiTransition, themes } = scored;
 
   if (!job.salary.disclosed) {
-    questions.push("In welchem Rahmen bewegt sich das Gehalt fuer diese Position?");
+    questions.push("In welchem Rahmen bewegt sich das Gehalt für diese Position?");
   }
   if (job.coreTasks.length === 0) {
     questions.push("Wie sieht ein typischer Arbeitstag in dieser Rolle aus?");
@@ -583,17 +583,17 @@ function buildQuestions(scored: Awaited<ReturnType<typeof loadScoredJob>>): stri
   }
   for (const c of constraints.checks.filter((c) => c.verdict === "uncertain")) {
     if (c.key === "commute") questions.push("Wie oft ist Anwesenheit vor Ort erwartet?");
-    if (c.key === "travel") questions.push("Wie hoch ist der Reiseanteil tatsaechlich?");
+    if (c.key === "travel") questions.push("Wie hoch ist der Reiseanteil tatsächlich?");
   }
   const workloadTheme = themes.find((t) => /belastung|ueberstunden|druck/i.test(t.theme));
   if (workloadTheme && workloadTheme.sentiment !== "positive") {
     questions.push(
-      "In Bewertungen wird die Arbeitsbelastung mehrfach erwaehnt. Wie sieht eine typische Woche in " +
+      "In Bewertungen wird die Arbeitsbelastung mehrfach erwähnt. Wie sieht eine typische Woche in " +
         "einer arbeitsreichen Phase aus?",
     );
   }
   if (jobQuality.insufficientData) {
-    questions.push("Wie wuerden Sie die Zusammenarbeit im Team und die Fuehrungskultur beschreiben?");
+    questions.push("Wie wuerden Sie die Zusammenarbeit im Team und die Führungskultur beschreiben?");
   }
   if (aiTransition.category === "partly_transformable") {
     questions.push(

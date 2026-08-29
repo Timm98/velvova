@@ -5,9 +5,9 @@ import type { ScoreFactor } from "@paycheck/domain";
  * neutral.
  *
  * Ein Faktor ohne Daten (raw === null) wird nicht als 0 gewertet - das
- * wuerde eine Stelle bestrafen, nur weil ihre Anzeige unvollstaendig ist.
+ * würde eine Stelle bestrafen, nur weil ihre Anzeige unvollständig ist.
  * Stattdessen wird sein Gewicht anteilig auf die bekannten Faktoren
- * verteilt. Das Fehlen schlaegt sich ausschliesslich in der Abdeckung
+ * verteilt. Das Fehlen schlägt sich ausschließlich in der Abdeckung
  * nieder, und die fliesst in die Confidence, nicht in den Fit.
  */
 
@@ -23,7 +23,7 @@ export interface WeightedInput {
 export interface WeightedOutput {
   /** 0..1, oder null wenn kein einziger Faktor Daten hatte. */
   value: number | null;
-  /** Anteil der Gewichtssumme, fuer den Daten vorlagen. */
+  /** Anteil der Gewichtssumme, für den Daten vorlagen. */
   coverage: number;
   factors: ScoreFactor[];
 }

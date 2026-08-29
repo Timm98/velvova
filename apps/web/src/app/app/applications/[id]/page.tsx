@@ -55,7 +55,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
           href={`/app/coaching/${view.application.id}`}
           style={{ fontSize: "var(--text-sm)", color: "var(--accent-text)" }}
         >
-          Gespraech vorbereiten →
+          Gespräch vorbereiten →
         </Link>
       </div>
 

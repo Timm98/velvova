@@ -10,11 +10,11 @@ import { seedReviews } from "./reviews.ts";
 import { seedTaxonomy } from "./taxonomy.ts";
 
 /**
- * Seed-Daten. Ausschliesslich synthetisch und durchgaengig als Demo
+ * Seed-Daten. Ausschließlich synthetisch und durchgaengig als Demo
  * markiert - `is_demo = true` an Unternehmen und Stellen, damit die
- * Oberflaeche sie nie als Live-Angebot ausgeben kann.
+ * Oberfläche sie nie als Live-Angebot ausgeben kann.
  *
- * Laeuft idempotent: ein zweiter Aufruf legt nichts doppelt an.
+ * Läuft idempotent: ein zweiter Aufruf legt nichts doppelt an.
  */
 
 const DAY = 86_400_000;
@@ -254,7 +254,7 @@ async function seedAll(db: Database): Promise<void> {
 
   const grantedConsents = [
     ["career_profile", "Erstellung und Pflege des Karriereprofils"],
-    ["document_analysis", "Auswertung hochgeladener Unterlagen zur Vorbefuellung des Profils"],
+    ["document_analysis", "Auswertung hochgeladener Unterlagen zur Vorbefüllung des Profils"],
     ["external_ai_processing", "Verarbeitung durch einen externen KI-Anbieter zur Textanalyse"],
   ] as const;
   for (const [kind, purpose] of grantedConsents) {
@@ -268,7 +268,7 @@ async function seedAll(db: Database): Promise<void> {
     });
   }
   // Sprache, Transkript, Training und Weitergabe bewusst nicht erteilt:
-  // zeigt in der Oberflaeche den getrennten, ehrlichen Fall.
+  // zeigt in der Oberfläche den getrennten, ehrlichen Fall.
   const openConsents = ["voice_input", "transcript_storage", "model_training", "partner_sharing"] as const;
   for (const kind of openConsents) {
     await db.insert(s.consents).values({
@@ -290,8 +290,8 @@ async function seedAll(db: Database): Promise<void> {
       careerCompass:
         "Du bist am staerksten, wenn du zwischen Menschen und einem komplizierten Thema stehst " +
         "und es verstaendlich machst. Zwei Jahre Kundenservice haben dir beigebracht, ruhig zu " +
-        "bleiben, wenn es eng wird - das ist kein Nebeneffekt, sondern deine Kernstaerke. Was " +
-        "dir fehlt, ist nicht Faehigkeit, sondern eine Richtung, die du begruenden kannst.",
+        "bleiben, wenn es eng wird - das ist kein Nebeneffekt, sondern deine Kernstärke. Was " +
+        "dir fehlt, ist nicht Fähigkeit, sondern eine Richtung, die du begründen kannst.",
     })
     .returning();
 
@@ -358,7 +358,7 @@ async function seedAll(db: Database): Promise<void> {
     { jobKey: "csm-nordlicht", stage: "interview", days: 12 },
     { jobKey: "projektkoordination-leuchtturm", stage: "sent", days: 6 },
     { jobKey: "marketing-wellenform", stage: "rejected", days: 25 },
-    { jobKey: "kundenerfolg-gruenspan", stage: "saved", days: 1 },
+    { jobKey: "kundenerfolg-grünspan", stage: "saved", days: 1 },
     { jobKey: "datenpflege-hafenblick", stage: "withdrawn", days: 30 },
   ] as const;
 
@@ -373,7 +373,7 @@ async function seedAll(db: Database): Promise<void> {
         stage: st.stage as never,
         lastContactAt: st.stage === "saved" ? null : daysAgo(st.days - 2),
         nextStepAt: st.stage === "interview" ? inDays(3) : null,
-        nextStepLabel: st.stage === "interview" ? "Gespraech vorbereiten" : null,
+        nextStepLabel: st.stage === "interview" ? "Gespräch vorbereiten" : null,
         createdAt: daysAgo(st.days),
       })
       .returning();
@@ -405,7 +405,7 @@ async function seedAll(db: Database): Promise<void> {
         applicationId: app!.id,
         kind: "interview_prep",
         dueAt: inDays(2),
-        label: "Gespraech bei Nordlicht Software vorbereiten",
+        label: "Gespräch bei Nordlicht Software vorbereiten",
       });
     }
     if (st.stage === "rejected") {
@@ -419,9 +419,9 @@ async function seedAll(db: Database): Promise<void> {
     }
   }
 
-  // Neun weitere versendete Bewerbungen ohne Rueckmeldung. Erst damit hat
-  // der Trichter genug Faelle, um ueberhaupt etwas zu diagnostizieren -
-  // unter dieser Menge sagt die Diagnose ausdruecklich nichts.
+  // Neun weitere versendete Bewerbungen ohne Rückmeldung. Erst damit hat
+  // der Trichter genug Fälle, um ueberhaupt etwas zu diagnostizieren -
+  // unter dieser Menge sagt die Diagnose ausdrücklich nichts.
   const filler = jobIds.get("beratung-kranzberg-neu");
   if (filler) {
     for (let i = 0; i < 9; i++) {
@@ -439,7 +439,7 @@ const cfg = loadRuntimeConfig();
 const { db, close } = await getDbHandle(cfg);
 await seedAll(db);
 
-const counts = await db.execute(sql`
+const counts = (await db.execute(sql`
   SELECT
     (SELECT count(*) FROM companies)::int          AS unternehmen,
     (SELECT count(*) FROM jobs)::int               AS stellen,
@@ -449,6 +449,6 @@ const counts = await db.execute(sql`
     (SELECT count(*) FROM role_clusters)::int      AS rollencluster,
     (SELECT count(*) FROM applications)::int       AS bewerbungen,
     (SELECT count(*) FROM application_events)::int AS ereignisse
-`);
+`)) as unknown as { rows: Record<string, number>[] };
 console.log("Seed abgeschlossen:", counts.rows[0]);
 await close();

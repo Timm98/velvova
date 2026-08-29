@@ -111,7 +111,7 @@ export default async function SetupPage() {
                     style={inputStyle}
                   />
                   <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                    Nur fuer die Schaetzung von Arbeitswegen. Du kannst das leer lassen.
+                    Nur für die Schätzung von Arbeitswegen. Du kannst das leer lassen.
                   </p>
                 </div>
 
@@ -143,7 +143,7 @@ export default async function SetupPage() {
                 <div>
                   <h2 style={{ fontSize: "var(--text-lg)" }}>Deine Einwilligungen</h2>
                   <p style={{ marginTop: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                    Jede einzeln. Jede spaeter widerrufbar.
+                    Jede einzeln. Jede später widerrufbar.
                   </p>
                 </div>
 

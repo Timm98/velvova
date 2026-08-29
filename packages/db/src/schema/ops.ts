@@ -2,7 +2,7 @@ import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timesta
 import { aiRunStatusEnum } from "./enums.ts";
 import { users } from "./identity.ts";
 
-/** Betrieb: KI-Laeufe, Prompt-Fassungen, Analytics. */
+/** Betrieb: KI-Läufe, Prompt-Fassungen, Analytics. */
 
 export const promptVersions = pgTable("prompt_versions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -30,7 +30,7 @@ export const aiRuns = pgTable("ai_runs", {
   latencyMs: integer("latency_ms"),
   /** Nur der Fehlertext, nie der Inhalt der Anfrage. Kein Personenbezug. */
   errorMessage: text("error_message"),
-  /** Kurze, nachvollziehbare Begruendung des Ergebnisses. Ausdruecklich
+  /** Kurze, nachvollziehbare Begründung des Ergebnisses. Ausdrücklich
    *  kein gespeicherter innerer Gedankengang des Modells. */
   rationale: text("rationale"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

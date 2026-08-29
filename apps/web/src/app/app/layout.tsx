@@ -7,14 +7,14 @@ import { logoutAction } from "@/app/(auth)/actions";
 import { DemoBadge } from "@/components/ui";
 
 /**
- * Das App-Geruest.
+ * Das App-Gerüst.
  *
- * Fuenf Hauptpunkte, nicht mehr. Coaching, Angebote und Check-ins werden
+ * Fünf Hauptpunkte, nicht mehr. Coaching, Angebote und Check-ins werden
  * aus dem Zusammenhang heraus geoeffnet - sie staendig sichtbar zu halten
- * wuerde die Navigation aufblaehen, ohne dass jemand direkt dorthin
+ * würde die Navigation aufblaehen, ohne dass jemand direkt dorthin
  * springen will.
  *
- * Auf schmalen Geraeten wandert dieselbe Navigation nach unten.
+ * Auf schmalen Geräten wandert dieselbe Navigation nach unten.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await requireUser();

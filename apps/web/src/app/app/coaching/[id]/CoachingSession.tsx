@@ -6,8 +6,8 @@ import { submitCoachingAnswer } from "@/lib/coaching";
 import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
 
 /**
- * Eine Uebungsrunde. Eine Frage, eine Antwort, eine Rueckmeldung zu
- * Inhalt und Aufbau - und die Moeglichkeit, es noch einmal zu versuchen.
+ * Eine Uebungsrunde. Eine Frage, eine Antwort, eine Rückmeldung zu
+ * Inhalt und Aufbau - und die Möglichkeit, es noch einmal zu versuchen.
  */
 export function CoachingSession({
   sessionId,
@@ -50,7 +50,7 @@ export function CoachingSession({
   function submit() {
     const trimmed = answer.trim();
     if (trimmed.length < 10) {
-      setError("Schreib etwas mehr - unter zehn Zeichen laesst sich nichts sagen.");
+      setError("Schreib etwas mehr - unter zehn Zeichen lässt sich nichts sagen.");
       return;
     }
     setError(null);
@@ -78,7 +78,7 @@ export function CoachingSession({
                 disabled={index === 0}
                 style={{ ...buttonStyle("quiet"), padding: "var(--space-2) var(--space-3)" }}
               >
-                Zurueck
+                Zurück
               </button>
               <button
                 type="button"
@@ -182,7 +182,7 @@ export function CoachingSession({
               </dl>
             )}
 
-            {providerIsMock && <Badge tone="neutral">Kriterienbasierte Rueckmeldung</Badge>}
+            {providerIsMock && <Badge tone="neutral">Kriterienbasierte Rückmeldung</Badge>}
           </Stack>
         </Card>
       )}

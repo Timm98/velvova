@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Harte Bedingungen des Menschen. Sie werden vor jedem Score geprueft und
+ * Harte Bedingungen des Menschen. Sie werden vor jedem Score geprüft und
  * niemals stillschweigend aufgeweicht - auch nicht, wenn eine Stelle sonst
  * hervorragend passt.
  */
@@ -19,10 +19,10 @@ export const CommuteModeSchema = z.enum(["walk", "bike", "public_transport", "ca
 export type CommuteMode = z.infer<typeof CommuteModeSchema>;
 
 export const UserConstraintsSchema = z.object({
-  /** Untergrenze brutto pro Jahr in der Waehrung des Landes. */
+  /** Untergrenze brutto pro Jahr in der Währung des Landes. */
   minSalaryPerYear: z.number().int().nonnegative().nullable(),
   currency: z.string().length(3).default("EUR"),
-  /** Was einen niedrigeren Betrag ausnahmsweise ausgleichen koennte. */
+  /** Was einen niedrigeren Betrag ausnahmsweise ausgleichen könnte. */
   salaryTradeOffs: z.array(z.string()).default([]),
 
   baseLocation: z.string().nullable(),
@@ -47,7 +47,7 @@ export const UserConstraintsSchema = z.object({
   needsVisaSponsorship: z.boolean().default(false),
 
   earliestStartDate: z.date().nullable().default(null),
-  /** Frei formulierte Ausschluesse, z. B. "reine Kaltakquise". */
+  /** Frei formulierte Ausschlüsse, z. B. "reine Kaltakquise". */
   hardNoGos: z.array(z.string()).default([]),
 });
 export type UserConstraints = z.infer<typeof UserConstraintsSchema>;

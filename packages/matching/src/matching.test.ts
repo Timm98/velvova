@@ -22,7 +22,7 @@ describe("Unbekanntes ist neutral", () => {
       { key: "a", label: "A", raw: 0.8, weight: 0.5, explanation: "" },
       { key: "b", label: "B", raw: null, weight: 0.5, explanation: "" },
     ]);
-    // Der Wert bleibt gleich; nur die Abdeckung faellt.
+    // Der Wert bleibt gleich; nur die Abdeckung fällt.
     expect(einerFehlt.value).toBeCloseTo(alleBekannt.value!, 5);
     expect(einerFehlt.coverage).toBe(0.5);
     expect(alleBekannt.coverage).toBe(1);
@@ -34,23 +34,23 @@ describe("Unbekanntes ist neutral", () => {
     expect(r.coverage).toBe(0);
   });
 
-  it("senkt den Fit nicht, wenn die Anzeige unvollstaendig ist", () => {
+  it("senkt den Fit nicht, wenn die Anzeige unvollständig ist", () => {
     const evidence = makeEvidence();
     const basis = {
       requirements: makeRequirements(), evidence, constraints: makeConstraints(),
-      energisingTasks: ["Kunden betreuen", "praesentieren"], drainingTasks: ["Kaltakquise"],
-      workStylePreferences: ["viel Austausch im Team"], rankedValues: ["Lernen", "Flexibilitaet"],
+      energisingTasks: ["Kunden betreuen", "präsentieren"], drainingTasks: ["Kaltakquise"],
+      workStylePreferences: ["viel Austausch im Team"], rankedValues: ["Lernen", "Flexibilität"],
       statedInterests: ["Customer Success"],
     };
     const voll = computeFit({ job: makeJob(), ...basis });
     // Dieselbe Stelle, aber ohne Aufgaben und ohne Erfahrungsniveau.
-    const duenn = computeFit({ job: makeJob({ coreTasks: [], experienceLevel: null }), ...basis });
+    const dünn = computeFit({ job: makeJob({ coreTasks: [], experienceLevel: null }), ...basis });
 
     expect(voll.score).not.toBeNull();
     // Die Passung bricht nicht ein, nur weil Angaben fehlen.
-    expect(duenn.coverage).toBeLessThan(voll.coverage);
-    if (duenn.score !== null && voll.score !== null) {
-      expect(duenn.score).toBeGreaterThan(voll.score - 25);
+    expect(dünn.coverage).toBeLessThan(voll.coverage);
+    if (dünn.score !== null && voll.score !== null) {
+      expect(dünn.score).toBeGreaterThan(voll.score - 25);
     }
   });
 });
@@ -75,14 +75,14 @@ describe("harte Bedingungen", () => {
   });
 
   it("blockiert bei fehlender Pflichtlizenz", () => {
-    const job = makeJob({ requiredLicenses: ["Fuehrerschein C1", "Staplerschein"] });
-    const r = checkConstraints(job, makeConstraints({ licenses: ["Fuehrerschein C1"] }), testCommute);
+    const job = makeJob({ requiredLicenses: ["Führerschein C1", "Staplerschein"] });
+    const r = checkConstraints(job, makeConstraints({ licenses: ["Führerschein C1"] }), testCommute);
     expect(r.blockedBy).toContain("licenses");
     expect(r.checks.find((c) => c.key === "licenses")?.reason).toContain("Staplerschein");
   });
 
   it("blockiert bei zu langem Arbeitsweg, aber nicht bei Umzugsbereitschaft", () => {
-    const job = makeJob({ location: "Luebeck", workModel: "on_site" });
+    const job = makeJob({ location: "Lübeck", workModel: "on_site" });
     const c = makeConstraints({ acceptedWorkModels: ["on_site", "hybrid"], maxCommuteMinutes: 45 });
     expect(checkConstraints(job, c, testCommute).blockedBy).toContain("commute");
     const umzug = checkConstraints(job, { ...c, willingToRelocate: true }, testCommute);
@@ -101,7 +101,7 @@ describe("harte Bedingungen", () => {
     expect(r.blockedBy).toContain("language");
   });
 
-  it("laesst eine passende Stelle vollstaendig durch", () => {
+  it("lässt eine passende Stelle vollständig durch", () => {
     const r = checkConstraints(makeJob(), makeConstraints(), testCommute);
     expect(r.blockedBy).toHaveLength(0);
   });
@@ -113,9 +113,9 @@ describe("harte Bedingungen", () => {
 describe("Fit", () => {
   const basis = {
     requirements: makeRequirements(), constraints: makeConstraints(),
-    energisingTasks: ["Kunden betreuen", "Schulungen praesentieren"], drainingTasks: ["Kaltakquise"],
+    energisingTasks: ["Kunden betreuen", "Schulungen präsentieren"], drainingTasks: ["Kaltakquise"],
     workStylePreferences: ["viel Austausch im Team", "eigenstaendig priorisieren"],
-    rankedValues: ["Lernen", "Flexibilitaet"], statedInterests: ["Customer Success"],
+    rankedValues: ["Lernen", "Flexibilität"], statedInterests: ["Customer Success"],
   };
 
   it("zeigt keine Zahl ohne ausreichende Datenbasis", () => {
@@ -130,14 +130,14 @@ describe("Fit", () => {
     expect(r.topReason.length).toBeGreaterThan(10);
   });
 
-  it("zaehlt unbestaetigte Hypothesen nicht als Beleg", () => {
-    const bestaetigt = computeFit({ job: makeJob(), ...basis, evidence: makeEvidence() });
+  it("zählt unbestaetigte Hypothesen nicht als Beleg", () => {
+    const bestätigt = computeFit({ job: makeJob(), ...basis, evidence: makeEvidence() });
     const hypothesen = computeFit({
       job: makeJob(), ...basis,
       evidence: makeEvidence().map((e) => ({ ...e, userConfirmed: false, sourceType: "ai_hypothesis" as const })),
     });
     expect(hypothesen.factors.find((f) => f.key === "proven_skills")?.raw).toBeNull();
-    expect(bestaetigt.factors.find((f) => f.key === "proven_skills")?.raw).not.toBeNull();
+    expect(bestätigt.factors.find((f) => f.key === "proven_skills")?.raw).not.toBeNull();
   });
 
   it("ignoriert geloeschte und abgelehnte Evidenz", () => {
@@ -163,10 +163,10 @@ describe("Fit", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Confidence, Jobqualitaet, KI, Anzeige
+// Confidence, Jobqualität, KI, Anzeige
 // ---------------------------------------------------------------------------
 describe("Confidence", () => {
-  it("faellt bei duennem Profil und nennt den Grund", () => {
+  it("fällt bei duennem Profil und nennt den Grund", () => {
     const hoch = computeConfidence({ job: makeJob(), fitCoverage: 1, profileCoverage: 1, requirementCount: 3, reviews: [], now: new Date("2026-08-29") });
     const niedrig = computeConfidence({ job: makeJob(), fitCoverage: 0.3, profileCoverage: 0.2, requirementCount: 0, reviews: [], now: new Date("2026-08-29") });
     expect(niedrig.score).toBeLessThan(hoch.score);
@@ -180,7 +180,7 @@ describe("Confidence", () => {
   });
 });
 
-describe("Jobqualitaet", () => {
+describe("Jobqualität", () => {
   it("sagt bei duenner Datenlage 'nicht beurteilbar' statt schlecht", () => {
     const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false }, contractType: null, remotePercent: null, shiftWork: null });
     const r = computeJobQuality({ job, reviews: [], themes: [] });
@@ -192,9 +192,9 @@ describe("Jobqualitaet", () => {
     const r = computeJobQuality({
       job: makeJob(), reviews: [], salaryBenchmarkPerYear: 46000,
       themes: [
-        { id: "t1", companyId: "co-1", aggregateId: "a1", theme: "Weiterbildung", sentiment: "positive", mentionCount: 20, summary: "Viel Lernen moeglich", sourceUrl: null, periodFrom: null, periodTo: null },
+        { id: "t1", companyId: "co-1", aggregateId: "a1", theme: "Weiterbildung", sentiment: "positive", mentionCount: 20, summary: "Viel Lernen möglich", sourceUrl: null, periodFrom: null, periodTo: null },
         { id: "t2", companyId: "co-1", aggregateId: "a1", theme: "Arbeitsbelastung", sentiment: "mixed", mentionCount: 12, summary: "Zeitweise hoher Druck", sourceUrl: null, periodFrom: null, periodTo: null },
-        { id: "t3", companyId: "co-1", aggregateId: "a1", theme: "Fuehrung", sentiment: "positive", mentionCount: 9, summary: "Gute Vorgesetzte", sourceUrl: null, periodFrom: null, periodTo: null },
+        { id: "t3", companyId: "co-1", aggregateId: "a1", theme: "Führung", sentiment: "positive", mentionCount: 9, summary: "Gute Vorgesetzte", sourceUrl: null, periodFrom: null, periodTo: null },
       ],
     });
     expect(r.insufficientData).toBe(false);
@@ -225,19 +225,19 @@ describe("AI Transition Radar", () => {
     expect(r.scenarios.length).toBeGreaterThanOrEqual(2);
     const text = JSON.stringify(r).toLowerCase();
     expect(text).not.toMatch(/verschwindet in \d/);
-    expect(text).not.toMatch(/in (fuenf|5|zehn|10) jahren (weg|ersetzt)/);
+    expect(text).not.toMatch(/in (fünf|5|zehn|10) jahren (weg|ersetzt)/);
   });
 });
 
 describe("Listing Confidence", () => {
-  it("markiert alte Anzeigen als moeglicherweise veraltet", () => {
+  it("markiert alte Anzeigen als möglicherweise veraltet", () => {
     const job = makeJob({ publishedAt: new Date("2026-01-01") });
     const r = computeListingConfidence({ job, source: makeSource(), now: new Date("2026-08-29") });
     expect(r.possiblyStale).toBe(true);
     expect(r.level).not.toBe("high");
   });
 
-  it("erkennt moegliche Wiederveroeffentlichung", () => {
+  it("erkennt moegliche Wiederveröffentlichung", () => {
     const r = computeListingConfidence({ job: makeJob(), source: makeSource(), earlierDuplicateCount: 2, now: new Date("2026-08-29") });
     expect(r.possibleRepost).toBe(true);
     expect(r.signals.find((s) => s.key === "repost")?.detail).toContain("2");
@@ -270,7 +270,7 @@ describe("Gesamtranking", () => {
     };
   }
 
-  it("bildet keinen Gesamtwert fuer eine blockierte Stelle", () => {
+  it("bildet keinen Gesamtwert für eine blockierte Stelle", () => {
     const job = makeJob({ shiftWork: true });
     const p = parts(job);
     p.constraints = checkConstraints(job, makeConstraints({ acceptsShiftWork: false }), testCommute);

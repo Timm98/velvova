@@ -3,7 +3,7 @@ import { getTranslator, isLocale, type Locale, type Translator } from "@paycheck
 import { brand, flags, integrationStatus, loadRuntimeConfig } from "@paycheck/config";
 
 /**
- * Sprache und Laufzeitzustand fuer eine Serverkomponente an einer Stelle.
+ * Sprache und Laufzeitzustand für eine Serverkomponente an einer Stelle.
  * Jede Seite ruft das auf, statt sich Konfiguration einzeln zusammenzusuchen.
  */
 
@@ -18,7 +18,7 @@ export interface PageContext {
   t: Translator["t"];
   brand: typeof brand;
   flags: typeof flags;
-  /** Ehrlicher Zustand der Anbindungen. Grundlage fuer "nicht verbunden". */
+  /** Ehrlicher Zustand der Anbindungen. Grundlage für "nicht verbunden". */
   integrations: ReturnType<typeof integrationStatus>;
   isDemoMode: boolean;
 }

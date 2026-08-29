@@ -4,9 +4,9 @@ import { z } from "zod";
  * Provider-Abstraktion.
  *
  * Kein Modellname und kein Anbieter steht im Fachcode. Wer den Provider
- * wechselt, aendert Konfiguration - nicht Domaenenlogik. Das ist kein
- * Selbstzweck: fuer besonders schutzbeduerftige Verarbeitung muss ein
- * selbst betriebener Pfad moeglich bleiben, ohne das Produkt umzubauen.
+ * wechselt, aendert Konfiguration - nicht Domänenlogik. Das ist kein
+ * Selbstzweck: für besonders schutzbeduerftige Verarbeitung muss ein
+ * selbst betriebener Pfad möglich bleiben, ohne das Produkt umzubauen.
  */
 
 export interface ChatMessage {
@@ -40,7 +40,7 @@ export interface AiUsage {
 export interface StructuredResult<T> {
   data: T;
   usage: AiUsage;
-  /** Kurze, nachvollziehbare Begruendung fuer Menschen. Ausdruecklich
+  /** Kurze, nachvollziehbare Begründung für Menschen. Ausdrücklich
    *  kein gespeicherter innerer Gedankengang des Modells. */
   rationale: string | null;
 }
@@ -51,13 +51,13 @@ export interface TranscriptChunk {
 }
 
 /**
- * Alle Faehigkeiten, die das Produkt von einem Anbieter braucht.
- * Nicht unterstuetzte Faehigkeiten werfen einen klaren Fehler, statt
+ * Alle Fähigkeiten, die das Produkt von einem Anbieter braucht.
+ * Nicht unterstuetzte Fähigkeiten werfen einen klaren Fehler, statt
  * stillschweigend etwas anderes zu tun.
  */
 export interface AiProvider {
   readonly name: string;
-  /** true, wenn ausschliesslich lokal und ohne Netzzugriff gearbeitet wird. */
+  /** true, wenn ausschließlich lokal und ohne Netzzugriff gearbeitet wird. */
   readonly isLocal: boolean;
 
   chatStream(options: ChatOptions): AsyncIterable<string>;

@@ -11,13 +11,13 @@ import {
 
 /**
  * Echter Anbieter. Wird nur benutzt, wenn AI_PROVIDER=anthropic gesetzt
- * UND ein Schluessel vorliegt - sonst faellt die Auswahl auf den lokalen
- * Anbieter zurueck und die Oberflaeche zeigt "nicht verbunden".
+ * UND ein Schlüssel vorliegt - sonst fällt die Auswahl auf den lokalen
+ * Anbieter zurück und die Oberfläche zeigt "nicht verbunden".
  *
- * Strukturierte Ausgaben laufen ueber Tool Use mit erzwungener Auswahl.
+ * Strukturierte Ausgaben laufen über Tool Use mit erzwungener Auswahl.
  * Das ist verlaesslicher als freien Text zu parsen: das Modell muss dem
  * Schema folgen, und die Antwort wird anschliessend noch einmal gegen
- * dasselbe Zod-Schema geprueft, bevor sie irgendwo landet.
+ * dasselbe Zod-Schema geprüft, bevor sie irgendwo landet.
  */
 
 export interface AnthropicOptions {
@@ -34,7 +34,10 @@ export class AnthropicProvider implements AiProvider {
 
   private readonly client: Anthropic;
 
-  constructor(private readonly options: AnthropicOptions) {
+  private readonly options: AnthropicOptions;
+
+  constructor(options: AnthropicOptions) {
+    this.options = options;
     this.client = new Anthropic({ apiKey: options.apiKey, timeout: options.timeoutMs });
   }
 
@@ -75,7 +78,7 @@ export class AnthropicProvider implements AiProvider {
         tools: [
           {
             name: options.schemaName,
-            description: `Gib das Ergebnis ausschliesslich ueber dieses Werkzeug zurueck.`,
+            description: `Gib das Ergebnis ausschließlich über dieses Werkzeug zurück.`,
             input_schema: zodToJsonSchema(options.schema) as Anthropic.Tool["input_schema"],
           },
         ],
@@ -92,7 +95,7 @@ export class AnthropicProvider implements AiProvider {
       );
     }
 
-    // Zweite Pruefung gegen dasselbe Schema. Eine Modellantwort wird nie
+    // Zweite Prüfung gegen dasselbe Schema. Eine Modellantwort wird nie
     // ungeprueft zur Wahrheit in der Datenbank.
     const parsed = options.schema.safeParse(toolUse.input);
     if (!parsed.success) {
@@ -117,7 +120,7 @@ export class AnthropicProvider implements AiProvider {
 
   async embed(_texts: string[]): Promise<number[][]> {
     // Der Anbieter stellt keine eigenen Embeddings bereit. Ehrlich fehlschlagen
-    // statt eine schlechte Ersatzloesung zu liefern, die niemand erwartet.
+    // statt eine schlechte Ersatzlösung zu liefern, die niemand erwartet.
     throw new AiCapabilityError(this.name, "embed");
   }
 

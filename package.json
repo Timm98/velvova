@@ -18,8 +18,9 @@
     "db:reset": "pnpm --filter @paycheck/db reset",
     "eval": "pnpm --filter @paycheck/ai eval",
     "setup": "pnpm install && pnpm db:migrate && pnpm db:seed",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
-    "dev:session": "pnpm --filter @paycheck/db dev:session"
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm eval && pnpm build",
+    "dev:session": "pnpm --filter @paycheck/db dev:session",
+    "test:e2e:a11y": "playwright test tests/e2e/accessibility.spec.ts --project=desktop-1440"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1",

@@ -5,9 +5,9 @@ import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 /**
  * Job Quality steht getrennt vom Fit. Eine Stelle kann fachlich perfekt
  * passen und trotzdem ein schlechter Arbeitsplatz sein. Beides in eine
- * Zahl zu ruehren wuerde genau die Information zerstoeren, die zaehlt.
+ * Zahl zu ruehren würde genau die Information zerstoeren, die zählt.
  *
- * Die Dimensionen folgen der mehrdimensionalen Sicht auf Jobqualitaet
+ * Die Dimensionen folgen der mehrdimensionalen Sicht auf Jobqualität
  * (Einkommen, Sicherheit, Arbeitsumfeld), wie sie die OECD verwendet.
  * Siehe docs/RESEARCH_RATIONALE.md.
  */
@@ -16,7 +16,7 @@ export interface JobQualityInput {
   job: Job;
   reviews: ReviewAggregate[];
   themes: ReviewTheme[];
-  /** Regionaler Referenzwert fuer das Gehalt, falls bekannt. */
+  /** Regionaler Referenzwert für das Gehalt, falls bekannt. */
   salaryBenchmarkPerYear?: number | null;
 }
 
@@ -35,7 +35,7 @@ function themeScore(themes: ReviewTheme[], keywords: string[]): number | null {
 export function computeJobQuality(input: JobQualityInput): JobQualityResult {
   const { job, reviews, themes } = input;
 
-  // --- Einkommensqualitaet ---
+  // --- Einkommensqualität ---
   let income: number | null = null;
   if (job.salary.disclosed && (job.salary.min ?? job.salary.max) !== null) {
     const mid = job.salary.max && job.salary.min
@@ -46,12 +46,12 @@ export function computeJobQuality(input: JobQualityInput): JobQualityResult {
     if (bench && bench > 0) {
       income = Math.min(1, Math.max(0, 0.5 + (yearly - bench) / (bench * 0.8)));
     } else {
-      // Ohne Referenz zaehlt nur, dass ueberhaupt transparent gemacht wird.
+      // Ohne Referenz zählt nur, dass ueberhaupt transparent gemacht wird.
       income = 0.6;
     }
   }
 
-  // --- Beschaeftigungssicherheit ---
+  // --- Beschäftigungssicherheit ---
   let security: number | null = null;
   if (job.contractType !== null) {
     const map: Record<string, number> = {
@@ -64,7 +64,7 @@ export function computeJobQuality(input: JobQualityInput): JobQualityResult {
   // --- Arbeitsbelastung und Umfeld ---
   const workload = themeScore(themes, ["belastung", "workload", "ueberstunden", "overtime", "stress", "druck"]);
 
-  // --- Arbeitszeit und Flexibilitaet ---
+  // --- Arbeitszeit und Flexibilität ---
   let flexibility: number | null = null;
   const flexSignals: number[] = [];
   if (job.remotePercent !== null) flexSignals.push(Math.min(1, job.remotePercent / 100));
@@ -73,28 +73,28 @@ export function computeJobQuality(input: JobQualityInput): JobQualityResult {
   if (flexTheme !== null) flexSignals.push(flexTheme);
   if (flexSignals.length > 0) flexibility = flexSignals.reduce((a, b) => a + b, 0) / flexSignals.length;
 
-  // --- Fuehrung und Kultur ---
+  // --- Führung und Kultur ---
   const culture = themeScore(themes, ["fuehrung", "leadership", "vorgesetzt", "manager", "kultur", "team", "kollegen"]);
 
   // --- Entwicklung und Lernen ---
   const development = themeScore(themes, ["entwicklung", "lernen", "weiterbildung", "training", "karriere", "growth"]);
 
   const inputs: WeightedInput[] = [
-    { key: "income", label: "Einkommensqualitaet und Fairness", raw: income, weight: 0.20,
+    { key: "income", label: "Einkommensqualität und Fairness", raw: income, weight: 0.20,
       explanation: income === null ? "Die Anzeige nennt kein Gehalt - das ist keine schlechte, sondern gar keine Angabe."
         : job.salary.disclosed ? "Gehalt ist offengelegt und eingeordnet." : "" },
-    { key: "security", label: "Beschaeftigungssicherheit", raw: security, weight: 0.15,
+    { key: "security", label: "Beschäftigungssicherheit", raw: security, weight: 0.15,
       explanation: security === null ? "Die Vertragsart ist nicht angegeben."
         : `Vertragsart: ${job.contractType}.` },
     { key: "workload", label: "Arbeitsbelastung und Arbeitsumfeld", raw: workload, weight: 0.20,
       explanation: workload === null ? "Keine belastbaren Aussagen zur Arbeitsbelastung vorhanden."
         : "Aus Mitarbeiterstimmen zu Belastung und Arbeitsumfeld." },
-    { key: "flexibility", label: "Arbeitszeit und Flexibilitaet", raw: flexibility, weight: 0.15,
-      explanation: flexibility === null ? "Keine Angaben zu Arbeitszeit oder Flexibilitaet."
-        : "Aus Remote-Anteil, Schichtmodell und Aussagen zur Flexibilitaet." },
-    { key: "culture", label: "Fuehrung, Kultur und soziale Bedingungen", raw: culture, weight: 0.15,
-      explanation: culture === null ? "Keine belastbaren Aussagen zu Fuehrung und Kultur."
-        : "Aus Mitarbeiterstimmen zu Fuehrung und Zusammenarbeit." },
+    { key: "flexibility", label: "Arbeitszeit und Flexibilität", raw: flexibility, weight: 0.15,
+      explanation: flexibility === null ? "Keine Angaben zu Arbeitszeit oder Flexibilität."
+        : "Aus Remote-Anteil, Schichtmodell und Aussagen zur Flexibilität." },
+    { key: "culture", label: "Führung, Kultur und soziale Bedingungen", raw: culture, weight: 0.15,
+      explanation: culture === null ? "Keine belastbaren Aussagen zu Führung und Kultur."
+        : "Aus Mitarbeiterstimmen zu Führung und Zusammenarbeit." },
     { key: "development", label: "Entwicklung und Lernmoeglichkeiten", raw: development, weight: 0.15,
       explanation: development === null ? "Keine belastbaren Aussagen zu Entwicklungsmoeglichkeiten."
         : "Aus Mitarbeiterstimmen zu Lernen und Weiterentwicklung." },

@@ -4,7 +4,7 @@ import { normalise, type JobSourceAdapter, type RawListing } from "../adapter.ts
  * Import durch den Menschen selbst: eine URL oder ein eingefuegter Text.
  *
  * Das ist der einzige Weg, auf dem eine Anzeige aus einer Quelle ins
- * System kommt, mit der wir keinen Vertrag haben - und er ist zulaessig,
+ * System kommt, mit der wir keinen Vertrag haben - und er ist zulässig,
  * weil der Mensch die Anzeige selbst mitbringt. Es wird nichts abgerufen,
  * was er nicht selbst geoeffnet hat, und nichts im Hintergrund
  * nachgeladen.

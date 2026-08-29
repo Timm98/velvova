@@ -10,7 +10,7 @@ function paths(obj: unknown, prefix = ""): string[] {
 }
 
 describe("Sprachen", () => {
-  it("hat in beiden Sprachen dieselben Schluessel", () => {
+  it("hat in beiden Sprachen dieselben Schlüssel", () => {
     const dePaths = paths(de).sort();
     const enPaths = paths(en).sort();
     expect(enPaths).toEqual(dePaths);
@@ -25,7 +25,7 @@ describe("Sprachen", () => {
     }
   });
 
-  it("meldet einen fehlenden Schluessel sichtbar statt still", () => {
+  it("meldet einen fehlenden Schlüssel sichtbar statt still", () => {
     expect(getTranslator("de").t("gibt.es.nicht")).toContain("fehlender Text");
   });
 
@@ -39,13 +39,13 @@ describe("Sprachen", () => {
     expect(interpolate("{done} von {total}", { done: 3, total: 7 })).toBe("3 von 7");
   });
 
-  it("laesst unbekannte Platzhalter stehen, statt sie zu verschlucken", () => {
+  it("lässt unbekannte Platzhalter stehen, statt sie zu verschlucken", () => {
     expect(interpolate("Hallo {unbekannt}")).toBe("Hallo {unbekannt}");
   });
 });
 
 describe("Formate", () => {
-  it("formatiert Waehrung nach Sprache", () => {
+  it("formatiert Währung nach Sprache", () => {
     expect(formatters("de").currency.format(42000)).toContain("42.000");
     expect(formatters("en").currency.format(42000)).toContain("42,000");
   });

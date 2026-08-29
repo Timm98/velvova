@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { confirmProfile, confirmRoleCluster } from "@/lib/profile";
 import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
 
-/** Bestaetigung des Gesamtprofils. Schaltet personalisierte Jobs frei. */
+/** Bestätigung des Gesamtprofils. Schaltet personalisierte Jobs frei. */
 export function ConfirmProfileButton({
   alreadyConfirmed,
   label,
@@ -19,9 +19,9 @@ export function ConfirmProfileButton({
   if (alreadyConfirmed) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexWrap: "wrap" }}>
-        <Badge tone="positive">bestaetigt</Badge>
+        <Badge tone="positive">bestätigt</Badge>
         <span style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-          Deine Vorschlaege sind freigeschaltet. Aenderungen wirken sofort.
+          Deine Vorschläge sind freigeschaltet. Änderungen wirken sofort.
         </span>
       </div>
     );
@@ -53,10 +53,10 @@ const KIND_LABEL: Record<string, { text: string; tone: "neutral" | "assistant" |
 };
 
 const REALISM_LABEL: Record<string, string> = {
-  direct: "Einstieg direkt moeglich",
-  with_bridge: "Einstieg ueber einen Zwischenschritt",
+  direct: "Einstieg direkt möglich",
+  with_bridge: "Einstieg über einen Zwischenschritt",
   longer_path: "laengerer Weg",
-  unclear: "Einschaetzung offen",
+  unclear: "Einschätzung offen",
 };
 
 export function RoleClusterCard({
@@ -123,7 +123,7 @@ export function RoleClusterCard({
 
           <div>
             <dt style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", textTransform: "uppercase" }}>
-              Naechster Schritt zur Ueberpruefung
+              Nächster Schritt zur Überprüfung
             </dt>
             <dd style={{ margin: 0 }}>{cluster.nextValidationStep}</dd>
           </div>

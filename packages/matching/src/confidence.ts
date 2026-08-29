@@ -31,9 +31,9 @@ export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
 
   // --- Profilabdeckung ---
   const profile = Math.min(1, input.profileCoverage * 0.7 + input.fitCoverage * 0.3);
-  if (profile < 0.6) reducedBy.push("Dein Profil ist noch nicht vollstaendig genug.");
+  if (profile < 0.6) reducedBy.push("Dein Profil ist noch nicht vollständig genug.");
 
-  // --- Vollstaendigkeit der Anzeige ---
+  // --- Vollständigkeit der Anzeige ---
   const fields: Array<[string, boolean]> = [
     ["Gehalt", input.job.salary.disclosed],
     ["Aufgaben", input.job.coreTasks.length > 0],
@@ -48,7 +48,7 @@ export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
   const missing = fields.filter(([, ok]) => !ok).map(([n]) => n);
   if (missing.length > 0) reducedBy.push(`Die Anzeige macht keine Angabe zu: ${missing.join(", ")}.`);
 
-  // --- Quellenqualitaet und Aktualitaet ---
+  // --- Quellenqualität und Aktualität ---
   let sourceQuality: number | null = null;
   if (input.job.publishedAt) {
     const ageDays = (now.getTime() - input.job.publishedAt.getTime()) / DAY;
@@ -58,7 +58,7 @@ export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
     sourceQuality = freshness * 0.5 + linkOk * 0.25 + hasOriginal * 0.25;
     if (ageDays > 60) reducedBy.push(`Die Anzeige ist ${Math.round(ageDays)} Tage alt.`);
   } else {
-    reducedBy.push("Es ist kein Veroeffentlichungsdatum bekannt.");
+    reducedBy.push("Es ist kein Veröffentlichungsdatum bekannt.");
   }
 
   // --- Abdeckung externer Unternehmensinformationen ---
@@ -77,11 +77,11 @@ export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
   const inputs: WeightedInput[] = [
     { key: "profile_coverage", label: "Profilabdeckung", raw: profile, weight: 0.35,
       explanation: `Dein Profil deckt ${Math.round(input.profileCoverage * 100)} % der Themen ab.` },
-    { key: "listing_completeness", label: "Vollstaendigkeit der Anzeige", raw: listing, weight: 0.30,
+    { key: "listing_completeness", label: "Vollständigkeit der Anzeige", raw: listing, weight: 0.30,
       explanation: `${present.length} von ${fields.length} wichtigen Angaben sind vorhanden.` },
-    { key: "source_quality", label: "Quellenqualitaet und Aktualitaet", raw: sourceQuality, weight: 0.20,
-      explanation: sourceQuality === null ? "Kein Veroeffentlichungsdatum bekannt."
-        : "Alter der Anzeige, letzter Linkcheck und Verfuegbarkeit der Originalquelle." },
+    { key: "source_quality", label: "Quellenqualität und Aktualität", raw: sourceQuality, weight: 0.20,
+      explanation: sourceQuality === null ? "Kein Veröffentlichungsdatum bekannt."
+        : "Alter der Anzeige, letzter Linkcheck und Verfügbarkeit der Originalquelle." },
     { key: "external_coverage", label: "Externe Unternehmensinformationen", raw: external, weight: 0.15,
       explanation: external === null ? "Keine externen Quellen vorhanden."
         : `${input.reviews.length} Quellen, nach Art getrennt ausgewiesen.` },

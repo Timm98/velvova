@@ -1,7 +1,18 @@
 packages:
   - apps/*
   - packages/*
+
+# Ausdrueckliche Freigabe von Build-Skripten.
+#
+# pnpm blockiert postinstall-Skripte standardmaessig - eine gute
+# Voreinstellung gegen Lieferketten-Angriffe. esbuild braucht seines, um
+# die passende Binaerdatei zu entpacken; es wird von vitest, Playwright
+# und Next genutzt. Jeder weitere Eintrag hier ist eine bewusste
+# Entscheidung, kein Durchwinken.
 allowBuilds:
-  esbuild: set this to true or false
+  esbuild: true
+
+# Zod 4.5.2 ist juenger als die Mindestwartezeit, aber die Fassung, gegen
+# die alle Schemata geschrieben sind.
 minimumReleaseAgeExclude:
   - zod@4.5.2

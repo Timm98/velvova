@@ -2,11 +2,11 @@ import type { InterviewSession, InterviewStage } from "@paycheck/domain";
 import type { schema } from "@paycheck/db";
 
 /**
- * Uebersetzt Datenbankzeilen in Domaenentypen.
+ * Uebersetzt Datenbankzeilen in Domänentypen.
  *
- * Die Datenbank kennt etwa `mode` nur als Text; die Domaene kennt genau
+ * Die Datenbank kennt etwa `mode` nur als Text; die Domäne kennt genau
  * zwei erlaubte Werte. Statt an der Aufrufstelle zu casten, findet die
- * Umwandlung an einer Stelle statt - dann faellt auch auf, wenn ein
+ * Umwandlung an einer Stelle statt - dann fällt auch auf, wenn ein
  * unerwarteter Wert in der Datenbank steht.
  */
 

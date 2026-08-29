@@ -72,8 +72,8 @@ export const GeneratedArtifactSchema = z.object({
 export type GeneratedArtifact = z.infer<typeof GeneratedArtifactSchema>;
 
 /**
- * Claim-Provenienz. Jede pruefbare Behauptung in einem Dokument haengt an
- * bestaetigter Evidenz. Ohne diese Verknuepfung darf sie nicht in die
+ * Claim-Provenienz. Jede pruefbare Behauptung in einem Dokument hängt an
+ * bestaetigter Evidenz. Ohne diese Verknüpfung darf sie nicht in die
  * finale Fassung.
  */
 export const ClaimSchema = z.object({

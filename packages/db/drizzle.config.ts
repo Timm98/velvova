@@ -2,7 +2,7 @@ import type { Config } from "drizzle-kit";
 
 /**
  * Migrationen werden gegen echtes Postgres-SQL erzeugt. Ob lokal PGlite
- * oder ein Server dahintersteht, spielt fuer die Migration keine Rolle -
+ * oder ein Server dahintersteht, spielt für die Migration keine Rolle -
  * beides ist Postgres.
  */
 export default {

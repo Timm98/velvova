@@ -34,8 +34,8 @@ function toneFor(stage: string) {
  * Application Hub.
  *
  * Die Tafel zeigt die Pipeline, darunter steht die Trichterdiagnose -
- * und die schweigt ausdruecklich, solange die Stichprobe zu klein ist.
- * Ein Muster in drei Bewerbungen zu behaupten waere geraten.
+ * und die schweigt ausdrücklich, solange die Stichprobe zu klein ist.
+ * Ein Muster in drei Bewerbungen zu behaupten wäre geraten.
  */
 export default async function ApplicationsPage({
   searchParams,
@@ -219,7 +219,7 @@ export default async function ApplicationsPage({
                     </strong>
                     <span>
                       <Link href={`/app/applications/${r.app.id}`} style={{ textDecoration: "none" }}>
-                        {r.app.nextStepLabel ?? "Naechster Schritt"}
+                        {r.app.nextStepLabel ?? "Nächster Schritt"}
                       </Link>
                       <br />
                       <span style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
@@ -252,8 +252,8 @@ export default async function ApplicationsPage({
                 ["Gemerkt", funnel.counts.saved],
                 ["Begonnen", funnel.counts.started],
                 ["Versendet", funnel.counts.sent],
-                ["Rueckmeldung", funnel.counts.acknowledged],
-                ["Gespraeche", funnel.counts.interviews],
+                ["Rückmeldung", funnel.counts.acknowledged],
+                ["Gespräche", funnel.counts.interviews],
                 ["Angebote", funnel.counts.offers],
               ].map(([label, value]) => (
                 <div key={label as string} style={{ whiteSpace: "nowrap" }}>
