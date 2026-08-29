@@ -1,0 +1,111 @@
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
+import { ArrowLeft } from "lucide-react";
+import { cn } from "@/lib/cn";
+import { JobRow, type JobRowData } from "@/components/jobs/JobRow";
+
+/**
+ * Die geteilte Ansicht.
+ *
+ * Links eine Liste zum Überfliegen, rechts die ausgewählte Stelle. Der
+ * Wechsel läuft über einen Suchparameter, nicht über Zustand im
+ * Browser: so ist jede Auswahl verlinkbar, der Zurück-Knopf tut das
+ * Erwartete, und ein Neuladen zeigt dieselbe Stelle.
+ *
+ * Auf schmalen Geräten gibt es kein Nebeneinander. Dort ist die Liste
+ * die Seite, und die Auswahl schiebt die Einzelansicht darüber — mit
+ * einem Weg zurück, der auch ohne Systemgeste funktioniert.
+ */
+export function JobSplitView({
+  rows,
+  selectedId,
+  detail,
+  emptyState,
+}: {
+  rows: JobRowData[];
+  selectedId: string | null;
+  detail: React.ReactNode;
+  emptyState: React.ReactNode;
+}) {
+  const router = useRouter();
+  const params = useSearchParams();
+  const listRef = useRef<HTMLDivElement>(null);
+
+  function hrefFor(id: string): string {
+    const next = new URLSearchParams(params.toString());
+    next.set("job", id);
+    return `/app/jobs?${next.toString()}`;
+  }
+
+  function backHref(): string {
+    const next = new URLSearchParams(params.toString());
+    next.delete("job");
+    const search = next.toString();
+    return search ? `/app/jobs?${search}` : "/app/jobs";
+  }
+
+  // Die Auswahl in den sichtbaren Bereich holen — aber nur, wenn sie
+  // wirklich außerhalb liegt. Ein Sprung bei jedem Klick wäre unruhig.
+  useEffect(() => {
+    if (!selectedId || !listRef.current) return;
+    const el = listRef.current.querySelector(`[data-job-id="${selectedId}"]`);
+    if (!(el instanceof HTMLElement)) return;
+
+    const box = listRef.current.getBoundingClientRect();
+    const item = el.getBoundingClientRect();
+    if (item.top < box.top || item.bottom > box.bottom) {
+      el.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedId]);
+
+  if (rows.length === 0) return <>{emptyState}</>;
+
+  return (
+    <div className="grid overflow-hidden rounded-[--radius-lg] border border-line bg-raised lg:h-[calc(100dvh-11rem)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+      {/* ── Liste ──────────────────────────────────────────── */}
+      <div
+        ref={listRef}
+        className={cn(
+          "min-w-0 border-line lg:overflow-y-auto lg:border-r",
+          selectedId && "hidden lg:block",
+        )}
+      >
+        <ul className="divide-y divide-line">
+          {rows.map((row) => (
+            <li key={row.id} data-job-id={row.id}>
+              <JobRow job={row} selected={row.id === selectedId} href={hrefFor(row.id)} />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* ── Auswahl ────────────────────────────────────────── */}
+      <div className={cn("min-w-0 lg:overflow-y-auto", !selectedId && "hidden lg:block")}>
+        {selectedId ? (
+          <>
+            <div className="sticky top-0 z-10 border-b border-line bg-raised/90 px-4 py-2.5 backdrop-blur lg:hidden">
+              <button
+                type="button"
+                onClick={() => router.push(backHref(), { scroll: false })}
+                className="inline-flex min-h-9 items-center gap-1.5 text-sm text-ink-2"
+              >
+                <ArrowLeft className="size-4" strokeWidth={1.8} />
+                Alle Stellen
+              </button>
+            </div>
+            {detail}
+          </>
+        ) : (
+          <div className="hidden h-full place-items-center p-10 lg:grid">
+            <p className="max-w-[26rem] text-center text-sm leading-relaxed text-ink-3">
+              Wähle links eine Stelle. Rechts steht dann, warum sie passt, was dagegen spricht und
+              was die Anzeige verschweigt.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

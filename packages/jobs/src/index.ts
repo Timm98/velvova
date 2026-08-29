@@ -2,4 +2,6 @@ export * from "./adapter.ts";
 export * from "./sources/userImport.ts";
 export * from "./registry.ts";
 export * from "./sources/arbeitnow.ts";
+export * from "./sources/adzuna.ts";
+export * from "./sources/jooble.ts";
 export * from "./ingest.ts";

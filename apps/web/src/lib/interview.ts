@@ -297,7 +297,9 @@ export async function assistantReply(userMessage: string): Promise<string> {
   for await (const chunk of provider.chatStream({
     system,
     messages: [{ role: "user", content }],
-    tier: "strong",
+    // Profilsynthese ist die Aufgabe, die Tiefe braucht: sie fasst ein
+    // ganzes Gespraech zusammen und leitet Rollen ab.
+    tier: "deep",
   })) {
     text += chunk;
   }

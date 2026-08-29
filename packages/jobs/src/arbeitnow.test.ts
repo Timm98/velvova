@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ArbeitnowAdapter, htmlToText, readContractType, readLanguages } from "./sources/arbeitnow.ts";
+import { AdzunaAdapter } from "./sources/adzuna.ts";
+import { JoobleAdapter, parseSalary } from "./sources/jooble.ts";
 import { normalise } from "./adapter.ts";
 
 /**
@@ -110,5 +112,106 @@ describe("ArbeitnowAdapter", () => {
     expect(adapter.attributionRequired).toBe(true);
     expect(adapter.attributionText).toBeTruthy();
     expect(adapter.licenseStatus).not.toBe("unclear");
+  });
+});
+
+describe("AdzunaAdapter", () => {
+  it("gilt ohne Zugangsdaten als nicht eingerichtet", () => {
+    expect(new AdzunaAdapter({ appId: undefined, appKey: undefined }).isConfigured()).toBe(false);
+  });
+
+  it("ruft ohne Zugangsdaten nichts ab", async () => {
+    await expect(
+      new AdzunaAdapter({ appId: undefined, appKey: undefined }).fetchListings(),
+    ).rejects.toThrow(/nicht eingerichtet/);
+  });
+
+  it("übernimmt ein geschätztes Gehalt nicht als offengelegt", async () => {
+    // Der entscheidende Punkt: Adzuna kennzeichnet Schaetzungen. Eine
+    // Schaetzung, die wie eine Zusage aussieht, ist schlimmer als keine
+    // Angabe.
+    const fetchImpl = (async () =>
+      new Response(
+        JSON.stringify({
+          results: [
+            {
+              id: "1",
+              title: "Kundenbetreuung",
+              description: "Beschreibung",
+              created: "2026-08-20T10:00:00Z",
+              redirect_url: "https://www.adzuna.de/land/ad/1",
+              salary_min: 42000,
+              salary_max: 52000,
+              salary_is_predicted: "1",
+              company: { display_name: "Beispiel GmbH" },
+              location: { display_name: "Hamburg" },
+            },
+          ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      )) as unknown as typeof fetch;
+
+    const [raw] = await new AdzunaAdapter({
+      appId: "id",
+      appKey: "key",
+      fetchImpl,
+    }).fetchListings();
+
+    expect(raw?.salaryMin).toBeNull();
+    expect(raw?.salaryMax).toBeNull();
+    expect(raw?.raw?.salaryIsPredicted).toBe(true);
+
+    const n = normalise(raw!);
+    expect(n.job.salary.disclosed).toBe(false);
+  });
+});
+
+describe("Jooble: Gehalt aus Freitext", () => {
+  it("erkennt eine klare Spanne", () => {
+    expect(parseSalary("45.000 - 55.000 EUR pro Jahr")).toEqual({
+      min: 45000,
+      max: 55000,
+      period: "year",
+    });
+  });
+
+  it("erkennt einen Stundensatz", () => {
+    expect(parseSalary("18,50 EUR pro Stunde").period).toBe("hour");
+  });
+
+  it("gibt bei Floskeln nichts zurück", () => {
+    // "Attraktives Gehalt" ist keine Angabe. Daraus eine Zahl zu machen
+    // waere eine Erfindung mit Zahlenformat.
+    expect(parseSalary("Attraktives Gehalt nach Vereinbarung")).toEqual({
+      min: null,
+      max: null,
+      period: "year",
+    });
+    expect(parseSalary(undefined).min).toBeNull();
+  });
+});
+
+describe("JoobleAdapter", () => {
+  it("gilt ohne Schlüssel als nicht eingerichtet", () => {
+    expect(new JoobleAdapter({ apiKey: undefined }).isConfigured()).toBe(false);
+  });
+});
+
+describe("Jooble: Gehalt, weitere Fälle", () => {
+  it("liest deutsche Tausenderpunkte und Nachkommastellen richtig", () => {
+    expect(parseSalary("45.000 EUR").min).toBe(45000);
+    expect(parseSalary("18,50 EUR/Std.").min).toBe(18.5);
+  });
+
+  it("hält Jahreszahlen aus dem Gehaltsfeld heraus", () => {
+    // "seit 2019" enthaelt eine Zahl, aber kein Gehalt. Die Untergrenze
+    // je Bezugsgroesse faengt genau das ab.
+    expect(parseSalary("Einstieg seit 2019 möglich").min).toBeNull();
+  });
+
+  it("erkennt eine Monatsangabe", () => {
+    const result = parseSalary("3.200 EUR monatlich");
+    expect(result.period).toBe("month");
+    expect(result.min).toBe(3200);
   });
 });

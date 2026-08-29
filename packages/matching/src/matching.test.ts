@@ -308,3 +308,38 @@ describe("Gesamtranking", () => {
     expect(sortJobs(items, "highest_salary")[0]!.jobId).toBe("mit");
   });
 });
+
+describe("Fit: Zahl und Einstufung hängen zusammen", () => {
+  it("stuft nie ein, wo keine Zahl gezeigt wird", () => {
+    // Der Widerspruch, den die Gewichtsaenderung sichtbar gemacht hat:
+    // "hohe Passung" neben einer verweigerten Zahl. Entweder die
+    // Datenlage traegt eine Aussage, oder sie traegt keine.
+    const thin = computeFit({
+      job: makeJob({ coreTasks: [], experienceLevel: null }),
+      requirements: [],
+      evidence: [],
+      constraints: makeConstraints(),
+      energisingTasks: [],
+      drainingTasks: [],
+      workStylePreferences: [],
+      rankedValues: [],
+      statedInterests: [],
+    });
+
+    expect(thin.score).toBeNull();
+    expect(thin.band).toBe("insufficient_data");
+  });
+
+  it("hält die Startgewichte bei genau 100 Prozent", () => {
+    const sum = Object.values(DEFAULT_FIT_WEIGHTS).reduce((a, b) => a + b, 0);
+    expect(Math.round(sum * 1000) / 1000).toBe(1);
+  });
+
+  it("gewichtet belegte Fähigkeiten am schwersten und Interessen leichter", () => {
+    // Belegte Faehigkeiten sind das Einzige, was nachpruefbar ist.
+    // Eine Selbstauskunft ueber Interesse ist die am wenigsten
+    // belastbare Angabe im ganzen Profil.
+    expect(DEFAULT_FIT_WEIGHTS.provenSkills).toBeGreaterThan(DEFAULT_FIT_WEIGHTS.preferredTasks);
+    expect(DEFAULT_FIT_WEIGHTS.provenSkills).toBeGreaterThan(DEFAULT_FIT_WEIGHTS.statedInterest);
+  });
+});

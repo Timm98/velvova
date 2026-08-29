@@ -22,14 +22,28 @@ export interface FitWeights {
   statedInterest: number;
 }
 
+/**
+ * Die Startgewichte.
+ *
+ * Belegte Fähigkeiten wiegen am schwersten, weil sie das Einzige sind,
+ * das nachprüfbar ist. Interessen wiegen am leichtesten — nicht weil
+ * sie unwichtig wären, sondern weil eine Selbstauskunft über Interesse
+ * die am wenigsten belastbare Angabe im ganzen Profil ist.
+ *
+ * Evidenzqualität ist bewusst KEINE eigene Achse. Sie sagt etwas über
+ * die Verlässlichkeit einer Aussage, nicht über die Passung — und
+ * fließt deshalb in die Sicherheit ein, wo sie hingehört. Sie hier
+ * mitzurechnen hieße, eine gut belegte schlechte Passung besser
+ * aussehen zu lassen als eine schlecht belegte gute.
+ */
 export const DEFAULT_FIT_WEIGHTS: FitWeights = {
-  provenSkills: 0.30,
+  provenSkills: 0.25,
   preferredTasks: 0.20,
   workStyle: 0.15,
-  valuesAndMotives: 0.10,
-  growthPotential: 0.10,
+  growthPotential: 0.15,
+  statedInterest: 0.10,
   marketRealism: 0.10,
-  statedInterest: 0.05,
+  valuesAndMotives: 0.05,
 };
 
 /** Grenzen, in denen der Mensch die Gewichte verschieben darf. */
@@ -220,14 +234,27 @@ export function computeFit(input: FitInput): FitResult {
 
   const { value, coverage, factors } = weightedScore(inputs);
 
-  // Eine Zahl nur zeigen, wenn sie etwas bedeutet.
+  /*
+   * Eine Zahl nur zeigen, wenn sie etwas bedeutet.
+   *
+   * Und — das ist der Punkt, an dem es vorher auseinanderlief — die
+   * Einstufung hängt an DERSELBEN Schwelle. Zwei getrennte Grenzen
+   * führten dazu, dass eine Stelle als "hohe Passung" eingestuft wurde,
+   * während die Zahl daneben verweigert wurde. Beides gleichzeitig ist
+   * ein Widerspruch: entweder die Datenlage trägt eine Aussage, oder
+   * sie trägt keine.
+   *
+   * Ein Test hat das gefunden, als sich die Gewichte änderten. Er hätte
+   * es auch vorher gefunden, wenn die Gewichte anders gestanden hätten
+   * — der Fehler war die ganze Zeit da und nur nicht sichtbar.
+   */
   const MIN_COVERAGE_FOR_NUMBER = 0.55;
   const showNumber = value !== null && coverage >= MIN_COVERAGE_FOR_NUMBER;
 
   let band: FitBand;
-  if (value === null || coverage < 0.25) band = "insufficient_data";
-  else if (value >= 0.7) band = "high";
-  else if (value >= 0.45) band = "medium";
+  if (!showNumber) band = "insufficient_data";
+  else if (value! >= 0.7) band = "high";
+  else if (value! >= 0.45) band = "medium";
   else band = "exploratory";
 
   const known = factors.filter((f) => f.raw !== null).sort((a, b) => b.contribution - a.contribution);

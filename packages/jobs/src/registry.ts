@@ -2,6 +2,8 @@ import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
 import type { JobSourceAdapter } from "./adapter.ts";
 import { UserTextImportAdapter } from "./sources/userImport.ts";
 import { ArbeitnowAdapter } from "./sources/arbeitnow.ts";
+import { AdzunaAdapter } from "./sources/adzuna.ts";
+import { JoobleAdapter } from "./sources/jooble.ts";
 
 /**
  * Welche Quellen aktiv sind.
@@ -22,7 +24,7 @@ export interface SourceStatus {
 }
 
 function allAdapters(): JobSourceAdapter[] {
-  return [new ArbeitnowAdapter(), new UserTextImportAdapter()];
+  return [new ArbeitnowAdapter(), new AdzunaAdapter(), new JoobleAdapter(), new UserTextImportAdapter()];
 }
 
 export function adapterByKey(key: string): JobSourceAdapter | undefined {
