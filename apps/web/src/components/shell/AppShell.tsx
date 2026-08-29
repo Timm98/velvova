@@ -5,53 +5,53 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Bell,
-  Briefcase,
-  ChevronLeft,
+  Compass,
   FileText,
   Globe,
-  LayoutDashboard,
+  LayoutGrid,
   LifeBuoy,
   type LucideIcon,
   Palette,
+  PanelLeft,
   Search,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
   User,
+  Waypoints,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { BrandMark, NinaSignal } from "@/components/nina/NinaSignal";
 import { CommandPalette } from "./CommandPalette.tsx";
 import { AccountMenu } from "./AccountMenu.tsx";
 
 /**
- * Das Gerüst der Anwendung.
+ * Das Gerüst.
  *
- * Vier Entscheidungen, die den alten Aufbau ersetzen:
+ * Vier Entscheidungen, die den Charakter bestimmen:
  *
- * 1. Auf dem Desktop eine ruhige, einklappbare Seitenleiste statt einer
- *    vollgestellten Topbar. Navigation steht links stabil an einem Ort;
- *    der Inhalt bekommt Breite und Aufmerksamkeit.
+ * 1. Eine schmale Rail statt einer Sidebar. 76 Pixel im Ruhezustand,
+ *    240 ausgeklappt. Eine dauerhaft breite Navigationsspalte lässt
+ *    jedes Produkt nach Verwaltungssoftware aussehen — der Inhalt soll
+ *    die Fläche bekommen, nicht das Menü.
  *
- * 2. KEINE Sprach- und keine Darstellungsumschaltung in der Kopfzeile.
- *    Beides sind Entscheidungen, die man einmal trifft — sie gehören ins
- *    Onboarding und ins Kontomenü, nicht in die Dauernavigation.
+ * 2. Vier Hauptbereiche. Nicht zehn. Alles Weitere ist entweder ein
+ *    Unterbereich oder gehört ins Kontomenü.
  *
- * 3. KEIN dauerhaftes Demo-Warnband. Eine Warnleiste, die immer da ist,
- *    wird nach zwei Minuten unsichtbar und macht die Oberfläche billig.
- *    Demo-Daten werden dort gekennzeichnet, wo sie stehen.
+ * 3. Nina ist kein Navigationseintrag, sondern eine Handlung. Sie steht
+ *    als eigener Knopf in der Topbar und auf schmalen Geräten als
+ *    zentrale Schaltfläche über der Navigation.
  *
- * 4. Auf schmalen Geräten liegt die untere Navigation IM Raster, nicht
- *    darüber: drei Zeilen, Inhalt scrollt in sich. Eine überlagernde
- *    Leiste verdeckt sonst Schaltflächen.
+ * 4. In der Topbar stehen KEINE Schalter für Sprache, Darstellung,
+ *    Einstellungen oder Abmelden. Das sind Entscheidungen, die man
+ *    einmal trifft; sie liegen im Kontomenü.
  */
 
 export interface NavLabels {
   home: string;
-  assistant: string;
-  jobs: string;
+  discover: string;
   applications: string;
-  profile: string;
-  growth: string;
+  career: string;
+  assistant: string;
   settings: string;
   logout: string;
   skipToContent: string;
@@ -61,23 +61,21 @@ export interface NavLabels {
   appearance: string;
   privacy: string;
   help: string;
+  expand: string;
+  collapse: string;
 }
 
 interface NavItem {
-  key: keyof NavLabels;
+  key: "home" | "discover" | "applications" | "career";
   href: string;
   icon: LucideIcon;
-  /** Auf schmalen Geräten sichtbar? Höchstens fünf Einträge. */
-  mobile: boolean;
 }
 
 const PRIMARY: NavItem[] = [
-  { key: "home", href: "/app", icon: LayoutDashboard, mobile: true },
-  { key: "assistant", href: "/app/nina", icon: Sparkles, mobile: true },
-  { key: "jobs", href: "/app/jobs", icon: Briefcase, mobile: true },
-  { key: "applications", href: "/app/applications", icon: FileText, mobile: true },
-  { key: "profile", href: "/app/profile", icon: User, mobile: true },
-  { key: "growth", href: "/app/growth", icon: TrendingUp, mobile: false },
+  { key: "home", href: "/app", icon: LayoutGrid },
+  { key: "discover", href: "/app/jobs", icon: Compass },
+  { key: "applications", href: "/app/applications", icon: FileText },
+  { key: "career", href: "/app/career", icon: Waypoints },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -85,13 +83,18 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Der Kontexttitel in der oberen Leiste. Kein Breadcrumb-Wildwuchs. */
+/** Der Kontexttitel. Eine Ortsangabe, kein Breadcrumb-Wildwuchs. */
 function contextTitle(pathname: string, labels: NavLabels): string {
+  if (pathname.startsWith("/app/nina")) return labels.assistant;
+  if (pathname.startsWith("/app/settings")) return labels.settings;
+  if (pathname.startsWith("/app/documents")) return "Dokumente";
+  if (pathname.startsWith("/app/coaching")) return "Interview-Training";
+  if (pathname.startsWith("/app/roles")) return "Rollen";
+  if (pathname.startsWith("/app/notifications")) return labels.notifications;
+
   const match = [...PRIMARY]
     .sort((a, b) => b.href.length - a.href.length)
     .find((i) => isActive(pathname, i.href));
-  if (pathname.startsWith("/app/settings")) return labels.settings;
-  if (pathname.startsWith("/app/coaching")) return "Interview-Coaching";
   return match ? labels[match.key] : labels.home;
 }
 
@@ -115,25 +118,25 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
 
   // Die Wahl überlebt den Seitenwechsel. Sie liegt bewusst nur im
-  // Browser: eine eingeklappte Leiste ist eine Angewohnheit an diesem
+  // Browser: eine ausgeklappte Rail ist eine Angewohnheit an diesem
   // Gerät, keine Kontoeinstellung.
   useEffect(() => {
     try {
-      setCollapsed(localStorage.getItem("paycheck.nav.collapsed") === "1");
+      setExpanded(localStorage.getItem("paycheck.rail.expanded") === "1");
     } catch {
-      /* Privater Modus: dann eben ausgeklappt. */
+      /* Privater Modus: dann eben eingeklappt. */
     }
   }, []);
 
-  function toggleCollapsed() {
-    setCollapsed((v) => {
+  function toggleRail() {
+    setExpanded((v) => {
       const next = !v;
       try {
-        localStorage.setItem("paycheck.nav.collapsed", next ? "1" : "0");
+        localStorage.setItem("paycheck.rail.expanded", next ? "1" : "0");
       } catch {
         /* egal */
       }
@@ -153,7 +156,7 @@ export function AppShell({
   }, []);
 
   const accountItems = [
-    { href: "/app/profile", label: labels.profile, icon: User },
+    { href: "/app/settings/profile", label: labels.settings, icon: User },
     { href: "/app/settings/language-region", label: labels.languageRegion, icon: Globe },
     { href: "/app/settings/appearance", label: labels.appearance, icon: Palette },
     { href: "/app/settings/privacy", label: labels.privacy, icon: ShieldCheck },
@@ -163,119 +166,107 @@ export function AppShell({
   return (
     <div
       className={cn(
-        "min-h-dvh md:grid",
-        collapsed ? "md:grid-cols-[68px_1fr]" : "md:grid-cols-[244px_1fr]",
+        "min-h-dvh bg-page md:grid",
+        expanded ? "md:grid-cols-[240px_1fr]" : "md:grid-cols-[76px_1fr]",
       )}
     >
       <a href="#inhalt" className="skip-link">
         {labels.skipToContent}
       </a>
 
-      {/* ── Seitenleiste, ab Tablet ─────────────────────────────── */}
-      {/* Die Fläche liegt auf der Rasterzelle, nicht auf dem klebenden
-          Element: sonst endet der Hintergrund nach einer Bildschirmhöhe
-          und die Spalte reißt bei langen Seiten sichtbar ab. */}
-      <div className="hidden border-r border-line bg-sunken/60 md:block">
-      <aside className="sticky top-0 flex h-dvh flex-col">
-        <div className={cn("flex items-center gap-2 px-4 py-5", collapsed && "justify-center px-2")}>
-          <Link
-            href="/app"
-            className="flex min-w-0 items-center gap-2.5 rounded-[--radius-sm] text-[15px] font-semibold tracking-tight"
-          >
-            <span
-              aria-hidden
-              className="grid size-7 shrink-0 place-items-center rounded-[--radius-sm] bg-brand text-xs font-bold text-white"
-            >
-              P
-            </span>
-            {!collapsed && <span className="truncate">{brandName}</span>}
-          </Link>
-        </div>
+      {/* ══ Rail ══════════════════════════════════════════════ */}
+      <div className="hidden border-r border-line bg-sunken md:block">
+        <aside className="sticky top-0 flex h-dvh flex-col">
+          <div className={cn("flex h-14 items-center px-4", !expanded && "justify-center px-0")}>
+            <Link href="/app" className="rounded-[--radius-sm]" aria-label={brandName}>
+              <BrandMark name={brandName} showName={expanded} size="md" />
+            </Link>
+          </div>
 
-        <nav aria-label="Hauptbereiche" className="flex-1 px-2.5">
-          <ul className="grid gap-0.5">
-            {PRIMARY.map((item) => {
-              const active = isActive(pathname, item.href);
-              const Icon = item.icon;
-              return (
-                <li key={item.key}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? "page" : undefined}
-                    title={collapsed ? labels[item.key] : undefined}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-[--radius-md] px-3 py-2.5 text-sm transition-colors duration-[--duration-fast]",
-                      collapsed && "justify-center px-0",
-                      active
-                        ? "bg-raised font-medium text-ink shadow-xs"
-                        : "text-ink-2 hover:bg-raised/60 hover:text-ink",
-                    )}
-                  >
-                    <Icon
-                      className={cn("size-[18px] shrink-0", active ? "text-brand" : "text-ink-3")}
-                      strokeWidth={active ? 2.1 : 1.8}
-                    />
-                    {!collapsed && labels[item.key]}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
+          <nav aria-label="Hauptbereiche" className="flex-1 px-3 pt-2">
+            <ul className="grid gap-1">
+              {PRIMARY.map((item) => {
+                const active = isActive(pathname, item.href);
+                const Icon = item.icon;
+                return (
+                  <li key={item.key}>
+                    <Link
+                      href={item.href}
+                      aria-current={active ? "page" : undefined}
+                      title={expanded ? undefined : labels[item.key]}
+                      className={cn(
+                        "group relative flex items-center gap-3 rounded-[--radius-md] text-sm transition-colors duration-[--duration-fast]",
+                        expanded ? "px-3 py-2.5" : "h-11 justify-center",
+                        active
+                          ? "bg-inset font-medium text-ink"
+                          : "text-ink-2 hover:bg-inset/60 hover:text-ink",
+                      )}
+                    >
+                      {/* Der aktive Zustand trägt zusätzlich eine
+                          Lichtkante links — Farbe allein wäre zu wenig. */}
+                      {active && (
+                        <span
+                          aria-hidden
+                          className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-accent"
+                        />
+                      )}
+                      <Icon
+                        className={cn("size-[19px] shrink-0", active ? "text-accent" : "text-ink-3")}
+                        strokeWidth={active ? 2 : 1.7}
+                      />
+                      {expanded && labels[item.key]}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
 
-        <div className="p-2.5">
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            aria-expanded={!collapsed}
-            className={cn(
-              "flex w-full items-center gap-2.5 rounded-[--radius-md] px-3 py-2 text-sm text-ink-3 transition-colors hover:bg-raised/60 hover:text-ink",
-              collapsed && "justify-center px-0",
-            )}
-          >
-            <ChevronLeft
+          <div className="grid gap-1 p-3">
+            <button
+              type="button"
+              onClick={toggleRail}
+              aria-expanded={expanded}
+              title={expanded ? labels.collapse : labels.expand}
               className={cn(
-                "size-4 shrink-0 transition-transform duration-[--duration-base]",
-                collapsed && "rotate-180",
+                "flex items-center gap-3 rounded-[--radius-md] text-sm text-ink-3 transition-colors hover:bg-inset/60 hover:text-ink",
+                expanded ? "px-3 py-2.5" : "h-11 justify-center",
               )}
-              strokeWidth={1.9}
-            />
-            {!collapsed && "Einklappen"}
-          </button>
-        </div>
-      </aside>
+            >
+              <PanelLeft
+                className={cn(
+                  "size-[18px] shrink-0 transition-transform duration-[--duration-base]",
+                  expanded && "rotate-180",
+                )}
+                strokeWidth={1.7}
+              />
+              {expanded && labels.collapse}
+            </button>
+          </div>
+        </aside>
       </div>
 
-      {/* ── Inhalt ──────────────────────────────────────────────── */}
+      {/* ══ Inhalt ════════════════════════════════════════════ */}
       <div className="grid min-h-dvh min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] md:block md:min-h-0">
-        <header className="sticky top-0 z-30 flex items-center gap-2 border-b border-line bg-page/85 px-4 py-2.5 backdrop-blur-md md:px-7 md:py-3">
-          {/* Marke nur schmal — auf dem Desktop steht sie in der Leiste. */}
-          <Link href="/app" className="flex items-center gap-2 md:hidden">
-            <span
-              aria-hidden
-              className="grid size-6 place-items-center rounded-[--radius-xs] bg-brand text-[10px] font-bold text-white"
-            >
-              P
-            </span>
-            <span className="sr-only">{brandName}</span>
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-page/80 px-4 backdrop-blur-xl md:px-6">
+          <Link href="/app" className="md:hidden" aria-label={brandName}>
+            <NinaSignal size="sm" />
           </Link>
 
-          {/* Bewusst keine Ueberschrift: das ist eine Ortsangabe, keine
-              Ueberschrift des Inhalts. Als <h1> gaebe es zwei davon je
-              Seite, und Vorlesesoftware verliert die Gliederung. */}
-          <p className="truncate text-sm font-medium text-ink-2 md:text-[15px]">
+          <p className="truncate font-display text-sm font-semibold tracking-[-0.01em] md:text-[15px]">
             {contextTitle(pathname, labels)}
           </p>
 
           <div className="ml-auto flex items-center gap-1.5">
+            {/* Suche: auf breiten Geräten mit Tastenkürzel, sonst als Symbol. */}
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="hidden h-9 items-center gap-2.5 rounded-[--radius-md] border border-line-2 bg-raised px-3 text-sm text-ink-3 shadow-xs transition-colors hover:border-line-3 hover:text-ink-2 lg:flex"
+              className="hidden h-9 items-center gap-2.5 rounded-[--radius-md] border border-line-2 bg-raised px-3 text-sm text-ink-3 transition-colors hover:border-line-3 hover:text-ink-2 lg:flex"
             >
-              <Search className="size-4" strokeWidth={1.8} />
+              <Search className="size-4" strokeWidth={1.7} />
               {labels.search}
-              <kbd className="ml-4 rounded-[--radius-xs] border border-line-2 bg-sunken px-1.5 py-0.5 font-mono text-2xs text-ink-3">
+              <kbd className="ml-6 rounded-[--radius-xs] border border-line-2 bg-inset px-1.5 py-0.5 font-mono text-2xs text-ink-3">
                 ⌘K
               </kbd>
             </button>
@@ -283,10 +274,25 @@ export function AppShell({
               type="button"
               onClick={() => setPaletteOpen(true)}
               aria-label={labels.search}
-              className="grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-sunken lg:hidden"
+              className="grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-inset lg:hidden"
             >
-              <Search className="size-[18px]" strokeWidth={1.8} />
+              <Search className="size-[18px]" strokeWidth={1.7} />
             </button>
+
+            {/* Nina ist eine Handlung, kein Ort. */}
+            <Link
+              href="/app/nina"
+              className={cn(
+                "hidden h-9 items-center gap-2 rounded-[--radius-md] border border-line-2 bg-raised px-3.5 text-sm font-medium transition-colors hover:border-line-3 sm:flex",
+                pathname.startsWith("/app/nina") && "border-accent/50 bg-accent-soft",
+              )}
+            >
+              <NinaSignal
+                size="xs"
+                state={pathname.startsWith("/app/nina") ? "active" : "idle"}
+              />
+              {assistantName} fragen
+            </Link>
 
             <Link
               href="/app/notifications"
@@ -295,11 +301,11 @@ export function AppShell({
                   ? `${labels.notifications}: ${unreadCount} ungelesen`
                   : labels.notifications
               }
-              className="relative grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-sunken"
+              className="relative grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-inset"
             >
-              <Bell className="size-[18px]" strokeWidth={1.8} />
+              <Bell className="size-[18px]" strokeWidth={1.7} />
               {unreadCount > 0 && (
-                <span className="absolute right-1.5 top-1.5 grid min-w-[15px] place-items-center rounded-full bg-brand px-1 text-[9px] font-semibold leading-[15px] text-white">
+                <span className="absolute right-1.5 top-1.5 grid min-w-[15px] place-items-center rounded-full bg-accent px-1 font-mono text-[9px] font-semibold leading-[15px] text-accent-on">
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
@@ -316,33 +322,46 @@ export function AppShell({
 
         <main
           id="inhalt"
-          className="mx-auto w-full max-w-[1320px] overflow-y-auto px-4 py-7 md:overflow-visible md:px-7 md:py-10 lg:px-10"
+          className="mx-auto w-full max-w-[1400px] overflow-y-auto px-4 py-7 md:overflow-visible md:px-6 md:py-9 lg:px-10"
         >
           {children}
         </main>
 
-        {/* Navigation unten — im Raster, nicht darüber */}
+        {/* ══ Navigation unten, schmale Geräte ═══════════════ */}
+        {/* Im Raster, nicht darüber: eine überlagernde Leiste verdeckt
+            sonst Schaltflächen am Seitenende. */}
         <nav
           aria-label="Hauptbereiche"
-          className="app-nav-bottom border-t border-line bg-raised pb-[env(safe-area-inset-bottom)] md:hidden"
+          className="app-nav-bottom relative border-t border-line bg-raised pb-[env(safe-area-inset-bottom)] md:hidden"
         >
+          {/* Nina sitzt mittig über der Leiste — erreichbar mit dem
+              Daumen, unabhängig von der aktuellen Seite. */}
+          <Link
+            href="/app/nina"
+            className="absolute -top-6 left-1/2 grid size-12 -translate-x-1/2 place-items-center rounded-full border border-line-3 bg-raised shadow-lg transition-transform active:scale-95"
+            aria-label={`${assistantName} fragen`}
+          >
+            <NinaSignal
+              size="md"
+              state={pathname.startsWith("/app/nina") ? "active" : "idle"}
+            />
+          </Link>
+
           <ul className="flex">
-            {PRIMARY.filter((i) => i.mobile).map((item) => {
+            {PRIMARY.map((item, index) => {
               const active = isActive(pathname, item.href);
               const Icon = item.icon;
               return (
-                <li key={item.key} className="flex-1">
+                <li key={item.key} className={cn("flex-1", index === 1 && "mr-7", index === 2 && "ml-7")}>
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex min-h-[58px] flex-col items-center justify-center gap-1 border-t-2 text-2xs transition-colors",
-                      active
-                        ? "border-brand font-medium text-accent-text"
-                        : "border-transparent text-ink-3",
+                      "flex min-h-[56px] flex-col items-center justify-center gap-1 text-2xs transition-colors",
+                      active ? "font-medium text-accent-text" : "text-ink-3",
                     )}
                   >
-                    <Icon className="size-[19px]" strokeWidth={active ? 2.1 : 1.8} />
+                    <Icon className="size-[19px]" strokeWidth={active ? 2 : 1.7} />
                     {labels[item.key]}
                   </Link>
                 </li>

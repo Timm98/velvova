@@ -61,7 +61,7 @@ export default async function JobsPage({
           body={`${t("jobs.lockedBody")} ${gate.reason}`}
           action={
             <Button asChild variant="primary">
-              <Link href={gate.profileConfirmed ? "/app/nina" : "/app/profile"}>
+              <Link href={gate.profileConfirmed ? "/app/nina" : "/app/career"}>
                 {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
               </Link>
             </Button>

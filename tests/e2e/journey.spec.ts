@@ -254,14 +254,14 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Profil zeigt bestätigte Fakten und offene Vermutungen getrennt", async ({ page }) => {
-    await page.goto("/app/profile");
+    await page.goto("/app/career");
     await expect(page.getByRole("heading", { name: /Belegte Stärken|Belegte Staerken/ })).toBeVisible();
     await expect(page.getByText("Vermutung").first()).toBeVisible();
     await expect(page.getByText(/zählen sie nirgends/).first()).toBeVisible();
   });
 
   test("Eine Vermutung lässt sich ablehnen und zählt danach nicht mehr", async ({ page }) => {
-    await page.goto("/app/profile");
+    await page.goto("/app/career");
     const rejectButton = page.getByRole("button", { name: "Stimmt nicht" }).first();
     await expect(rejectButton).toBeVisible();
     await rejectButton.click();
@@ -307,7 +307,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     // Navigation der noch laufenden in den Ruecken - der Fehler sah wie
     // ein Produktfehler aus und war einer im Test.
     await page.waitForLoadState("networkidle");
-    await page.goto("/app/profile");
+    await page.goto("/app/career");
     await expect(page.getByText(answer.slice(0, 40), { exact: false }).first()).toBeVisible();
   });
 
@@ -465,7 +465,7 @@ test.describe("Responsives Verhalten", () => {
     await loginAsDemo(page);
   });
 
-  for (const path of ["/", "/app", "/app/jobs", "/app/profile", "/app/applications"]) {
+  for (const path of ["/", "/app", "/app/jobs", "/app/career", "/app/applications"]) {
     test(`${path} läuft nicht seitlich über`, async ({ page }) => {
       await page.goto(path);
       await expectNoHorizontalOverflow(page);

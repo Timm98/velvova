@@ -259,7 +259,7 @@ export function InterviewChat({
 
         {isComplete && (
           <Button asChild variant="primary" className="self-start">
-            <a href="/app/profile">
+            <a href="/app/career">
               Profil ansehen und bestätigen
               <ArrowRight className="size-4" strokeWidth={1.9} />
             </a>

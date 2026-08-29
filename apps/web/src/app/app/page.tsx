@@ -298,7 +298,7 @@ export default async function DashboardPage() {
           <p className="mt-3 text-sm leading-relaxed text-ink-2">{t("profile.coverageBody")}</p>
           <p className="mt-4">
             <Link
-              href="/app/profile"
+              href="/app/career"
               className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
             >
               Profil ansehen

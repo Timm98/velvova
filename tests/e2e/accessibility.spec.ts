@@ -11,7 +11,7 @@ import { loginAsDemo, setTheme } from "./helpers.ts";
  */
 
 const PUBLIC_PAGES = ["/", "/how-it-works", "/methodology", "/security", "/privacy", "/login", "/register"];
-const APP_PAGES = ["/app", "/app/nina", "/app/profile", "/app/jobs", "/app/applications", "/app/settings"];
+const APP_PAGES = ["/app", "/app/nina", "/app/career", "/app/jobs", "/app/applications", "/app/settings"];
 
 test.describe("axe: oeffentliche Seiten", () => {
   for (const path of PUBLIC_PAGES) {
@@ -143,7 +143,7 @@ test.describe("Tastaturbedienung", () => {
 
   test("Zustaende sind nicht nur ueber Farbe erkennbar", async ({ page }) => {
     await loginAsDemo(page);
-    await page.goto("/app/profile");
+    await page.goto("/app/career");
 
     // Bestaetigt und abgelehnt tragen Text, nicht nur eine Farbe oder
     // eine abgeblendete Darstellung.

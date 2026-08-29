@@ -1,20 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowDown, Check, Quote, Sparkles } from "lucide-react";
+import { ArrowDown, Check, Quote } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { NinaSignal } from "@/components/nina/NinaSignal";
 
 /**
  * Die Produktvorschau im Hero.
  *
- * Kein Chat-Bildschirmfoto. Gezeigt wird der eine Vorgang, der das
+ * Kein Chat-Bildschirmfoto. Gezeigt wird der eine Vorgang, der dieses
  * Produkt vom Rest der Branche trennt: aus einem beiläufigen Satz wird
- * eine belegte Stärke, und daraus werden Berufswege, an die man selbst
- * nicht gedacht hätte.
+ * eine belegte Stärke, daraus werden Rollen — und daraus echte offene
+ * Stellen.
  *
- * Die Sequenz läuft von allein, weil das die Kernidee in vier Sekunden
- * erzählt statt in einem Absatz. Wer weniger Bewegung eingestellt hat,
- * sieht alle drei Stufen sofort und vollständig — nichts geht verloren.
+ * Die letzten Einträge sind keine Erfindung: sie kommen aus derselben
+ * Datenbank wie die Stellen in der Anwendung, mit Quelle. Erfundene
+ * Unternehmensnamen auf einer Startseite, die Ehrlichkeit verspricht,
+ * wären der schlechteste mögliche erste Eindruck.
  */
 
 export interface SequenceLabels {
@@ -27,89 +29,89 @@ export interface SequenceLabels {
   evidenceLabel: string;
   evidenceText: string;
   rolesLabel: string;
+  jobsLabel: string;
+  jobsNote: string;
 }
 
-export function EvidenceSequence({ labels }: { labels: SequenceLabels }) {
-  const STEPS = [
-    { kind: "said" as const, label: labels.saidLabel, text: labels.saidText, roles: undefined },
-    { kind: "asked" as const, label: labels.askedLabel, text: labels.askedText, roles: undefined },
-    {
-      kind: "evidence" as const,
-      label: labels.evidenceLabel,
-      text: labels.evidenceText,
-      // Rollennamen bleiben unübersetzt: sie sind Stellenbezeichnungen,
-      // wie sie tatsächlich ausgeschrieben werden.
-      roles: ["Implementation Specialist", "Customer Success", "Service Operations"],
-    },
-  ];
+export interface LiveJobTeaser {
+  title: string;
+  companyName: string;
+  location: string;
+  sourceName: string;
+}
 
+export function EvidenceSequence({
+  labels,
+  jobs,
+}: {
+  labels: SequenceLabels;
+  jobs: LiveJobTeaser[];
+}) {
+  const steps = [
+    { kind: "said" as const, label: labels.saidLabel, text: labels.saidText },
+    { kind: "asked" as const, label: labels.askedLabel, text: labels.askedText },
+    { kind: "evidence" as const, label: labels.evidenceLabel, text: labels.evidenceText },
+  ];
+  const total = steps.length + (jobs.length > 0 ? 1 : 0);
   const [visible, setVisible] = useState(1);
 
   useEffect(() => {
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) {
-      setVisible(STEPS.length);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setVisible(total);
       return;
     }
-
-    const timers = [
-      setTimeout(() => setVisible(2), 1400),
-      setTimeout(() => setVisible(3), 2900),
-    ];
+    const timers = [1200, 2500, 3800]
+      .slice(0, total - 1)
+      .map((delay, index) => setTimeout(() => setVisible(index + 2), delay));
     return () => timers.forEach(clearTimeout);
-  }, []);
+  }, [total]);
 
   return (
     <div className="relative">
-      {/* Ein sehr weiches Licht hinter der Karte. Es trägt keine
-          Information — es hebt die Karte von der Fläche ab, so wie ein
-          Objekt im Regal einen Schatten wirft. */}
-      <div
-        aria-hidden
-        className="absolute -inset-8 -z-10 rounded-[--radius-xl] bg-brand/[0.07] blur-3xl"
-      />
+      {/* Sehr weites, sehr schwaches Licht. Es trägt keine Information —
+          es hebt die Fläche von der Bühne ab. */}
+      <div aria-hidden className="aurora absolute -inset-16 -z-10 blur-2xl" />
 
-      <div className="rounded-[--radius-xl] border border-line-2 bg-raised p-6 shadow-xl md:p-7">
-        <div className="flex items-center gap-2.5 border-b border-line pb-4">
-          <span
-            aria-hidden
-            className="grid size-7 place-items-center rounded-[--radius-full] bg-assistant-soft"
-          >
-            <Sparkles className="size-3.5 text-assistant-text" strokeWidth={2} />
-          </span>
+      <div className="glass overflow-hidden rounded-[--radius-xl] shadow-xl">
+        <div className="flex items-center gap-2.5 border-b border-line px-5 py-3.5">
+          <NinaSignal size="sm" state="active" />
           <span className="text-sm font-medium">{labels.assistantName}</span>
-          <span className="ml-auto text-2xs uppercase tracking-wider text-ink-3">{labels.example}</span>
+          <span className="ml-auto font-mono text-2xs uppercase tracking-wider text-ink-3">
+            {labels.example}
+          </span>
         </div>
 
-        <ol className="grid gap-3 pt-5">
-          {STEPS.map((step, index) => (
+        <ol className="grid gap-2.5 p-5">
+          {steps.map((step, index) => (
             <li
               key={step.kind}
               aria-hidden={index >= visible}
               className={cn(
                 "transition-all duration-[--duration-slow] ease-[--ease-out]",
-                index < visible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
+                index < visible
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none translate-y-2 opacity-0",
               )}
             >
               {index > 0 && (
-                <div aria-hidden className="flex justify-center py-1">
-                  <ArrowDown className="size-3.5 text-ink-3" strokeWidth={1.8} />
+                <div aria-hidden className="flex justify-center py-0.5">
+                  <ArrowDown className="size-3.5 text-ink-3" strokeWidth={1.7} />
                 </div>
               )}
 
               <div
                 className={cn(
-                  "rounded-[--radius-lg] px-4 py-3.5",
-                  step.kind === "said" && "bg-sunken",
-                  step.kind === "asked" && "bg-assistant-soft",
+                  "rounded-[--radius-md] px-4 py-3",
+                  step.kind === "said" && "bg-inset",
+                  step.kind === "asked" && "border border-line-2 bg-assistant-soft",
                   step.kind === "evidence" && "border border-positive/25 bg-positive-soft",
                 )}
               >
-                <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wider text-ink-3">
+                <p className="flex items-center gap-1.5 font-mono text-2xs uppercase tracking-wider text-ink-3">
                   {step.kind === "said" && <Quote className="size-3" strokeWidth={2} />}
-                  {step.kind === "asked" && <Sparkles className="size-3" strokeWidth={2} />}
+                  {step.kind === "asked" && <NinaSignal size="xs" state="thinking" />}
                   {step.kind === "evidence" && (
-                    <Check className="size-3 text-positive" strokeWidth={2.4} />
+                    <Check className="size-3 text-positive" strokeWidth={2.6} />
                   )}
                   {step.label}
                 </p>
@@ -121,27 +123,45 @@ export function EvidenceSequence({ labels }: { labels: SequenceLabels }) {
                 >
                   {step.text}
                 </p>
-
-                {step.roles && (
-                  <div className="mt-3.5 border-t border-positive/20 pt-3">
-                    <p className="text-2xs font-medium uppercase tracking-wider text-ink-3">
-                      {labels.rolesLabel}
-                    </p>
-                    <ul className="mt-2 flex flex-wrap gap-1.5">
-                      {step.roles.map((role) => (
-                        <li
-                          key={role}
-                          className="rounded-[--radius-full] border border-line-2 bg-raised px-2.5 py-1 text-xs"
-                        >
-                          {role}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
               </div>
             </li>
           ))}
+
+          {jobs.length > 0 && (
+            <li
+              aria-hidden={visible < total}
+              className={cn(
+                "transition-all duration-[--duration-slow] ease-[--ease-out]",
+                visible >= total
+                  ? "translate-y-0 opacity-100"
+                  : "pointer-events-none translate-y-2 opacity-0",
+              )}
+            >
+              <div aria-hidden className="flex justify-center py-0.5">
+                <ArrowDown className="size-3.5 text-ink-3" strokeWidth={1.7} />
+              </div>
+
+              <div className="rounded-[--radius-md] border border-line-2 bg-raised px-4 py-3.5">
+                <p className="flex items-center gap-2 font-mono text-2xs uppercase tracking-wider text-ink-3">
+                  <span aria-hidden className="size-1.5 rounded-full bg-positive" />
+                  {labels.jobsLabel}
+                </p>
+
+                <ul className="mt-3 grid gap-2.5">
+                  {jobs.slice(0, 3).map((job) => (
+                    <li key={`${job.companyName}-${job.title}`} className="min-w-0">
+                      <span className="block truncate text-sm font-medium">{job.title}</span>
+                      <span className="block truncate text-xs text-ink-3">
+                        {job.companyName} · {job.location} · {job.sourceName}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="mt-3 text-2xs text-ink-3">{labels.jobsNote}</p>
+              </div>
+            </li>
+          )}
         </ol>
       </div>
     </div>

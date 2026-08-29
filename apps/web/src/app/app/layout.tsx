@@ -41,11 +41,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       unreadCount={unread?.value ?? 0}
       labels={{
         home: t("nav.home"),
-        assistant: brand.assistantName,
-        jobs: t("nav.matches"),
+        discover: t("nav.discover"),
         applications: t("nav.applications"),
-        profile: t("nav.careerProfile"),
-        growth: t("nav.growth"),
+        career: t("nav.career"),
+        assistant: brand.assistantName,
         settings: t("nav.settings"),
         logout: t("nav.logout"),
         skipToContent: t("nav.skipToContent"),
@@ -55,12 +54,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         appearance: t("nav.appearance"),
         privacy: t("nav.privacyData"),
         help: t("nav.help"),
+        expand: t("nav.expand"),
+        collapse: t("nav.collapse"),
       }}
       onLogout={
         <form action={logoutAction}>
           <button
             type="submit"
-            className="flex w-full items-center gap-2.5 rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+            className="flex w-full items-center gap-2.5 rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-inset hover:text-ink"
           >
             <LogOut className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
             {t("nav.logout")}

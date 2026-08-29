@@ -5,48 +5,63 @@
  * Die Brücke zwischen Tokens und Tailwind.
  *
  * Jeder Token wird zu einer Utility-Klasse. Ab hier gibt es keinen Grund
- * mehr für Inline-Styles — und genau die waren die Ursache dafür, dass
- * die alte Oberfläche billig und uneinheitlich wirkte.
+ * mehr für ein Inline-Stilobjekt — und genau die waren die Ursache
+ * dafür, dass die frühere Oberfläche uneinheitlich wirkte.
+ *
+ * Die Utility-Namen bleiben absichtlich semantisch (page, raised, ink,
+ * line, accent) statt die Tokennamen zu wiederholen. So wechselt eine
+ * Farbwelt komplett, ohne dass eine einzige Komponente angefasst werden
+ * muss — genau das ist gerade passiert.
  */
 @theme inline {
-  --color-page: hsl(var(--surface-page));
-  --color-raised: hsl(var(--surface-raised));
-  --color-sunken: hsl(var(--surface-sunken));
-  --color-inset: hsl(var(--surface-inset));
-  --color-overlay: hsl(var(--surface-overlay));
+  /* ---- Flächen: Tiefe durch Helligkeit, nicht durch Schatten ---- */
+  --color-page: var(--background);
+  --color-sunken: var(--background-subtle);
+  --color-raised: var(--surface-1);
+  --color-inset: var(--surface-2);
+  --color-elevated: var(--surface-3);
+  --color-overlay: var(--surface-1);
+  --color-glass: var(--surface-glass);
 
-  --color-ink: hsl(var(--text-primary));
-  --color-ink-2: hsl(var(--text-secondary));
-  --color-ink-3: hsl(var(--text-muted));
-  --color-ink-inv: hsl(var(--text-inverse));
+  /* ---- Text ---- */
+  --color-ink: var(--text-primary);
+  --color-ink-2: var(--text-secondary);
+  --color-ink-3: var(--text-tertiary);
+  --color-ink-inv: var(--text-on-primary);
 
-  --color-line: hsl(var(--border-subtle));
-  --color-line-2: hsl(var(--border-default));
-  --color-line-3: hsl(var(--border-strong));
+  /* ---- Linien ---- */
+  --color-line: var(--border-subtle);
+  --color-line-2: var(--border-subtle);
+  --color-line-3: var(--border-strong);
 
-  --color-brand: hsl(var(--brand));
-  --color-brand-soft: hsl(var(--brand-soft));
-  --color-accent: hsl(var(--accent));
-  --color-accent-hover: hsl(var(--accent-hover));
-  --color-accent-pressed: hsl(var(--accent-pressed));
-  --color-accent-soft: hsl(var(--accent-soft));
-  --color-accent-border: hsl(var(--accent-border));
-  --color-accent-text: hsl(var(--accent-text));
-  --color-accent-on: hsl(var(--accent-on));
+  /* ---- Marke: Indigo. Kein Orange, nirgends. ---- */
+  --color-accent: var(--primary);
+  --color-accent-hover: var(--primary-strong);
+  --color-accent-pressed: var(--primary-strong);
+  --color-accent-soft: var(--primary-soft);
+  --color-accent-border: var(--border-strong);
+  --color-accent-text: var(--primary-text);
+  --color-accent-on: var(--text-on-primary);
+  --color-brand: var(--primary);
+  --color-brand-soft: var(--primary-soft);
 
-  --color-assistant: hsl(var(--assistant));
-  --color-assistant-soft: hsl(var(--assistant-soft));
-  --color-assistant-border: hsl(var(--assistant-border));
-  --color-assistant-text: hsl(var(--assistant-text));
+  /* ---- Signale: Cyan und Violett. Ninas Farben. ---- */
+  --color-cyan: var(--signal-cyan);
+  --color-cyan-soft: var(--signal-cyan-soft);
+  --color-assistant: var(--signal-violet);
+  --color-assistant-soft: var(--signal-violet-soft);
+  --color-assistant-border: var(--border-strong);
+  --color-assistant-text: var(--signal-violet);
 
-  --color-positive: hsl(var(--positive));
-  --color-positive-soft: hsl(var(--positive-soft));
-  --color-caution: hsl(var(--caution));
-  --color-caution-soft: hsl(var(--caution-soft));
-  --color-critical: hsl(var(--critical));
-  --color-critical-soft: hsl(var(--critical-soft));
-  --color-neutral: hsl(var(--neutral));
-  --color-neutral-soft: hsl(var(--neutral-soft));
+  /* ---- Bedeutung. Nie alleiniger Träger einer Information. ---- */
+  --color-positive: var(--success);
+  --color-positive-soft: var(--success-soft);
+  --color-caution: var(--warning);
+  --color-caution-soft: var(--warning-soft);
+  --color-critical: var(--danger);
+  --color-critical-soft: var(--danger-soft);
+  --color-neutral: var(--text-secondary);
+  --color-neutral-soft: var(--surface-2);
 
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
@@ -59,33 +74,44 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
+  --shadow-glow: var(--shadow-glow);
 
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  /*
+   * Drei Schriften mit klar getrennten Aufgaben.
+   *
+   * Manrope trägt Überschriften: geometrisch, offen, mit Charakter in
+   * großen Graden. Geist trägt die Oberfläche: eng laufend, ruhig,
+   * hervorragend in kleinen Größen. Geist Mono trägt Zahlen — Scores
+   * und Metadaten brauchen gleich breite Ziffern, sonst springt eine
+   * Liste bei jedem Wert.
+   */
+  --font-display: var(--font-manrope), "Inter Tight", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist-sans), "Inter Tight", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
   /*
-   * Typografie mit engerem Laufweiten-Ausgleich nach oben. Große Schrift
-   * braucht negativen Abstand, sonst wirkt sie auseinandergefallen —
-   * genau das ließ die alten Überschriften unfertig aussehen.
+   * Größenskala. Body 15–17 px, App-H1 32–44 px, Hero bis 84 px.
+   * Große Schrift bekommt negativen Laufweitenausgleich, sonst fällt
+   * sie auseinander.
    */
-  --text-2xs: 0.6875rem;
-  --text-xs: 0.78125rem;
+  --text-2xs: 0.75rem;
+  --text-xs: 0.8125rem;
   --text-sm: 0.875rem;
   --text-base: 0.9375rem;
   --text-lg: 1.0625rem;
   --text-xl: 1.25rem;
   --text-2xl: 1.5rem;
   --text-3xl: 1.875rem;
-  --text-4xl: 2.375rem;
-  --text-5xl: 3rem;
-  --text-6xl: 3.75rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 2.75rem;
+  --text-6xl: 4rem;
+  --text-7xl: 5.25rem;
 }
 
 @layer base {
   * {
-    border-color: hsl(var(--border-subtle));
+    border-color: var(--border-subtle);
   }
 
   html {
@@ -94,22 +120,21 @@
   }
 
   body {
-    background-color: hsl(var(--surface-page));
-    color: hsl(var(--text-primary));
+    background-color: var(--background);
+    color: var(--text-primary);
     font-family: var(--font-sans);
     font-size: var(--text-base);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     text-rendering: optimizeLegibility;
   }
 
-  /* Überschriften: enger Laufweitenausgleich, je größer desto enger. */
-  h1 { letter-spacing: -0.032em; line-height: 1.06; }
-  h2 { letter-spacing: -0.024em; line-height: 1.18; }
-  h3 { letter-spacing: -0.016em; line-height: 1.28; }
-  h4 { letter-spacing: -0.011em; line-height: 1.35; }
+  /* Überschriften: je größer, desto enger. */
+  h1 { letter-spacing: -0.034em; line-height: 1.05; }
+  h2 { letter-spacing: -0.026em; line-height: 1.16; }
+  h3 { letter-spacing: -0.017em; line-height: 1.26; }
+  h4 { letter-spacing: -0.011em; line-height: 1.34; }
   h1, h2, h3, h4 { font-weight: 600; text-wrap: balance; }
 
   p { text-wrap: pretty; }
@@ -119,19 +144,23 @@
    * keine Randbedingung, sondern die Grundlage.
    */
   :focus-visible {
-    outline: 2px solid hsl(var(--accent));
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
     border-radius: var(--radius-xs);
   }
   :focus:not(:focus-visible) { outline: none; }
 
-  /* Zahlen in Tabellen und Werten mit gleicher Breite. */
-  .tabular { font-variant-numeric: tabular-nums; }
+  /* Gleich breite Ziffern für Werte, Scores und Tabellen. */
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
 }
 
 @layer utilities {
   /*
-   * Sprungmarke: über Zuschnitt statt "left: -9999px". Die alte Technik
+   * Sprungmarke über Zuschnitt statt "left: -9999px". Die alte Technik
    * schiebt das Element aus dem Sichtfeld und macht die ganze Seite
    * seitlich scrollbar.
    */
@@ -154,8 +183,8 @@
     overflow: visible;
     clip-path: none;
     padding: 0.75rem 1rem;
-    background: hsl(var(--surface-raised));
-    border: 1px solid hsl(var(--border-strong));
+    background: var(--surface-1);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-lg);
   }
@@ -179,16 +208,52 @@
     -webkit-overflow-scrolling: touch;
   }
   .scroll-x:focus-visible {
-    outline: 2px solid hsl(var(--accent));
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 
-  /* Sehr feiner Verlauf für Hero-Flächen — kein Farbrausch. */
-  .surface-gradient {
+  /*
+   * Glas. Ausschließlich für schwebende Ebenen: Befehlspalette,
+   * Nina-Panel, Overlays. Auf einer normalen Fläche erzeugt es nur
+   * Unschärfe ohne Aussage.
+   */
+  .glass {
+    background: var(--surface-glass);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+    border: 1px solid var(--border-strong);
+  }
+
+  /*
+   * Der Signalverlauf. Nur an vier Stellen erlaubt: Ninas aktiver
+   * Zustand, die eine primäre Handlung, der Match-Halo, wenige
+   * fokussierte Datenbilder.
+   */
+  .signal-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--signal-violet) 48%,
+      var(--signal-cyan) 100%
+    );
+  }
+  .signal-text {
+    background-image: linear-gradient(
+      120deg,
+      var(--text-primary) 30%,
+      var(--signal-cyan) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Sehr weites, sehr schwaches Licht hinter einer Bühne. */
+  .aurora {
     background:
-      radial-gradient(120% 80% at 50% 0%, hsl(var(--accent) / 0.05), transparent 60%),
-      radial-gradient(90% 60% at 85% 15%, hsl(var(--assistant) / 0.05), transparent 55%),
-      hsl(var(--surface-page));
+      radial-gradient(120% 70% at 18% 0%, var(--primary-soft), transparent 62%),
+      radial-gradient(90% 55% at 88% 12%, var(--signal-violet-soft), transparent 58%),
+      radial-gradient(70% 50% at 60% 100%, var(--signal-cyan-soft), transparent 60%);
   }
 
   /* Haarlinie, die an den Rändern ausläuft — ruhiger als eine Kante. */
@@ -197,10 +262,15 @@
     background: linear-gradient(
       to right,
       transparent,
-      hsl(var(--border-default)) 15%,
-      hsl(var(--border-default)) 85%,
+      var(--border-strong) 15%,
+      var(--border-strong) 85%,
       transparent
     );
+  }
+
+  /* Ein feiner Lichtsaum auf der Oberkante. Macht Flächen plastisch. */
+  .edge-light {
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -218,6 +288,14 @@
 }
 @keyframes shimmer {
   100% { transform: translateX(100%); }
+}
+/* Ninas Atem: sehr langsam, sehr klein. Nie hektisch. */
+@keyframes nina-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+@keyframes nina-orbit {
+  to { transform: rotate(360deg); }
 }
 
 .animate-fade-up { animation: fade-up var(--duration-slow) var(--ease-out) both; }

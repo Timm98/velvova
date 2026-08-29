@@ -1,218 +1,189 @@
 /*
- * Designsystem — Farbe, Raum, Schrift.
+ * Future Minimal — Obsidian & Ice
  *
- * Die Haltung: ruhig, warm, hochwertig. Ein Produkt, das man benutzt,
- * während man unter Druck steht — es darf nie laut sein.
+ * Die Haltung: präzise, ruhig, schnell, hochwertig. Futuristisch heißt
+ * hier technische Genauigkeit und Tiefe — nicht Neon, nicht Cyberpunk,
+ * nicht Gaming.
  *
- * Drei Regeln, die alles andere bestimmen:
+ * Vier Regeln, die alles andere bestimmen:
  *
- * 1. EINE Akzentfarbe, sparsam. Farbe bedeutet hier "hier entscheidest
- *    du etwas", nicht "das ist unsere Marke". Zehn bunte Elemente auf
- *    einem Bildschirm sind kein Design, sondern Rauschen.
+ * 1. KEIN Orange, kein Coral, kein Kupfer. Die Marke ist Indigo mit
+ *    Cyan und Violett als Signalfarben.
  *
- * 2. Flächen unterscheiden sich durch Helligkeit, nicht durch Rahmen.
- *    Harte Linien zerschneiden eine Oberfläche. Ein kaum sichtbarer
- *    Helligkeitswechsel plus ein weicher Schatten trägt dieselbe
- *    Information ruhiger.
+ * 2. Der Verlauf aus Indigo, Cyan und Violett erscheint an genau vier
+ *    Stellen: Ninas aktiver Zustand, die eine primäre Handlung, der
+ *    Match-Halo, wenige fokussierte Datenbilder. Nirgends sonst.
  *
- * 3. Kontraste halten gegen JEDE Fläche, auf der die Farbe erscheint —
- *    nicht nur gegen die hellste. Das ist beim ersten Anlauf schief
- *    gegangen und hat axe aufgedeckt.
+ * 3. Ebenen entstehen durch Flächenhelligkeit und 1-Pixel-Linien, nicht
+ *    durch große Radien und schwere Schatten. Eine Oberfläche, auf der
+ *    alles in einer runden Karte liegt, hat keine Hierarchie.
  *
- * Die Werte stehen als HSL-Tripel ohne Funktion, damit Tailwind sie mit
- * beliebiger Deckkraft verwenden kann: hsl(var(--accent) / 0.1).
+ * 4. Der Großteil bleibt neutral. Farbe bedeutet "hier entscheidest du
+ *    etwas" oder "das ist ein Signal" — nie "das ist unsere Marke".
+ *
+ * Die Werte stehen als Hex bzw. rgba. Tailwind 4 erzeugt Transparenz
+ * über color-mix(), Deckkraftmodifikatoren funktionieren also auf jedem
+ * dieser Werte.
  */
 
+/* ── Obsidian: die Voreinstellung ─────────────────────────────────
+   Dunkel zuerst, weil die Designsprache dort ihren Charakter hat: das
+   Licht der Signale wirkt nur gegen Tiefe. Hell bleibt vollwertig. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ---- Flächen ----
-     Warme Neutralen mit einem Hauch Ocker. Reines Grau wirkt klinisch;
-     ein warmer Ton wirkt wertiger und ist über Stunden angenehmer. */
-  --surface-page: 40 31% 94%;
-  --surface-raised: 0 0% 100%;
-  --surface-sunken: 37 28% 91%;
-  --surface-inset: 36 24% 87%;
-  --surface-overlay: 0 0% 100%;
+  --background: #06080f;
+  --background-subtle: #080c15;
+  --surface-1: #0c111d;
+  --surface-2: #111827;
+  --surface-3: #172033;
+  --surface-glass: rgba(13, 19, 33, 0.72);
 
-  /* ---- Text ---- */
-  --text-primary: 60 6% 7%;
-  --text-secondary: 35 8% 26%;
-  --text-muted: 35 6% 40%;
-  --text-inverse: 38 35% 94%;
+  --text-primary: #f7f9ff;
+  --text-secondary: #a5aec2;
+  --text-tertiary: #747e95;
+  --text-on-primary: #06080f;
 
-  /* ---- Linien ---- */
-  --border-subtle: 35 24% 89%;
-  --border-default: 35 20% 84%;
-  --border-strong: 34 15% 68%;
+  --border-subtle: rgba(174, 190, 225, 0.11);
+  --border-strong: rgba(174, 190, 225, 0.2);
 
-  /* ---- Marke und Akzent ----
-     Zwei Werte, nicht einer, und das hat einen Grund.
+  --primary: #7182ff;
+  --primary-strong: #5b6bff;
+  --primary-soft: rgba(113, 130, 255, 0.14);
+  --primary-text: #9aa6ff;
 
-     --brand ist das Kupfer-Coral der Marke (#D9623E). Es steht auf
-     Logo, Fokusringen und kleinen Markierungen.
+  --signal-cyan: #67d8ff;
+  --signal-cyan-soft: rgba(103, 216, 255, 0.13);
+  --signal-violet: #a68cff;
+  --signal-violet-soft: rgba(166, 140, 255, 0.13);
 
-     --accent ist die Fläche, auf der Text liegt (#B9472A). Weiße
-     Schrift auf dem helleren Markenton erreicht nur 3,7:1 und wäre
-     damit unter der Schwelle. Statt die Marke zu verwässern, bekommt
-     die klickbare Fläche den tieferen Kupferton — beide Werte stammen
-     aus derselben Familie, der Eindruck bleibt, die Lesbarkeit stimmt. */
-  --brand: 14 67% 55%;
-  --brand-soft: 16 62% 93%;
-  --accent: 12 63% 45%;
-  --accent-hover: 12 66% 38%;
-  --accent-pressed: 12 68% 32%;
-  --accent-soft: 18 60% 96%;
-  --accent-border: 16 45% 83%;
-  --accent-text: 12 66% 38%;
-  --accent-on: 0 0% 100%;
-
-  /* ---- Assistenz: gedämpftes Indigo ----
-     Bewusst leiser als der Markenakzent. Was von Nina kommt, soll
-     erkennbar sein, ohne um Aufmerksamkeit zu konkurrieren. */
-  --assistant: 226 22% 38%;
-  --assistant-soft: 228 32% 96%;
-  --assistant-border: 226 26% 87%;
-  --assistant-text: 226 26% 31%;
-
-  /* ---- Bedeutung. Nie alleiniger Träger einer Information. ---- */
-  --positive: 152 39% 30%;
-  --positive-soft: 150 33% 95%;
-  --caution: 38 73% 30%;
-  --caution-soft: 42 70% 95%;
-  --critical: 0 53% 40%;
-  --critical-soft: 0 60% 96%;
-  --neutral: 34 6% 35%;
-  --neutral-soft: 38 14% 95%;
+  --success: #46d6a2;
+  --success-soft: rgba(70, 214, 162, 0.12);
+  --warning: #f3d56b;
+  --warning-soft: rgba(243, 213, 107, 0.12);
+  --danger: #ff6f91;
+  --danger-soft: rgba(255, 111, 145, 0.12);
 
   /* ---- Schatten ----
-     Sehr weich und mehrlagig. Ein harter Schatten sieht nach 2012 aus;
-     zwei weiche Lagen erzeugen Tiefe, ohne aufzufallen. */
-  --shadow-xs: 0 1px 2px hsl(30 10% 12% / 0.04);
-  --shadow-sm: 0 1px 3px hsl(30 10% 12% / 0.05), 0 1px 2px hsl(30 10% 12% / 0.03);
-  --shadow-md: 0 2px 4px hsl(30 10% 12% / 0.04), 0 4px 12px hsl(30 10% 12% / 0.06);
-  --shadow-lg: 0 4px 8px hsl(30 10% 12% / 0.04), 0 12px 32px hsl(30 10% 12% / 0.08);
-  --shadow-xl: 0 8px 16px hsl(30 10% 12% / 0.05), 0 24px 56px hsl(30 10% 12% / 0.10);
+     Weit und weich, nie schwarz und hart. Auf dunklem Grund trägt
+     zusätzlich ein Innenschein die Kante. */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-xl: 0 24px 72px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 0 1px rgba(113, 130, 255, 0.3), 0 8px 32px rgba(113, 130, 255, 0.22);
 
-  /* ---- Radien ---- */
+  /* ---- Radien ----
+     14 Pixel als Norm. Große Flächen dürfen 18 bis 22. Alles darüber
+     sieht nach Spielzeug aus. */
   --radius-xs: 6px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
   --radius-xl: 22px;
   --radius-full: 999px;
 
-  /* ---- Bewegung. Kurz und weich; alles über 250ms wirkt träge. ---- */
+  /* ---- Bewegung ----
+     160 bis 240 Millisekunden. Alles darüber wirkt träge, alles
+     darunter wie ein Sprung. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --duration-fast: 120ms;
+  --duration-fast: 160ms;
   --duration-base: 200ms;
-  --duration-slow: 320ms;
+  --duration-slow: 240ms;
 
-  --measure: 66ch;
+  /* Ungefähr 65 bis 75 Zeichen. Längere Zeilen verliert das Auge. */
+  --measure: 68ch;
 }
 
-/* Ausdrückliche Wahl gewinnt in beide Richtungen. */
-:root[data-theme="dark"] {
-  color-scheme: dark;
+/* ── Polar: die helle Fassung ─────────────────────────────────── */
+:root[data-theme="light"] {
+  color-scheme: light;
 
-  /* Tiefes, leicht warmes Anthrazit statt Schwarz. Reines Schwarz
-     erzeugt harte Kanten und ermüdet die Augen. */
-  --surface-page: 60 4% 5%;
-  --surface-raised: 40 7% 8%;
-  --surface-sunken: 60 4% 4%;
-  --surface-inset: 36 8% 12%;
-  --surface-overlay: 36 8% 12%;
+  --background: #f5f7fc;
+  --background-subtle: #eef2f8;
+  --surface-1: #ffffff;
+  --surface-2: #f7f9fd;
+  --surface-3: #eaf0f9;
+  --surface-glass: rgba(255, 255, 255, 0.78);
 
-  --text-primary: 38 35% 94%;
-  --text-secondary: 34 10% 76%;
-  --text-muted: 34 8% 62%;
-  --text-inverse: 60 4% 5%;
+  --text-primary: #0a1020;
+  --text-secondary: #5f687d;
+  --text-tertiary: #8a93a8;
+  --text-on-primary: #ffffff;
 
-  --border-subtle: 34 8% 14%;
-  --border-default: 34 8% 17%;
-  --border-strong: 34 7% 32%;
+  --border-subtle: #e0e6f0;
+  --border-strong: #cdd6e5;
 
-  --brand: 14 67% 58%;
-  --brand-soft: 14 30% 13%;
-  --accent: 14 67% 55%;
-  --accent-hover: 14 70% 61%;
-  --accent-pressed: 14 72% 66%;
-  --accent-soft: 14 28% 12%;
-  --accent-border: 14 30% 24%;
-  --accent-text: 16 74% 68%;
-  --accent-on: 60 4% 5%;
+  --primary: #5868f6;
+  --primary-strong: #4253e8;
+  --primary-soft: rgba(88, 104, 246, 0.1);
+  --primary-text: #4253e8;
 
-  --assistant: 226 32% 70%;
-  --assistant-soft: 228 22% 15%;
-  --assistant-border: 228 20% 27%;
-  --assistant-text: 228 40% 78%;
+  --signal-cyan: #1dafdb;
+  --signal-cyan-soft: rgba(29, 175, 219, 0.10);
+  --signal-violet: #8068e8;
+  --signal-violet-soft: rgba(128, 104, 232, 0.10);
 
-  --positive: 152 38% 61%;
-  --positive-soft: 152 22% 12%;
-  --caution: 38 62% 61%;
-  --caution-soft: 38 26% 13%;
-  --critical: 0 62% 70%;
-  --critical-soft: 0 25% 14%;
-  --neutral: 34 8% 63%;
-  --neutral-soft: 30 6% 15%;
+  --success: #149b70;
+  --success-soft: rgba(20, 155, 112, 0.1);
+  --warning: #b88c14;
+  --warning-soft: rgba(184, 140, 20, 0.1);
+  --danger: #d84c70;
+  --danger-soft: rgba(216, 76, 112, 0.1);
 
-  --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
-  --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.36), 0 1px 2px hsl(0 0% 0% / 0.24);
-  --shadow-md: 0 2px 4px hsl(0 0% 0% / 0.30), 0 4px 12px hsl(0 0% 0% / 0.40);
-  --shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.32), 0 12px 32px hsl(0 0% 0% / 0.46);
-  --shadow-xl: 0 8px 16px hsl(0 0% 0% / 0.34), 0 24px 56px hsl(0 0% 0% / 0.52);
+  --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
+  --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);
+  --shadow-md: 0 4px 16px rgba(10, 16, 32, 0.07), 0 1px 3px rgba(10, 16, 32, 0.04);
+  --shadow-lg: 0 12px 40px rgba(10, 16, 32, 0.09), 0 2px 8px rgba(10, 16, 32, 0.05);
+  --shadow-xl: 0 24px 72px rgba(10, 16, 32, 0.11), 0 4px 16px rgba(10, 16, 32, 0.06);
+  --shadow-glow: 0 0 0 1px rgba(88, 104, 246, 0.25), 0 8px 32px rgba(88, 104, 246, 0.16);
 }
 
-/* Systemvorgabe — greift nur ohne ausdrückliche Wahl. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    color-scheme: dark;
+/* Systemvorgabe „hell" greift nur ohne ausdrückliche Wahl. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
 
-    --surface-page: 60 4% 5%;
-    --surface-raised: 40 7% 8%;
-    --surface-sunken: 60 4% 4%;
-    --surface-inset: 36 8% 12%;
-    --surface-overlay: 36 8% 12%;
+    --background: #f5f7fc;
+    --background-subtle: #eef2f8;
+    --surface-1: #ffffff;
+    --surface-2: #f7f9fd;
+    --surface-3: #eaf0f9;
+    --surface-glass: rgba(255, 255, 255, 0.78);
 
-    --text-primary: 38 35% 94%;
-    --text-secondary: 34 10% 76%;
-    --text-muted: 34 8% 62%;
-    --text-inverse: 60 4% 5%;
+    --text-primary: #0a1020;
+    --text-secondary: #5f687d;
+    --text-tertiary: #8a93a8;
+    --text-on-primary: #ffffff;
 
-    --border-subtle: 34 8% 14%;
-    --border-default: 34 8% 17%;
-    --border-strong: 34 7% 32%;
+    --border-subtle: #e0e6f0;
+    --border-strong: #cdd6e5;
 
-    --brand: 14 67% 58%;
-    --brand-soft: 14 30% 13%;
-    --accent: 14 67% 55%;
-    --accent-hover: 14 70% 61%;
-    --accent-pressed: 14 72% 66%;
-    --accent-soft: 14 28% 12%;
-    --accent-border: 14 30% 24%;
-    --accent-text: 16 74% 68%;
-    --accent-on: 60 4% 5%;
+    --primary: #5868f6;
+    --primary-strong: #4253e8;
+    --primary-soft: rgba(88, 104, 246, 0.1);
+    --primary-text: #4253e8;
 
-    --assistant: 226 32% 70%;
-    --assistant-soft: 228 22% 15%;
-    --assistant-border: 228 20% 27%;
-    --assistant-text: 228 40% 78%;
+    --signal-cyan: #1dafdb;
+    --signal-cyan-soft: rgba(29, 175, 219, 0.10);
+    --signal-violet: #8068e8;
+    --signal-violet-soft: rgba(128, 104, 232, 0.10);
 
-    --positive: 152 38% 61%;
-    --positive-soft: 152 22% 12%;
-    --caution: 38 62% 61%;
-    --caution-soft: 38 26% 13%;
-    --critical: 0 62% 70%;
-    --critical-soft: 0 25% 14%;
-    --neutral: 34 8% 63%;
-    --neutral-soft: 30 6% 15%;
+    --success: #149b70;
+    --success-soft: rgba(20, 155, 112, 0.1);
+    --warning: #b88c14;
+    --warning-soft: rgba(184, 140, 20, 0.1);
+    --danger: #d84c70;
+    --danger-soft: rgba(216, 76, 112, 0.1);
 
-    --shadow-xs: 0 1px 2px hsl(0 0% 0% / 0.30);
-    --shadow-sm: 0 1px 3px hsl(0 0% 0% / 0.36), 0 1px 2px hsl(0 0% 0% / 0.24);
-    --shadow-md: 0 2px 4px hsl(0 0% 0% / 0.30), 0 4px 12px hsl(0 0% 0% / 0.40);
-    --shadow-lg: 0 4px 8px hsl(0 0% 0% / 0.32), 0 12px 32px hsl(0 0% 0% / 0.46);
-    --shadow-xl: 0 8px 16px hsl(0 0% 0% / 0.34), 0 24px 56px hsl(0 0% 0% / 0.52);
+    --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
+    --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);
+    --shadow-md: 0 4px 16px rgba(10, 16, 32, 0.07), 0 1px 3px rgba(10, 16, 32, 0.04);
+    --shadow-lg: 0 12px 40px rgba(10, 16, 32, 0.09), 0 2px 8px rgba(10, 16, 32, 0.05);
+    --shadow-xl: 0 24px 72px rgba(10, 16, 32, 0.11), 0 4px 16px rgba(10, 16, 32, 0.06);
+    --shadow-glow: 0 0 0 1px rgba(88, 104, 246, 0.25), 0 8px 32px rgba(88, 104, 246, 0.16);
   }
 }
 

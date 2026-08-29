@@ -137,7 +137,7 @@ export default async function PrivacySettingsPage() {
           </p>
         </div>
         <Link
-          href="/app/profile"
+          href="/app/career"
           className="inline-flex items-center gap-2 text-sm font-medium text-accent-text underline underline-offset-[3px]"
         >
           Alle Angaben ansehen und einzeln bearbeiten

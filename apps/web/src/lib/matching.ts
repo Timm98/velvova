@@ -217,10 +217,26 @@ export interface ScoredJob extends RankableJob {
 export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Promise<ScoredJob[]> {
   const db = await getDb();
 
-  const jobRows = await db
+  const allJobRows = await db
     .select({ job: schema.jobs, companyName: schema.companies.name })
     .from(schema.jobs)
     .innerJoin(schema.companies, eq(schema.companies.id, schema.jobs.companyId));
+
+  /*
+   * Erfundene Stellen erscheinen nicht in der Produktoberfläche.
+   *
+   * Die Regel ist bewusst datenabhängig statt konfigurierbar: sobald
+   * auch nur eine echte Anzeige vorliegt, verschwinden die
+   * Demo-Datensätze. Ein Schalter dafür würde irgendwann falsch stehen,
+   * und dann stünden erfundene Unternehmen neben echten — genau das
+   * darf nicht passieren.
+   *
+   * Ohne echte Stellen bleiben die Demo-Daten sichtbar, damit ein
+   * frisch aufgesetztes Projekt nicht leer wirkt. Sie sind an jeder
+   * Stelle als solche gekennzeichnet.
+   */
+  const hasRealJobs = allJobRows.some((r) => !r.job.isDemo);
+  const jobRows = hasRealJobs ? allJobRows.filter((r) => !r.job.isDemo) : allJobRows;
 
   const requirementRows = await db.select().from(schema.jobRequirements);
   const sourceRows = await db.select().from(schema.jobSources);

@@ -24,7 +24,7 @@ export async function confirmEvidence(evidenceId: string): Promise<void> {
       .where(and(eq(schema.evidenceItems.id, evidenceId), eq(schema.evidenceItems.userId, user.id))),
   );
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 export async function rejectEvidence(evidenceId: string): Promise<void> {
@@ -39,7 +39,7 @@ export async function rejectEvidence(evidenceId: string): Promise<void> {
       .where(and(eq(schema.evidenceItems.id, evidenceId), eq(schema.evidenceItems.userId, user.id))),
   );
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 export async function editEvidence(evidenceId: string, statement: string): Promise<void> {
@@ -63,7 +63,7 @@ export async function editEvidence(evidenceId: string, statement: string): Promi
       .where(and(eq(schema.evidenceItems.id, evidenceId), eq(schema.evidenceItems.userId, user.id))),
   );
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 export async function deleteEvidence(evidenceId: string): Promise<void> {
@@ -76,7 +76,7 @@ export async function deleteEvidence(evidenceId: string): Promise<void> {
       .where(and(eq(schema.evidenceItems.id, evidenceId), eq(schema.evidenceItems.userId, user.id))),
   );
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 export async function addEvidence(statement: string, type: string): Promise<void> {
@@ -97,7 +97,7 @@ export async function addEvidence(statement: string, type: string): Promise<void
     }),
   );
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 export async function confirmRoleCluster(clusterId: string, confirmed: boolean): Promise<void> {
@@ -109,7 +109,7 @@ export async function confirmRoleCluster(clusterId: string, confirmed: boolean):
       .set({ userConfirmed: confirmed })
       .where(and(eq(schema.roleClusters.id, clusterId), eq(schema.roleClusters.userId, user.id))),
   );
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }
 
 /**
@@ -140,7 +140,7 @@ export async function confirmProfile(): Promise<void> {
   });
 
   await recomputeCoverage(user.id);
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
   revalidatePath("/app/jobs");
   revalidatePath("/app");
 }

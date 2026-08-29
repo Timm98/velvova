@@ -2,32 +2,33 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Fraunces } from "next/font/google";
+import { Manrope } from "next/font/google";
 import { brand } from "@paycheck/config";
 import { isLocale } from "@paycheck/i18n";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
 /**
- * Zwei Schriften, klar getrennte Aufgaben.
+ * Drei Schriften, klar getrennte Aufgaben.
  *
- * Geist trägt die gesamte Oberfläche: eng laufend, ruhig, hervorragend
- * lesbar in kleinen Größen — genau das, was Formulare und Listen
- * brauchen.
+ * Manrope trägt Überschriften: geometrisch, offen, mit Charakter in
+ * großen Graden — ohne die Verspieltheit, die eine Serifenschrift in ein
+ * technisches Produkt bringt.
  *
- * Fraunces erscheint ausschließlich in großen Überschriften und Zahlen.
- * Eine Serifenschrift in einem Eingabefeld ist ein Fehler; eine
- * Serifenschrift in einer Hero-Zeile ist der Unterschied zwischen
- * "noch ein SaaS" und "das wurde gestaltet".
+ * Geist trägt die Oberfläche: eng laufend, ruhig, hervorragend lesbar in
+ * kleinen Größen — genau das, was Formulare und dichte Listen brauchen.
+ *
+ * Geist Mono trägt Zahlen. Scores und Metadaten brauchen gleich breite
+ * Ziffern, sonst springt eine Liste bei jedem Wert.
+ *
+ * Alle drei werden selbst ausgeliefert; beim Öffnen der Seite geht keine
+ * Anfrage an einen fremden Server.
  */
-const display = Fraunces({
+const display = Manrope({
   subsets: ["latin"],
-  variable: "--font-fraunces",
+  variable: "--font-manrope",
   display: "swap",
-  // Variabler Schnitt: eine Datei, alle Stärken, plus die optische
-  // Größenachse — dadurch wirkt dieselbe Schrift in 14px und in 60px
-  // jeweils richtig proportioniert statt bloß skaliert.
-  axes: ["SOFT", "WONK", "opsz"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -42,8 +43,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F5F2EC" },
-    { media: "(prefers-color-scheme: dark)", color: "#0D0D0C" },
+    { media: "(prefers-color-scheme: light)", color: "#F5F7FC" },
+    { media: "(prefers-color-scheme: dark)", color: "#06080F" },
   ],
 };
 
@@ -62,6 +63,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang={locale}
+      /* Obsidian ist die Voreinstellung: die Signalfarben wirken nur
+         gegen Tiefe. Polar bleibt vollwertig und folgt der
+         Systemeinstellung, wenn nichts gewählt wurde. */
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
       className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable}`}
       suppressHydrationWarning

@@ -5,16 +5,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   Briefcase,
+  Compass,
   CornerDownLeft,
   FileText,
   Globe,
-  LayoutDashboard,
+  LayoutGrid,
   Loader2,
   Search,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
-  User,
+  Waypoints,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { NavLabels } from "./AppShell.tsx";
@@ -63,12 +63,12 @@ export function CommandPalette({
 
   const destinations = useMemo<Destination[]>(
     () => [
-      { href: "/app", label: labels.home, hint: "Übersicht und nächster Schritt", icon: LayoutDashboard },
+      { href: "/app", label: labels.home, hint: "Nächster Schritt und Überblick", icon: LayoutGrid },
       { href: "/app/nina", label: assistantName, hint: "Gespräch fortsetzen", icon: Sparkles },
-      { href: "/app/jobs", label: labels.jobs, hint: "Deine besten Möglichkeiten", icon: Briefcase },
+      { href: "/app/jobs", label: labels.discover, hint: "Echte Stellen, begründet sortiert", icon: Compass },
       { href: "/app/applications", label: labels.applications, hint: "Entwürfe und Stand", icon: FileText },
-      { href: "/app/profile", label: labels.profile, hint: "Belegte Stärken", icon: User },
-      { href: "/app/growth", label: labels.growth, hint: "Nach der Einstellung", icon: TrendingUp },
+      { href: "/app/career", label: labels.career, hint: "Belegte Stärken und Rollen", icon: Waypoints },
+      { href: "/app/documents", label: "Dokumente", hint: "Lebenslauf und Anlagen", icon: FileText },
       { href: "/app/settings/language-region", label: labels.languageRegion, hint: "Sprache, Land, Umkreis", icon: Globe },
       { href: "/app/settings/privacy", label: labels.privacy, hint: "Daten, Einwilligungen, Export", icon: ShieldCheck },
     ],
@@ -166,7 +166,7 @@ export function CommandPalette({
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center bg-ink/25 px-4 pt-[12vh] backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[60] flex items-start justify-center bg-page/70 px-4 pt-[12vh] backdrop-blur-sm animate-fade-in"
       onClick={onClose}
     >
       <div
@@ -175,7 +175,7 @@ export function CommandPalette({
         aria-label={labels.search}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKeyDown}
-        className="w-full max-w-[560px] overflow-hidden rounded-[--radius-xl] border border-line-2 bg-overlay shadow-xl"
+        className="glass w-full max-w-[600px] overflow-hidden rounded-[--radius-xl] shadow-xl animate-fade-up"
       >
         <div className="flex items-center gap-3 border-b border-line px-4">
           <Search className="size-[18px] shrink-0 text-ink-3" strokeWidth={1.8} />

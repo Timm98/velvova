@@ -289,5 +289,5 @@ export async function deleteSingleItem(evidenceId: string): Promise<void> {
     });
   });
   revalidatePath("/app/settings");
-  revalidatePath("/app/profile");
+  revalidatePath("/app/career");
 }

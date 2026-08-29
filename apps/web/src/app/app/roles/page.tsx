@@ -4,7 +4,7 @@ import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { eq } from "drizzle-orm";
-import { RoleClusterCard } from "../profile/ProfileClient";
+import { RoleClusterCard } from "../career/CareerClient";
 import { buttonClass, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Richtungen" };

@@ -154,7 +154,7 @@ export default async function NinaPage() {
               ))}
             </ul>
             <Link
-              href="/app/profile"
+              href="/app/career"
               className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
             >
               Im Profil prüfen

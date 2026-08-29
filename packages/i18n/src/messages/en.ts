@@ -58,35 +58,49 @@ export const en: Messages = {
     appearance: "Appearance",
     privacyData: "Privacy & data",
     help: "Help",
+    discover: "Discover",
+    career: "Career",
+    expand: "Expand",
+    collapse: "Collapse",
     skipToContent: "Skip to content",
   },
 
   landing: {
-    eyebrow: "Your career, understood rather than guessed",
-    headline: "Find work that fits the life you have.",
+    eyebrow: "Career Operating System",
+    headline: "Your career. Not by keywords — by you.",
     subheadline:
-      "{assistant} asks first about what you have actually done — then sorts real listings. " +
-      "Every recommendation comes with a reason, a reservation and a source.",
+      "{assistant} understands your experience, uncovers roles that fit, and stays with you from " +
+      "first orientation to a finished application.",
     ctaPrimary: "Start with {assistant}",
     ctaSecondary: "How it works",
     trustProfile: "Private profile",
-    trustReasons: "Matches you can trace",
-    trustNoInvention: "No invented application claims",
+    trustReasons: "Every match explained",
+    trustNoInvention: "Nothing invented",
 
-    flowEyebrow: "How it goes",
-    flowTitle: "Understand first. Then compare. Then apply.",
-    step1Title: "{assistant} asks before she searches",
-    step1Body:
-      "Concrete situations instead of self-assessment. \"Customer service, 2 years\" becomes a " +
-      "named action with an outcome.",
-    step2Title: "You see a few genuinely fitting roles",
-    step2Body:
-      "Real listings with source and retrieval date, ranked by reasoned fit — not by " +
-      "advertising budget.",
-    step3Title: "{assistant} stays with you through application and interview",
-    step3Body:
-      "Every sentence in your documents traces back to something you confirmed. Nothing is ever " +
-      "sent without your explicit approval.",
+    understandEyebrow: "First",
+    understandTitle: "{assistant} understands you first.",
+    understandBody:
+      "No form, no personality test. A conversation about concrete situations: what you did, what " +
+      "came of it, what gives you energy. From that comes a profile where every strength is tied " +
+      "to a named experience.",
+
+    discoverEyebrow: "Then",
+    discoverTitle: "Options you would not have searched for.",
+    discoverBody:
+      "Search for your job title and you find your job title. {assistant} searches across tasks " +
+      "and transferable skills — which surfaces adjacent and unusual roles too.",
+
+    explainEyebrow: "Always",
+    explainTitle: "Every match explains itself.",
+    explainBody:
+      "A score from 0 to 100, with confidence beside it, the breakdown, the missing information " +
+      "and any conditions that are violated. No percentage without a reason.",
+
+    applyEyebrow: "All the way",
+    applyTitle: "From a role to a finished application.",
+    applyBody:
+      "Documents are built from your evidenced experience. Every factual claim traces back to " +
+      "evidence or your explicit confirmation. Nothing is ever sent without your approval.",
 
     methodEyebrow: "Method",
     methodTitle: "Four kinds of knowledge. Never mixed.",
@@ -106,21 +120,37 @@ export const en: Messages = {
     knowledgeExternalTitle: "What comes from outside",
     knowledgeExternalBody: "Listings, registries, reviews — with source and retrieval date.",
 
-    futureTitle: "How the role will change",
-    futureBody:
-      "What is assessed are the tasks of this specific role, not the job title. You get " +
-      "scenarios with a data date — never a year by which something \"disappears\".",
-    futureLink: "How this is calculated",
-    privacyTitle: "Your data stays yours",
+    privacyTitle: "Your data stays under your control.",
     privacyBody:
       "You can see what is stored, change or delete each item, and withdraw every consent " +
-      "separately. Only the context a given step needs ever reaches the language model.",
+      "separately. Only the context a given step needs ever reaches the language model — never " +
+      "your name, never your address.",
     privacyLink: "Security and privacy",
+
+    faqTitle: "Common questions",
+    faq1Q: "Does this cost anything?",
+    faq1A:
+      "Not while we are building it. There is no pricing model yet, and we are not putting up a " +
+      "table that does not exist.",
+    faq2Q: "Where do the jobs come from?",
+    faq2A:
+      "From sources that publish their listings openly for retrieval. Every listing names its " +
+      "source and retrieval time and links to the original. Portals that forbid scraping are not " +
+      "queried.",
+    faq3Q: "Does the AI write my application?",
+    faq3A:
+      "It phrases — it does not invent. Every claim about experience, outcome or responsibility " +
+      "needs evidence from your profile or your explicit confirmation. Without evidence it is " +
+      "softened or queried.",
+    faq4Q: "Can employers see my profile?",
+    faq4A:
+      "No. {brand} works for the person looking. There is no employer side, no candidate search " +
+      "and no sharing of your profile.",
 
     closingTitle: "Start with what you can already do.",
     closingBody:
-      "The first conversation takes about fifteen minutes. You can pause at any point and pick " +
-      "it up later.",
+      "The first conversation takes about fifteen minutes. You can pause at any point and pick it " +
+      "up later.",
     closingCta: "Start for free",
 
     navProduct: "Product",
@@ -133,18 +163,20 @@ export const en: Messages = {
       "{brand} and {assistant} are working names. Candidate-side — this product works for the " +
       "person looking, not for employers.",
     footerLanguage:
-      "You choose language and region when you create your account, and can change them any " +
-      "time under Profile → Language & region.",
+      "You choose language and region when you create your account, and can change them any time " +
+      "under Account → Language & region.",
 
     exampleSaid: "What you say",
     exampleSaidText: "\"I often calmed down difficult customers.\"",
     exampleAsked: "What {assistant} asks back",
     exampleAskedText:
-      "\"Tell me about an escalation you took on. What exactly did you do — and what came out " +
-      "of it?\"",
+      "\"Tell me about an escalation you took on. What exactly did you do — and what came out of " +
+      "it?\"",
     exampleEvidence: "Evidenced strength",
     exampleEvidenceText: "Conflict resolution · technical mediation · responsibility under pressure",
     exampleRoles: "Roles that fit",
+    exampleJobs: "Real open roles for this",
+    exampleJobsNote: "Fetched live, with source and date.",
   },
 
   auth: {

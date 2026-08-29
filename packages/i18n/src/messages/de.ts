@@ -58,35 +58,50 @@ export const de = {
     appearance: "Erscheinungsbild",
     privacyData: "Datenschutz & Daten",
     help: "Hilfe",
+    discover: "Entdecken",
+    career: "Karriere",
+    expand: "Ausklappen",
+    collapse: "Einklappen",
     skipToContent: "Zum Inhalt springen",
   },
 
   landing: {
-    eyebrow: "Deine Karriere, verstanden statt geraten",
-    headline: "Finde Arbeit, die zu deinem Leben passt.",
+    eyebrow: "Career Operating System",
+    headline: "Deine Karriere. Nicht nach Keywords, sondern nach dir.",
     subheadline:
-      "{assistant} fragt zuerst nach dem, was du tatsächlich getan hast — und sortiert dann " +
-      "echte Stellen. Jede Empfehlung kommt mit Grund, Vorbehalt und Quelle.",
+      "{assistant} versteht deine Erfahrungen, entdeckt passende Rollen und bringt dich von der " +
+      "Orientierung bis zur Bewerbung.",
     ctaPrimary: "Mit {assistant} starten",
     ctaSecondary: "So funktioniert es",
     trustProfile: "Privates Profil",
-    trustReasons: "Nachvollziehbare Matches",
-    trustNoInvention: "Keine erfundenen Bewerbungsangaben",
+    trustReasons: "Jeder Match erklärt",
+    trustNoInvention: "Keine erfundenen Angaben",
 
-    flowEyebrow: "Der Ablauf",
-    flowTitle: "Erst verstehen. Dann vergleichen. Dann bewerben.",
-    step1Title: "{assistant} fragt, bevor sie sucht",
-    step1Body:
-      "Konkrete Situationen statt Selbsteinschätzung. Aus „Kundenservice, 2 Jahre“ wird eine " +
-      "benannte Handlung mit Ergebnis.",
-    step2Title: "Du siehst wenige, wirklich passende Stellen",
-    step2Body:
-      "Echte Anzeigen mit Quelle und Abrufdatum, sortiert nach begründeter Passung — nicht nach " +
-      "Werbebudget.",
-    step3Title: "{assistant} begleitet Bewerbung und Interview",
-    step3Body:
-      "Jeder Satz in den Unterlagen hängt an etwas, das du bestätigt hast. Versendet wird nie " +
-      "ohne deine ausdrückliche Freigabe.",
+    understandEyebrow: "Zuerst",
+    understandTitle: "{assistant} versteht erst dich.",
+    understandBody:
+      "Kein Formular, kein Persönlichkeitstest. Ein Gespräch über konkrete Situationen: was du " +
+      "gemacht hast, was dabei herauskam, was dir Energie gibt. Daraus entsteht ein Profil, in " +
+      "dem jede Stärke an einer benannten Erfahrung hängt.",
+
+    discoverEyebrow: "Dann",
+    discoverTitle: "Möglichkeiten, die du selbst nicht gesucht hättest.",
+    discoverBody:
+      "Wer nach seinem Jobtitel sucht, findet seinen Jobtitel. {assistant} sucht über Tätigkeiten " +
+      "und übertragbare Fähigkeiten — und findet damit auch angrenzende und spezielle Rollen.",
+
+    explainEyebrow: "Immer",
+    explainTitle: "Jeder Match wird erklärt.",
+    explainBody:
+      "Ein Wert von 0 bis 100, daneben die Sicherheit, die Aufschlüsselung, die fehlenden Angaben " +
+      "und die Bedingungen, die verletzt sind. Kein Prozentwert ohne Begründung.",
+
+    applyEyebrow: "Bis zum Schluss",
+    applyTitle: "Vom Job zur fertigen Bewerbung.",
+    applyBody:
+      "Unterlagen entstehen aus deinen belegten Erfahrungen. Jede Tatsachenbehauptung hängt an " +
+      "einem Beleg oder an deiner ausdrücklichen Bestätigung. Versendet wird nie ohne deine " +
+      "Freigabe.",
 
     methodEyebrow: "Methodik",
     methodTitle: "Vier Arten von Wissen. Nie vermischt.",
@@ -108,22 +123,37 @@ export const de = {
     knowledgeExternalBody:
       "Stellenanzeigen, Register, Bewertungen — mit Quelle und Abrufdatum.",
 
-    futureTitle: "Wie sich die Rolle entwickelt",
-    futureBody:
-      "Bewertet werden die Aufgaben der konkreten Stelle, nicht die Berufstafel. Ausgegeben " +
-      "werden Szenarien mit Datenstand — nie eine Jahreszahl, wann etwas „verschwindet“.",
-    futureLink: "Wie das berechnet wird",
-    privacyTitle: "Deine Daten bleiben deine",
+    privacyTitle: "Deine Daten bleiben unter deiner Kontrolle.",
     privacyBody:
       "Du siehst, was gespeichert ist, kannst alles einzeln ändern oder löschen und jede " +
       "Einwilligung getrennt widerrufen. An das Sprachmodell geht nur der Kontext, den die " +
-      "jeweilige Aufgabe braucht.",
+      "jeweilige Aufgabe braucht — nie dein Name, nie deine Adresse.",
     privacyLink: "Sicherheit und Datenschutz",
+
+    faqTitle: "Häufige Fragen",
+    faq1Q: "Kostet das etwas?",
+    faq1A:
+      "In der Aufbauphase nicht. Ein Preismodell steht noch nicht fest, und wir stellen hier " +
+      "keine Tabelle hin, die es nicht gibt.",
+    faq2Q: "Woher kommen die Stellen?",
+    faq2A:
+      "Aus Quellen, die ihre Anzeigen selbst öffentlich zum Abruf anbieten. Jede Anzeige nennt " +
+      "ihre Herkunft und ihren Abrufzeitpunkt und verlinkt auf das Original. Portale, die das " +
+      "Auslesen untersagen, werden nicht abgefragt.",
+    faq3Q: "Schreibt die KI meine Bewerbung?",
+    faq3A:
+      "Sie formuliert — aber sie erfindet nichts. Jede Aussage über Erfahrung, Ergebnis oder " +
+      "Verantwortung braucht einen Beleg aus deinem Profil oder deine ausdrückliche Bestätigung. " +
+      "Ohne Beleg wird abgeschwächt oder nachgefragt.",
+    faq4Q: "Sehen Arbeitgeber mein Profil?",
+    faq4A:
+      "Nein. {brand} arbeitet für die suchende Person. Es gibt keine Arbeitgeberseite, keine " +
+      "Kandidatensuche und keine Weitergabe deines Profils.",
 
     closingTitle: "Fang mit dem an, was du schon kannst.",
     closingBody:
-      "Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und " +
-      "später weitermachen.",
+      "Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und später " +
+      "weitermachen.",
     closingCta: "Kostenlos beginnen",
 
     navProduct: "Produkt",
@@ -133,21 +163,23 @@ export const de = {
     footerCompany: "Unternehmen",
     footerOverview: "Überblick",
     footerNote:
-      "{brand} und {assistant} sind vorläufige Namen. Kandidatenseitig — dieses Produkt " +
-      "arbeitet für die suchende Person, nicht für Arbeitgeber.",
+      "{brand} und {assistant} sind vorläufige Namen. Kandidatenseitig — dieses Produkt arbeitet " +
+      "für die suchende Person, nicht für Arbeitgeber.",
     footerLanguage:
       "Sprache und Region wählst du beim Anlegen des Kontos und änderst sie jederzeit unter " +
-      "Profil → Sprache & Region.",
+      "Konto → Sprache & Region.",
 
     exampleSaid: "Was du erzählst",
     exampleSaidText: "„Ich habe oft schwierige Kunden beruhigt.“",
     exampleAsked: "Was {assistant} nachfragt",
     exampleAskedText:
-      "„Erzähl mir von einer Eskalation, die du übernommen hast. Was hast du konkret getan — " +
-      "und was kam dabei heraus?“",
+      "„Erzähl mir von einer Eskalation, die du übernommen hast. Was hast du konkret getan — und " +
+      "was kam dabei heraus?“",
     exampleEvidence: "Belegte Stärke",
     exampleEvidenceText: "Konfliktklärung · technische Vermittlung · Verantwortung unter Druck",
     exampleRoles: "Passende Rollen",
+    exampleJobs: "Echte offene Stellen dazu",
+    exampleJobsNote: "Live abgerufen, mit Quelle und Datum.",
   },
 
   auth: {
