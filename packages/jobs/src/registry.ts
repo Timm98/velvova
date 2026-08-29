@@ -1,13 +1,15 @@
 import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
 import type { JobSourceAdapter } from "./adapter.ts";
 import { UserTextImportAdapter } from "./sources/userImport.ts";
+import { ArbeitnowAdapter } from "./sources/arbeitnow.ts";
 
 /**
  * Welche Quellen aktiv sind.
  *
- * Eine Quelle läuft nur, wenn sie konfiguriert UND lizenziert ist. Beides
- * wird hier geprüft, nicht im Aufrufer - sonst schleicht sich früher
- * oder später eine Stelle ein, an der es vergessen wird.
+ * Eine Quelle läuft nur, wenn sie ausgewählt, konfiguriert UND lizenziert
+ * ist. Alle drei Prüfungen stehen hier und nicht im Aufrufer — sonst
+ * schleicht sich früher oder später eine Stelle ein, an der eine davon
+ * vergessen wird.
  */
 
 export interface SourceStatus {
@@ -15,28 +17,41 @@ export interface SourceStatus {
   displayName: string;
   active: boolean;
   reason: string;
+  /** Liefert diese Quelle echte Stellen oder synthetische? */
+  real: boolean;
+}
+
+function allAdapters(): JobSourceAdapter[] {
+  return [new ArbeitnowAdapter(), new UserTextImportAdapter()];
+}
+
+export function adapterByKey(key: string): JobSourceAdapter | undefined {
+  return allAdapters().find((a) => a.key === key);
 }
 
 export function activeAdapters(cfg: RuntimeConfig = loadRuntimeConfig()): JobSourceAdapter[] {
-  const all: JobSourceAdapter[] = [new UserTextImportAdapter()];
-  return all.filter((a) => cfg.jobs.sources.includes(a.key) && a.isConfigured());
+  return allAdapters().filter(
+    (a) => cfg.jobs.sources.includes(a.key) && a.isConfigured() && a.licenseStatus !== "unclear",
+  );
 }
 
 export function sourceStatuses(cfg: RuntimeConfig = loadRuntimeConfig()): SourceStatus[] {
-  const all: JobSourceAdapter[] = [new UserTextImportAdapter()];
-
-  const statuses = all.map((a) => {
+  const statuses: SourceStatus[] = allAdapters().map((a) => {
     const selected = cfg.jobs.sources.includes(a.key);
     const configured = a.isConfigured();
+    const licensed = a.licenseStatus !== "unclear";
     return {
       key: a.key,
       displayName: a.displayName,
-      active: selected && configured,
-      reason: !selected
-        ? "nicht ausgewaehlt"
-        : !configured
-          ? "nicht eingerichtet: Zugangsdaten fehlen"
-          : "aktiv",
+      active: selected && configured && licensed,
+      real: true,
+      reason: !licensed
+        ? "gesperrt: Rechtslage nicht geklärt"
+        : !selected
+          ? "nicht ausgewählt"
+          : !configured
+            ? "nicht eingerichtet: Zugangsdaten fehlen"
+            : "aktiv",
     };
   });
 
@@ -45,7 +60,8 @@ export function sourceStatuses(cfg: RuntimeConfig = loadRuntimeConfig()): Source
       key: "seed",
       displayName: "Demo-Datensatz",
       active: true,
-      reason: "aktiv - ausschließlich synthetische Stellen",
+      real: false,
+      reason: "aktiv — ausschließlich synthetische Stellen",
     });
   }
 

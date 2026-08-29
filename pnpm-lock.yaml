@@ -394,9 +394,15 @@ importers:
       '@paycheck/config':
         specifier: workspace:*
         version: link:../config
+      '@paycheck/db':
+        specifier: workspace:*
+        version: link:../db
       '@paycheck/domain':
         specifier: workspace:*
         version: link:../domain
+      drizzle-orm:
+        specifier: 0.45.2
+        version: 0.45.2(@electric-sql/pglite@0.5.8)(@types/pg@8.15.6)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: 26.4.0
