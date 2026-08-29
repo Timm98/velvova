@@ -147,7 +147,7 @@ export function VoicePanel({
         justifyItems: "center",
       }}
     >
-      {/* Der ruhige Kern. Bewegt sich nur, wenn wirklich zugehoert wird. */}
+      {/* Der ruhige Kern. Bewegt sich nur, wenn wirklich zugehört wird. */}
       <div
         aria-hidden
         style={{

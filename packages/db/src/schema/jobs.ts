@@ -149,7 +149,7 @@ export const reviewThemes = pgTable("review_themes", {
   periodTo: timestamp("period_to", { withTimezone: true }),
 });
 
-/** Jede externe Aussage im Produkt traegt eine Zeile hier. */
+/** Jede externe Aussage im Produkt trägt eine Zeile hier. */
 export const sourceCitations = pgTable("source_citations", {
   id: uuid("id").primaryKey().defaultRandom(),
   subjectType: text("subject_type").notNull(),

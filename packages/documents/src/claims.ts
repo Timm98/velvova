@@ -39,7 +39,7 @@ export function splitIntoSentences(text: string): string[] {
     .filter((s) => s.length > 0);
 }
 
-/** Wortueberlappung als Näherung. Kein semantisches Modell, aber pruefbar. */
+/** Wortüberlappung als Näherung. Kein semantisches Modell, aber pruefbar. */
 function overlapScore(claim: string, evidence: string): number {
   const tokenise = (s: string) =>
     new Set(
@@ -88,7 +88,7 @@ export function analyseClaims(
         evidenceIds: [],
         status: "unsupported",
         note:
-          "Für diese Aussage gibt es keinen bestaetigten Beleg in deinem Profil. " +
+          "Für diese Aussage gibt es keinen bestätigten Beleg in deinem Profil. " +
           "Ergänze einen Beleg oder formuliere sie vorsichtiger.",
       };
     }

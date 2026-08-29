@@ -12,7 +12,7 @@ import { z } from "zod";
  *  2. Fehlende Daten senken die Confidence, nie den Fit.
  */
 
-/** Woher eine Aussage stammt. Bestimmt, wie stark sie zaehlen darf. */
+/** Woher eine Aussage stammt. Bestimmt, wie stark sie zählen darf. */
 export const SourceTypeSchema = z.enum([
   "user_stated",      // Der Mensch hat es selbst gesagt.
   "user_confirmed",   // Der Mensch hat eine Ableitung ausdrücklich bestätigt.

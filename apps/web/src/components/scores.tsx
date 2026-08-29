@@ -15,7 +15,7 @@ import type { Translator } from "@paycheck/i18n";
  * immer nebeneinander, nie ineinander. Und wo die Datenlage nicht reicht,
  * erscheint keine Zahl - sondern der Grund.
  *
- * Farbe traegt nirgends allein die Information: jeder farbige Zustand hat
+ * Farbe trägt nirgends allein die Information: jeder farbige Zustand hat
  * zusätzlich Text.
  */
 

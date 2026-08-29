@@ -17,7 +17,7 @@ import { issueSessionToken } from "@/lib/auth";
  *  - nur mit dem lokalen PGlite-Treiber
  *
  * Gegen einen echten Postgres-Server oder in Produktion antwortet der
- * Endpunkt mit 404, als gaebe es ihn nicht.
+ * Endpunkt mit 404, als gäbe es ihn nicht.
  */
 
 type SessionResult =
@@ -51,7 +51,7 @@ async function createDemoSession(): Promise<SessionResult> {
 }
 
 /**
- * Das Cookie wird ausdrücklich auf die zurueckgegebene Antwort gesetzt.
+ * Das Cookie wird ausdrücklich auf die zurückgegebene Antwort gesetzt.
  * Ueber cookies().set() gesetzte Werte landen NICHT auf einer selbst
  * konstruierten NextResponse - genau daran ist die erste Fassung
  * gescheitert, und der Test hat es aufgedeckt.

@@ -8,7 +8,7 @@ import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum
 /**
  * Identität, Einwilligungen und Datenschutzanfragen.
  *
- * Jede Tabelle mit Nutzerbezug traegt user_id. Darauf setzt die
+ * Jede Tabelle mit Nutzerbezug trägt user_id. Darauf setzt die
  * Zugriffskontrolle auf (siehe migrate.ts, Row Level Security).
  */
 
@@ -22,7 +22,7 @@ export const users = pgTable("users", {
   displayName: text("display_name"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-  /** Soft Delete. Der harte Löschlauf raeumt später kontrolliert auf. */
+  /** Soft Delete. Der harte Löschlauf räumt später kontrolliert auf. */
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("users_email_unique").on(t.email)]);
 

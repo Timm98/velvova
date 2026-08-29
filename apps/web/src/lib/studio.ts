@@ -151,16 +151,16 @@ export async function loadStudio(applicationId: string): Promise<StudioView | nu
     delivery: {
       providerName: provider.displayName,
       connected: provider.isConnected(),
-      // Nur ein verbundener Nicht-Entwurfsweg versendet ueberhaupt etwas.
+      // Nur ein verbundener Nicht-Entwurfsweg versendet überhaupt etwas.
       willActuallySend: false,
     },
   };
 }
 
 /**
- * Ein Dokument erzeugen. Ausschließlich aus bestaetigter Evidenz - was
+ * Ein Dokument erzeugen. Ausschließlich aus bestätigter Evidenz - was
  * fehlt, wird als Lücke benannt und nicht mit einer Formulierung
- * ueberdeckt.
+ * überdeckt.
  */
 export async function generateArtifact(
   applicationId: string,
@@ -177,7 +177,7 @@ export async function generateArtifact(
     return {
       ok: false,
       message:
-        "Es gibt noch keine bestaetigten Erfahrungen in deinem Profil. Ohne Belege könnte hier " +
+        "Es gibt noch keine bestätigten Erfahrungen in deinem Profil. Ohne Belege könnte hier " +
         "nur Erfundenes stehen - deshalb wird nichts erzeugt. Bestätige zuerst dein Profil.",
     };
   }
@@ -201,7 +201,7 @@ export async function generateArtifact(
     content =
       `Guten Tag,\n\nich bewerbe mich auf die Stelle "${job.title}".\n\n` +
       strongest.map((e) => `${e.statement}.`).join("\n\n") +
-      `\n\nGern erlaeutere ich das in einem Gespräch.\n\nMit freundlichen Grüßen\n` +
+      `\n\nGern erläutere ich das in einem Gespräch.\n\nMit freundlichen Grüßen\n` +
       `${user.displayName ?? ""}\n\n` +
       `[Hinweis: ${advice.reason}]`;
   }

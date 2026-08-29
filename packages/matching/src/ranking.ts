@@ -12,7 +12,7 @@ import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
  *
  * Wenn zu viele Bestandteile unbekannt sind, wird ebenfalls kein
  * Gesamtwert gebildet. Lieber keine Zahl als eine, die Sicherheit
- * vortaeuscht.
+ * vortäuscht.
  */
 
 export interface RankingWeights {

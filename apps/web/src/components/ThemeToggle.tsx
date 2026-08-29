@@ -7,7 +7,7 @@ type Theme = "light" | "dark" | "system";
 /**
  * Hell, Dunkel, System.
  *
- * Die Wahl landet in einem Cookie, damit der Server sie beim naechsten
+ * Die Wahl landet in einem Cookie, damit der Server sie beim nächsten
  * Laden schon kennt und die Seite nicht kurz in der falschen Farbe
  * aufblitzt. "System" entfernt das Attribut - dann entscheiden die
  * Medienabfragen in den Tokens.

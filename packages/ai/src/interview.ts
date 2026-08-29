@@ -12,8 +12,8 @@ import { QUESTIONS_BY_STAGE, STAGE_LABELS, followUpText, questionText, type Ques
  *
  * Adaptiv heisst hier: was schon sicher bekannt ist, wird nicht noch einmal
  * gefragt. Wer im Lebenslauf zwei Jahre Kundenservice stehen hat, soll nicht
- * gefragt werden, ob er Berufserfahrung hat - das ist der haeufigste Grund,
- * warum solche Gespräche sich wie Formulare anfuehlen.
+ * gefragt werden, ob er Berufserfahrung hat - das ist der häufigste Grund,
+ * warum solche Gespräche sich wie Formulare anfühlen.
  *
  * Umgekehrt gilt: wo etwas unsicher ist, wird gezielt nachgefragt statt
  * angenommen.
@@ -25,7 +25,7 @@ export interface InterviewState {
   locale: "de" | "en";
   /** Fragen, die in dieser Sitzung bereits gestellt wurden. */
   askedKeys: string[];
-  /** Fragen, die der Mensch uebersprungen hat. Werden nicht wiederholt. */
+  /** Fragen, die der Mensch übersprungen hat. Werden nicht wiederholt. */
   skippedKeys: string[];
 }
 
@@ -43,7 +43,7 @@ export interface NextStep {
 
 const PURPOSE: Record<string, { de: string; en: string }> = {
   consent_and_goal: {
-    de: "Damit klar ist, worauf die Suche ueberhaupt zielt.",
+    de: "Damit klar ist, worauf die Suche überhaupt zielt.",
     en: "So it is clear what the search is aiming at.",
   },
   experience_episodes: {
@@ -55,7 +55,7 @@ const PURPOSE: Record<string, { de: string; en: string }> = {
     en: "What you can do and what suits you are two different things. Both count.",
   },
   hard_constraints: {
-    de: "Diese Grenzen werden nie stillschweigend uebergangen.",
+    de: "Diese Grenzen werden nie stillschweigend übergangen.",
     en: "These limits are never quietly overridden.",
   },
   location_and_logistics: {
@@ -80,7 +80,7 @@ export function stageIsCovered(stage: InterviewStage, evidence: EvidenceItem[]):
 
   switch (stage) {
     case "experience_episodes":
-      // Mindestens zwei belegte Episoden - eine einzelne traegt kein Profil.
+      // Mindestens zwei belegte Episoden - eine einzelne trägt kein Profil.
       return bySource("experience_episodes").filter((e) => e.userConfirmed).length >= 2;
     case "hard_constraints":
       return bySource("hard_constraints").length >= 1;
@@ -98,7 +98,7 @@ export function hasWorkExperience(evidence: EvidenceItem[]): boolean {
 }
 
 /**
- * Der naechste Schritt. Immer genau einer - das Produkt zeigt nie zwei
+ * Der nächste Schritt. Immer genau einer - das Produkt zeigt nie zwei
  * Hauptfragen gleichzeitig.
  */
 export function nextStep(state: InterviewState): NextStep {
@@ -126,7 +126,7 @@ export function nextStep(state: InterviewState): NextStep {
           text:
             locale === "en"
               ? `Understood. Let's move on.`
-              : `Verstanden. Dann weiter zum naechsten Thema.`,
+              : `Verstanden. Dann weiter zum nächsten Thema.`,
           stageLabel: STAGE_LABELS[stage]![locale],
           purpose: purposeFor(stage, locale),
           canSkip: false,
@@ -140,7 +140,7 @@ export function nextStep(state: InterviewState): NextStep {
         text:
           locale === "en"
             ? `We can come back to this later - it does not have to be settled now.`
-            : `Darauf koennen wir später zurueckkommen, das muss jetzt nicht geklaert sein.`,
+            : `Darauf können wir später zurückkommen, das muss jetzt nicht geklärt sein.`,
         stageLabel: STAGE_LABELS[stage]![locale],
         purpose: purposeFor(stage, locale),
         canSkip: false,
@@ -187,7 +187,7 @@ export function needsFollowUp(answer: string, question: Question): boolean {
   if (!followUpText(question, "de")) return false;
 
   const concreteMarkers =
-    /\b(ich habe|ich hab|dann|danach|zuerst|zum beispiel|konkret|etwa|rund|ungefaehr|\d+)\b/i;
+    /\b(ich habe|ich hab|dann|danach|zuerst|zum beispiel|konkret|etwa|rund|ungefähr|\d+)\b/i;
   return !concreteMarkers.test(trimmed);
 }
 

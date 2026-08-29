@@ -13,8 +13,8 @@ import {
  * Deterministischer lokaler Provider.
  *
  * Er ist kein Platzhalter, sondern der Standardweg: ohne konfigurierten
- * Schlüssel läuft das gesamte Produkt hierueber. Das hat zwei Gründe.
- * Erstens muss ein neuer Entwickler ohne Zugangsdaten arbeiten koennen.
+ * Schlüssel läuft das gesamte Produkt hierüber. Das hat zwei Gründe.
+ * Erstens muss ein neuer Entwickler ohne Zugangsdaten arbeiten können.
  * Zweitens brauchen Tests reproduzierbare Antworten - ein echtes Modell
  * liefert bei gleichem Eingang nicht zweimal dasselbe.
  *
@@ -32,7 +32,7 @@ function pick<T>(items: readonly T[], seed: string): T {
 }
 
 /**
- * Erzeugt aus einem Zod-Schema ein plausibles, schema-gueltiges Objekt.
+ * Erzeugt aus einem Zod-Schema ein plausibles, schema-gültiges Objekt.
  * Bewusst schlicht gehalten: es geht um Struktur, nicht um Inhalt.
  */
 function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
@@ -86,7 +86,7 @@ function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
   // Schlägt die Synthese fehl, ist das ein Fehler im Schema oder hier -
   // und soll laut auffallen, nicht stillschweigend etwas Falsches liefern.
   throw new Error(
-    `Der Demo-Anbieter konnte kein gueltiges Objekt für "${(schema as { description?: string }).description ?? "Schema"}" ` +
+    `Der Demo-Anbieter konnte kein gültiges Objekt für "${(schema as { description?: string }).description ?? "Schema"}" ` +
       `erzeugen: ${parsed.error.message}`,
   );
 }
@@ -94,21 +94,21 @@ function synthesiseFromSchema<T>(schema: z.ZodType<T>, seed: string): T {
 /** Antworten, die zum jeweiligen Interviewthema passen. */
 const STAGE_REPLIES: Record<string, string[]> = {
   consent_and_goal: [
-    "Bevor ich dir Jobs zeige, möchte ich verstehen, was du wirklich kannst, was dir Energie gibt und welche Bedingungen du brauchst. Was soll sich durch deine naechste berufliche Entscheidung konkret verändern?",
+    "Bevor ich dir Jobs zeige, möchte ich verstehen, was du wirklich kannst, was dir Energie gibt und welche Bedingungen du brauchst. Was soll sich durch deine nächste berufliche Entscheidung konkret verändern?",
   ],
   current_situation: [
     "Danke. Erzähl mir kurz, wo du gerade stehst: Was machst du im Moment, und seit wann?",
   ],
   experience_episodes: [
     "Erzähl von einer Aufgabe, bei der du die Zeit vergessen hast. Was hast du dabei tatsächlich getan?",
-    "Welches Problem hast du zuletzt selbststaendig geloest? Mich interessiert vor allem, welche Schritte du gewählt hast.",
+    "Welches Problem hast du zuletzt selbstständig gelöst? Mich interessiert vor allem, welche Schritte du gewählt hast.",
   ],
   tasks_and_energy: [
-    "Welche Tätigkeit fällt dir leicht, die andere haeufig schwierig finden? Und gibt es dafuer ein konkretes Beispiel?",
+    "Welche Tätigkeit fällt dir leicht, die andere häufig schwierig finden? Und gibt es dafür ein konkretes Beispiel?",
     "Welche Aufgaben kannst du gut, obwohl sie dich viel Energie kosten?",
   ],
   hard_constraints: [
-    "Jetzt zu den Grenzen: Welche drei Bedingungen sind für deinen naechsten Job nicht verhandelbar?",
+    "Jetzt zu den Grenzen: Welche drei Bedingungen sind für deinen nächsten Job nicht verhandelbar?",
   ],
   location_and_logistics: [
     "Welche Standorte, Pendelzeiten und Remote-Anteile kommen für dich in Frage?",
@@ -153,13 +153,13 @@ export class MockAiProvider implements AiProvider {
         provider: "mock",
         latencyMs: Date.now() - start,
       },
-      rationale: "Demo-Anbieter: strukturell gueltiges Beispiel ohne inhaltliche Aussage.",
+      rationale: "Demo-Anbieter: strukturell gültiges Beispiel ohne inhaltliche Aussage.",
     };
   }
 
   /**
    * Deterministische Vektoren aus einem Hash. Sie tragen keine Semantik -
-   * aehnliche Texte liegen nicht beieinander. Für die Demo reicht das,
+   * ähnliche Texte liegen nicht beieinander. Für die Demo reicht das,
    * für echte semantische Suche braucht es einen richtigen Anbieter.
    * Genau das steht auch in der Oberfläche.
    */

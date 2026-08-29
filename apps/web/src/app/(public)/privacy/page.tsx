@@ -41,7 +41,7 @@ export default async function PrivacyPage() {
           </p>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
             Wichtig und oft missverstanden: eine eigene Datenbank bedeutet nicht automatisch, dass
-            keine Daten einen externen Anbieter erreichen. Deshalb steht der tatsaechliche Zustand
+            keine Daten einen externen Anbieter erreichen. Deshalb steht der tatsächliche Zustand
             hier und nicht in einer Broschüre.
           </p>
         </Stack>
@@ -51,12 +51,12 @@ export default async function PrivacyPage() {
         <h2 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>Grundsätze</h2>
         <Stack gap={4}>
           {[
-            ["Zweckbindung", "Jede Datenkategorie hat einen benannten Zweck. Wofuer sie nicht erhoben wurde, dafuer wird sie nicht verwendet."],
-            ["Datenminimierung", "Es wird nur erhoben, was für den benannten Zweck noetig ist. An einen externen Anbieter geht nur der Ausschnitt, den die konkrete Aufgabe braucht."],
+            ["Zweckbindung", "Jede Datenkategorie hat einen benannten Zweck. Wofuer sie nicht erhoben wurde, dafür wird sie nicht verwendet."],
+            ["Datenminimierung", "Es wird nur erhoben, was für den benannten Zweck nötig ist. An einen externen Anbieter geht nur der Ausschnitt, den die konkrete Aufgabe braucht."],
             ["Getrennte Einwilligungen", "Karriereprofil, Dokumentanalyse, Spracheingabe, Transkriptspeicherung und externe Verarbeitung sind fünf getrennte Entscheidungen. Jede einzeln widerrufbar."],
-            ["Kein Training ohne Zustimmung", "Deine Daten werden nicht für das Training von Modellen verwendet. Das ist standardmäßig aus und braucht eine ausdrueckliche, gesonderte Zustimmung."],
-            ["Keine stille Weitergabe", "Institutionelle Partner sehen standardmäßig ausschließlich aggregierte Zahlen. Ein individuelles Profil wird nie ohne ausdrueckliche Freigabe geteilt."],
-            ["Aufbewahrung", "Jede Angabe traegt eine Aufbewahrungsklasse: nur für die Sitzung, solange das Profil besteht, oder solange eine gesetzliche Pflicht besteht."],
+            ["Kein Training ohne Zustimmung", "Deine Daten werden nicht für das Training von Modellen verwendet. Das ist standardmäßig aus und braucht eine ausdrückliche, gesonderte Zustimmung."],
+            ["Keine stille Weitergabe", "Institutionelle Partner sehen standardmäßig ausschließlich aggregierte Zahlen. Ein individuelles Profil wird nie ohne ausdrückliche Freigabe geteilt."],
+            ["Aufbewahrung", "Jede Angabe trägt eine Aufbewahrungsklasse: nur für die Sitzung, solange das Profil besteht, oder solange eine gesetzliche Pflicht besteht."],
           ].map(([title, body]) => (
             <Card key={title}>
               <Stack gap={2}>
@@ -77,7 +77,7 @@ export default async function PrivacyPage() {
               im Privacy Center, ohne Anfrage per E-Mail.
             </p>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-              Zur Löschung: Inhalte werden sofort unzugänglich gemacht, die endgueltige Entfernung
+              Zur Löschung: Inhalte werden sofort unzugänglich gemacht, die endgültige Entfernung
               erfolgt durch einen nachgelagerten Lauf. Wir nennen diesen Ablauf, statt
               &bdquo;sofort und unwiederbringlich&ldquo; zu behaupten.
             </p>

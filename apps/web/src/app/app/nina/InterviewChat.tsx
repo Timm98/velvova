@@ -10,7 +10,7 @@ import { VoicePanel } from "./VoicePanel";
  * Das Gespräch.
  *
  * Genau eine Hauptfrage sichtbar. Text- und Sprachmodus jederzeit
- * wechselbar. Jede Frage kann uebersprungen werden - das steht direkt
+ * wechselbar. Jede Frage kann übersprungen werden - das steht direkt
  * daneben und nicht in einem Menü.
  */
 

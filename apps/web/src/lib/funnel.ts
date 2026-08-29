@@ -101,7 +101,7 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
       title: "Gespeichert, aber nicht begonnen",
       observation: `${counts.saved} gespeichert, ${counts.started} begonnen.`,
       suggestion:
-        "Etwas haelt dich vor dem ersten Schritt auf. Das ist oft eine fehlende Angabe in der " +
+        "Etwas hält dich vor dem ersten Schritt auf. Das ist oft eine fehlende Angabe in der " +
         "Anzeige oder ein Zweifel, den man ausformulieren sollte - nicht Faulheit.",
       certainty: "hinweis",
     });
@@ -143,14 +143,14 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
       observation: `${counts.offers} Angebote erhalten.`,
       suggestion:
         "Wenn Angebote kommen, aber nicht passen, liegt es meist an Gehalt, Bedingungen oder " +
-        "Jobqualität. Es lohnt sich, diese Kriterien vorher schaerfer zu setzen statt nachher.",
+        "Jobqualität. Es lohnt sich, diese Kriterien vorher schärfer zu setzen statt nachher.",
       certainty: "hinweis",
     });
   }
 
   const headline =
     findings.length === 0
-      ? `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. Kein auffaelliges Muster.`
+      ? `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. Kein auffälliges Muster.`
       : `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. ${findings.length} Auffälligkeit${findings.length === 1 ? "" : "en"}.`;
 
   return {
@@ -159,8 +159,8 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
     headline,
     findings,
     limits:
-      "Diese Auswertung beschreibt Zusammenhaenge in deinen eigenen Zahlen. Sie kennt nicht das " +
-      "Bewerberfeld, das Timing oder interne Kandidaten - und sagt deshalb nichts darueber aus, " +
+      "Diese Auswertung beschreibt Zusammenhänge in deinen eigenen Zahlen. Sie kennt nicht das " +
+      "Bewerberfeld, das Timing oder interne Kandidaten - und sagt deshalb nichts darüber aus, " +
       "wie wahrscheinlich eine Einstellung ist.",
   };
 }

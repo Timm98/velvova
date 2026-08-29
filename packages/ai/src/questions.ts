@@ -8,7 +8,7 @@ import type { InterviewStage } from "@paycheck/domain";
  * eine Meinung; "Erzähl von etwas, das du organisiert hast" liefert
  * etwas, das man belegen und in eine Bewerbung schreiben kann.
  *
- * Jede Frage traegt einen stabilen Schlüssel. Der Text darf sich ändern,
+ * Jede Frage trägt einen stabilen Schlüssel. Der Text darf sich ändern,
  * der Schlüssel nicht - sonst brechen Auswertung und Verlauf.
  */
 
@@ -31,9 +31,9 @@ export interface Question {
 export const QUESTIONS: Question[] = [
   // --- Ziel ---
   { key: "goal_change", stage: "consent_and_goal", yields: ["motive", "preference"],
-    de: "Was soll sich durch deine naechste berufliche Entscheidung konkret verändern?",
+    de: "Was soll sich durch deine nächste berufliche Entscheidung konkret verändern?",
     en: "What should concretely change through your next career decision?",
-    followUpDe: "Und woran würdest du merken, dass es sich veraendert hat?",
+    followUpDe: "Und woran würdest du merken, dass es sich verändert hat?",
     followUpEn: "And how would you notice that it had changed?" },
 
   // --- Aktuelle Lage ---
@@ -41,7 +41,7 @@ export const QUESTIONS: Question[] = [
     de: "Wo stehst du gerade beruflich - was machst du im Moment, und seit wann?",
     en: "Where are you right now - what are you doing, and since when?" },
   { key: "search_status", stage: "current_situation", yields: ["preference"],
-    de: "Wie läuft deine Suche bisher? Wie viele Bewerbungen hast du ungefaehr geschrieben, und was kam zurück?",
+    de: "Wie läuft deine Suche bisher? Wie viele Bewerbungen hast du ungefähr geschrieben, und was kam zurück?",
     en: "How has your search gone so far? Roughly how many applications, and what came back?" },
 
   // --- Hintergrund ---
@@ -49,7 +49,7 @@ export const QUESTIONS: Question[] = [
     de: "Welche Ausbildung oder welches Studium hast du abgeschlossen oder bist du gerade dabei abzuschliessen?",
     en: "What training or degree have you completed, or are you about to complete?" },
   { key: "tools_and_methods", stage: "background", yields: ["tool", "knowledge"],
-    de: "Welche Werkzeuge, Sprachen, Methoden oder Lizenzen beherrschst du - und welchen konkreten Beleg gibt es dafuer?",
+    de: "Welche Werkzeuge, Sprachen, Methoden oder Lizenzen beherrschst du - und welchen konkreten Beleg gibt es dafür?",
     en: "Which tools, languages, methods or licences do you know - and what concrete evidence is there?" },
 
   // --- Erfahrungsepisoden: der Kern ---
@@ -63,7 +63,7 @@ export const QUESTIONS: Question[] = [
     noExperienceVariantEn:
       "Tell me about something - from study, training, volunteering, a hobby or at home - where you lost track of time. What did you do?" },
   { key: "solved_problem", stage: "experience_episodes", yields: ["experience_episode", "action", "result"],
-    de: "Welches Problem hast du zuletzt selbststaendig geloest?",
+    de: "Welches Problem hast du zuletzt selbstständig gelöst?",
     en: "What problem did you most recently solve on your own?",
     followUpDe: "Welche Schritte hast du dabei gewählt, und warum gerade diese?",
     followUpEn: "What steps did you choose, and why those?" },
@@ -83,12 +83,12 @@ export const QUESTIONS: Question[] = [
     de: "Wobei bitten dich andere regelmäßig um Hilfe?",
     en: "What do other people regularly ask you for help with?" },
   { key: "repeated_feedback", stage: "feedback_and_recognition", yields: ["skill"],
-    de: "Welches positive Feedback hoerst du wiederholt - und woran wurde es festgemacht?",
+    de: "Welches positive Feedback hörst du wiederholt - und woran wurde es festgemacht?",
     en: "What positive feedback do you hear repeatedly - and what was it based on?" },
   { key: "easy_for_you", stage: "feedback_and_recognition", yields: ["skill"],
-    de: "Welche Tätigkeit fällt dir leicht, die andere haeufig schwierig finden?",
+    de: "Welche Tätigkeit fällt dir leicht, die andere häufig schwierig finden?",
     en: "Which task comes easily to you that others often find difficult?",
-    followUpDe: "Welchen Beleg oder welches Beispiel gibt es dafuer?",
+    followUpDe: "Welchen Beleg oder welches Beispiel gibt es dafür?",
     followUpEn: "What evidence or example is there for that?" },
 
   // --- Energie ---
@@ -96,7 +96,7 @@ export const QUESTIONS: Question[] = [
     de: "Welche Aufgaben kannst du gut, obwohl sie dich viel Energie kosten?",
     en: "Which tasks do you do well even though they cost you a lot of energy?" },
   { key: "avoided_tasks", stage: "tasks_and_energy", yields: ["preference", "constraint"],
-    de: "Welche Aufgaben vermeidest du - und was genau stoert dich daran?",
+    de: "Welche Aufgaben vermeidest du - und was genau stört dich daran?",
     en: "Which tasks do you avoid - and what exactly bothers you about them?" },
 
   // --- Arbeitsweise ---
@@ -104,10 +104,10 @@ export const QUESTIONS: Question[] = [
     de: "Arbeitest du lieber lange an einem komplexen Thema oder an mehreren kurzen Aufgaben?",
     en: "Do you prefer working long on one complex topic or on several short tasks?" },
   { key: "exchange_vs_focus", stage: "work_style_and_environment", yields: ["work_environment"],
-    de: "Wie viel Austausch und wie viel ungestoerte Zeit brauchst du an einem normalen Arbeitstag?",
+    de: "Wie viel Austausch und wie viel ungestörte Zeit brauchst du an einem normalen Arbeitstag?",
     en: "How much exchange and how much uninterrupted time do you need on a normal working day?" },
   { key: "structure_vs_building", stage: "work_style_and_environment", yields: ["work_environment"],
-    de: "Bevorzugst du klare Abläufe oder moechtest du lieber etwas Neues aufbauen?",
+    de: "Bevorzugst du klare Abläufe oder möchtest du lieber etwas Neues aufbauen?",
     en: "Do you prefer clear processes or would you rather build something new?" },
   { key: "shifting_priorities", stage: "work_style_and_environment", yields: ["skill", "work_environment"],
     de: "Wie gehst du mit kurzfristig wechselnden Prioritäten um? Nenn mir bitte ein Beispiel.",
@@ -115,10 +115,10 @@ export const QUESTIONS: Question[] = [
 
   // --- Verantwortung und Werte ---
   { key: "responsibility_wanted", stage: "values_and_motives", yields: ["motive"],
-    de: "Welche fachliche, Projekt- oder Personalverantwortung moechtest du übernehmen?",
+    de: "Welche fachliche, Projekt- oder Personalverantwortung möchtest du übernehmen?",
     en: "What professional, project or people responsibility would you like to take on?" },
   { key: "own_decisions", stage: "values_and_motives", yields: ["motive"],
-    de: "Welche Entscheidungen moechtest du selbst treffen duerfen?",
+    de: "Welche Entscheidungen möchtest du selbst treffen dürfen?",
     en: "Which decisions do you want to be allowed to make yourself?" },
   { key: "value_ranking", stage: "values_and_motives", yields: ["motive"],
     de: "Ordne bitte nach Bedeutung: Gehalt, Sicherheit, Lernen, Autonomie, Sinn, Status, Flexibilität, Team.",
@@ -131,7 +131,7 @@ export const QUESTIONS: Question[] = [
 
   // --- Harte Bedingungen ---
   { key: "non_negotiables", stage: "hard_constraints", yields: ["constraint"],
-    de: "Welche drei Bedingungen sind für deinen naechsten Job nicht verhandelbar?",
+    de: "Welche drei Bedingungen sind für deinen nächsten Job nicht verhandelbar?",
     en: "Which three conditions are non-negotiable for your next job?" },
   { key: "minimum_salary", stage: "hard_constraints", yields: ["constraint"],
     de: "Welches Mindestgehalt brauchst du realistisch?",
@@ -140,7 +140,7 @@ export const QUESTIONS: Question[] = [
     de: "Welche anderen Bedingungen könnten einen niedrigeren Betrag ausnahmsweise ausgleichen?",
     en: "What other conditions could exceptionally make up for a lower figure?" },
   { key: "quit_after_three_months", stage: "hard_constraints", yields: ["constraint"],
-    de: "Was muesste in einem neuen Job passieren, damit du bereits nach drei Monaten wieder kuendigen moechtest?",
+    de: "Was müsste in einem neuen Job passieren, damit du bereits nach drei Monaten wieder kündigen möchtest?",
     en: "What would have to happen in a new job for you to want to leave after three months?" },
 
   // --- Standort ---
@@ -158,7 +158,7 @@ export const QUESTIONS: Question[] = [
     de: "Welche Rollen oder Branchen schliesst du ausdrücklich aus?",
     en: "Which roles or industries do you explicitly rule out?" },
   { key: "learning_goal_year", stage: "learning_goals", yields: ["motive"],
-    de: "Was moechtest du in den naechsten zwölf Monaten gelernt oder nachweisbar verbessert haben?",
+    de: "Was möchtest du in den nächsten zwölf Monaten gelernt oder nachweisbar verbessert haben?",
     en: "What do you want to have learned or demonstrably improved in the next twelve months?" },
 ];
 

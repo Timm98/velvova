@@ -223,7 +223,7 @@ async function seedAll(db: Database): Promise<void> {
     .where(eq(s.users.email, LEA_EMAIL))
     .limit(1);
   if (existingUser[0]) {
-    console.log("Demo-Nutzerin besteht bereits, Profildaten uebersprungen.");
+    console.log("Demo-Nutzerin besteht bereits, Profildaten übersprungen.");
     return;
   }
 
@@ -420,7 +420,7 @@ async function seedAll(db: Database): Promise<void> {
   }
 
   // Neun weitere versendete Bewerbungen ohne Rückmeldung. Erst damit hat
-  // der Trichter genug Fälle, um ueberhaupt etwas zu diagnostizieren -
+  // der Trichter genug Fälle, um überhaupt etwas zu diagnostizieren -
   // unter dieser Menge sagt die Diagnose ausdrücklich nichts.
   const filler = jobIds.get("beratung-kranzberg-neu");
   if (filler) {

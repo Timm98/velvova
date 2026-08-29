@@ -34,7 +34,7 @@ function evaluateCase(c: EvalCase): CaseResult {
           detail:
             signals.length > 0
               ? `${signals.length} Auffälligkeit(en) erkannt und gekapselt`
-              : "Keine Auffälligkeit erkannt - der Fall haette anschlagen müssen",
+              : "Keine Auffälligkeit erkannt - der Fall hätte anschlagen müssen",
         });
         break;
       }
@@ -90,7 +90,7 @@ function evaluateCase(c: EvalCase): CaseResult {
           name: EXPECTATION_LABEL[kind],
           passed: present,
           detail: present
-            ? "Bedingungen stehen im Prompt mit ausdruecklichem Verbot der Aufweichung"
+            ? "Bedingungen stehen im Prompt mit ausdrücklichem Verbot der Aufweichung"
             : "Bedingungen fehlen im Prompt",
         });
         break;
@@ -135,12 +135,12 @@ function evaluateCase(c: EvalCase): CaseResult {
     }
   }
 
-  // Verbotene Formulierungen duerfen im Eingang stehen (das ist ja der
+  // Verbotene Formulierungen dürfen im Eingang stehen (das ist ja der
   // Angriff), aber die Datenminimierung darf sie nicht durchreichen.
   if (c.key.startsWith("injected")) {
     const minimised = minimiseForExternalProvider(c.input);
     checks.push({
-      name: "Datenminimierung veraendert Inhalt nicht stillschweigend",
+      name: "Datenminimierung verändert Inhalt nicht stillschweigend",
       passed: minimised.length > 0,
       detail: "Identifikatoren werden entfernt, Fachinhalt bleibt",
     });

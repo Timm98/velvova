@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Adaptives Karriereinterview. Der Ablauf ist eine Zustandsmaschine, kein
- * starrer Fragebogen: bereits sicher bekannte Themen werden uebersprungen,
+ * starrer Fragebogen: bereits sicher bekannte Themen werden übersprungen,
  * unsichere gezielt nachgefragt.
  */
 
@@ -48,7 +48,7 @@ export const InterviewSessionSchema = z.object({
   stage: InterviewStageSchema,
   /** Themen, die als verstanden gelten. Grundlage der Fortschrittsanzeige. */
   completedStages: z.array(InterviewStageSchema).default([]),
-  /** Themen, die der Mensch bewusst uebersprungen hat. */
+  /** Themen, die der Mensch bewusst übersprungen hat. */
   skippedStages: z.array(InterviewStageSchema).default([]),
   status: z.enum(["active", "paused", "completed", "abandoned"]),
   startedAt: z.date(),

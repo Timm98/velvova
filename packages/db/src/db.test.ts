@@ -7,13 +7,13 @@ import * as s from "./schema/index.ts";
 
 /**
  * Row Level Security ist eine Sicherheitsbehauptung. Behauptungen dieser
- * Art gehoeren getestet, nicht dokumentiert: hier läuft echtes Postgres
+ * Art gehören getestet, nicht dokumentiert: hier läuft echtes Postgres
  * (PGlite), es werden zwei Nutzer angelegt, und es wird geprüft, dass
  * keiner die Daten des anderen sieht.
  *
  * Der erste Anlauf dieses Tests ist fehlgeschlagen, und zwar zu Recht:
  * eine Verbindung als Superuser umgeht RLS vollständig. Erst die eigene,
- * eingeschraenkte Anwendungsrolle macht die Richtlinien wirksam.
+ * eingeschränkte Anwendungsrolle macht die Richtlinien wirksam.
  */
 
 let db: Database;
@@ -27,7 +27,7 @@ beforeAll(async () => {
   close = handle.close;
   await runMigrations(db);
 
-  // Anlage der Testnutzer bewusst mit erhoehten Rechten, ausserhalb von withUser.
+  // Anlage der Testnutzer bewusst mit erhöhten Rechten, ausserhalb von withUser.
   const [a] = await db.insert(s.users).values({ email: "a@example.invalid" }).returning();
   const [b] = await db.insert(s.users).values({ email: "b@example.invalid" }).returning();
   userA = a!.id;

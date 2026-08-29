@@ -38,13 +38,13 @@ export const documents = pgTable("documents", {
   filename: text("filename").notNull(),
   mimeType: text("mime_type").notNull(),
   sizeBytes: integer("size_bytes").notNull(),
-  /** Schlüssel im Objektspeicher, nie ein direkter oeffentlicher Link. */
+  /** Schlüssel im Objektspeicher, nie ein direkter öffentlicher Link. */
   storageKey: text("storage_key").notNull(),
   sha256: text("sha256").notNull(),
   malwareScanStatus: text("malware_scan_status").notNull().default("pending"),
   malwareScanAt: timestamp("malware_scan_at", { withTimezone: true }),
   extractedText: text("extracted_text"),
-  /** Aufbewahrung endet automatisch; danach raeumt der Worker auf. */
+  /** Aufbewahrung endet automatisch; danach räumt der Worker auf. */
   retainUntil: timestamp("retain_until", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -89,7 +89,7 @@ export const deliveries = pgTable("deliveries", {
   recipient: text("recipient").notNull(),
   subject: text("subject").notNull(),
   status: text("status").notNull().default("draft"),
-  /** Der Zeitpunkt der ausdruecklichen Freigabe durch den Menschen. */
+  /** Der Zeitpunkt der ausdrücklichen Freigabe durch den Menschen. */
   confirmedByUserAt: timestamp("confirmed_by_user_at", { withTimezone: true }),
   sentAt: timestamp("sent_at", { withTimezone: true }),
   providerMessageId: text("provider_message_id"),
@@ -158,7 +158,7 @@ export const checkIns = pgTable("check_ins", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   applicationId: uuid("application_id").references(() => applications.id, { onDelete: "set null" }),
   dayMark: integer("day_mark").notNull(),
-  /** Versprechen der Anzeige gegen die tatsaechliche Erfahrung. */
+  /** Versprechen der Anzeige gegen die tatsächliche Erfahrung. */
   promiseVsReality: text("promise_vs_reality"),
   taskEnergy: text("task_energy"),
   leadershipAndTeam: text("leadership_and_team"),

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-/** Rollencluster: die Antwort auf "in welche Richtung ueberhaupt?". */
+/** Rollencluster: die Antwort auf "in welche Richtung überhaupt?". */
 
 export const RoleClusterSchema = z.object({
   id: z.string(),
@@ -16,7 +16,7 @@ export const RoleClusterSchema = z.object({
   criticalConstraints: z.array(z.string()),
   /** Wie realistisch der Einstieg heute ist. */
   entryRealism: z.enum(["direct", "with_bridge", "longer_path", "unclear"]),
-  /** Eine konkrete naechste Handlung zur Überprüfung. */
+  /** Eine konkrete nächste Handlung zur Überprüfung. */
   nextValidationStep: z.string(),
   /** Naheliegend oder angrenzend? Nischenrollen sind ausdrücklich gewollt. */
   kind: z.enum(["obvious", "adjacent", "niche"]),

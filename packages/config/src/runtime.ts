@@ -3,12 +3,12 @@ import { currentEnv, type Env } from "./env.ts";
 
 /**
  * Laufzeitkonfiguration. Wird einmal beim Start validiert, damit ein
- * Konfigurationsfehler sofort und verstaendlich auffaellt statt später
+ * Konfigurationsfehler sofort und verstaendlich auffällt statt später
  * als undefinierter Wert mitten in einem Request.
  *
  * Grundsatz: Ohne einen einzigen Schlüssel muss das Projekt starten.
  * Fehlt ein Zugang, fällt der jeweilige Adapter auf einen deutlich
- * gekennzeichneten Demo-Pfad zurück - er taeuscht nie Betrieb vor.
+ * gekennzeichneten Demo-Pfad zurück - er täuscht nie Betrieb vor.
  */
 
 export const OperatingModeSchema = z.enum(["demo", "live"]);
@@ -119,7 +119,7 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
 
 /**
  * Ein Adapter gilt nur als verbunden, wenn er wirklich konfiguriert ist.
- * Diese Funktion ist die Grundlage dafuer, dass die Oberfläche ehrlich
+ * Diese Funktion ist die Grundlage dafür, dass die Oberfläche ehrlich
  * "nicht verbunden" anzeigt, statt Betrieb vorzutaeuschen.
  */
 export function integrationStatus(cfg: RuntimeConfig) {

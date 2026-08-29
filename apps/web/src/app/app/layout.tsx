@@ -10,8 +10,8 @@ import { DemoBadge } from "@/components/ui";
  * Das App-Gerüst.
  *
  * Fünf Hauptpunkte, nicht mehr. Coaching, Angebote und Check-ins werden
- * aus dem Zusammenhang heraus geoeffnet - sie staendig sichtbar zu halten
- * würde die Navigation aufblaehen, ohne dass jemand direkt dorthin
+ * aus dem Zusammenhang heraus geöffnet - sie ständig sichtbar zu halten
+ * würde die Navigation aufblähen, ohne dass jemand direkt dorthin
  * springen will.
  *
  * Auf schmalen Geräten wandert dieselbe Navigation nach unten.

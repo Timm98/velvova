@@ -6,7 +6,7 @@ import { viewJob } from "@/lib/jobActions";
 /**
  * Erfasst, dass eine Stelle angesehen wurde - Grundlage der
  * Trichterdiagnose. Genau ein Ereignis je Seitenaufruf, kein
- * Verhaltenstracking darueber hinaus.
+ * Verhaltenstracking darüber hinaus.
  */
 export function ViewTracker({ jobId }: { jobId: string }) {
   const recorded = useRef(false);

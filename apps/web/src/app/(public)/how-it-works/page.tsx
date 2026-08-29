@@ -17,7 +17,7 @@ export default async function HowItWorksPage() {
         `hast" liefert etwas, das man belegen und in eine Bewerbung schreiben kann.`,
     },
     {
-      title: "Nichts zählt, bevor du es bestaetigst",
+      title: "Nichts zählt, bevor du es bestätigst",
       body:
         "Aus deinen Antworten entstehen einzelne Aussagen. Jede kannst du bestätigen, bearbeiten, " +
         "ablehnen oder löschen. Erst bestätigte Aussagen fliessen in Empfehlungen und Unterlagen " +
@@ -32,14 +32,14 @@ export default async function HowItWorksPage() {
     {
       title: "Passung und Sicherheit stehen nebeneinander",
       body:
-        "Eine Passung von 82 bei duenner Datenlage ist eine andere Aussage als dieselbe Zahl bei " +
+        "Eine Passung von 82 bei dünner Datenlage ist eine andere Aussage als dieselbe Zahl bei " +
         "guter. Deshalb siehst du beides getrennt - und wo die Datenbasis nicht reicht, gar keine " +
         "Zahl, sondern den Grund.",
     },
     {
       title: "Unterlagen aus deinen Belegen",
       body:
-        "Jede pruefbare Aussage in einem erzeugten Dokument hängt an einer bestaetigten Erfahrung. " +
+        "Jede prüfbare Aussage in einem erzeugten Dokument hängt an einer bestätigten Erfahrung. " +
         "Findet sich kein Beleg, wird die Aussage markiert und das Dokument lässt sich nicht " +
         "freigeben. Das ist keine Warnung, sondern eine Sperre.",
     },
@@ -47,7 +47,7 @@ export default async function HowItWorksPage() {
       title: "Du entscheidest, was hinausgeht",
       body:
         `${brand.assistantName} bereitet vor, erklärt und fragt nach. Versendet wird nichts ohne ` +
-        `deine ausdrueckliche Bestätigung - und es gibt keinen Massenversand.`,
+        `deine ausdrückliche Bestätigung - und es gibt keinen Massenversand.`,
     },
   ];
 
@@ -58,7 +58,7 @@ export default async function HowItWorksPage() {
           So funktioniert es
         </h1>
         <p style={{ marginTop: "var(--space-4)", fontSize: "var(--text-lg)", color: "var(--text-secondary)" }}>
-          Sechs Punkte, die erklären, warum das hier anders ablaeuft als auf einer Jobbörse.
+          Sechs Punkte, die erklären, warum das hier anders abläuft als auf einer Jobbörse.
         </p>
       </header>
 
@@ -79,7 +79,7 @@ export default async function HowItWorksPage() {
           <h2 style={{ fontSize: "var(--text-base)" }}>Was hier ausdrücklich nicht passiert</h2>
           <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
             <li>· Keine Bewertung von Stimme, Gesicht, Akzent, Emotion oder Ehrlichkeit.</li>
-            <li>· Keine Ableitung von Gesundheit, Herkunft, Religion oder aehnlichem.</li>
+            <li>· Keine Ableitung von Gesundheit, Herkunft, Religion oder ähnlichem.</li>
             <li>· Kein Score, der als Einstellungswahrscheinlichkeit ausgegeben wird.</li>
             <li>· Keine Aussage, ein Beruf verschwinde in einer bestimmten Zeit.</li>
             <li>· Kein automatischer Massenversand von Bewerbungen.</li>

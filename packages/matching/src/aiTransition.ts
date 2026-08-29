@@ -10,14 +10,14 @@ import { SCORING_VERSION } from "@paycheck/domain";
  * 70 % aus Aushandlung mit Menschen. Deshalb bewerten wir Aufgaben.
  *
  * Ausgabe sind Szenarien, nie ein Datum. Ein Satz wie "dieser Beruf ist in
- * fünf Jahren weg" ist im gesamten Produkt unzulaessig.
+ * fünf Jahren weg" ist im gesamten Produkt unzulässig.
  */
 
 /** Merkmale, die eine Aufgabe automatisierbar machen. */
 const AUTOMATABLE = [
   "daten erfassen", "eingeben", "dokumentieren", "protokoll", "zusammenfassen",
   "recherchieren", "sortieren", "kategorisieren", "standardisiert", "routine",
-  "berichte erstellen", "auswerten", "formatieren", "uebersetzen", "texte schreiben",
+  "berichte erstellen", "auswerten", "formatieren", "übersetzen", "texte schreiben",
   "termine koordinieren", "stammdaten", "rechnungen", "reporting",
 ];
 
@@ -54,10 +54,10 @@ function classifyTask(task: string): TaskExposure {
       : "Der menschliche Anteil dieser Aufgabe ist aus der Anzeige nicht klar erkennbar.";
 
   const likelyChange = automationExposure > 0.55
-    ? "Der Routineanteil duerfte deutlich schrumpfen. Was bleibt, ist Prüfen, Einordnen und Verantworten."
+    ? "Der Routineanteil dürfte deutlich schrumpfen. Was bleibt, ist Prüfen, Einordnen und Verantworten."
     : augmentationPotential > 0.55
       ? "Werkzeuge duerften den ersten Entwurf übernehmen. Die Qualität hängt dann staerker an deinem Urteil."
-      : "Kurzfristig ist wenig Veränderung erkennbar; die Datenlage traegt aber keine starke Aussage.";
+      : "Kurzfristig ist wenig Veränderung erkennbar; die Datenlage trägt aber keine starke Aussage.";
 
   return { task, automationExposure: round2(automationExposure), augmentationPotential: round2(augmentationPotential), humanCore, likelyChange };
 }
@@ -128,7 +128,7 @@ export function computeAiTransition(input: AiTransitionInput): AiTransitionResul
     {
       title: "Der Zuschnitt der Rolle bleibt weitgehend",
       description:
-        `Wo Verantwortung, Aushandlung oder Präsenz im Mittelpunkt stehen, aendert sich der Kern wenig. ` +
+        `Wo Verantwortung, Aushandlung oder Präsenz im Mittelpunkt stehen, ändert sich der Kern wenig. ` +
         `Die Werkzeuge treten daneben, nicht an die Stelle.`,
     },
     {

@@ -8,14 +8,14 @@ export const metadata: Metadata = { title: "Methodik" };
 /**
  * Die Methodik offen darlegen.
  *
- * Wer eine Zahl zeigt, sollte sagen koennen, wie sie entsteht. Die
+ * Wer eine Zahl zeigt, sollte sagen können, wie sie entsteht. Die
  * Gewichte hier kommen aus dem Code, nicht aus einer Tabelle im Text -
- * eine Änderung der Logik aendert diese Seite mit.
+ * eine Änderung der Logik ändert diese Seite mit.
  */
 export default function MethodologyPage() {
   const fitRows: [string, number, string][] = [
     ["Belegte Fähigkeiten und Qualifikationen", DEFAULT_FIT_WEIGHTS.provenSkills,
-     "Abgleich der bestaetigten Erfahrungen mit den Muss- und Kann-Anforderungen. Muss zählt dreifach."],
+     "Abgleich der bestätigten Erfahrungen mit den Muss- und Kann-Anforderungen. Muss zählt dreifach."],
     ["Tätigkeiten, die Energie geben", DEFAULT_FIT_WEIGHTS.preferredTasks,
      "Vergleich der Kernaufgaben mit dem, was Energie gibt und was auslaugt."],
     ["Arbeitsweise und Umfeld", DEFAULT_FIT_WEIGHTS.workStyle,
@@ -49,7 +49,7 @@ export default function MethodologyPage() {
           </h2>
           <p style={{ color: "var(--text-secondary)" }}>
             <strong>Keine Einstellungswahrscheinlichkeit.</strong> Wer eingeladen wird, hängt an
-            Dingen, die wir nicht kennen und nicht kennen koennen: dem Bewerberfeld, dem Zeitpunkt,
+            Dingen, die wir nicht kennen und nicht kennen können: dem Bewerberfeld, dem Zeitpunkt,
             internen Kandidatinnen, der Tagesform der Person, die liest. Ein Fit-Wert beantwortet
             eine andere Frage - passt die Tätigkeit zu dem, was dieser Mensch belegbar kann und will.
           </p>
@@ -117,9 +117,9 @@ export default function MethodologyPage() {
           {[
             ["Fit", "Passt die Tätigkeit fachlich zu dir? Zeigt eine Zahl nur, wenn genug Faktoren bekannt sind - sonst ein Band wie \"explorativ\"."],
             ["Sicherheit", "Wie belastbar ist diese Aussage? Aus Profilabdeckung, Vollständigkeit der Anzeige, Quellenalter und externen Informationen."],
-            ["Jobqualität", "Wie gut ist die Stelle als Arbeitsplatz? Einkommen, Sicherheit, Belastung, Flexibilität, Kultur, Entwicklung. Bei zu duenner Datenlage: \"nicht ausreichend beurteilbar\" statt eines schlechten Werts."],
+            ["Jobqualität", "Wie gut ist die Stelle als Arbeitsplatz? Einkommen, Sicherheit, Belastung, Flexibilität, Kultur, Entwicklung. Bei zu dünner Datenlage: \"nicht ausreichend beurteilbar\" statt eines schlechten Werts."],
             ["Entwicklung durch KI", "Bewertet werden die Aufgaben der konkreten Rolle, nicht der Berufstitel. Ausgabe sind Szenarien, nie eine Prognose mit Jahreszahl."],
-            ["Vertrauen in die Anzeige", "Quelle, Alter, Linkcheck, Vollständigkeit, moegliche Wiederveröffentlichung. Das Wort \"Fake\" fällt nicht - aus der Ferne lässt sich Betrug nicht feststellen."],
+            ["Vertrauen in die Anzeige", "Quelle, Alter, Linkcheck, Vollständigkeit, mögliche Wiederveröffentlichung. Das Wort \"Fake\" fällt nicht - aus der Ferne lässt sich Betrug nicht feststellen."],
           ].map(([name, body]) => (
             <Card key={name}>
               <Stack gap={2}>
@@ -148,7 +148,7 @@ export default function MethodologyPage() {
             </ul>
             <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
               Sind mehr als die Hälfte der Bestandteile unbekannt, wird kein Gesamtwert gebildet.
-              Lieber keine Zahl als eine, die Sicherheit vortaeuscht.
+              Lieber keine Zahl als eine, die Sicherheit vortäuscht.
             </p>
           </Stack>
         </Card>
@@ -159,9 +159,9 @@ export default function MethodologyPage() {
         <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
           <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
             <li>
-              · Der Abgleich zwischen Anforderung und Erfahrung arbeitet mit Wortueberlappung. Das
+              · Der Abgleich zwischen Anforderung und Erfahrung arbeitet mit Wortüberlappung. Das
               ist nachvollziehbar, aber grob: eine anders formulierte, gleichbedeutende Erfahrung
-              kann uebersehen werden.
+              kann übersehen werden.
             </li>
             <li>
               · Reisezeiten werden aus einer kleinen Tabelle geschätzt, nicht mit einem Routendienst
@@ -173,7 +173,7 @@ export default function MethodologyPage() {
             </li>
             <li>
               · Es gibt keine wissenschaftliche Validierung dieser Verfahren. Wo Eignungsdiagnostik
-              belastbare Aussagen verlangt, wäre eine externe Prüfung noetig - die hat nicht
+              belastbare Aussagen verlangt, wäre eine externe Prüfung nötig - die hat nicht
               stattgefunden, und deshalb behaupten wir sie nicht.
             </li>
           </ul>

@@ -30,7 +30,7 @@ export async function setConsent(
       .limit(1);
 
     if (existing) {
-      // Der Widerruf wird protokolliert, nicht die Zeile geloescht -
+      // Der Widerruf wird protokolliert, nicht die Zeile gelöscht -
       // sonst wäre später nicht nachvollziehbar, was wann galt.
       await tx
         .update(schema.consents)
@@ -122,7 +122,7 @@ export async function exportData(): Promise<string> {
       .select()
       .from(schema.interviewSessions)
       .where(eq(schema.interviewSessions.userId, user.id)),
-    gespraechsverlauf: await tx
+    gesprächsverlauf: await tx
       .select()
       .from(schema.interviewTurns)
       .where(eq(schema.interviewTurns.userId, user.id)),
@@ -154,7 +154,7 @@ export async function exportData(): Promise<string> {
  * Konto löschen.
  *
  * Zweistufig: erst Soft Delete, damit ein Versehen noch korrigierbar ist,
- * und der harte Löschlauf raeumt später auf. Der Mensch erfaehrt das -
+ * und der harte Löschlauf räumt später auf. Der Mensch erfährt das -
  * "sofort und unwiederbringlich" zu behaupten, wäre unwahr.
  */
 export async function deleteAccount(confirmation: string): Promise<{ ok: boolean; message: string }> {
@@ -162,7 +162,7 @@ export async function deleteAccount(confirmation: string): Promise<{ ok: boolean
   if (confirmation.trim().toLowerCase() !== "löschen") {
     return {
       ok: false,
-      message: 'Zur Bestätigung bitte das Wort "löschen" eingeben. Es wurde nichts geloescht.',
+      message: 'Zur Bestätigung bitte das Wort "löschen" eingeben. Es wurde nichts gelöscht.',
     };
   }
 
@@ -182,8 +182,8 @@ export async function deleteAccount(confirmation: string): Promise<{ ok: boolean
     await tx.update(schema.documents).set({ deletedAt: now }).where(eq(schema.documents.userId, user.id));
   });
 
-  // Der Nutzerdatensatz selbst wird ausserhalb der eingeschraenkten Rolle
-  // markiert; die Zeile gehoert zur Kontoverwaltung, nicht zu den Inhalten.
+  // Der Nutzerdatensatz selbst wird ausserhalb der eingeschränkten Rolle
+  // markiert; die Zeile gehört zur Kontoverwaltung, nicht zu den Inhalten.
   await db.update(schema.users).set({ deletedAt: now }).where(eq(schema.users.id, user.id));
   await db.update(schema.sessions).set({ revokedAt: now }).where(eq(schema.sessions.userId, user.id));
 

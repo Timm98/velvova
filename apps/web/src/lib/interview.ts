@@ -13,7 +13,7 @@ import { requireUser } from "./auth";
  * Der Ablauf des Karrieregesprächs auf der Serverseite.
  *
  * Was hier NICHT passiert: aus einer Antwort wird nicht automatisch ein
- * bestaetigter Fakt. Jede abgeleitete Aussage entsteht als unbestaetigte
+ * bestätigter Fakt. Jede abgeleitete Aussage entsteht als unbestätigte
  * Evidenz und wartet auf die Bestätigung des Menschen im Profil. Genau
  * das ist der Unterschied zu einem Chatprofil.
  */
@@ -144,8 +144,8 @@ export async function loadInterview(): Promise<InterviewView> {
  * Eine Antwort verarbeiten.
  *
  * Reihenfolge: Antwort speichern, Evidenz als UNBESTAETIGT ableiten,
- * Thema fortschreiben, naechste Frage bestimmen. Die Assistenz formuliert
- * die naechste Frage - sie entscheidet aber nicht, was als Fakt gilt.
+ * Thema fortschreiben, nächste Frage bestimmen. Die Assistenz formuliert
+ * die nächste Frage - sie entscheidet aber nicht, was als Fakt gilt.
  */
 export async function submitAnswer(
   answer: string,
@@ -180,7 +180,7 @@ export async function submitAnswer(
       content: trimmed,
     });
 
-    // Die Antwort wird als unbestaetigte Evidenz abgelegt. Sie zählt
+    // Die Antwort wird als unbestätigte Evidenz abgelegt. Sie zählt
     // erst, wenn der Mensch sie im Profil bestätigt.
     const question = QUESTIONS.find((q) => q.key === questionKey);
     if (question && trimmed.length >= 20) {
@@ -197,7 +197,7 @@ export async function submitAnswer(
       });
     }
 
-    // Thema abschliessen, wenn keine offene Frage mehr uebrig ist.
+    // Thema abschliessen, wenn keine offene Frage mehr übrig ist.
     const asked = await tx
       .select({ questionKey: schema.interviewTurns.questionKey })
       .from(schema.interviewTurns)
@@ -238,7 +238,7 @@ export async function skipQuestion(questionKey: string, stage: InterviewStage): 
       role: "system",
       stage,
       questionKey,
-      content: "Frage uebersprungen.",
+      content: "Frage übersprungen.",
     });
   });
 }
@@ -271,7 +271,7 @@ export async function pauseSession(): Promise<void> {
 }
 
 /**
- * Die naechste Äußerung der Assistenz. Der Systemprompt bekommt nur,
+ * Die nächste Äußerung der Assistenz. Der Systemprompt bekommt nur,
  * was er braucht - und vor der Uebergabe an einen externen Anbieter
  * werden direkte Identifikatoren entfernt.
  */
@@ -302,12 +302,12 @@ export async function assistantReply(userMessage: string): Promise<string> {
     text += chunk;
   }
 
-  // Ausgabeprüfung: eine Zuschreibung geschuetzter Merkmale wird
+  // Ausgabeprüfung: eine Zuschreibung geschützter Merkmale wird
   // verworfen, nicht bereinigt.
   const violations = checkOutput(text);
   if (violations.length > 0) {
     return (
-      "Diese Antwort wurde verworfen, weil sie eine unzulaessige Zuschreibung enthielt. " +
+      "Diese Antwort wurde verworfen, weil sie eine unzulässige Zuschreibung enthielt. " +
       "Lass uns bei dem bleiben, was du selbst gesagt hast: erzähl mir mehr zu deiner letzten Antwort."
     );
   }

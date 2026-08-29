@@ -6,12 +6,12 @@ import { startApplication, toggleSaveJob } from "@/lib/jobActions";
 import { buttonStyle } from "@/components/ui";
 
 /**
- * Die Handlungen an einer Stelle. Eine primaere - Bewerbung vorbereiten -
+ * Die Handlungen an einer Stelle. Eine primäre - Bewerbung vorbereiten -
  * und daneben die leiseren.
  *
  * "Vorbereiten" legt eine Bewerbung im Zustand "In Vorbereitung" an.
  * Versendet wird dabei nichts; das geschieht ausschließlich nach einer
- * ausdruecklichen Bestätigung im Studio.
+ * ausdrücklichen Bestätigung im Studio.
  */
 export function JobActions({
   jobId,

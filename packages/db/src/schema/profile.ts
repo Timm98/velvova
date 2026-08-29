@@ -34,7 +34,7 @@ export const evidenceItems = pgTable("evidence_items", {
   userRejected: boolean("user_rejected").notNull().default(false),
   sensitivityLevel: sensitivityEnum("sensitivity_level").notNull().default("normal"),
   retentionClass: retentionClassEnum("retention_class").notNull().default("profile"),
-  /** Für besonders schutzbeduerftige Freitexte: verschlüsselt abgelegt,
+  /** Für besonders schutzbedürftige Freitexte: verschlüsselt abgelegt,
    *  statement bleibt dann leer. Siehe docs/PRIVACY_SECURITY.md. */
   statementEncrypted: text("statement_encrypted"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

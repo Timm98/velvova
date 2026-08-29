@@ -5,8 +5,8 @@ import { isConfirmedFact } from "@paycheck/domain";
  * Dokumenterstellung aus belegter Evidenz.
  *
  * Wichtig: hier wird nichts erfunden. Die Bausteine kommen ausschließlich
- * aus bestaetigten Aussagen des Menschen. Was fehlt, wird als Lücke
- * benannt und nicht mit einer Formulierung ueberdeckt.
+ * aus bestätigten Aussagen des Menschen. Was fehlt, wird als Lücke
+ * benannt und nicht mit einer Formulierung überdeckt.
  */
 
 export interface CvSection {
@@ -79,7 +79,7 @@ export function buildCv(
 }
 
 /**
- * Braucht diese Stelle ueberhaupt ein Anschreiben? Eines zu schreiben,
+ * Braucht diese Stelle überhaupt ein Anschreiben? Eines zu schreiben,
  * das niemand verlangt hat, kostet Zeit und bringt oft nichts.
  */
 export function coverLetterAdvisable(job: Job): { advisable: boolean; reason: string } {
@@ -129,7 +129,7 @@ export function buildApplicationEmail(
   const closing =
     locale === "en"
       ? `\n\nI would be glad to explain any of this in a conversation.\n\nKind regards\n${name}`
-      : `\n\nGern erlaeutere ich das in einem Gespräch.\n\nMit freundlichen Grüßen\n${name}`;
+      : `\n\nGern erläutere ich das in einem Gespräch.\n\nMit freundlichen Grüßen\n${name}`;
 
   const relevant =
     locale === "en" ? "\n\nTwo things from my experience that are relevant here:\n" : "\n\nZwei Punkte aus meiner Erfahrung, die hier passen:\n";

@@ -4,10 +4,10 @@ import type { Database } from "./client.ts";
 /**
  * Jede Datenbankarbeit im Namen eines Menschen läuft hierdurch.
  *
- * Zwei Dinge passieren: die Verbindung legt ihre erhoehten Rechte ab
+ * Zwei Dinge passieren: die Verbindung legt ihre erhöhten Rechte ab
  * (`SET LOCAL ROLE paycheck_app`) und setzt die Kennung, an der die
  * RLS-Richtlinien haengen. Beides ist auf die Transaktion begrenzt, damit
- * kein Zustand in die naechste Anfrage sickert.
+ * kein Zustand in die nächste Anfrage sickert.
  *
  * Ohne diesen Rahmen sieht eine Abfrage keine Nutzerdaten. Das ist
  * Absicht: der sichere Fall ist der Standardfall.

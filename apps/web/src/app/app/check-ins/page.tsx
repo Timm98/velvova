@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  * Der Jobstart-Loop.
  *
  * Wichtig ist der Rahmen: das hier ist keine Ueberwachung. Die Antworten
- * bleiben privat und werden nur auf ausdrueckliche Freigabe geteilt. Der
+ * bleiben privat und werden nur auf ausdrückliche Freigabe geteilt. Der
  * Zweck ist, das Versprechen der Anzeige mit der Erfahrung abzugleichen -
  * für den Menschen selbst, nicht für irgendjemanden sonst.
  */
@@ -31,7 +31,7 @@ export default async function CheckInsPage() {
     <Stack gap={6}>
       <PageHeader
         title={t("nav.checkIns")}
-        lead="Nach dem Start: haelt die Stelle, was die Anzeige versprochen hat?"
+        lead="Nach dem Start: hält die Stelle, was die Anzeige versprochen hat?"
       />
 
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
@@ -87,9 +87,9 @@ export default async function CheckInsPage() {
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
                   {m === 30 && (
                     <>
-                      <li>· Stimmen die Aufgaben mit der Anzeige ueberein?</li>
+                      <li>· Stimmen die Aufgaben mit der Anzeige überein?</li>
                       <li>· Wie war die Einarbeitung?</li>
-                      <li>· Was ueberrascht dich - im Guten wie im Schlechten?</li>
+                      <li>· Was überrascht dich - im Guten wie im Schlechten?</li>
                     </>
                   )}
                   {m === 60 && (
@@ -103,7 +103,7 @@ export default async function CheckInsPage() {
                     <>
                       <li>· Wuerdest du dich noch einmal so entscheiden?</li>
                       <li>· Was solltest du für das Probezeitgespräch vorbereiten?</li>
-                      <li>· Was gehoert jetzt in dein Profil?</li>
+                      <li>· Was gehört jetzt in dein Profil?</li>
                     </>
                   )}
                 </ul>

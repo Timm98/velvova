@@ -67,11 +67,11 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
             <Stack gap={3}>
               <h2 style={{ fontSize: "var(--text-base)" }}>{t("coaching.starStories")}</h2>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                Ausschließlich aus deinen bestaetigten Erfahrungen. Nichts davon ist erfunden.
+                Ausschließlich aus deinen bestätigten Erfahrungen. Nichts davon ist erfunden.
               </p>
               {view.starStories.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Noch keine bestaetigten Erfahrungen im Profil.
+                  Noch keine bestätigten Erfahrungen im Profil.
                 </p>
               ) : (
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
@@ -89,7 +89,7 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
             <Stack gap={3}>
               <h2 style={{ fontSize: "var(--text-base)" }}>{t("coaching.questionsForCompany")}</h2>
               <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                Abgeleitet aus dem, was in der Anzeige fehlt oder in Bewertungen auffaellt.
+                Abgeleitet aus dem, was in der Anzeige fehlt oder in Bewertungen auffällt.
               </p>
               <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
                 {view.questionsForCompany.map((q) => (

@@ -104,7 +104,7 @@ export function classifyRequirement(text: string): "must" | "nice" {
   if (MUST_MARKERS.test(text)) return "must";
   // Ohne Signal als Muss einstufen. Der Fehler in diese Richtung ist
   // harmloser: eine zu streng gewertete Anforderung senkt den Fit, eine
-  // zu lax gewertete taeuscht Passung vor.
+  // zu lax gewertete täuscht Passung vor.
   return "must";
 }
 

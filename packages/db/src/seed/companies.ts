@@ -1,6 +1,6 @@
 /**
  * Demo-Unternehmen. Ausschließlich erfunden. Keine reale Firma bekommt
- * hier erfundene Bewertungen - das wäre rufschaedigend und schlicht
+ * hier erfundene Bewertungen - das wäre rufschädigend und schlicht
  * falsch. Alle Namen tragen erkennbare Fantasiebestandteile, alle
  * Domains enden auf .invalid.
  */

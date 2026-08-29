@@ -13,8 +13,8 @@ export const dynamic = "force-dynamic";
 /**
  * Rollencluster.
  *
- * Die Antwort auf "in welche Richtung ueberhaupt?" - und ausdrücklich
- * auch auf Rollen, die man selbst nicht genannt haette. Genau dort liegt
+ * Die Antwort auf "in welche Richtung überhaupt?" - und ausdrücklich
+ * auch auf Rollen, die man selbst nicht genannt hätte. Genau dort liegt
  * der Wert: naheliegende Titel kennt man schon.
  */
 export default async function RolesPage() {
@@ -45,7 +45,7 @@ export default async function RolesPage() {
     <Stack gap={7}>
       <PageHeader
         title={t("profile.roleClusters")}
-        lead="Jede Richtung mit Begründung, Lücken und einem konkreten naechsten Schritt zur Überprüfung."
+        lead="Jede Richtung mit Begründung, Lücken und einem konkreten nächsten Schritt zur Überprüfung."
       />
 
       {[
@@ -78,7 +78,7 @@ export default async function RolesPage() {
 
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
-          Diese Richtungen sind Hypothesen mit Unsicherheit, keine Diagnosen. Der naechste Schritt
+          Diese Richtungen sind Hypothesen mit Unsicherheit, keine Diagnosen. Der nächste Schritt
           steht bei jeder dabei, weil eine Richtung sich nur durch Ausprobieren bestätigt - nicht
           durch eine Berechnung.
         </p>

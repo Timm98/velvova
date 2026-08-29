@@ -160,7 +160,7 @@ export async function recomputeCoverage(userId: string): Promise<number> {
 
     const confirmed = evidence.filter((e) => e.userConfirmed && !e.userRejected);
 
-    // Abdeckung über die Bereiche, die ein tragfaehiges Profil braucht.
+    // Abdeckung über die Bereiche, die ein tragfähiges Profil braucht.
     const areas = [
       "experience_episodes", "tasks_and_energy", "hard_constraints",
       "location_and_logistics", "work_style_and_environment",

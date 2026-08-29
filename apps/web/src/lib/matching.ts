@@ -28,7 +28,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
  * Bringt Datenbank und Bewertungslogik zusammen.
  *
  * Die Berechnung läuft bewusst bei jeder Anfrage neu, statt gespeicherte
- * Werte auszuliefern: aendert der Mensch eine Bedingung oder bestätigt
+ * Werte auszuliefern: ändert der Mensch eine Bedingung oder bestätigt
  * eine Evidenz, muss sich das Ergebnis sofort ändern. Persistiert werden
  * die Ergebnisse zusätzlich (Tabelle job_matches), damit ein Score später
  * nachvollziehbar bleibt - nicht als Cache.
@@ -183,7 +183,7 @@ export async function loadProfileContext(userId: string): Promise<UserProfileCon
     let constraints = EMPTY_CONSTRAINTS;
     if (constraintRow?.data) {
       const parsed = UserConstraintsSchema.safeParse(constraintRow.data);
-      // Ein ungueltiger Datensatz darf nicht dazu führen, dass Bedingungen
+      // Ein ungültiger Datensatz darf nicht dazu führen, dass Bedingungen
       // stillschweigend wegfallen. Lieber die leere, sichere Fassung.
       if (parsed.success) constraints = parsed.data;
     }

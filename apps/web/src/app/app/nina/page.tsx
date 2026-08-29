@@ -171,12 +171,12 @@ export default async function NinaPage() {
           <Disclosure summary="Was passiert mit meinen Antworten?">
             <div style={{ display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
               <p>
-                Jede Antwort wird als <strong>unbestaetigte</strong> Angabe gespeichert. Sie fliesst
+                Jede Antwort wird als <strong>unbestätigte</strong> Angabe gespeichert. Sie fliesst
                 erst in Empfehlungen ein, wenn du sie im Profil bestätigt hast.
               </p>
               <p>
                 Du kannst jede Angabe bearbeiten, ablehnen oder löschen - auch später. Wird ein
-                Beleg geloescht, verlieren die Aussagen, die darauf beruhten, ihre Grundlage.
+                Beleg gelöscht, verlieren die Aussagen, die darauf beruhten, ihre Grundlage.
               </p>
               <p>
                 <Link href="/app/settings" style={{ color: "var(--accent-text)" }}>

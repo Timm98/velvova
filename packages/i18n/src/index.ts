@@ -17,7 +17,7 @@ export function isLocale(value: unknown): value is Locale {
 
 /**
  * Setzt Platzhalter ein. {brand} und {assistant} kommen aus der zentralen
- * Konfiguration, alles Weitere aus den uebergebenen Werten.
+ * Konfiguration, alles Weitere aus den übergebenen Werten.
  */
 export function interpolate(
   template: string,

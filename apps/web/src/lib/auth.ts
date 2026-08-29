@@ -14,9 +14,9 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
  * eigene Anforderungen hat. Die Entscheidung steht in docs/adr/0004.
  *
  * Grundsätze:
- *  - Im Cookie steht ein zufaelliges Token, in der Datenbank nur sein Hash.
+ *  - Im Cookie steht ein zufälliges Token, in der Datenbank nur sein Hash.
  *  - Passwörter mit scrypt, Vergleich in konstanter Zeit.
- *  - Antwortverhalten verraet nicht, ob eine Adresse existiert.
+ *  - Antwortverhalten verrät nicht, ob eine Adresse existiert.
  */
 
 const SESSION_TTL_DAYS = 30;
@@ -118,7 +118,7 @@ function describeDevice(userAgent?: string): string {
 
 /**
  * Die aktuelle Sitzung. Gibt null zurück, statt zu werfen - Aufrufer
- * entscheiden selbst, ob Anmeldung noetig ist.
+ * entscheiden selbst, ob Anmeldung nötig ist.
  */
 export async function currentUser(): Promise<SessionUser | null> {
   const cfg = loadRuntimeConfig();
@@ -289,7 +289,7 @@ export async function authenticate(email: string, password: string): Promise<str
   const row = rows[0];
   if (!row) {
     // Gleiche Arbeit leisten wie im Erfolgsfall, damit die Antwortzeit
-    // nicht verraet, ob die Adresse existiert.
+    // nicht verrät, ob die Adresse existiert.
     verifyPassword(password, hashPassword("dummy-zum-zeitausgleich"));
     return null;
   }

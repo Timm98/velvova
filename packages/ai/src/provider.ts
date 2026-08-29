@@ -4,8 +4,8 @@ import { z } from "zod";
  * Provider-Abstraktion.
  *
  * Kein Modellname und kein Anbieter steht im Fachcode. Wer den Provider
- * wechselt, aendert Konfiguration - nicht Domänenlogik. Das ist kein
- * Selbstzweck: für besonders schutzbeduerftige Verarbeitung muss ein
+ * wechselt, ändert Konfiguration - nicht Domänenlogik. Das ist kein
+ * Selbstzweck: für besonders schutzbedürftige Verarbeitung muss ein
  * selbst betriebener Pfad möglich bleiben, ohne das Produkt umzubauen.
  */
 
@@ -52,7 +52,7 @@ export interface TranscriptChunk {
 
 /**
  * Alle Fähigkeiten, die das Produkt von einem Anbieter braucht.
- * Nicht unterstuetzte Fähigkeiten werfen einen klaren Fehler, statt
+ * Nicht unterstützte Fähigkeiten werfen einen klaren Fehler, statt
  * stillschweigend etwas anderes zu tun.
  */
 export interface AiProvider {
@@ -71,7 +71,7 @@ export interface AiProvider {
 export class AiCapabilityError extends Error {
   constructor(provider: string, capability: string) {
     super(
-      `Der Anbieter "${provider}" unterstuetzt "${capability}" nicht. ` +
+      `Der Anbieter "${provider}" unterstützt "${capability}" nicht. ` +
         `Konfiguriere einen passenden Anbieter oder nutze den Textweg.`,
     );
     this.name = "AiCapabilityError";
@@ -80,7 +80,7 @@ export class AiCapabilityError extends Error {
 
 export class AiBudgetError extends Error {
   constructor(spentEur: number, budgetEur: number) {
-    super(`Das Monatsbudget ist erreicht (${spentEur} von ${budgetEur} EUR). Der Lauf wurde nicht ausgefuehrt.`);
+    super(`Das Monatsbudget ist erreicht (${spentEur} von ${budgetEur} EUR). Der Lauf wurde nicht ausgeführt.`);
     this.name = "AiBudgetError";
   }
 }

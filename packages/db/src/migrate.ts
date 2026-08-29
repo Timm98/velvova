@@ -8,7 +8,7 @@ import { getDbHandle, type Database } from "./client.ts";
 
 /**
  * Migrationen anwenden. Bewusst schlicht: die von drizzle-kit erzeugten
- * SQL-Dateien werden der Reihe nach ausgefuehrt und in einer Tabelle
+ * SQL-Dateien werden der Reihe nach ausgeführt und in einer Tabelle
  * vermerkt. Danach folgen die RLS-Richtlinien, die bei jedem Lauf neu
  * gesetzt werden - sie sind idempotent.
  */

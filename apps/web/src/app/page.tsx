@@ -9,7 +9,7 @@ import { Badge, buttonStyle, Card, Stack } from "@/components/ui";
  *
  * In fünf Sekunden muss klar sein, dass hier vor der Jobbörse angesetzt
  * wird und bis nach der Bewerbung begleitet. Kein erfundenes Kundenlogo,
- * kein Testimonial, keine Erfolgsquote - was wir nicht belegen koennen,
+ * kein Testimonial, keine Erfolgsquote - was wir nicht belegen können,
  * steht nicht hier. Die gezeigten Beispiele sind als Beispiel beschriftet.
  */
 
@@ -348,10 +348,10 @@ export default async function LandingPage() {
 
         {/* --- Quellen getrennt --- */}
         <section
-          aria-labelledby="realitaet"
+          aria-labelledby="realität"
           style={{ maxWidth: 1160, margin: "0 auto", padding: "var(--space-8) var(--space-5)" }}
         >
-          <h2 id="realitaet" style={{ fontSize: "var(--text-xl)" }}>
+          <h2 id="realität" style={{ fontSize: "var(--text-xl)" }}>
             {t("landing.realityTitle")}
           </h2>
           <p style={{ marginTop: "var(--space-3)", color: "var(--text-secondary)", maxWidth: "56ch" }}>

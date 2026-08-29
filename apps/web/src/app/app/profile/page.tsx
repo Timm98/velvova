@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  *
  * Jede Aussage steht einzeln, mit ihrer Herkunft und ihrem Zustand.
  * Bestätigen, bearbeiten, ablehnen, löschen sind gleichrangig - das
- * Produkt draengt nicht zur Bestätigung.
+ * Produkt drängt nicht zur Bestätigung.
  */
 export default async function ProfilePage() {
   const user = await requireUser();
@@ -95,7 +95,7 @@ export default async function ProfilePage() {
           </h2>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginBottom: "var(--space-4)", maxWidth: "var(--measure)" }}>
             Diese Angaben stammen aus deinen Antworten oder sind Vermutungen von {brand.assistantName}.
-            Bis du sie bestaetigst, zaehlen sie nirgends.
+            Bis du sie bestätigst, zählen sie nirgends.
           </p>
           <EvidenceList items={open.map(serialise)} showConfirm />
         </section>
@@ -118,7 +118,7 @@ export default async function ProfilePage() {
               { key: "values_and_motives", label: t("profile.values") },
               { key: "hard_constraints", label: t("profile.hardNoGos") },
               { key: "background", label: "Ausbildung und Werkzeuge" },
-              { key: "profile:manual", label: "Von dir ergaenzt" },
+              { key: "profile:manual", label: "Von dir ergänzt" },
             ]
               .map((g) => ({ ...g, items: group(g.key) }))
               .filter((g) => g.items.length > 0)
@@ -168,7 +168,7 @@ export default async function ProfilePage() {
             Von dir abgelehnt ({rejected.length})
           </h2>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)", marginBottom: "var(--space-3)" }}>
-            Diese Aussagen bleiben sichtbar, damit du sie zurueckholen kannst. Sie zaehlen nirgends.
+            Diese Aussagen bleiben sichtbar, damit du sie zurückholen kannst. Sie zählen nirgends.
           </p>
           <EvidenceList items={rejected.map(serialise)} />
         </section>

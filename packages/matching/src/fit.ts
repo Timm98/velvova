@@ -83,7 +83,7 @@ export interface FitInput {
   weights?: Partial<FitWeights>;
 }
 
-/** Sehr einfache Wortueberlappung. Ersetzt kein semantisches Modell,
+/** Sehr einfache Wortüberlappung. Ersetzt kein semantisches Modell,
  *  reicht aber für eine nachvollziehbare Grundbewertung ohne Netzzugriff. */
 function overlap(a: string, b: string): number {
   const norm = (s: string) =>
@@ -194,7 +194,7 @@ export function computeFit(input: FitInput): FitResult {
     { key: "proven_skills", label: "Belegte Fähigkeiten und Qualifikationen", raw: skillRaw,
       weight: w.provenSkills, evidenceIds: [...new Set(skillEvidenceIds)],
       explanation: skillRaw === null
-        ? "Es liegen noch keine bestaetigten Belege vor, an denen sich die Anforderungen messen liessen."
+        ? "Es liegen noch keine bestätigten Belege vor, an denen sich die Anforderungen messen liessen."
         : `${mustCovered} von ${musts.length} Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.` },
     { key: "preferred_tasks", label: "Tätigkeiten, die dir Energie geben", raw: taskRaw,
       weight: w.preferredTasks,

@@ -169,7 +169,7 @@ export function DangerZone({ title, body }: { title: string; body: string }) {
         <div>
           <h3 style={{ fontSize: "var(--text-base)", color: "var(--critical)" }}>{title}</h3>
           <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: "var(--space-2)", maxWidth: "var(--measure)" }}>
-            {body} Deine Inhalte werden sofort unzugänglich; die endgueltige Entfernung erfolgt
+            {body} Deine Inhalte werden sofort unzugänglich; die endgültige Entfernung erfolgt
             durch einen nachgelagerten Löschlauf. Diesen Ablauf nennen wir dir, statt
             &bdquo;sofort und unwiederbringlich&ldquo; zu behaupten.
           </p>

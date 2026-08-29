@@ -55,7 +55,7 @@ const KIND_LABEL: Record<string, { text: string; tone: "neutral" | "assistant" |
 const REALISM_LABEL: Record<string, string> = {
   direct: "Einstieg direkt möglich",
   with_bridge: "Einstieg über einen Zwischenschritt",
-  longer_path: "laengerer Weg",
+  longer_path: "längerer Weg",
   unclear: "Einschätzung offen",
 };
 

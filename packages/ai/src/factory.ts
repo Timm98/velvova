@@ -13,7 +13,7 @@ import { MockAiProvider } from "./providers/mock.ts";
 
 export interface ProviderSelection {
   provider: AiProvider;
-  /** Wurde der gewuenschte Anbieter tatsächlich verwendet? */
+  /** Wurde der gewünschte Anbieter tatsächlich verwendet? */
   usingRequested: boolean;
   /** Verständlicher Grund, falls nicht. Wird in der Oberfläche gezeigt. */
   fallbackReason: string | null;

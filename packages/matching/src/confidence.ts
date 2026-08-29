@@ -5,8 +5,8 @@ import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 /**
  * Confidence steht bewusst neben dem Fit, nicht darin.
  *
- * Der Fit sagt "wie gut passt das". Die Confidence sagt "wie sicher koennen
- * wir uns dabei ueberhaupt sein". Ein Fit von 82 bei niedriger Confidence
+ * Der Fit sagt "wie gut passt das". Die Confidence sagt "wie sicher können
+ * wir uns dabei überhaupt sein". Ein Fit von 82 bei niedriger Confidence
  * ist eine andere Aussage als derselbe Fit bei hoher - und der Mensch muss
  * beides sehen, statt sich auf eine Zahl zu verlassen, die Unsicherheit
  * verschluckt.

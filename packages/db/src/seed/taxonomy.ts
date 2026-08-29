@@ -5,7 +5,7 @@
  * KldB sind über Adapter vorgesehen (siehe packages/jobs/src/taxonomy),
  * ihre Daten werden aber nicht mitgeliefert: sie unterliegen eigenen
  * Nutzungsbedingungen und müssen aus der offiziellen Quelle geladen
- * werden. Was hier steht, traegt die Demo und nichts weiter.
+ * werden. Was hier steht, trägt die Demo und nichts weiter.
  */
 
 export const seedTaxonomy = {
@@ -139,7 +139,7 @@ export const seedTaxonomy = {
       titleEn: "Explain something complicated",
       purposeDe:
         "Zeigt, wie du Fachliches verstaendlich machst - eine Fähigkeit, die in Anzeigen selten " +
-        "steht und im Alltag staendig gebraucht wird.",
+        "steht und im Alltag ständig gebraucht wird.",
       purposeEn:
         "Shows how you make specialist content understandable - a skill job ads rarely name and " +
         "daily work constantly needs.",

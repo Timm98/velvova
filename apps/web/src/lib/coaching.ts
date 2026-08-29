@@ -14,7 +14,7 @@ import { requireUser } from "./auth";
  * Bewertet werden ausschließlich Inhalt und Aufbau einer Antwort. Nicht
  * Stimme, Gesicht, Akzent, Wirkung oder vermeintliche Ehrlichkeit - das
  * kann niemand seriös beurteilen, und im Beschäftigungskontext wäre es
- * ausserdem unzulaessig.
+ * ausserdem unzulässig.
  */
 
 export interface CoachingView {
@@ -68,7 +68,7 @@ function buildQuestions(
     });
   }
 
-  const workload = themes.find((t) => /belastung|ueberstunden|druck/i.test(t.theme));
+  const workload = themes.find((t) => /belastung|überstunden|druck/i.test(t.theme));
   if (workload) {
     questions.push({
       key: "pressure",
@@ -98,7 +98,7 @@ function buildCompanyQuestions(
   for (const t of negative.slice(0, 2)) {
     out.push(`Zum Thema "${t.theme}" gibt es unterschiedliche Rückmeldungen. Wie erleben Sie das im Team?`);
   }
-  out.push("Woran wuerden Sie nach sechs Monaten merken, dass die Besetzung gut war?");
+  out.push("Woran würden Sie nach sechs Monaten merken, dass die Besetzung gut war?");
   return out;
 }
 
@@ -178,7 +178,7 @@ export async function loadCoaching(applicationId: string): Promise<CoachingView 
           clarity: f.clarity,
           missingPoints: f.missingPoints,
         })),
-      // STAR-Geschichten kommen ausschließlich aus bestaetigter Evidenz.
+      // STAR-Geschichten kommen ausschließlich aus bestätigter Evidenz.
       starStories: evidence
         .map((e) => ({
           id: e.id, userId: e.userId, type: e.type, statement: e.statement,

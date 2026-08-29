@@ -55,7 +55,7 @@ export function checkConstraints(
   } else if (c.needsVisaSponsorship) {
     checks.push(check("work_permit", "Arbeitserlaubnis", "uncertain",
       "Du brauchst eine Unterstützung beim Visum. Ob der Arbeitgeber das anbietet, steht nicht in der Anzeige.",
-      job.country, "Visum-Unterstützung noetig"));
+      job.country, "Visum-Unterstützung nötig"));
   } else {
     checks.push(check("work_permit", "Arbeitserlaubnis", "blocked",
       `Für ${job.country} liegt keine Arbeitserlaubnis vor.`, job.country,

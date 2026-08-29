@@ -7,14 +7,14 @@ import { z } from "zod";
  *   Confidence  - wie belastbar die Datenlage für diese Aussage ist
  *   Job Quality - wie gut die Stelle als Arbeitsplatz ist
  *   AI Transition - wie sich die Aufgaben durch KI verändern duerften
- *   Listing Confidence - wie vertrauenswuerdig die Anzeige selbst ist
+ *   Listing Confidence - wie vertrauenswürdig die Anzeige selbst ist
  *
  * Keiner davon ist eine Einstellungswahrscheinlichkeit. Diese Aussage
  * darf an keiner Stelle im Produkt getroffen werden.
  */
 
 /** Version der Bewertungslogik. Wird pro Score gespeichert, damit ein
- *  altes Ergebnis nachvollziehbar bleibt, wenn die Formel sich aendert. */
+ *  altes Ergebnis nachvollziehbar bleibt, wenn die Formel sich ändert. */
 export const SCORING_VERSION = "2026.08.1";
 
 /** Wenn die Datenbasis dünn ist, zeigen wir keine Zahl, sondern ein Band. */
@@ -31,7 +31,7 @@ export const ScoreFactorSchema = z.object({
   contribution: z.number(),
   /** Ein Satz, der den Wert belegt oder das Unbekannte benennt. */
   explanation: z.string(),
-  /** IDs bestaetigter Evidenz, die diesen Faktor stuetzen. */
+  /** IDs bestätigter Evidenz, die diesen Faktor stuetzen. */
   evidenceIds: z.array(z.string()).default([]),
 });
 export type ScoreFactor = z.infer<typeof ScoreFactorSchema>;
@@ -40,7 +40,7 @@ export const FitResultSchema = z.object({
   /** 0..100. Nur zeigen, wenn coverage ausreicht - sonst band verwenden. */
   score: z.number().int().min(0).max(100).nullable(),
   band: FitBandSchema,
-  /** Anteil der Gewichte, für die ueberhaupt Daten vorlagen. 0..1 */
+  /** Anteil der Gewichte, für die überhaupt Daten vorlagen. 0..1 */
   coverage: z.number().min(0).max(1),
   factors: z.array(ScoreFactorSchema),
   /** Der wichtigste Grund für die Passung. */
@@ -63,7 +63,7 @@ export type ConfidenceResult = z.infer<typeof ConfidenceResultSchema>;
 
 export const JobQualityResultSchema = z.object({
   score: z.number().int().min(0).max(100).nullable(),
-  /** Bei zu duenner Datenlage steht hier true und score ist null. */
+  /** Bei zu dünner Datenlage steht hier true und score ist null. */
   insufficientData: z.boolean(),
   dimensions: z.array(ScoreFactorSchema),
   version: z.string().default(SCORING_VERSION),
@@ -74,7 +74,7 @@ export const AiTransitionCategorySchema = z.enum([
   "strongly_augmentable",   // KI verstaerkt die Rolle deutlich
   "partly_transformable",   // Teile des Aufgabenbündels verschieben sich
   "relatively_robust",      // Kern bleibt weitgehend menschlich
-  "unclear_data",           // Datenlage traegt keine Aussage
+  "unclear_data",           // Datenlage trägt keine Aussage
 ]);
 export type AiTransitionCategory = z.infer<typeof AiTransitionCategorySchema>;
 
@@ -82,7 +82,7 @@ export const TaskExposureSchema = z.object({
   task: z.string(),
   /** 0..1 Anteil standardisierbarer Informationsarbeit in dieser Aufgabe. */
   automationExposure: z.number().min(0).max(1),
-  /** 0..1 wie stark KI die Aufgabe verstaerken statt ersetzen duerfte. */
+  /** 0..1 wie stark KI die Aufgabe verstaerken statt ersetzen dürfte. */
   augmentationPotential: z.number().min(0).max(1),
   /** Was menschlich bleibt: Urteil, Verantwortung, Beziehung, Körper. */
   humanCore: z.string(),

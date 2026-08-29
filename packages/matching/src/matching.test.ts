@@ -130,7 +130,7 @@ describe("Fit", () => {
     expect(r.topReason.length).toBeGreaterThan(10);
   });
 
-  it("zählt unbestaetigte Hypothesen nicht als Beleg", () => {
+  it("zählt unbestätigte Hypothesen nicht als Beleg", () => {
     const bestätigt = computeFit({ job: makeJob(), ...basis, evidence: makeEvidence() });
     const hypothesen = computeFit({
       job: makeJob(), ...basis,
@@ -140,9 +140,9 @@ describe("Fit", () => {
     expect(bestätigt.factors.find((f) => f.key === "proven_skills")?.raw).not.toBeNull();
   });
 
-  it("ignoriert geloeschte und abgelehnte Evidenz", () => {
-    const geloescht = makeEvidence().map((e) => ({ ...e, deletedAt: new Date() }));
-    const r = computeFit({ job: makeJob(), ...basis, evidence: geloescht });
+  it("ignoriert gelöschte und abgelehnte Evidenz", () => {
+    const gelöscht = makeEvidence().map((e) => ({ ...e, deletedAt: new Date() }));
+    const r = computeFit({ job: makeJob(), ...basis, evidence: gelöscht });
     expect(r.factors.find((f) => f.key === "proven_skills")?.raw).toBeNull();
   });
 
@@ -152,7 +152,7 @@ describe("Fit", () => {
     expect(skills?.evidenceIds.length ?? 0).toBeGreaterThan(0);
   });
 
-  it("haelt Nutzergewichte in vernuenftigen Grenzen und normalisiert sie", () => {
+  it("hält Nutzergewichte in vernuenftigen Grenzen und normalisiert sie", () => {
     const w = normaliseWeights({ provenSkills: 0.99, statedInterest: 0.99 });
     const sum = Object.values(w).reduce((a, b) => a + b, 0);
     expect(sum).toBeCloseTo(1, 5);
@@ -181,7 +181,7 @@ describe("Confidence", () => {
 });
 
 describe("Jobqualität", () => {
-  it("sagt bei duenner Datenlage 'nicht beurteilbar' statt schlecht", () => {
+  it("sagt bei dünner Datenlage 'nicht beurteilbar' statt schlecht", () => {
     const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false }, contractType: null, remotePercent: null, shiftWork: null });
     const r = computeJobQuality({ job, reviews: [], themes: [] });
     expect(r.insufficientData).toBe(true);
@@ -237,7 +237,7 @@ describe("Listing Confidence", () => {
     expect(r.level).not.toBe("high");
   });
 
-  it("erkennt moegliche Wiederveröffentlichung", () => {
+  it("erkennt mögliche Wiederveröffentlichung", () => {
     const r = computeListingConfidence({ job: makeJob(), source: makeSource(), earlierDuplicateCount: 2, now: new Date("2026-08-29") });
     expect(r.possibleRepost).toBe(true);
     expect(r.signals.find((s) => s.key === "repost")?.detail).toContain("2");

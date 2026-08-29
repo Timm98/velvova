@@ -33,7 +33,7 @@ const CONSENT_TEXT: Record<string, { title: string; body: string }> = {
   },
   model_training: {
     title: "Training von Modellen",
-    body: "Standardmäßig aus. Ohne diese ausdrueckliche Zustimmung werden deine Daten nicht für Modelltraining verwendet.",
+    body: "Standardmäßig aus. Ohne diese ausdrückliche Zustimmung werden deine Daten nicht für Modelltraining verwendet.",
   },
   partner_sharing: {
     title: "Weitergabe an Partner",

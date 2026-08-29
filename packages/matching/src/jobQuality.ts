@@ -46,7 +46,7 @@ export function computeJobQuality(input: JobQualityInput): JobQualityResult {
     if (bench && bench > 0) {
       income = Math.min(1, Math.max(0, 0.5 + (yearly - bench) / (bench * 0.8)));
     } else {
-      // Ohne Referenz zählt nur, dass ueberhaupt transparent gemacht wird.
+      // Ohne Referenz zählt nur, dass überhaupt transparent gemacht wird.
       income = 0.6;
     }
   }
@@ -62,7 +62,7 @@ export function computeJobQuality(input: JobQualityInput): JobQualityResult {
   }
 
   // --- Arbeitsbelastung und Umfeld ---
-  const workload = themeScore(themes, ["belastung", "workload", "ueberstunden", "overtime", "stress", "druck"]);
+  const workload = themeScore(themes, ["belastung", "workload", "überstunden", "overtime", "stress", "druck"]);
 
   // --- Arbeitszeit und Flexibilität ---
   let flexibility: number | null = null;

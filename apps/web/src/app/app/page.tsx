@@ -16,13 +16,13 @@ export const dynamic = "force-dynamic";
 /**
  * Dashboard.
  *
- * Ueber der Falz stehen höchstens drei Dinge: der naechste sinnvolle
+ * Ueber der Falz stehen höchstens drei Dinge: der nächste sinnvolle
  * Schritt, die besten Möglichkeiten, der Stand der Bewerbungen. Alles
  * Weitere kommt darunter.
  *
  * Bewusst nicht enthalten: Streaks, Tagesziele, Countdown-Zaehler. Wer
  * Arbeit sucht, steht ohnehin unter Druck - das Produkt soll ihn nicht
- * vergroessern.
+ * vergrößern.
  */
 export default async function DashboardPage() {
   const user = await requireUser();
@@ -118,9 +118,9 @@ export default async function DashboardPage() {
       </section>
 
       {/* --- 2. Beste Möglichkeiten --- */}
-      <section aria-labelledby="moeglichkeiten">
+      <section aria-labelledby="möglichkeiten">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "var(--space-4)" }}>
-          <h2 id="moeglichkeiten" style={{ fontSize: "var(--text-lg)" }}>
+          <h2 id="möglichkeiten" style={{ fontSize: "var(--text-lg)" }}>
             Deine besten aktuellen Möglichkeiten
           </h2>
           {gate.unlocked && (

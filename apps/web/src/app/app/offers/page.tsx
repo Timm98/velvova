@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
  * Angebotsvergleich.
  *
  * Gehalt ist eine Zahl unter mehreren. Wer zwei Angebote nur über das
- * Grundgehalt vergleicht, uebersieht meistens das, was den Alltag
+ * Grundgehalt vergleicht, übersieht meistens das, was den Alltag
  * bestimmt: Stunden, Remote-Anteil, Urlaub, Probezeit.
  */
 export default async function OffersPage() {

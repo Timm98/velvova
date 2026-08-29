@@ -10,7 +10,7 @@ import { Badge, buttonStyle, Card } from "@/components/ui";
  *
  * Vier gleichrangige Handlungen: bestätigen, bearbeiten, ablehnen,
  * löschen. Bewusst kein hervorgehobenes "Bestätigen" - das Produkt
- * soll nicht in eine Richtung draengen, die dem Menschen später im
+ * soll nicht in eine Richtung drängen, die dem Menschen später im
  * Bewerbungsgespräch um die Ohren fliegt.
  */
 

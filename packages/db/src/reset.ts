@@ -19,5 +19,5 @@ if (cfg.db.driver !== "pglite") {
 
 const dir = resolveDataDir(cfg.db.pgliteDataDir);
 await rm(dir, { recursive: true, force: true });
-console.log(`Lokale Datenbank geloescht: `);
+console.log(`Lokale Datenbank gelöscht: `);
 console.log("Nächster Schritt: pnpm db:migrate && pnpm db:seed");

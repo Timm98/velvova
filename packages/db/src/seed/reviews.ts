@@ -38,7 +38,7 @@ export const seedReviews: SeedReview[] = [
     selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Weiterbildung und Entwicklung", sentiment: "positive", mentionCount: 22,
-        summary: "Das Lernbudget wird haeufig genannt und offenbar auch genutzt." },
+        summary: "Das Lernbudget wird häufig genannt und offenbar auch genutzt." },
       { theme: "Führung", sentiment: "positive", mentionCount: 15,
         summary: "Direkte Vorgesetzte werden ueberwiegend als erreichbar beschrieben." },
       { theme: "Arbeitsbelastung", sentiment: "mixed", mentionCount: 18,
@@ -60,7 +60,7 @@ export const seedReviews: SeedReview[] = [
     attributionText: "Synthetische Demo-Daten. Keine reale Quelle.",
     selectionNote:
       "Standortbewertungen von Kundinnen und Kunden. Sie sagen nichts über die " +
-      "Arbeitsbedingungen und duerfen dafuer nicht herangezogen werden.",
+      "Arbeitsbedingungen und dürfen dafür nicht herangezogen werden.",
     themes: [
       { theme: "Kundenservice", sentiment: "positive", mentionCount: 88,
         summary: "Kunden loben die Erreichbarkeit des Supports." },
@@ -80,7 +80,7 @@ export const seedReviews: SeedReview[] = [
     selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Arbeitsbelastung", sentiment: "negative", mentionCount: 31,
-        summary: "Ueberstunden im Schichtbetrieb werden wiederholt genannt." },
+        summary: "Überstunden im Schichtbetrieb werden wiederholt genannt." },
       { theme: "Kollegialität im Team", sentiment: "positive", mentionCount: 24,
         summary: "Der Zusammenhalt im unmittelbaren Team wird gelobt." },
       { theme: "Führung", sentiment: "mixed", mentionCount: 19,
@@ -145,7 +145,7 @@ export const seedReviews: SeedReview[] = [
     selectionNote: "Registerdaten, keine Bewertung.",
     themes: [
       { theme: "Rechtsform und Sitz bestätigt", sentiment: "positive", mentionCount: 1,
-        summary: "Eintragung und Sitz stimmen mit den Angaben der Anzeige ueberein." },
+        summary: "Eintragung und Sitz stimmen mit den Angaben der Anzeige überein." },
     ],
   },
   {
@@ -162,7 +162,7 @@ export const seedReviews: SeedReview[] = [
     selectionNote: "Alle Beiträge des Zeitraums, ohne Vorauswahl.",
     themes: [
       { theme: "Druck auf Zielvorgaben", sentiment: "negative", mentionCount: 67,
-        summary: "Der Druck durch Abschlussziele wird sehr haeufig genannt." },
+        summary: "Der Druck durch Abschlussziele wird sehr häufig genannt." },
       { theme: "Vergütung", sentiment: "mixed", mentionCount: 41,
         summary: "Die Provision wird als erreichbar, aber schwankend beschrieben." },
       { theme: "Einarbeitung", sentiment: "negative", mentionCount: 23,

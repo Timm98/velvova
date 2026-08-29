@@ -29,7 +29,7 @@ const SORT_KEYS: SortKey[] = [
  * Die Jobliste.
  *
  * Standardmäßig eine begründete Auswahl, nicht "alle Jobs". Jede Karte
- * zeigt genau so viel, wie für eine Entscheidung noetig ist: Passung und
+ * zeigt genau so viel, wie für eine Entscheidung nötig ist: Passung und
  * Sicherheit getrennt, ein Grund, ein Vorbehalt.
  *
  * Ausgeschlossene Stellen erscheinen nicht in der Auswahl - aber sie sind

@@ -31,6 +31,15 @@ const config: NextConfig = {
     "@paycheck/matching",
   ],
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
+
+  /**
+   * Next blockiert im Entwicklungsmodus Ressourcen, die von einem anderen
+   * Host als dem Bindungshost angefragt werden. Der Server bindet an
+   * localhost; wer 127.0.0.1 in die Adresszeile tippt, bekaeme sonst 403
+   * auf jedes Skript - und damit eine Seite ohne Interaktivitaet.
+   * Gilt ausschliesslich fuer die lokale Entwicklung.
+   */
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   typedRoutes: false,
   async headers() {
     return [
@@ -41,20 +50,8 @@ const config: NextConfig = {
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "Permissions-Policy", value: "camera=(), geolocation=(), microphone=(self)" },
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              // Next braucht inline-Styles fuer das Streaming der Seiten.
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob:",
-              "font-src 'self'",
-              "connect-src 'self'",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join("; "),
-          },
+          // Die Content-Security-Policy setzt die Middleware, weil sie
+          // je Anfrage eine Nonce braucht. Siehe src/middleware.ts.
         ],
       },
     ];

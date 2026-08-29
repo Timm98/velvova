@@ -15,7 +15,7 @@ import {
  * Anbieter zurück und die Oberfläche zeigt "nicht verbunden".
  *
  * Strukturierte Ausgaben laufen über Tool Use mit erzwungener Auswahl.
- * Das ist verlaesslicher als freien Text zu parsen: das Modell muss dem
+ * Das ist verlässlicher als freien Text zu parsen: das Modell muss dem
  * Schema folgen, und die Antwort wird anschliessend noch einmal gegen
  * dasselbe Zod-Schema geprüft, bevor sie irgendwo landet.
  */
@@ -96,7 +96,7 @@ export class AnthropicProvider implements AiProvider {
     }
 
     // Zweite Prüfung gegen dasselbe Schema. Eine Modellantwort wird nie
-    // ungeprueft zur Wahrheit in der Datenbank.
+    // ungeprüft zur Wahrheit in der Datenbank.
     const parsed = options.schema.safeParse(toolUse.input);
     if (!parsed.success) {
       throw new Error(

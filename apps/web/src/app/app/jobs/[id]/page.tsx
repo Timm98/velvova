@@ -43,7 +43,7 @@ const SOURCE_KIND_LABEL: Record<string, string> = {
  * Diese Seite ist ausdrücklich keine kopierte Stellenanzeige. Sie
  * beantwortet vier Fragen, die eine Anzeige nicht beantwortet: passt das
  * zu mir und wie sicher ist das, wie gut ist die Stelle als Arbeitsplatz,
- * wie verändern sich die Aufgaben, und wie vertrauenswuerdig ist die
+ * wie verändern sich die Aufgaben, und wie vertrauenswürdig ist die
  * Anzeige selbst.
  */
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -142,8 +142,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       />
 
       {/* --- Überblick --- */}
-      <section aria-labelledby="ueberblick">
-        <h2 id="ueberblick" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
+      <section aria-labelledby="überblick">
+        <h2 id="überblick" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
           {t("jobDetail.tabOverview")}
         </h2>
 
@@ -167,7 +167,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
                 Die Anzeige beschreibt keine konkreten Aufgaben. Das ist der wichtigste Punkt,
                 den du im Erstgespräch klären solltest — ohne Aufgaben lässt sich weder Passung
-                noch Entwicklung einschaetzen.
+                noch Entwicklung einschätzen.
               </p>
             </Card>
           )}
@@ -255,8 +255,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       </section>
 
       {/* --- Jobqualität --- */}
-      <section aria-labelledby="qualitaet">
-        <h2 id="qualitaet" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
+      <section aria-labelledby="qualität">
+        <h2 id="qualität" style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-4)" }}>
           {t("jobDetail.tabQuality")}
         </h2>
         <Card>
@@ -286,7 +286,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <Stack gap={4}>
               <p style={{ color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
                 Bewertet werden die Aufgaben dieser Rolle, nicht der Berufstitel. Ob sich etwas
-                aendert, hängt daran, woraus die Arbeit tatsächlich besteht — nicht daran, wie
+                ändert, hängt daran, woraus die Arbeit tatsächlich besteht — nicht daran, wie
                 sie heisst.{" "}
                 {aiTransition.dataAsOf
                   ? `Datenstand: ${new Intl.DateTimeFormat("de-DE").format(aiTransition.dataAsOf)}.`
@@ -352,7 +352,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </h2>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginBottom: "var(--space-4)", maxWidth: "var(--measure)" }}>
           Die Quellenarten bleiben getrennt. Eine Standortbewertung von Kundinnen und Kunden sagt
-          nichts darueber aus, wie es sich dort arbeitet.
+          nichts darüber aus, wie es sich dort arbeitet.
         </p>
 
         {reviews.length === 0 ? (
@@ -390,7 +390,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                     {r.sourceKind === "customer_reviews" && (
                       <p style={{ fontSize: "var(--text-sm)", color: "var(--caution)", background: "var(--caution-subtle)", padding: "var(--space-3)", borderRadius: "var(--radius-md)" }}>
                         Das sind Kundenurteile über den Standort oder das Produkt. Sie sagen nichts
-                        über Arbeitsbedingungen und duerfen dafuer nicht herangezogen werden.
+                        über Arbeitsbedingungen und dürfen dafür nicht herangezogen werden.
                       </p>
                     )}
 
@@ -585,7 +585,7 @@ function buildQuestions(scored: Awaited<ReturnType<typeof loadScoredJob>>): stri
     if (c.key === "commute") questions.push("Wie oft ist Anwesenheit vor Ort erwartet?");
     if (c.key === "travel") questions.push("Wie hoch ist der Reiseanteil tatsächlich?");
   }
-  const workloadTheme = themes.find((t) => /belastung|ueberstunden|druck/i.test(t.theme));
+  const workloadTheme = themes.find((t) => /belastung|überstunden|druck/i.test(t.theme));
   if (workloadTheme && workloadTheme.sentiment !== "positive") {
     questions.push(
       "In Bewertungen wird die Arbeitsbelastung mehrfach erwähnt. Wie sieht eine typische Woche in " +
@@ -593,16 +593,16 @@ function buildQuestions(scored: Awaited<ReturnType<typeof loadScoredJob>>): stri
     );
   }
   if (jobQuality.insufficientData) {
-    questions.push("Wie wuerden Sie die Zusammenarbeit im Team und die Führungskultur beschreiben?");
+    questions.push("Wie würden Sie die Zusammenarbeit im Team und die Führungskultur beschreiben?");
   }
   if (aiTransition.category === "partly_transformable") {
     questions.push(
-      "Welche Werkzeuge nutzt das Team heute schon, und wie soll sich die Rolle in den naechsten " +
+      "Welche Werkzeuge nutzt das Team heute schon, und wie soll sich die Rolle in den nächsten " +
         "zwei Jahren entwickeln?",
     );
   }
   if (questions.length === 0) {
-    questions.push("Woran wuerden Sie nach sechs Monaten merken, dass die Besetzung gut war?");
+    questions.push("Woran würden Sie nach sechs Monaten merken, dass die Besetzung gut war?");
   }
   return questions.slice(0, 6);
 }

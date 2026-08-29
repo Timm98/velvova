@@ -2,7 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 
 /**
  * Gemeinsame Bausteine. Bewusst wenige und schlicht gehalten - feine
- * Schatten statt harter Rahmen, grosszuegige Abstände, eine primaere
+ * Schatten statt harter Rahmen, großzügige Abstände, eine primäre
  * Handlung je Bildschirm.
  */
 
@@ -108,7 +108,7 @@ export function Badge({
 }
 
 /**
- * Demo-Kennzeichnung. Erscheint ueberall, wo synthetische Daten stehen -
+ * Demo-Kennzeichnung. Erscheint überall, wo synthetische Daten stehen -
  * ein Demo-Datensatz darf nie wie ein echtes Angebot aussehen.
  */
 export function DemoBadge({ inline = false }: { inline?: boolean }) {

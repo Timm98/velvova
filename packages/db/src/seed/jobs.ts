@@ -1,6 +1,6 @@
 /**
  * Demo-Stellen. Der Datensatz ist absichtlich uneinheitlich, damit die
- * Oberfläche ihre ehrlichen Zustaende zeigen muss:
+ * Oberfläche ihre ehrlichen Zustände zeigen muss:
  *
  *  - gute, mittlere und explorative Passung
  *  - fehlende Gehaltsangabe, fehlende Aufgaben, fehlende Vertragsart
@@ -57,7 +57,7 @@ export const seedJobs: SeedJob[] = [
       "Schulungen vorbereiten und präsentieren",
     ],
     description:
-      "Du begleitest unsere Kundinnen und Kunden nach dem Start und sorgst dafuer, dass sie mit " +
+      "Du begleitest unsere Kundinnen und Kunden nach dem Start und sorgst dafür, dass sie mit " +
       "dem Produkt wirklich weiterkommen. Du arbeitest eng mit Produkt und Support zusammen, " +
       "priorisierst eigenstaendig und hast viel Austausch im Team. Wir foerdern Weiterbildung " +
       "mit einem festen Lernbudget und arbeiten mit flexibler Arbeitszeit.",
@@ -87,7 +87,7 @@ export const seedJobs: SeedJob[] = [
     ],
     description:
       "Du haeltst mehrere Bildungsprogramme zusammen: Du koordinierst Termine, stimmst dich mit " +
-      "Trägern ab und sorgst dafuer, dass Berichte rechtzeitig fertig werden. Die Stelle ist " +
+      "Trägern ab und sorgst dafür, dass Berichte rechtzeitig fertig werden. Die Stelle ist " +
       "zunaechst auf zwei Jahre befristet, eine Entfristung ist ausdrücklich vorgesehen.",
     benefits: ["Weiterbildung", "sinnstiftende Arbeit", "flexible Arbeitszeit"],
     applyMethod: "portal", applyTarget: "https://leuchtturm.invalid/karriere/1234",
@@ -112,7 +112,7 @@ export const seedJobs: SeedJob[] = [
       "Social-Media-Kanaele betreuen",
     ],
     description:
-      "Du unterstuetzt unser Marketingteam bei Kampagnen von der Idee bis zur Auswertung. " +
+      "Du unterstützt unser Marketingteam bei Kampagnen von der Idee bis zur Auswertung. " +
       "Du schreibst Texte, betreust unsere Kanaele und bereitest Zahlen auf.",
     benefits: ["junges Team", "Innenstadtlage"],
     applyMethod: "email", applyTarget: "jobs@wellenform.invalid",
@@ -186,7 +186,7 @@ export const seedJobs: SeedJob[] = [
       "Bei Konflikten zwischen Mitgliedern und Technik vermitteln",
     ],
     description:
-      "Du betreust unsere Mitglieder rund um Beteiligungen an Energieprojekten. Du erklaerst " +
+      "Du betreust unsere Mitglieder rund um Beteiligungen an Energieprojekten. Du erklärst " +
       "komplizierte Sachverhalte verstaendlich und vermittelst, wenn es hakt. Die Stelle ist " +
       "vollständig remote möglich.",
     benefits: ["vollständig remote", "Weiterbildung", "Lernbudget", "sinnstiftende Arbeit"],
@@ -212,7 +212,7 @@ export const seedJobs: SeedJob[] = [
       "Präsentationen erstellen",
     ],
     description:
-      "Du unterstuetzt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
+      "Du unterstützt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
       "und fasst Ergebnisse zusammen.",
     benefits: ["Weiterbildung"],
     applyMethod: "email", applyTarget: "jobs@kranzberg.invalid",
@@ -238,7 +238,7 @@ export const seedJobs: SeedJob[] = [
       "Präsentationen erstellen",
     ],
     description:
-      "Du unterstuetzt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
+      "Du unterstützt unsere Beratungsprojekte: Du nimmst Prozesse auf, bereitest Workshops vor " +
       "und fasst Ergebnisse zusammen.",
     benefits: ["Weiterbildung"],
     applyMethod: "email", applyTarget: "jobs@kranzberg.invalid",

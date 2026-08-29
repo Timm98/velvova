@@ -234,7 +234,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                 />
               ) : (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  Noch kein Dokument. Wähl oben, was du erstellen moechtest.
+                  Noch kein Dokument. Wähl oben, was du erstellen möchtest.
                 </p>
               )}
             </Stack>
@@ -253,7 +253,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                 </p>
               ) : active.claims.length === 0 ? (
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)" }}>
-                  In diesem Text steht keine pruefbare Behauptung.
+                  In diesem Text steht keine prüfbare Behauptung.
                 </p>
               ) : (
                 <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>

@@ -5,7 +5,7 @@ import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
  * Versandwege.
  *
  * Die wichtigste Zeile dieses Moduls ist eine Regel, keine Funktion:
- * ohne ausdrueckliche Bestätigung des Menschen verlässt nichts das
+ * ohne ausdrückliche Bestätigung des Menschen verlässt nichts das
  * System. Der Standardweg erzeugt einen Entwurf zum Herunterladen und
  * versendet gar nichts.
  */
@@ -36,7 +36,7 @@ const NOT_CONFIRMED: DeliveryResult = {
   isDemo: true,
   messageId: null,
   message:
-    "Es wurde nichts versendet: die ausdrueckliche Bestätigung fehlt. " +
+    "Es wurde nichts versendet: die ausdrückliche Bestätigung fehlt. " +
     "Das ist kein Fehler, sondern Absicht.",
 };
 
@@ -118,7 +118,7 @@ export class MailpitDeliveryProvider implements ApplicationDeliveryProvider {
       isDemo: true,
       messageId: `mailpit-${Date.now()}`,
       message:
-        "An den lokalen Testserver uebergeben. Die Nachricht hat dieses Gerät nicht verlassen " +
+        "An den lokalen Testserver übergeben. Die Nachricht hat dieses Gerät nicht verlassen " +
         "und keine echte Empfängerin erreicht.",
     };
   }

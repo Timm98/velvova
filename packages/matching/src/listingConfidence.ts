@@ -3,10 +3,10 @@ import { SCORING_VERSION } from "@paycheck/domain";
 import { toScore100 } from "./weighted.ts";
 
 /**
- * Listing Confidence: wie vertrauenswuerdig ist die Anzeige selbst?
+ * Listing Confidence: wie vertrauenswürdig ist die Anzeige selbst?
  *
- * Das Wort "Fake" fällt hier nie. Wir koennen aus der Ferne nicht
- * feststellen, ob eine Anzeige betruegerisch ist - wohl aber, ob die
+ * Das Wort "Fake" fällt hier nie. Wir können aus der Ferne nicht
+ * feststellen, ob eine Anzeige betrügerisch ist - wohl aber, ob die
  * Quelle nachvollziehbar, die Anzeige vollständig und der Link noch
  * erreichbar ist. Genau das wird gesagt, nicht mehr.
  */

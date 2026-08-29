@@ -50,7 +50,7 @@ describe("Claim-Provenienz", () => {
     expect(checkApproval(a).canApprove).toBe(true);
   });
 
-  it("zählt unbestaetigte Hypothesen nicht als Beleg", () => {
+  it("zählt unbestätigte Hypothesen nicht als Beleg", () => {
     const nurHypothese = [ev("h1", "Zwei Jahre Kundenbetreuung im Kundenservice", false)];
     const a = analyseClaims("art1", "Ich habe zwei Jahre Kundenbetreuung im Kundenservice gemacht.", nurHypothese);
     expect(a.claims[0]!.status).toBe("unsupported");
@@ -112,7 +112,7 @@ describe("Anschreiben", () => {
     expect(r.advisable).toBe(true);
   });
 
-  it("baut die E-Mail nur aus bestaetigter Evidenz", () => {
+  it("baut die E-Mail nur aus bestätigter Evidenz", () => {
     const r = buildApplicationEmail(job, [ev("e1", "Zwei Jahre Kundenservice"), ev("h1", "Erfundenes", false)], "Lea");
     expect(r.body).toContain("Zwei Jahre Kundenservice");
     expect(r.body).not.toContain("Erfundenes");

@@ -198,8 +198,12 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.locator("a", { hasText: "Ansehen" }).first().click();
     await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
 
-    await expect(page.getByText("KI-Zusammenfassung").first()).toBeVisible();
-    await expect(page.getByText(/stammt von einem Sprachmodell/)).toBeVisible();
+    // Wo eine KI-Zusammenfassung erscheint, muss auch der Hinweis stehen,
+    // dass sie von einem Sprachmodell stammt - nie das eine ohne das andere.
+    const badges = await page.getByText("KI-Zusammenfassung").count();
+    const notes = await page.getByText(/stammt von einem Sprachmodell/).count();
+    expect(badges).toBeGreaterThan(0);
+    expect(notes).toBeGreaterThanOrEqual(badges);
   });
 
   test("Jobdetail nennt Quelle und Abrufdatum", async ({ page }) => {
@@ -226,7 +230,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.goto("/app/profile");
     await expect(page.getByRole("heading", { name: /Belegte Stärken|Belegte Staerken/ })).toBeVisible();
     await expect(page.getByText("Vermutung").first()).toBeVisible();
-    await expect(page.getByText(/Nichts davon zählt|Nichts davon zaehlt/).first()).toBeVisible();
+    await expect(page.getByText(/zählen sie nirgends/).first()).toBeVisible();
   });
 
   test("Eine Vermutung lässt sich ablehnen und zählt danach nicht mehr", async ({ page }) => {
@@ -235,7 +239,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await expect(rejectButton).toBeVisible();
     await rejectButton.click();
 
-    await expect(page.getByText("abgelehnt").first()).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole("heading", { name: /Von dir abgelehnt/ })).toBeVisible({ timeout: 20_000 });
     await expect(page.getByText(/Diese Aussagen bleiben sichtbar/)).toBeVisible();
   });
 
@@ -243,7 +247,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.goto("/app/nina");
     await expect(page.getByRole("button", { name: /Warum diese Frage/ })).toBeVisible();
     await page.getByRole("button", { name: /Warum diese Frage/ }).click();
-    await expect(page.getByText(/Damit klar ist|Vervollständigt|Vervollstaendigt/).first()).toBeVisible();
+    await expect(page.getByText(/Damit klar ist|Vervollständigt das Bild|Grundlage für alles Spätere|Grenzen werden nie/).first()).toBeVisible();
   });
 
   test("Fortschritt zählt Themen statt Prozente", async ({ page }) => {

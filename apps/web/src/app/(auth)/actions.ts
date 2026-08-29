@@ -60,7 +60,7 @@ export async function magicLinkAction(_prev: FormState, formData: FormData): Pro
   const token = await createMagicLink(email);
 
   // In der Entwicklung ohne verbundenen Mailversand wird der Link
-  // ausgegeben, damit der Weg ueberhaupt begehbar ist. Das steht auch so
+  // ausgegeben, damit der Weg überhaupt begehbar ist. Das steht auch so
   // in der Oberfläche - er wird nicht als versendet ausgegeben.
   if (token && process.env.NODE_ENV !== "production") {
     return {
