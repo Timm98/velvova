@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { pauseSession, skipQuestion, submitAnswer } from "@/lib/interview";
-import { Badge, buttonClass, Card, Stack } from "@/components/ui";
+import { ArrowRight, Keyboard, Mic, PauseCircle, SendHorizonal } from "lucide-react";
+import { Badge, Button, Card, Disclosure, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { VoicePanel } from "./VoicePanel";
 
@@ -97,213 +98,203 @@ export function InterviewChat({
 
   const isComplete = step.kind === "interview_complete";
 
+  // Die letzten acht Beiträge stehen offen, alles Frühere eingeklappt.
+  const RECENT = 8;
+  const earlier = initialTurns.slice(0, Math.max(0, initialTurns.length - RECENT));
+  const recent = initialTurns.slice(Math.max(0, initialTurns.length - RECENT));
+
   return (
-    <Stack gap={5}>
-      {/* --- Verlauf --- */}
-      {initialTurns.length > 0 && (
-        <ol
-          aria-label="Bisheriges Gespräch"
-          style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}
-        >
-          {initialTurns.map((turn) => (
-            <li
-              key={turn.id}
-              style={{
-                display: "flex",
-                justifyContent: turn.role === "user" ? "flex-end" : "flex-start",
-              }}
-            >
-              <div
-                style={{
-                  maxWidth: "min(100%, 56ch)",
-                  padding: "var(--space-3) var(--space-4)",
-                  borderRadius: "var(--radius-lg)",
-                  background:
-                    turn.role === "user"
-                      ? "var(--surface-inset)"
-                      : turn.role === "system"
-                        ? "transparent"
-                        : "var(--assistant-subtle)",
-                  border:
-                    turn.role === "system"
-                      ? "1px dashed var(--border-default)"
-                      : "1px solid var(--border-subtle)",
-                  fontSize: turn.role === "system" ? "var(--text-xs)" : "var(--text-base)",
-                  color: turn.role === "system" ? "var(--text-muted)" : "var(--text-primary)",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {turn.role === "assistant" && (
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: "var(--text-xs)",
-                      color: "var(--assistant-text)",
-                      marginBottom: 4,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {assistantName}
-                  </span>
-                )}
-                {turn.content}
-              </div>
-            </li>
+    <div className="grid gap-6">
+      {/* ── Verlauf ─────────────────────────────────────────── */}
+      {/*
+        Nur die letzten Züge stehen offen. Ein Gespräch über zwölf
+        Themen wird lang, und wer zurückkommt, will die aktuelle Frage
+        sehen — nicht erst an vierzig Beiträgen vorbeirollen. Das
+        Frühere bleibt vollständig erreichbar, nur eingeklappt.
+      */}
+      {earlier.length > 0 && (
+        <Disclosure summary={`${earlier.length} frühere Beiträge anzeigen`}>
+          <ol aria-label="Früherer Gesprächsverlauf" className="grid gap-4">
+            {earlier.map((turn) => (
+              <TurnBubble key={turn.id} turn={turn} assistantName={assistantName} />
+            ))}
+          </ol>
+        </Disclosure>
+      )}
+
+      {recent.length > 0 && (
+        <ol aria-label="Bisheriges Gespräch" className="grid gap-4">
+          {recent.map((turn) => (
+            <TurnBubble key={turn.id} turn={turn} assistantName={assistantName} />
           ))}
         </ol>
       )}
       <div ref={endRef} />
 
-      {/* --- Aktuelle Frage --- */}
-      <Card style={{ borderColor: "var(--assistant-border)" }}>
-        <Stack gap={4}>
-          <div style={{ display: "flex", gap: "var(--space-3)", alignItems: "center", flexWrap: "wrap" }}>
-            <Badge tone="assistant">{step.stageLabel}</Badge>
-            {providerIsMock && <Badge tone="caution">Demo</Badge>}
-          </div>
+      {/* ── Aktuelle Frage ──────────────────────────────────── */}
+      <Card className="grid gap-5 border-assistant-border">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Badge tone="assistant">{step.stageLabel}</Badge>
+          {providerIsMock && <Badge tone="caution">Demo</Badge>}
+        </div>
 
-          <p
-            aria-live="polite"
-            style={{ fontSize: "var(--text-lg)", lineHeight: 1.5, maxWidth: "var(--measure)" }}
+        {/* Genau eine Hauptfrage. Alles andere ist Beiwerk. */}
+        <p aria-live="polite" className="max-w-[var(--measure)] text-lg leading-relaxed">
+          {step.text}
+        </p>
+
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowPurpose((v) => !v)}
+            aria-expanded={showPurpose}
+            className="inline-flex min-h-6 items-center text-sm text-ink-2 underline underline-offset-[3px] transition-colors hover:text-ink"
           >
-            {step.text}
-          </p>
+            {labels.whyThisQuestion}
+          </button>
+          {showPurpose && (
+            <p className="mt-2 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+              {step.purpose}
+            </p>
+          )}
+        </div>
 
-          <div>
-            <button
-              type="button"
-              onClick={() => setShowPurpose((v) => !v)}
-              aria-expanded={showPurpose}
-              style={{
-                background: "transparent",
-                border: "none",
-                padding: 0,
-                fontSize: "var(--text-sm)",
-                color: "var(--text-secondary)",
-                textDecoration: "underline",
-                textUnderlineOffset: 3,
-                cursor: "pointer",
-              }}
+        {!isComplete && (
+          <>
+            <div
+              role="group"
+              aria-label="Eingabeart"
+              className="inline-flex gap-1 self-start rounded-[--radius-md] border border-line-2 bg-sunken p-1"
             >
-              {labels.whyThisQuestion}
-            </button>
-            {showPurpose && (
-              <p style={{ marginTop: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
-                {step.purpose}
-              </p>
-            )}
-          </div>
-
-          {!isComplete && (
-            <>
-              {/* Moduswechsel */}
-              <div role="group" aria-label="Eingabeart" style={{ display: "flex", gap: "var(--space-2)" }}>
+              {(
+                [
+                  { value: "text" as const, label: labels.textMode, Icon: Keyboard },
+                  { value: "voice" as const, label: labels.voiceMode, Icon: Mic },
+                ]
+              ).map(({ value, label, Icon }) => (
                 <button
+                  key={value}
                   type="button"
-                  onClick={() => setMode("text")}
-                  aria-pressed={mode === "text"}
-                  className={buttonClass(mode === "text" ? "secondary" : "quiet", false, "sm")}
+                  onClick={() => setMode(value)}
+                  aria-pressed={mode === value}
+                  className={cn(
+                    "flex min-h-9 items-center gap-2 rounded-[--radius-sm] px-3.5 text-sm transition-colors",
+                    mode === value
+                      ? "bg-raised font-medium text-ink shadow-xs"
+                      : "text-ink-2 hover:text-ink",
+                  )}
                 >
-                  {labels.textMode}
+                  <Icon className="size-4" strokeWidth={1.9} />
+                  {label}
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setMode("voice")}
-                  aria-pressed={mode === "voice"}
-                  className={buttonClass(mode === "voice" ? "secondary" : "quiet", false, "sm")}
-                >
-                  {labels.voiceMode}
-                </button>
-              </div>
+              ))}
+            </div>
 
-              {mode === "voice" ? (
-                <VoicePanel
-                  serverVoiceAvailable={voiceAvailable}
-                  labels={labels}
-                  onTranscript={(text) => {
-                    setAnswer((prev) => (prev ? `${prev} ${text}` : text));
-                    inputRef.current?.focus();
-                  }}
-                  onSubmit={(text) => send(text)}
-                  currentText={answer}
-                />
-              ) : null}
+            {mode === "voice" ? (
+              <VoicePanel
+                serverVoiceAvailable={voiceAvailable}
+                labels={labels}
+                onTranscript={(text) => {
+                  setAnswer((prev) => (prev ? `${prev} ${text}` : text));
+                  inputRef.current?.focus();
+                }}
+                onSubmit={(text) => send(text)}
+                currentText={answer}
+              />
+            ) : null}
 
-              <div style={{ display: "grid", gap: "var(--space-3)" }}>
-                <label htmlFor="answer" className="sr-only">
-                  {labels.yourAnswer}
-                </label>
-                <textarea
-                  id="answer"
-                  ref={inputRef}
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(answer);
-                  }}
-                  rows={4}
-                  placeholder={labels.yourAnswer}
-                  aria-describedby={error ? "answer-error" : undefined}
-                  aria-invalid={error ? true : undefined}
-                  style={{
-                    width: "100%",
-                    padding: "var(--space-3) var(--space-4)",
-                    background: "var(--surface-raised)",
-                    border: `1px solid ${error ? "var(--critical)" : "var(--border-default)"}`,
-                    borderRadius: "var(--radius-md)",
-                    fontSize: "var(--text-base)",
-                    lineHeight: 1.6,
-                    resize: "vertical",
-                    minHeight: 100,
-                  }}
-                />
+            <div className="grid gap-3">
+              <label htmlFor="answer" className="sr-only">
+                {labels.yourAnswer}
+              </label>
+              <Textarea
+                id="answer"
+                ref={inputRef}
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(answer);
+                }}
+                rows={4}
+                placeholder={labels.yourAnswer}
+                aria-describedby={error ? "answer-error" : undefined}
+                aria-invalid={error ? true : undefined}
+                className="min-h-[104px]"
+              />
 
-                {error && (
-                  <p id="answer-error" role="alert" style={{ fontSize: "var(--text-sm)", color: "var(--critical)" }}>
-                    {error}
-                  </p>
+              {error && (
+                <p id="answer-error" role="alert" className="text-sm text-critical">
+                  {error}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Button type="button" variant="primary" onClick={() => send(answer)} disabled={pending}>
+                  {pending ? labels.thinking : labels.send}
+                  {!pending && <SendHorizonal className="size-4" strokeWidth={1.9} />}
+                </Button>
+
+                {step.canSkip && (
+                  <Button type="button" variant="ghost" onClick={skip} disabled={pending}>
+                    {labels.skipQuestion}
+                  </Button>
                 )}
 
-                <div style={{ display: "flex", gap: "var(--space-3)", flexWrap: "wrap", alignItems: "center" }}>
-                  <button
-                    type="button"
-                    onClick={() => send(answer)}
-                    disabled={pending}
-                    className={buttonClass("primary")}
-                  >
-                    {pending ? labels.thinking : labels.send}
-                  </button>
-
-                  {step.canSkip && (
-                    <button type="button" onClick={skip} disabled={pending} className={buttonClass("quiet")}>
-                      {labels.skipQuestion}
-                    </button>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={pause}
-                    disabled={pending}
-                    className={cn(buttonClass("quiet"), "ml-auto")}
-                  >
-                    {labels.pauseSession}
-                  </button>
-                </div>
-
-                <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-                  {labels.resumeLater}
-                </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={pause}
+                  disabled={pending}
+                  className="ml-auto"
+                >
+                  <PauseCircle className="size-4" strokeWidth={1.9} />
+                  {labels.pauseSession}
+                </Button>
               </div>
-            </>
-          )}
 
-          {isComplete && (
-            <a href="/app/profile" className={buttonClass("primary")}>
+              <p className="text-xs leading-relaxed text-ink-3">{labels.resumeLater}</p>
+            </div>
+          </>
+        )}
+
+        {isComplete && (
+          <Button asChild variant="primary" className="self-start">
+            <a href="/app/profile">
               Profil ansehen und bestätigen
+              <ArrowRight className="size-4" strokeWidth={1.9} />
             </a>
-          )}
-        </Stack>
+          </Button>
+        )}
       </Card>
-    </Stack>
+    </div>
+  );
+}
+
+/** Ein einzelner Beitrag im Gespräch. */
+function TurnBubble({
+  turn,
+  assistantName,
+}: {
+  turn: Turn;
+  assistantName: string;
+}) {
+  return (
+    <li className={cn("flex", turn.role === "user" ? "justify-end" : "justify-start")}>
+      <div
+        className={cn(
+          "max-w-[min(100%,56ch)] whitespace-pre-wrap rounded-[--radius-lg] px-4 py-3 leading-relaxed",
+          turn.role === "user" && "bg-inset",
+          turn.role === "assistant" && "border border-assistant-border bg-assistant-soft",
+          turn.role === "system" && "border border-dashed border-line-2 text-xs text-ink-3",
+        )}
+      >
+        {turn.role === "assistant" && (
+          <span className="mb-1 block text-xs font-medium text-assistant-text">
+            {assistantName}
+          </span>
+        )}
+        {turn.content}
+      </div>
+    </li>
   );
 }

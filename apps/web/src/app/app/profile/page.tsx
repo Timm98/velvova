@@ -6,7 +6,9 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { and, eq, isNull } from "drizzle-orm";
 import { EvidenceList } from "./EvidenceList";
 import { ConfirmProfileButton, RoleClusterCard } from "./ProfileClient";
-import { Badge, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Badge, Button, Card } from "@/components/ui";
+import { EmptyState, PageHeader, Section } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Profil" };
 export const dynamic = "force-dynamic";
@@ -41,75 +43,74 @@ export default async function ProfilePage() {
 
   if (evidence.length === 0) {
     return (
-      <Stack gap={6}>
-        <PageHeader title={t("profile.title")} />
+      <div className="grid gap-8">
+        <PageHeader eyebrow="Karriereprofil" title={t("profile.title")} />
         <EmptyState
+          icon={<Sparkles className="size-5" strokeWidth={1.7} />}
           title={t("states.emptyTitle")}
           body={t("profile.empty")}
           action={
-            <Link href="/app/nina" style={{ color: "var(--accent-text)" }}>
-              Gespräch beginnen
-            </Link>
+            <Button asChild variant="primary">
+              <Link href="/app/nina">
+                Gespräch beginnen
+                <ArrowRight className="size-4" strokeWidth={1.9} />
+              </Link>
+            </Button>
           }
         />
-      </Stack>
+      </div>
     );
   }
 
   return (
-    <Stack gap={7}>
-      <PageHeader title={t("profile.title")} />
+    <div className="grid gap-10">
+      <PageHeader eyebrow="Karriereprofil" title={t("profile.title")} />
 
       {profile?.careerCompass && (
-        <Card style={{ background: "var(--assistant-subtle)", borderColor: "var(--assistant-border)" }}>
-          <Stack gap={3}>
-            <Badge tone="assistant">{t("profile.compass")}</Badge>
-            <p style={{ fontSize: "var(--text-lg)", lineHeight: 1.6, maxWidth: "var(--measure)" }}>
-              {profile.careerCompass}
-            </p>
-          </Stack>
+        <Card className="border-assistant-border bg-assistant-soft">
+          <Badge tone="assistant">
+            <Sparkles className="size-3" strokeWidth={2} />
+            {t("profile.compass")}
+          </Badge>
+          <p className="mt-4 max-w-[var(--measure)] text-lg leading-relaxed">
+            {profile.careerCompass}
+          </p>
         </Card>
       )}
 
-      {/* Abdeckung */}
       <Card>
-        <Stack gap={3}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "var(--space-3)" }}>
-            <h2 style={{ fontSize: "var(--text-base)" }}>{t("profile.coverage")}</h2>
-            <strong>{Math.round(coverage * 100)} %</strong>
-          </div>
-          <div aria-hidden style={{ height: 8, background: "var(--surface-inset)", borderRadius: "var(--radius-full)", overflow: "hidden" }}>
-            <div style={{ width: `${Math.round(coverage * 100)}%`, height: "100%", background: "var(--accent)" }} />
-          </div>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
-            {t("profile.coverageBody")}
-          </p>
-        </Stack>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="text-base font-semibold">{t("profile.coverage")}</h2>
+          <span className="text-lg font-semibold tabular">{Math.round(coverage * 100)} %</span>
+        </div>
+        <div aria-hidden className="mt-3 h-2 overflow-hidden rounded-full bg-inset">
+          <div
+            className="h-full rounded-full bg-accent transition-[width] duration-[--duration-slow] ease-[--ease-out]"
+            style={{ width: `${Math.round(coverage * 100)}%` }}
+          />
+        </div>
+        <p className="mt-3 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+          {t("profile.coverageBody")}
+        </p>
       </Card>
 
       {/* Offene Vermutungen zuerst: sie brauchen eine Entscheidung */}
       {open.length > 0 && (
-        <section aria-labelledby="offen">
-          <h2 id="offen" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-2)" }}>
-            {t("profile.gaps")}
-          </h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginBottom: "var(--space-4)", maxWidth: "var(--measure)" }}>
-            Diese Angaben stammen aus deinen Antworten oder sind Vermutungen von {brand.assistantName}.
-            Bis du sie bestätigst, zählen sie nirgends.
-          </p>
+        <Section
+          id="offen"
+          title={t("profile.gaps")}
+          description={`Diese Angaben stammen aus deinen Antworten oder sind Vermutungen von ${brand.assistantName}. Bis du sie bestätigst, zählen sie nirgends.`}
+        >
           <EvidenceList items={open.map(serialise)} showConfirm />
-        </section>
+        </Section>
       )}
 
       {/* Bestätigte Stärken, nach Bereich gruppiert */}
-      <section aria-labelledby="bestätigt">
-        <h2 id="bestätigt" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
-          {t("profile.confirmedStrengths")}
-        </h2>
+      <Section id="bestaetigt" title={t("profile.confirmedStrengths")}>
         {confirmed.length === 0 ? (
           <EmptyState title="Noch nichts bestätigt" body="Bestätige oben, was zutrifft." />
         ) : (
-          <Stack gap={5}>
+          <div className="grid gap-7">
             {[
               { key: "experience_episodes", label: "Konkrete Erfahrungen" },
               { key: "feedback_and_recognition", label: "Was andere an dir sehen" },
@@ -124,23 +125,24 @@ export default async function ProfilePage() {
               .filter((g) => g.items.length > 0)
               .map((g) => (
                 <div key={g.key}>
-                  <h3 style={{ fontSize: "var(--text-base)", marginBottom: "var(--space-3)", color: "var(--text-secondary)" }}>
+                  <h3 className="mb-3 text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">
                     {g.label}
                   </h3>
                   <EvidenceList items={g.items.map(serialise)} />
                 </div>
               ))}
-          </Stack>
+          </div>
         )}
-      </section>
+      </Section>
 
       {/* Rollencluster */}
       {clusters.length > 0 && (
-        <section aria-labelledby="richtungen">
-          <h2 id="richtungen" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
-            {t("profile.roleClusters")}
-          </h2>
-          <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>
+        <Section
+          id="richtungen"
+          title={t("profile.roleClusters")}
+          description="Mehrere plausible Richtungen statt eines angeblich perfekten Berufs."
+        >
+          <ul className="grid gap-4">
             {clusters.map((c) => (
               <RoleClusterCard
                 key={c.id}
@@ -158,38 +160,34 @@ export default async function ProfilePage() {
               />
             ))}
           </ul>
-        </section>
+        </Section>
       )}
 
       {/* Abgelehnt: bleibt sichtbar, zählt nie */}
       {rejected.length > 0 && (
-        <section aria-labelledby="abgelehnt">
-          <h2 id="abgelehnt" style={{ fontSize: "var(--text-base)", marginBottom: "var(--space-3)", color: "var(--text-muted)" }}>
-            Von dir abgelehnt ({rejected.length})
-          </h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-muted)", marginBottom: "var(--space-3)" }}>
-            Diese Aussagen bleiben sichtbar, damit du sie zurückholen kannst. Sie zählen nirgends.
-          </p>
+        <Section
+          id="abgelehnt"
+          title={`Von dir abgelehnt (${rejected.length})`}
+          description="Diese Aussagen bleiben sichtbar, damit du sie zurückholen kannst. Sie zählen nirgends."
+        >
           <EvidenceList items={rejected.map(serialise)} />
-        </section>
+        </Section>
       )}
 
       {/* Bestätigung des Gesamtprofils */}
-      <Card style={{ borderColor: "var(--accent-border)" }}>
-        <Stack gap={4}>
-          <div>
-            <h2 style={{ fontSize: "var(--text-lg)" }}>{t("profile.confirmAll")}</h2>
-            <p style={{ marginTop: "var(--space-2)", color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>
-              {t("profile.confirmAllBody")}
-            </p>
-          </div>
-          <ConfirmProfileButton
-            alreadyConfirmed={profile?.confirmedByUser ?? false}
-            label={t("profile.confirmAll")}
-          />
-        </Stack>
+      <Card className="grid gap-5 border-accent-border">
+        <div>
+          <h2 className="text-lg font-semibold">{t("profile.confirmAll")}</h2>
+          <p className="mt-2 max-w-[var(--measure)] leading-relaxed text-ink-2">
+            {t("profile.confirmAllBody")}
+          </p>
+        </div>
+        <ConfirmProfileButton
+          alreadyConfirmed={profile?.confirmedByUser ?? false}
+          label={t("profile.confirmAll")}
+        />
       </Card>
-    </Stack>
+    </div>
   );
 }
 

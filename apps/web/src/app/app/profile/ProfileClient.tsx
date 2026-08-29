@@ -2,8 +2,9 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowRight, Check } from "lucide-react";
 import { confirmProfile, confirmRoleCluster } from "@/lib/profile";
-import { Badge, buttonClass, Card, Stack } from "@/components/ui";
+import { Badge, Button, Card, Separator } from "@/components/ui";
 
 /** Bestätigung des Gesamtprofils. Schaltet personalisierte Jobs frei. */
 export function ConfirmProfileButton({
@@ -18,9 +19,12 @@ export function ConfirmProfileButton({
 
   if (alreadyConfirmed) {
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)", flexWrap: "wrap" }}>
-        <Badge tone="positive">bestätigt</Badge>
-        <span style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+      <div className="flex flex-wrap items-center gap-3">
+        <Badge tone="positive">
+          <Check className="size-3" strokeWidth={2.6} />
+          bestätigt
+        </Badge>
+        <span className="text-sm text-ink-2">
           Deine Vorschläge sind freigeschaltet. Änderungen wirken sofort.
         </span>
       </div>
@@ -29,19 +33,20 @@ export function ConfirmProfileButton({
 
   return (
     <div>
-      <button
+      <Button
         type="button"
+        variant="primary"
+        disabled={pending}
         onClick={() =>
           startTransition(async () => {
             await confirmProfile();
             router.push("/app/jobs");
           })
         }
-        disabled={pending}
-        className={buttonClass("primary")}
       >
-        {pending ? "…" : label}
-      </button>
+        {pending ? "Wird bestätigt …" : label}
+        {!pending && <ArrowRight className="size-4" strokeWidth={1.9} />}
+      </Button>
     </div>
   );
 }
@@ -59,6 +64,13 @@ const REALISM_LABEL: Record<string, string> = {
   unclear: "Einschätzung offen",
 };
 
+/**
+ * Ein Rollencluster.
+ *
+ * Die Angaben stehen als Beschreibungsliste, nicht als Fließtext: was
+ * fehlt und welche Bedingung kritisch ist, muss man beim Überfliegen
+ * finden können — das ist der Teil, der eine Entscheidung trägt.
+ */
 export function RoleClusterCard({
   cluster,
 }: {
@@ -79,72 +91,65 @@ export function RoleClusterCard({
   const kind = KIND_LABEL[cluster.kind] ?? KIND_LABEL.obvious!;
 
   return (
-    <Card as="li">
-      <Stack gap={4}>
-        <div style={{ display: "flex", gap: "var(--space-3)", alignItems: "center", flexWrap: "wrap" }}>
-          <h3 style={{ fontSize: "var(--text-lg)" }}>{cluster.title}</h3>
-          <Badge tone={kind.tone}>{kind.text}</Badge>
-          {cluster.userConfirmed && <Badge tone="positive">verfolgst du</Badge>}
-        </div>
+    <Card as="li" className="grid gap-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <h3 className="text-lg font-semibold">{cluster.title}</h3>
+        <Badge tone={kind.tone}>{kind.text}</Badge>
+        {cluster.userConfirmed && <Badge tone="positive">verfolgst du</Badge>}
+      </div>
 
-        <p style={{ color: "var(--text-secondary)", maxWidth: "var(--measure)" }}>{cluster.rationale}</p>
+      <p className="max-w-[var(--measure)] leading-relaxed text-ink-2">{cluster.rationale}</p>
 
-        <dl style={{ display: "grid", gap: "var(--space-3)", fontSize: "var(--text-sm)", margin: 0 }}>
-          <div>
-            <dt style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", textTransform: "uppercase" }}>
-              Realismus
-            </dt>
-            <dd style={{ margin: 0 }}>{REALISM_LABEL[cluster.entryRealism] ?? cluster.entryRealism}</dd>
-          </div>
+      <Separator soft />
 
-          {cluster.gaps.length > 0 && (
-            <div>
-              <dt style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", textTransform: "uppercase" }}>
-                Was noch fehlt
-              </dt>
-              <dd style={{ margin: 0 }}>
-                <ul style={{ listStyle: "none", display: "grid", gap: 4 }}>
-                  {cluster.gaps.map((g) => (
-                    <li key={g}>· {g}</li>
-                  ))}
-                </ul>
-              </dd>
-            </div>
-          )}
+      <dl className="grid gap-4 sm:grid-cols-2">
+        <Fact label="Realismus">{REALISM_LABEL[cluster.entryRealism] ?? cluster.entryRealism}</Fact>
 
-          {cluster.criticalConstraints.length > 0 && (
-            <div>
-              <dt style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", textTransform: "uppercase" }}>
-                Kritische Bedingungen
-              </dt>
-              <dd style={{ margin: 0 }}>{cluster.criticalConstraints.join(" · ")}</dd>
-            </div>
-          )}
+        <Fact label="Nächster Schritt zur Überprüfung">{cluster.nextValidationStep}</Fact>
 
-          <div>
-            <dt style={{ color: "var(--text-muted)", fontSize: "var(--text-xs)", textTransform: "uppercase" }}>
-              Nächster Schritt zur Überprüfung
-            </dt>
-            <dd style={{ margin: 0 }}>{cluster.nextValidationStep}</dd>
-          </div>
-        </dl>
+        {cluster.gaps.length > 0 && (
+          <Fact label="Was noch fehlt">
+            <ul className="grid gap-1">
+              {cluster.gaps.map((g) => (
+                <li key={g} className="flex gap-2">
+                  <span aria-hidden className="mt-[9px] size-1 shrink-0 rounded-full bg-ink-3" />
+                  {g}
+                </li>
+              ))}
+            </ul>
+          </Fact>
+        )}
 
-        <div>
-          <button
-            type="button"
-            onClick={() =>
-              startTransition(async () => {
-                await confirmRoleCluster(cluster.id, !cluster.userConfirmed);
-                router.refresh();
-              })
-            }
-            disabled={pending}
-            className={buttonClass(cluster.userConfirmed ? "quiet" : "secondary", false, "sm")}
-          >
-            {cluster.userConfirmed ? "Nicht mehr verfolgen" : "Diese Richtung verfolgen"}
-          </button>
-        </div>
-      </Stack>
+        {cluster.criticalConstraints.length > 0 && (
+          <Fact label="Kritische Bedingungen">{cluster.criticalConstraints.join(" · ")}</Fact>
+        )}
+      </dl>
+
+      <div>
+        <Button
+          type="button"
+          variant={cluster.userConfirmed ? "ghost" : "secondary"}
+          size="sm"
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              await confirmRoleCluster(cluster.id, !cluster.userConfirmed);
+              router.refresh();
+            })
+          }
+        >
+          {cluster.userConfirmed ? "Nicht mehr verfolgen" : "Diese Richtung verfolgen"}
+        </Button>
+      </div>
     </Card>
+  );
+}
+
+function Fact({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-2xs font-medium uppercase tracking-wider text-ink-3">{label}</dt>
+      <dd className="mt-1 text-sm leading-relaxed text-ink-2">{children}</dd>
+    </div>
   );
 }

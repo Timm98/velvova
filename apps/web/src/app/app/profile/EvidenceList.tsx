@@ -3,7 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { confirmEvidence, deleteEvidence, editEvidence, rejectEvidence } from "@/lib/profile";
-import { Badge, buttonClass, Card } from "@/components/ui";
+import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Badge, Button, Card, Textarea } from "@/components/ui";
+import { cn } from "@/lib/cn";
 
 /**
  * Eine Liste von Evidenz-Einträgen.
@@ -37,7 +39,7 @@ const SOURCE_LABEL: Record<string, { text: string; tone: "positive" | "assistant
 export function EvidenceList({ items, showConfirm = false }: { items: EvidenceView[]; showConfirm?: boolean }) {
   if (items.length === 0) return null;
   return (
-    <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
+    <ul className="grid gap-3">
       {items.map((item) => (
         <EvidenceRow key={item.id} item={item} showConfirm={showConfirm} />
       ))}
@@ -64,115 +66,119 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
   return (
     <Card
       as="li"
-      style={{
-        // Kein Abblenden ueber Deckkraft: das senkt den Kontrast unter
-        // die Schwelle und macht den Zustand von der Erscheinung
-        // abhaengig. Den Zustand traegt das Etikett, sichtbar als Text.
-        background: item.userRejected ? "var(--surface-sunken)" : "var(--surface-raised)",
-        borderColor: item.userConfirmed
-          ? "var(--border-subtle)"
-          : item.userRejected
-            ? "var(--border-default)"
-            : "var(--assistant-border)",
-      }}
+      padded={false}
+      className={cn(
+        "p-5",
+        // Kein Abblenden über Deckkraft: das senkt den Kontrast unter die
+        // Schwelle und macht den Zustand von der Erscheinung abhängig.
+        // Den Zustand trägt das Etikett, sichtbar als Text.
+        item.userRejected
+          ? "bg-sunken shadow-none"
+          : item.userConfirmed
+            ? "border-line"
+            : "border-assistant-border",
+      )}
     >
-      <div style={{ display: "grid", gap: "var(--space-3)" }}>
-        <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap", alignItems: "center" }}>
+      <div className="grid gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge tone={source.tone}>{source.text}</Badge>
           {item.userConfirmed && <Badge tone="positive">bestätigt</Badge>}
           {item.userRejected && <Badge tone="neutral">abgelehnt</Badge>}
         </div>
 
         {editing ? (
-          <div style={{ display: "grid", gap: "var(--space-3)" }}>
+          <div className="grid gap-3">
             <label htmlFor={`edit-${item.id}`} className="sr-only">
               Aussage bearbeiten
             </label>
-            <textarea
+            <Textarea
               id={`edit-${item.id}`}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               rows={3}
-              style={{
-                width: "100%",
-                padding: "var(--space-3)",
-                border: "1px solid var(--border-default)",
-                borderRadius: "var(--radius-md)",
-                background: "var(--surface-raised)",
-                fontSize: "var(--text-sm)",
-                lineHeight: 1.6,
-                resize: "vertical",
-              }}
+              className="text-sm"
             />
-            <div style={{ display: "flex", gap: "var(--space-2)" }}>
-              <button
+            <div className="flex flex-wrap gap-2">
+              <Button
                 type="button"
+                variant="primary"
+                size="sm"
                 onClick={() => run(() => editEvidence(item.id, draft))}
                 disabled={pending || draft.trim().length === 0}
-                className={buttonClass("primary", false, "sm")}
               >
                 Speichern
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => {
                   setDraft(item.statement);
                   setEditing(false);
                 }}
-                className={buttonClass("quiet", false, "sm")}
               >
                 Abbrechen
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
-          <p style={{ fontSize: "var(--text-sm)", lineHeight: 1.65 }}>{item.statement}</p>
+          <p className="text-sm leading-relaxed">{item.statement}</p>
         )}
 
         {item.sourceRef && (
-          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-            Beleg: {item.sourceRef.replace("interview:", "aus dem Gespräch, Thema ").replace(/:/g, " · ")}
+          <p className="text-xs leading-relaxed text-ink-3">
+            Beleg:{" "}
+            {item.sourceRef.replace("interview:", "aus dem Gespräch, Thema ").replace(/:/g, " · ")}
           </p>
         )}
 
         {!editing && (
-          <div style={{ display: "flex", gap: "var(--space-2)", flexWrap: "wrap" }}>
+          <div className="flex flex-wrap gap-2">
             {showConfirm && !item.userConfirmed && !item.userRejected && (
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                size="sm"
                 onClick={() => run(() => confirmEvidence(item.id))}
                 disabled={pending}
-                className={buttonClass("secondary", false, "sm")}
               >
+                <Check className="size-3.5 text-positive" strokeWidth={2.4} />
                 Stimmt
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setEditing(true)}
               disabled={pending}
-              className={buttonClass("quiet", false, "sm")}
             >
+              <Pencil className="size-3.5" strokeWidth={1.9} />
               Bearbeiten
-            </button>
+            </Button>
             {!item.userRejected && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => run(() => rejectEvidence(item.id))}
                 disabled={pending}
-                className={buttonClass("quiet", false, "sm")}
               >
+                <X className="size-3.5" strokeWidth={2.2} />
                 Stimmt nicht
-              </button>
+              </Button>
             )}
-            <button
+            <Button
               type="button"
+              variant="danger"
+              size="sm"
               onClick={() => run(() => deleteEvidence(item.id))}
               disabled={pending}
-              className={buttonClass("danger", false, "sm")}
+              className="ml-auto"
             >
+              <Trash2 className="size-3.5" strokeWidth={1.9} />
               Löschen
-            </button>
+            </Button>
           </div>
         )}
       </div>

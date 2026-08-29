@@ -17,12 +17,33 @@ const fieldBase = [
  */
 export const inputClass = cn(fieldBase, "h-11");
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(fieldBase, "h-11", className)} {...props} />;
+export function Input({
+  className,
+  ref,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & { ref?: React.Ref<HTMLInputElement> }) {
+  return <input ref={ref} className={cn(fieldBase, "h-11", className)} {...props} />;
 }
 
-export function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={cn(fieldBase, "min-h-28 py-3 leading-relaxed resize-y", className)} {...props} />;
+/**
+ * `ref` wird ausdrücklich durchgereicht: Eingabefelder brauchen den
+ * Fokus von außen — nach dem Diktieren, nach einem Fehler, beim
+ * Öffnen eines Formulars.
+ */
+export function Textarea({
+  className,
+  ref,
+  ...props
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  ref?: React.Ref<HTMLTextAreaElement>;
+}) {
+  return (
+    <textarea
+      ref={ref}
+      className={cn(fieldBase, "min-h-28 py-3 leading-relaxed resize-y", className)}
+      {...props}
+    />
+  );
 }
 
 /**
