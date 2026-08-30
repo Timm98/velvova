@@ -55,6 +55,15 @@ const OWNED = [
   "coaching_feedback",
   "notifications",
   "feedback_events",
+  // Ninas Gedächtnis und Vorgangszustand — dieselbe Regel wie überall:
+  // ohne RLS gilt eine Tabelle nicht als fertig.
+  "job_search_campaigns",
+  "workflow_states",
+  "nina_memory_items",
+  "conversation_summaries",
+  "context_snapshots",
+  "nina_tasks",
+  "web_discovery_candidates",
 ];
 
 /** Globale Tabellen: lesbar, aber nicht beschreibbar. */
@@ -79,13 +88,18 @@ describe("Migrationen", () => {
     }
   });
 
-  it("führt jede nutzerbezogene Tabelle in der RLS-Schleife", () => {
+  it("führt jede nutzerbezogene Tabelle in einer RLS-Schleife", () => {
     // Die Schleife schaltet RLS ein und legt vier Policies an. Steht eine
     // Tabelle nicht darin, hat sie keine Policy — und ohne Policy darf
     // niemand etwas. Das fällt erst im Betrieb auf.
-    const loop = sql.slice(sql.indexOf("owned text[] := array["), sql.indexOf("foreach t in array owned"));
+    //
+    // Es gibt mehrere Schleifen über mehrere Migrationen; geprüft wird,
+    // dass jede Tabelle in mindestens einer davon steht.
+    const loops = [...sql.matchAll(/owned text\[\] := array\[([\s\S]*?)\]/g)]
+      .map((m) => m[1]!)
+      .join(" ");
     for (const table of OWNED) {
-      expect(loop, `${table} fehlt in der RLS-Schleife`).toContain(`'${table}'`);
+      expect(loops, `${table} fehlt in der RLS-Schleife`).toContain(`'${table}'`);
     }
   });
 
