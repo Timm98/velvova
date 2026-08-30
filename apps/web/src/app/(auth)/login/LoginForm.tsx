@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction, magicLinkAction, type FormState } from "../actions";
+import { withRedirectSafety } from "@/lib/formAction";
 import { Button, Field, Input, Separator } from "@/components/ui";
 import { ErrorState } from "@/components/ui/states";
 
@@ -21,7 +22,7 @@ export function LoginForm({
     string
   >;
 }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(loginAction, {});
+  const [state, action, pending] = useActionState<FormState, FormData>(withRedirectSafety(loginAction), {});
   const [magicState, magicAction, magicPending] = useActionState<FormState, FormData>(
     magicLinkAction,
     {},

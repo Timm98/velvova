@@ -1,4 +1,5 @@
 import { loadRuntimeConfig } from "@paycheck/config";
+import { pgliteOwner, resolveDataDir } from "@paycheck/db";
 import { runRetention } from "./tasks/retention.ts";
 import { markExpired, runLinkCheck } from "./tasks/linkCheck.ts";
 import { createCheckInReminders, createFollowUpReminders } from "./tasks/reminders.ts";
@@ -42,6 +43,63 @@ async function runAll(): Promise<void> {
 }
 
 const once = process.argv.includes("--once");
+
+/*
+ * Gehört die Datenbank schon jemandem?
+ *
+ * PGlite ist Einzelschreiber. Läuft der Webserver, hält er das
+ * Datenverzeichnis — und jede Aufgabe hier bricht mit
+ * "Aborted(). Build with -sASSERTIONS for more info." ab. Fünf
+ * Fehlermeldungen alle fünfzehn Minuten, keine davon verständlich.
+ *
+ * `turbo run dev` startet beide zusammen, das ist also der Normalfall
+ * in der Entwicklung und kein Sonderfall.
+ *
+ * Deshalb: einmal nachsehen, einmal erklären, dann ruhig sein. Ein
+ * Worker, der nicht darf, ist kein Fehler — er ist ein Worker, der
+ * wartet.
+ */
+if (cfg.db.driver === "pglite") {
+  const dataDir = resolveDataDir(cfg.db.pgliteDataDir);
+
+  /*
+   * Im Dauerbetrieb gar nicht erst antreten.
+   *
+   * Der erste Versuch prüfte hier nur die Sperre — und die war beim
+   * Start des Workers noch gar nicht gesetzt, weil der Webserver die
+   * Datenbank erst beim ersten Zugriff öffnet. Der Worker hielt sich
+   * also für allein, lief los und bekam bei jeder Aufgabe „Aborted()".
+   *
+   * Eine Prüfung, die vom Zufall der Startreihenfolge abhängt, ist
+   * keine Prüfung. Deshalb hier eine Regel statt einer Messung: mit
+   * PGlite läuft der Worker nur einmalig und nur, wenn ihn jemand
+   * ausdrücklich dazu auffordert.
+   */
+  if (!once) {
+    console.log(
+      `Worker läuft nicht im Dauerbetrieb: die Datenbank ist PGlite in "${dataDir}".`,
+    );
+    console.log(
+      "PGlite ist Einzelschreiber — Webserver und Worker zusammen zerlegen sich den " +
+        "WASM-Speicher, und heraus kommt „Aborted()“ auf einer beliebigen Seite.",
+    );
+    console.log(
+      "Einmalig ausführen: `pnpm --filter @paycheck/worker dev -- --once` (bei beendetem " +
+        "Webserver). Für den Dauerbetrieb einen echten Postgres-Server einrichten: " +
+        "DATABASE_DRIVER=pg und DATABASE_URL setzen.",
+    );
+    process.exit(0);
+  }
+
+  const besitzer = pgliteOwner(dataDir);
+  if (besitzer !== null && besitzer !== process.pid) {
+    console.log(
+      `Worker läuft nicht: die Datenbank in "${dataDir}" gehört gerade Prozess ${besitzer} ` +
+        "— vermutlich dem Webserver. Beende ihn zuerst.",
+    );
+    process.exit(0);
+  }
+}
 
 console.log(`Worker gestartet (Modus: ${cfg.mode}, Datenbank: ${cfg.db.driver}).`);
 await runAll();

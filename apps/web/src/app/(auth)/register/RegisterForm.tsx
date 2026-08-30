@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { registerAction, type FormState } from "../actions";
+import { withRedirectSafety } from "@/lib/formAction";
 import { Button, Field, Input } from "@/components/ui";
 import { ErrorState } from "@/components/ui/states";
 
@@ -19,7 +20,7 @@ export function RegisterForm({
     string
   >;
 }) {
-  const [state, action, pending] = useActionState<FormState, FormData>(registerAction, {});
+  const [state, action, pending] = useActionState<FormState, FormData>(withRedirectSafety(registerAction), {});
 
   const emailError =
     state.error === "email_taken"

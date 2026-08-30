@@ -4,6 +4,7 @@ import { drizzle as drizzlePglite } from "drizzle-orm/pglite";
 import { drizzle as drizzleNode } from "drizzle-orm/node-postgres";
 import { resolveDataDir } from "./paths.ts";
 import * as schema from "./schema/index.ts";
+import { acquirePgliteLock } from "./lock.ts";
 
 /**
  * Zwei Treiber, ein SQL.
@@ -61,14 +62,30 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
   if (cached) return cached;
 
   if (cfg.db.driver === "pglite") {
+    const dataDir = resolveDataDir(cfg.db.pgliteDataDir);
+
+    /*
+     * Erst die Sperre, dann die Datenbank.
+     *
+     * PGlite ist Einzelschreiber. Ein zweiter Prozess auf demselben
+     * Verzeichnis zerlegt beiden den WASM-Speicher, und heraus kommt
+     * "Aborted(). Build with -sASSERTIONS for more info." — eine Zeile,
+     * die niemandem sagt, was passiert ist, und die auf einer
+     * beliebigen Seite auftaucht, die gerade die Datenbank anfasst.
+     *
+     * Die Sperre wirft stattdessen einen Satz, den man lesen kann.
+     */
+    const lock = acquirePgliteLock(dataDir);
+
     const { PGlite } = await import("@electric-sql/pglite");
-    const client = new PGlite(resolveDataDir(cfg.db.pgliteDataDir));
+    const client = new PGlite(dataDir);
     await client.waitReady;
     const db = drizzlePglite(client, { schema }) as unknown as Database;
     const handle: Handle = {
       db,
       close: async () => {
         await client.close();
+        lock.release();
         writeCache(null);
       },
     };

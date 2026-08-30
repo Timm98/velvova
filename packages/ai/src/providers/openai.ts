@@ -1,5 +1,8 @@
 import OpenAI from "openai";
 import { zodToJsonSchema } from "../jsonSchema.ts";
+import { OpenAiConfigurationError } from "./errors.ts";
+
+export { OpenAiConfigurationError };
 import {
   AiCapabilityError,
   type AiProvider,
@@ -52,20 +55,6 @@ function isRetryable(error: unknown): boolean {
   const status = (error as { status?: number }).status;
   if (status === undefined) return true; // Netzabbruch
   return status === 408 || status === 409 || status === 429 || status >= 500;
-}
-
-export class OpenAiConfigurationError extends Error {
-  readonly model: string;
-
-  constructor(model: string, detail: string) {
-    super(
-      `Das Modell "${model}" ist mit diesem Zugang nicht verfügbar: ${detail} ` +
-        `Trage in OPENAI_PRIMARY_MODEL einen Modellnamen ein, den dein Konto nutzen darf. ` +
-        `Es wird bewusst keine Ersatzantwort erzeugt.`,
-    );
-    this.name = "OpenAiConfigurationError";
-    this.model = model;
-  }
 }
 
 export class OpenAiProvider implements AiProvider {
