@@ -357,18 +357,44 @@ export interface JobListOptions {
   limit?: number;
 }
 
+/**
+ * Eine Stelle ist nicht mehr aktuell, wenn ihr Ablaufdatum vorbei ist
+ * oder die letzte Linkprüfung fehlgeschlagen hat.
+ *
+ * Beides bedeutet dasselbe für die Person: eine Bewerbung dort geht ins
+ * Leere. Eine abgelaufene Anzeige im Ranking ist nicht bloss veraltete
+ * Information — sie kostet Arbeit, die niemand liest.
+ *
+ * Aus der Rangfolge fliegt sie deshalb raus. Von der Detailseite nicht:
+ * wer sich die Stelle gemerkt hat, soll seinen eigenen Vorgang
+ * weiterhin sehen können, dort dann mit Hinweis.
+ */
+export function isStale(job: ScoredJob["job"], now = new Date()): boolean {
+  if (job.expiresAt && job.expiresAt.getTime() < now.getTime()) return true;
+  if (job.lastLinkCheckOk === false) return true;
+  return false;
+}
+
 export async function listJobsForUser(
   userId: string,
   ctx: UserProfileContext,
   options: JobListOptions = {},
-): Promise<{ jobs: ScoredJob[]; blockedCount: number }> {
+): Promise<{ jobs: ScoredJob[]; blockedCount: number; staleCount: number }> {
   const all = await scoreAllJobs(userId, ctx);
-  const blocked = all.filter((j) => j.constraints.overall === "blocked");
-  const visible = options.includeBlocked ? all : all.filter((j) => j.constraints.overall !== "blocked");
+
+  const stale = all.filter((j) => isStale(j.job));
+  const current = all.filter((j) => !isStale(j.job));
+
+  const blocked = current.filter((j) => j.constraints.overall === "blocked");
+  const visible = options.includeBlocked
+    ? current
+    : current.filter((j) => j.constraints.overall !== "blocked");
   const sorted = sortJobs(visible, options.sort ?? "best_overall") as ScoredJob[];
+
   return {
     jobs: options.limit ? sorted.slice(0, options.limit) : sorted,
     blockedCount: blocked.length,
+    staleCount: stale.length,
   };
 }
 

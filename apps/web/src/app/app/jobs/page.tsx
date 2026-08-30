@@ -79,7 +79,7 @@ export default async function JobsPage({
     ? (params.sort as SortKey)
     : "best_overall";
 
-  const [saved, { jobs, blockedCount }] = await Promise.all([
+  const [saved, { jobs, blockedCount, staleCount }] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx
         .select({ jobId: schema.savedJobs.jobId })
@@ -214,6 +214,14 @@ export default async function JobsPage({
           ) : null
         }
       />
+
+      {staleCount > 0 && (
+        <p className="text-sm leading-relaxed text-ink-3">
+          {staleCount} {staleCount === 1 ? "Anzeige ist" : "Anzeigen sind"} abgelaufen oder nicht
+          mehr erreichbar und {staleCount === 1 ? "steht" : "stehen"} deshalb nicht in der Liste.
+          Eine Bewerbung dort würde ins Leere gehen.
+        </p>
+      )}
 
       {blockedCount > 0 && (
         <p className="text-sm leading-relaxed text-ink-3">

@@ -8,6 +8,7 @@ import {
   ToolSchemas,
   WRITING_TOOLS,
   buildNinaSystemPrompt,
+  route,
   selectProvider,
   validateToolCall,
   zodToJsonSchema,
@@ -111,6 +112,13 @@ export async function POST(request: Request) {
     externalProviderActive: provider.name !== "mock",
   });
 
+  /*
+   * Welche Leistungsstufe diese Aufgabe bekommt, entscheidet der
+   * Router — nicht diese Datei. Sonst steht dieselbe Aufgabe an zwei
+   * Stellen auf zwei Stufen und niemand kann sagen, warum.
+   */
+  const routing = route("nina_chat");
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -123,17 +131,28 @@ export async function POST(request: Request) {
       // einer Fußnote: wer eine Beispielantwort liest, soll das wissen,
       // bevor er sie liest.
       send({
-          type: "meta",
-          provider: provider.name,
-          isMock: provider.name === "mock",
-          fallbackReason,
-        });
+        type: "meta",
+        provider: provider.name,
+        isMock: provider.name === "mock",
+        fallbackReason,
+        // Der gespeicherte Vorgangszustand geht als erstes Ereignis
+        // mit hinaus. Die Oberfläche kann daran anknüpfen, statt selbst
+        // zu raten, wo die Person stehengeblieben ist.
+        workflow: {
+          stage: envelope.workflowStage,
+          lastCompletedAction: envelope.lastCompletedAction,
+          pendingAction: envelope.pendingAction,
+          selectedJobCount: envelope.selectedJobIds.length,
+        },
+        confirmedFactCount: scoped.confirmedFacts.length,
+        routing: { tier: routing.tier, reason: routing.reason },
+      });
 
       try {
         for await (const event of provider.streamConversation({
           system: systemPrompt,
           messages,
-          tier: "interactive",
+          tier: routing.providerTier,
           tools,
         })) {
           if (event.type === "text") {

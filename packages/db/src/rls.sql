@@ -44,7 +44,20 @@ DECLARE
     'role_clusters','role_hypotheses','saved_jobs','job_matches',
     'applications','application_events','documents','generated_artifacts',
     'deliveries','coaching_sessions','offers','check_ins','reminders',
-    'notifications','sessions'
+    'notifications','sessions',
+    -- Nachgetragen: diese drei tragen eine Nutzerkennung und hatten
+    -- trotzdem keinen Zeilenfilter. Aufgefallen ist es dem Generator
+    -- fuer RLS_POLICIES.md, der den Katalog gegen die Spalten haelt --
+    -- nicht einem Menschen beim Lesen.
+    --
+    --   auth_accounts  welche externen Konten zu einer Person gehoeren
+    --   memberships    wer zu welcher Organisation gehoert
+    --   ai_runs        Kennzahlen je Modellaufruf, ohne Inhalt
+    --
+    -- ai_runs erlaubt eine leere Nutzerkennung fuer Systemlaeufe. Solche
+    -- Zeilen sind unter der Anwendungsrolle fuer niemanden sichtbar; die
+    -- Betriebsansicht liest sie ueber die unbeschraenkte Verbindung.
+    'auth_accounts','memberships','ai_runs'
   ];
 BEGIN
   FOREACH t IN ARRAY user_tables LOOP

@@ -1,7 +1,7 @@
 "use server";
 
 import { getDb, schema, withUser } from "@paycheck/db";
-import { buildNinaSystemPrompt, checkOutput, minimiseForExternalProvider, selectProvider } from "@paycheck/ai";
+import { buildNinaSystemPrompt, checkOutput, minimiseForExternalProvider, route, selectProvider } from "@paycheck/ai";
 import { QUESTIONS, nextStep, progressView } from "@paycheck/ai";
 import { isConfirmedFact, type InterviewStage } from "@paycheck/domain";
 import { loadRuntimeConfig } from "@paycheck/config";
@@ -297,9 +297,10 @@ export async function assistantReply(userMessage: string): Promise<string> {
   for await (const chunk of provider.chatStream({
     system,
     messages: [{ role: "user", content }],
-    // Profilsynthese ist die Aufgabe, die Tiefe braucht: sie fasst ein
-    // ganzes Gespraech zusammen und leitet Rollen ab.
-    tier: "deep",
+    // Die Stufe kommt aus dem Router, nicht aus dieser Datei. Die
+    // Begründung steht dort, an einer Stelle, zusammen mit allen
+    // anderen — das war vorher über das Projekt verteilt.
+    tier: route("profile_synthesis").providerTier,
   })) {
     text += chunk;
   }
