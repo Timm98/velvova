@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Loader2, Search, SlidersHorizontal, X } from "lucide-react";
+import { Loader2, SlidersHorizontal, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -74,37 +74,20 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
     apply(next);
   }
 
-  function submitSearch(event: React.FormEvent) {
-    event.preventDefault();
-    const next = new URLSearchParams(params.toString());
-    if (query.trim()) next.set("q", query.trim());
-    else next.delete("q");
-    apply(next);
-  }
 
   const active = ["q", "remote", "contract", "since", "salary"].filter((k) => params.get(k));
 
   return (
     <div className="grid gap-3.5">
       <div className="flex flex-wrap items-center gap-2.5">
-        <form onSubmit={submitSearch} className="flex min-w-[260px] flex-1 items-center gap-2">
-          <div className="relative flex-1">
-            <Search
-              aria-hidden
-              className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-ink-3"
-              strokeWidth={1.8}
-            />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Beschreib in eigenen Worten, was du suchst …"
-              aria-label="Stellen durchsuchen"
-              className="h-11 w-full rounded-(--radius-md) border border-line-2 bg-raised pl-10 pr-3.5 text-base shadow-xs transition-colors placeholder:text-ink-3 hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
-            />
-          </div>
-        </form>
+        {/*
+          Das zweite Suchfeld ist entfallen.
 
+          Es stand direkt unter „Frag Nina …" und versprach dasselbe —
+          zwei Felder für eine Absicht sind keine Wahl, sondern eine
+          Frage, die niemand beantworten kann. Der Text kommt jetzt aus
+          dem Nina Search Composer und landet über `?q=` genauso hier.
+        */}
         <label className="sr-only" htmlFor="sort">
           Sortierung
         </label>
@@ -117,7 +100,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
             else next.set("sort", e.target.value);
             apply(next);
           }}
-          className="h-11 shrink-0 rounded-(--radius-md) border border-line-2 bg-raised px-3.5 text-sm shadow-xs transition-colors hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
+          className="h-11 shrink-0 rounded-(--radius-pill) bg-soft px-4 text-sm transition-colors hover:bg-soft-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           {SORT.map((option) => (
             <option key={option.value} value={option.value}>
@@ -166,16 +149,19 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <p className="flex items-center gap-2 text-sm text-ink-3">
-          {pending ? (
-            <>
-              <Loader2 className="size-3.5 animate-spin" />
-              wird sortiert …
-            </>
-          ) : (
-            `${resultCount} ${resultCount === 1 ? "Stelle" : "Stellen"}`
-          )}
-        </p>
+        {/*
+          Die Trefferzahl steht in der Abdeckungszeile darunter — dort
+          im Zusammenhang („243 von 975 aktiven"). Hier stand sie
+          nackt daneben und war damit dieselbe Zahl zweimal.
+          Übrig bleibt der Ladehinweis: der gehört an die Filter, weil
+          sie ihn auslösen.
+        */}
+        {pending && (
+          <p className="flex items-center gap-2 text-sm text-ink-3">
+            <Loader2 className="size-3.5 animate-spin" />
+            wird sortiert …
+          </p>
+        )}
 
         {active.map((key) => {
           const value = params.get(key)!;

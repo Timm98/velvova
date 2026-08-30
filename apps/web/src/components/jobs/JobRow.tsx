@@ -53,7 +53,7 @@ function CompanyMark({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className="grid size-9 shrink-0 place-items-center rounded-(--radius-sm) border border-line bg-inset font-mono text-xs font-semibold text-ink-2"
+      className="grid size-10 shrink-0 place-items-center rounded-(--radius-pill) bg-soft text-xs font-semibold text-ink-2"
     >
       {initials || <Building2 className="size-4" strokeWidth={1.7} />}
     </span>
@@ -74,11 +74,17 @@ export function JobRow({
       href={href}
       scroll={false}
       aria-current={selected ? "true" : undefined}
+      /*
+       * Weiche Zeilen statt Karten mit Kante.
+       *
+       * Der ausgewählte Job trägt die Lavendelfläche — kein linker
+       * Balken, kein Rahmen. Ein 2-Pixel-Streifen links ist die Form,
+       * die Tabellenwerkzeuge benutzen, und sie macht aus einer Liste
+       * ein Gitter.
+       */
       className={cn(
-        "relative block border-l-2 px-4 py-4 transition-colors duration-(--duration-fast)",
-        selected
-          ? "border-l-accent bg-inset"
-          : "border-l-transparent hover:bg-inset/50",
+        "relative block rounded-(--radius-job) px-4 py-4 transition-colors duration-(--duration-fast)",
+        selected ? "bg-lavender" : "hover:bg-soft",
       )}
     >
       <div className="flex items-start gap-3">

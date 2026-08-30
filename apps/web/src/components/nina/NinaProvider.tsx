@@ -44,9 +44,23 @@ export interface NinaReadiness {
   reason: string;
 }
 
-interface NinaContextValue {
-  open: boolean;
+/** Ändert sich nie. Deshalb rendert niemand deswegen neu. */
+interface NinaActions {
   setOpen: (open: boolean) => void;
+  send: (text: string, options?: { fromVoice?: boolean }) => Promise<void>;
+  reset: () => void;
+  loadConversation: (id: string) => Promise<void>;
+  hydrate: (
+    conversationId: string | null,
+    messages: { id: string; role: "user" | "assistant"; content: string }[],
+  ) => void;
+  setScope: (scope: NinaScopeValue) => void;
+  agreeToSeeJobs: () => void;
+}
+
+/** Ändert sich oft — beim Streamen bei jedem Zeichen. */
+interface NinaState {
+  open: boolean;
   messages: NinaMessage[];
   busy: boolean;
   error: string | null;
@@ -72,40 +86,61 @@ interface NinaContextValue {
    * genau das soll nicht passieren.
    */
   offeringJobs: boolean;
-  /** Ausdrückliche Zustimmung, Stellen zu sehen. */
-  agreeToSeeJobs: () => void;
-  send: (text: string, options?: { fromVoice?: boolean }) => Promise<void>;
-  reset: () => void;
-  loadConversation: (id: string) => Promise<void>;
-  /**
-   * Einen serverseitig geladenen Verlauf übernehmen.
-   *
-   * Für Seiten, die den Verlauf ohnehin schon rendern — sie sollen ihn
-   * nicht ein zweites Mal über das Netz holen. Überschreibt nichts,
-   * wenn schon ein Gespräch läuft: sonst würde ein `router.refresh()`
-   * mitten in einer Antwort den Verlauf zurücksetzen.
-   */
-  hydrate: (
-    conversationId: string | null,
-    messages: { id: string; role: "user" | "assistant"; content: string }[],
-  ) => void;
   /** Von der Seite gesetzt, damit Nina weiß, worüber gesprochen wird. */
-  setScope: (scope: NinaScopeValue) => void;
   scope: NinaScopeValue;
 }
 
-const NinaContext = createContext<NinaContextValue | null>(null);
+type NinaContextValue = NinaActions & NinaState;
 
+/**
+ * Zwei Kontexte, nicht einer.
+ *
+ * Der Grund ist das spürbarste Leistungsproblem des Produkts gewesen:
+ * bei einem einzigen Kontext rendert JEDER Verbraucher neu, sobald sich
+ * irgendetwas ändert — und beim Streamen ändert sich `messages`
+ * buchstäblich bei jedem Zeichen. Der Header, die Navigation, die
+ * Jobliste, alles unter dem Provider lief also mehrmals pro Sekunde neu
+ * durch, nur weil Nina einen Buchstaben geschrieben hat.
+ *
+ * Deshalb getrennt:
+ *
+ *   `NinaActionsContext`  Funktionen und `setOpen`. Der Wert ändert
+ *                         sich nie — alle Funktionen sind über
+ *                         `useCallback` stabil. Wer nur handelt (der
+ *                         Header, die Suchleiste, `NinaScope`), rendert
+ *                         beim Streamen gar nicht neu.
+ *
+ *   `NinaStateContext`    Verlauf, Zustand, Reife. Ändert sich oft —
+ *                         aber nur der Drawer und die Gesprächsseite
+ *                         lesen ihn.
+ */
+const NinaActionsContext = createContext<NinaActions | null>(null);
+const NinaStateContext = createContext<NinaState | null>(null);
+
+function fehlenderProvider(): never {
+  throw new Error(
+    "useNina außerhalb des NinaProvider. Der Provider gehört ins Layout der " +
+      "authentifizierten Seiten — nicht in eine einzelne Seite, sonst geht das " +
+      "Gespräch beim Seitenwechsel verloren.",
+  );
+}
+
+/**
+ * Nur die Handlungen.
+ *
+ * Für alles, was Nina auslöst, ohne ihren Verlauf zu zeigen. Diese
+ * Bauteile rendern beim Streamen nicht mit.
+ */
+export function useNinaActions(): NinaActions {
+  return useContext(NinaActionsContext) ?? fehlenderProvider();
+}
+
+/** Zustand und Handlungen. Für den Drawer und die Gesprächsseite. */
 export function useNina(): NinaContextValue {
-  const value = useContext(NinaContext);
-  if (!value) {
-    throw new Error(
-      "useNina außerhalb des NinaProvider. Der Provider gehört ins Layout der " +
-        "authentifizierten Seiten — nicht in eine einzelne Seite, sonst geht das " +
-        "Gespräch beim Seitenwechsel verloren.",
-    );
-  }
-  return value;
+  const actions = useContext(NinaActionsContext);
+  const state = useContext(NinaStateContext);
+  if (!actions || !state) fehlenderProvider();
+  return { ...state, ...actions };
 }
 
 export function NinaProvider({
@@ -184,7 +219,19 @@ export function NinaProvider({
    */
   const nachgeladen = useRef(false);
   useEffect(() => {
+    /*
+     * Erst laden, wenn jemand hinsieht.
+     *
+     * Vorher lief diese Anfrage bei jedem Seitenaufbau — auch auf
+     * `/app/jobs`, wo der Verlauf niemanden interessiert, und auf
+     * `/app/nina`, wo die Seite ihn ohnehin serverseitig mitbringt. Sie
+     * war also fast immer überflüssig und hing beim Navigieren als
+     * abgebrochene Anfrage im Netzwerkprotokoll.
+     *
+     * Jetzt: nur wenn der Drawer geöffnet wird und noch nichts da ist.
+     */
     if (nachgeladen.current || !initialConversationId) return;
+    if (!open || messages.length > 0) return;
     nachgeladen.current = true;
 
     /*
@@ -201,23 +248,20 @@ export function NinaProvider({
      * überschreibt nichts, wenn schon etwas da ist.
      */
     /*
-     * Beim Verlassen der Seite sauber abbrechen.
+     * Kein eigener Abbruch — weder beim Aufräumen noch beim Verlassen.
      *
-     * Ohne das bleibt beim Neuladen eine Anfrage im Flug, die der Browser
-     * abschneidet. Safari meldet das als Seitenfehler — nicht als
-     * gefangene Ausnahme, sondern in der Konsole, sichtbar für jeden, der
-     * hinschaut. Ein sauberer Abbruch vor dem Entladen erzeugt gar keinen
-     * Fehler, statt einen zu verstecken.
+     * Der Versuch, beim `pagehide` sauber abzubrechen, hat den Fehler
+     * erzeugt, den er verhindern sollte: Safari meldet einen selbst
+     * ausgelösten `abort()` als Seitenfehler („due to access control
+     * checks"), während eine vom Browser beim Entladen gekappte Anfrage
+     * gar nichts meldet.
+     *
+     * Der Browser räumt beim Verlassen ohnehin auf. Das `catch` unten
+     * fängt den Rest.
      */
-    const steuerung = new AbortController();
-    const beiVerlassen = () => steuerung.abort();
-    window.addEventListener("pagehide", beiVerlassen);
-
     void (async () => {
       try {
-        const antwort = await fetch(`/api/nina/conversations/${initialConversationId}`, {
-          signal: steuerung.signal,
-        });
+        const antwort = await fetch(`/api/nina/conversations/${initialConversationId}`);
         if (!antwort.ok) return;
         const daten = (await antwort.json()) as {
           messages: { id: string; role: string; content: string }[];
@@ -239,21 +283,7 @@ export function NinaProvider({
       }
     })();
 
-    /*
-     * Beim Aufräumen NICHT abbrechen.
-     *
-     * React ruft den Effekt in der Entwicklung doppelt auf: einbinden,
-     * aufräumen, wieder einbinden. Ein `abort()` im Aufräumen killt
-     * damit die einzige Anfrage — der Wächter oben verhindert ja, dass
-     * eine zweite startet. Safari meldete das als „cancelled“, und der
-     * Verlauf kam nie an.
-     *
-     * Abgebrochen wird nur, wenn die Seite wirklich verlassen wird.
-     */
-    return () => {
-      window.removeEventListener("pagehide", beiVerlassen);
-    };
-  }, [initialConversationId]);
+  }, [initialConversationId, open, messages.length]);
 
   const agreeToSeeJobs = useCallback(() => {
     zustimmung.current = true;
@@ -487,10 +517,22 @@ export function NinaProvider({
     setJobs([]);
   }, []);
 
-  const wert = useMemo<NinaContextValue>(
+  /*
+   * Die Handlungen sind stabil — deshalb der leere Abhängigkeitsblock.
+   *
+   * Alle sieben Funktionen kommen aus `useCallback` und behalten ihre
+   * Identität, solange ihre eigenen Abhängigkeiten stehen. `send` hängt
+   * an `busy`, `conversationId`, `pathname` und dem Bereich; das sind
+   * seltene Änderungen, keine je Zeichen.
+   */
+  const handlungen = useMemo<NinaActions>(
+    () => ({ setOpen, send, reset, loadConversation, hydrate, setScope, agreeToSeeJobs }),
+    [send, reset, loadConversation, hydrate, setScope, agreeToSeeJobs],
+  );
+
+  const zustand = useMemo<NinaState>(
     () => ({
       open,
-      setOpen,
       messages,
       busy,
       error,
@@ -503,12 +545,6 @@ export function NinaProvider({
       jobs,
       progressGroups,
       offeringJobs,
-      agreeToSeeJobs,
-      send,
-      reset,
-      loadConversation,
-      hydrate,
-      setScope,
       scope,
     }),
     [
@@ -525,15 +561,13 @@ export function NinaProvider({
       jobs,
       progressGroups,
       offeringJobs,
-      agreeToSeeJobs,
-      send,
-      reset,
-      loadConversation,
-      hydrate,
-      setScope,
       scope,
     ],
   );
 
-  return <NinaContext.Provider value={wert}>{children}</NinaContext.Provider>;
+  return (
+    <NinaActionsContext.Provider value={handlungen}>
+      <NinaStateContext.Provider value={zustand}>{children}</NinaStateContext.Provider>
+    </NinaActionsContext.Provider>
+  );
 }

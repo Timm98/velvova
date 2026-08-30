@@ -108,9 +108,22 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
   private readonly endpoint: string;
   private readonly fetchImpl: typeof fetch;
 
-  constructor(options: { endpoint?: string; fetchImpl?: typeof fetch } = {}) {
+  /*
+   * Die Wartezeit zwischen zwei Versuchen ist einstellbar.
+   *
+   * Nicht aus Flexibilität, sondern weil eine fest verdrahtete Pause
+   * jeden Test, der den Fehlerpfad prüft, um zehn Sekunden verlängert —
+   * und ein Test, der zehn Sekunden braucht, wird irgendwann
+   * übersprungen. Im Betrieb bleibt der Vorgabewert.
+   */
+  private readonly backoffMs: number;
+
+  constructor(
+    options: { endpoint?: string; fetchImpl?: typeof fetch; backoffMs?: number } = {},
+  ) {
     this.endpoint = options.endpoint ?? ENDPOINT;
     this.fetchImpl = options.fetchImpl ?? fetch;
+    this.backoffMs = options.backoffMs ?? 1500;
   }
 
   /**
@@ -146,22 +159,57 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
     let url: string | null = this.endpoint;
     let page = 0;
 
-    // Höchstens fünf Seiten je Lauf. Eine Obergrenze im Code, nicht nur
-    // im Aufrufer: sonst wird aus einer freundlichen Abfrage bei einem
-    // Fehler in der Schleife unbemerkt ein Massenabruf.
-    while (url && collected.length < limit && page < 5) {
-      const response: Response = await this.fetchImpl(url, {
-        signal: options.signal,
-        headers: {
-          Accept: "application/json",
-          "User-Agent": "PaycheckJobConnector/1.0 (+kandidatenseitige Stellensuche)",
-        },
-      });
+    /*
+     * Höchstens 25 Seiten je Lauf.
+     *
+     * Eine Obergrenze im Code, nicht nur im Aufrufer: sonst wird aus
+     * einer freundlichen Abfrage bei einem Fehler in der Schleife
+     * unbemerkt ein Massenabruf.
+     *
+     * Vorher standen hier fünf Seiten — was nie zum Tragen kam, weil
+     * `collected.length < limit` mit dem Vorgabewert 100 schon nach
+     * Seite eins abbrach. Arbeitnow liefert 175 Einträge je Seite; die
+     * Schleife holte also genau eine Seite und schnitt sie auf 100.
+     */
+    while (url && collected.length < limit && page < 25) {
+      /*
+       * Wiederholung mit wachsendem Abstand bei 429 und 5xx.
+       *
+       * Eine Quelle, die uns umsonst beliefert, darf uns bremsen. Ohne
+       * diese Schleife bricht der ganze Lauf beim ersten „zu viele
+       * Anfragen“ ab — und dann steht in der Datenbank, was zufällig
+       * vorher hineinkam.
+       *
+       * Ein 4xx, das kein 429 ist, wird NICHT wiederholt: es liegt an
+       * uns, nicht an der Last, und dreimal dieselbe falsche Anfrage zu
+       * stellen macht sie nicht richtiger.
+       */
+      let response: Response | null = null;
+      for (let versuch = 0; versuch < 4; versuch += 1) {
+        response = await this.fetchImpl(url, {
+          signal: options.signal,
+          headers: {
+            Accept: "application/json",
+            "User-Agent": "PaycheckJobConnector/1.0 (+kandidatenseitige Stellensuche)",
+          },
+        });
+        if (response.ok) break;
 
-      if (!response.ok) {
+        const wiederholbar = response.status === 429 || response.status >= 500;
+        if (!wiederholbar || versuch === 3) break;
+
+        // Die Quelle darf sagen, wie lange sie Ruhe braucht.
+        const angesagt = Number(response.headers.get("retry-after"));
+        const warten = Number.isFinite(angesagt) && angesagt > 0
+          ? Math.min(angesagt * 1000, 30_000)
+          : this.backoffMs * 2 ** versuch;
+        await new Promise((r) => setTimeout(r, warten));
+      }
+
+      if (!response || !response.ok) {
         throw new Error(
-          `Arbeitnow antwortete mit ${response.status}. Es werden keine Stellen übernommen — ` +
-            `lieber keine als halbe Daten.`,
+          `Arbeitnow antwortete mit ${response?.status ?? "keiner Antwort"}. Es werden keine ` +
+            `Stellen übernommen — lieber keine als halbe Daten.`,
         );
       }
 
@@ -169,6 +217,12 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
       collected.push(...body.data);
       url = body.links?.next ?? null;
       page += 1;
+
+      // Zwischen zwei Seiten kurz Luft holen. Eine Quelle, die uns
+      // umsonst beliefert, soll das nicht bereuen.
+      if (url && collected.length < limit) {
+        await new Promise((r) => setTimeout(r, 250));
+      }
     }
 
     const since = options.since?.getTime();

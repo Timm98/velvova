@@ -75,19 +75,39 @@ export function JobSplitView({
   if (rows.length === 0) return <>{emptyState}</>;
 
   return (
-    <div className="grid overflow-hidden rounded-(--radius-lg) border border-line bg-raised lg:h-[calc(100dvh-11rem)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+    /*
+     * Keine Außenumrandung, keine gemeinsame weiße Karte.
+     *
+     * Vorher lagen Liste und Detail in einem Rechteck mit 1-Pixel-Rand
+     * — die klassische Datenbankoberfläche. Jetzt sind es zwei Flächen
+     * nebeneinander, getrennt durch Abstand statt durch eine Linie: die
+     * Liste liegt auf dem Seitengrund, das Detail auf einer eigenen
+     * hellen Fläche.
+     *
+     * 40/60 statt 26rem fest: die Vorgabe verlangt, dass das Detail
+     * mehr Raum bekommt als die Liste.
+     */
+    <div className="grid gap-4 lg:h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)]">
       {/* ── Liste ──────────────────────────────────────────── */}
       <div
         ref={listRef}
         className={cn(
-          "min-w-0 border-line lg:overflow-y-auto lg:border-r",
+          // `min-w-0` ist hier keine Feinheit: eine Rasterspalte hat
+          // standardmäßig `min-width: auto` und wächst mit ihrem Inhalt.
+          // Ein langer Jobtitel schob die Liste auf 881 Pixel in einem
+          // 390 Pixel breiten Fenster — die ganze Seite scrollte seitlich.
+          "min-w-0 lg:overflow-y-auto lg:pr-1",
           explicitSelection && "hidden lg:block",
         )}
       >
         <h2 className="sr-only">Gefundene Stellen</h2>
-        <ul className="divide-y divide-line">
+        {/* `min-w-0` auf Liste UND Eintrag: ein Rasterelement hat
+              standardmäßig `min-width: auto` und wächst mit seinem
+              Inhalt. Ein langer Jobtitel schob die Liste auf 881 Pixel
+              in einem 390 Pixel breiten Fenster. */}
+        <ul className="grid min-w-0 gap-1">
           {rows.map((row) => (
-            <li key={row.id} data-job-id={row.id}>
+            <li key={row.id} data-job-id={row.id} className="min-w-0">
               <JobRow job={row} selected={row.id === selectedId} href={hrefFor(row.id)} />
             </li>
           ))}
@@ -99,7 +119,7 @@ export function JobSplitView({
         {selectedId ? (
           <>
             <h2 className="sr-only">Ausgewählte Stelle</h2>
-            <div className="sticky top-0 z-10 border-b border-line bg-raised/90 px-4 py-2.5 backdrop-blur lg:hidden">
+            <div className="sticky top-0 z-10 bg-page/90 px-4 py-2.5 backdrop-blur lg:hidden">
               <button
                 type="button"
                 onClick={() => router.push(backHref(), { scroll: false })}

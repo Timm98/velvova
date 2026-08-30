@@ -208,3 +208,78 @@ export function ApplyVisual() {
     </div>
   );
 }
+
+/**
+ * Aus einer Erfahrung werden mehrere Richtungen.
+ *
+ * Das Beispiel aus der Vorgabe, als Fächer statt als Liste: links, was
+ * jemand mitbringt, rechts, wohin das führen kann. Die Linien dazwischen
+ * sind der Punkt — eine Aufzählung würde dieselben Wörter zeigen und die
+ * Beziehung verschweigen.
+ *
+ * Alles SVG und CSS. Kein Bild, keine erfundenen Menschen.
+ */
+export function RoleFanVisual() {
+  const mitbringen = [
+    "Erfahrung im Kundenservice",
+    "Prozesse organisiert",
+    "Neue Mitarbeitende eingearbeitet",
+  ];
+  const führenZu = [
+    { rolle: "Customer Success", art: "naheliegend" },
+    { rolle: "Implementation", art: "angrenzend" },
+    { rolle: "Operations", art: "angrenzend" },
+    { rolle: "Onboarding", art: "ungewöhnlich" },
+    { rolle: "Projektkoordination", art: "ungewöhnlich" },
+  ];
+
+  return (
+    <div aria-hidden className="relative w-full max-w-[560px]">
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+        <ul className="grid gap-2.5">
+          {mitbringen.map((m) => (
+            <li
+              key={m}
+              className="rounded-(--radius-md) bg-soft px-4 py-3 text-sm leading-snug text-ink-2"
+            >
+              {m}
+            </li>
+          ))}
+        </ul>
+
+        {/* Der Fächer. Drei Linien, die sich auf fünf Ziele öffnen. */}
+        <svg
+          viewBox="0 0 48 200"
+          className="hidden h-[200px] w-12 sm:block"
+          fill="none"
+          preserveAspectRatio="none"
+        >
+          {[26, 63, 100, 137, 174].map((y) => (
+            <path
+              key={y}
+              d={`M0 100 C 24 100, 24 ${y}, 48 ${y}`}
+              stroke="var(--primary)"
+              strokeOpacity="0.28"
+              strokeWidth="1.5"
+            />
+          ))}
+        </svg>
+
+        <ul className="grid gap-2">
+          {führenZu.map((r) => (
+            <li
+              key={r.rolle}
+              className={cn(
+                "flex items-center justify-between gap-3 rounded-(--radius-md) px-4 py-2.5 text-sm",
+                r.art === "ungewöhnlich" ? "bg-lavender" : "bg-raised shadow-sm",
+              )}
+            >
+              <span className="font-medium">{r.rolle}</span>
+              <span className="shrink-0 text-xs text-ink-3">{r.art}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}

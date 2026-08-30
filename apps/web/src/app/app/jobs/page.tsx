@@ -17,10 +17,27 @@ import type { JobRowData } from "@/components/jobs/JobRow";
 import { JobFilters } from "./JobFilters";
 import { JobSplitView } from "./JobSplitView";
 import { JobDetailPanel } from "./JobDetailPanel";
-import { NinaSearchBar } from "@/components/jobs/NinaSearchBar";
+import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
+import { abdeckungssatz, ladeQuellenabdeckung } from "@/lib/jobs/coverage";
 
 export const metadata: Metadata = { title: "Matches" };
 export const dynamic = "force-dynamic";
+
+/**
+ * Die Adresse der nächsten Seite.
+ *
+ * Alle bestehenden Parameter bleiben erhalten — wer gefiltert hat, will
+ * beim Blättern nicht von vorn anfangen. `job` fällt weg: die Auswahl
+ * der alten Seite auf die neue mitzunehmen wäre verwirrend.
+ */
+function blätterParams(params: Record<string, string | undefined>, seite: number): string {
+  const next = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v && k !== "seite" && k !== "job") next.set(k, v);
+  }
+  if (seite > 1) next.set("seite", String(seite));
+  return next.toString();
+}
 
 const SORT_KEYS: SortKey[] = [
   "best_overall", "highest_fit", "best_job_quality", "highest_salary",
@@ -50,7 +67,7 @@ export default async function JobsPage({
   const user = await requireUser();
   const { t, brand } = await getPageContext();
   const params = await searchParams;
-  const gate = await loadGate(user.id);
+  const [gate, abdeckung] = await Promise.all([loadGate(user.id), ladeQuellenabdeckung()]);
 
   // Der Riegel: ohne bestätigtes Mindestprofil keine personalisierten
   // Vorschläge. Kein Gimmick, sondern der Unterschied zwischen
@@ -104,13 +121,35 @@ export default async function JobsPage({
 
   const realCount = filtered.length;
 
+  /*
+   * Serverseitige Seitenteilung.
+   *
+   * Vorher ging `filtered` vollständig in die Liste — bei 994 Stellen
+   * waren das 9.291 DOM-Elemente und sechs Sekunden bis zum ersten
+   * Bild. Die Seite „laggte" nicht wegen einer Animation, sondern weil
+   * der Browser tausend Zeilen bauen musste, von denen man zwölf sieht.
+   *
+   * 25 je Seite. Wer mehr will, klickt weiter — und bekommt dann auch
+   * nur 25 mehr. Eine unendliche Liste ist bequemer zu bauen und
+   * teurer zu benutzen.
+   */
+  const PRO_SEITE = 25;
+  const seite = Math.max(1, Number(params.seite ?? 1) || 1);
+  const seitenGesamt = Math.max(1, Math.ceil(filtered.length / PRO_SEITE));
+  const sichtbar = filtered.slice((seite - 1) * PRO_SEITE, seite * PRO_SEITE);
+
   // Die Auswahl steht im Suchparameter, damit sie verlinkbar ist und der
   // Zurück-Knopf das Erwartete tut.
   const requested = params.job;
+  /*
+   * Die Auswahl darf auch außerhalb der aktuellen Seite liegen: ein
+   * verlinkter Job muss sich öffnen lassen, egal auf welcher Seite er
+   * steht. Deshalb wird in `filtered` gesucht, nicht in `sichtbar`.
+   */
   const selected: ScoredJob | null =
-    (requested ? filtered.find((j) => j.jobId === requested) : undefined) ?? filtered[0] ?? null;
+    (requested ? filtered.find((j) => j.jobId === requested) : undefined) ?? sichtbar[0] ?? null;
 
-  const rows: JobRowData[] = filtered.map((j) => ({
+  const rows: JobRowData[] = sichtbar.map((j) => ({
     id: j.jobId,
     title: j.job.title,
     companyName: j.job.companyName,
@@ -198,27 +237,36 @@ export default async function JobsPage({
       {/* Zuerst der Weg in Worten, danach die Filter. Wer eine
           Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
           erst in Felder übersetzen müssen. */}
-      <NinaSearchBar assistantName={brand.assistantName} />
+      <NinaSearchComposer assistantName={brand.assistantName} />
 
       <Suspense fallback={<SkeletonText lines={2} />}>
         <JobFilters resultCount={filtered.length} />
       </Suspense>
 
-      {/* Herkunft, immer sichtbar. */}
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        {realCount > 0 && (
-          <span className="text-ink-2">
-            {realCount} {realCount === 1 ? "Stelle" : "Stellen"}
+      {/*
+        Was wirklich durchsucht wurde — mit gezählten Zahlen.
+        „23 Stellen" sagt nichts darüber, ob 23 von 30 oder 23 von
+        30.000 übrig blieben. Und bei einer aktiven Quelle steht „1
+        Quelle" da, nicht „das ganze Internet".
+      */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+        <p className="text-ink-2">{abdeckungssatz(abdeckung, realCount)}</p>
+        {abdeckung.zuletzt && (
+          <span className="text-ink-3">
+            zuletzt aktualisiert{" "}
+            {new Intl.DateTimeFormat("de-DE", {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            }).format(abdeckung.zuletzt)}
           </span>
         )}
-        <span className="text-ink-3">
-          Alle Anzeigen stammen aus offen angebotenen Quellen und verlinken auf das Original.
-        </span>
         <Link
           href="/app/settings/integrations"
-          className="ml-auto inline-flex min-h-6 items-center text-sm text-accent-text underline underline-offset-[3px]"
+          className="ml-auto text-accent-text underline underline-offset-[3px]"
         >
-          Quellen
+          Quellen ansehen
         </Link>
       </div>
 
@@ -264,6 +312,43 @@ export default async function JobsPage({
           ) : null
         }
       />
+
+      {/*
+       * Blättern statt endlos scrollen.
+       *
+       * Serverseitige Links, keine Client-Zustandsmaschine: jede Seite
+       * hat eine eigene Adresse, der Zurück-Knopf tut das Erwartete,
+       * und ein geteilter Link führt dorthin, wo der Absender war.
+       */}
+      {seitenGesamt > 1 && (
+        <nav
+          aria-label="Seiten"
+          className="flex flex-wrap items-center justify-between gap-3 pt-2"
+        >
+          <p className="text-sm text-ink-2">
+            Seite {seite} von {seitenGesamt} · {sichtbar.length} von{" "}
+            {filtered.length.toLocaleString("de-DE")} Stellen
+          </p>
+          <div className="flex gap-2">
+            {seite > 1 && (
+              <Link
+                href={`/app/jobs?${blätterParams(params, seite - 1)}`}
+                className="inline-flex h-11 items-center rounded-(--radius-pill) bg-soft px-5 text-sm transition-colors hover:bg-soft-hover"
+              >
+                Zurück
+              </Link>
+            )}
+            {seite < seitenGesamt && (
+              <Link
+                href={`/app/jobs?${blätterParams(params, seite + 1)}`}
+                className="inline-flex h-11 items-center rounded-(--radius-pill) bg-accent px-5 text-sm font-medium text-accent-on transition-colors hover:bg-accent-hover"
+              >
+                Weitere {Math.min(PRO_SEITE, filtered.length - seite * PRO_SEITE)} Stellen
+              </Link>
+            )}
+          </div>
+        </nav>
+      )}
 
       {staleCount > 0 && (
         <p className="text-sm leading-relaxed text-ink-3">

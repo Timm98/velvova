@@ -229,7 +229,54 @@ export interface ScoredJob extends RankableJob {
   listingConfidence: ReturnType<typeof computeListingConfidence>;
 }
 
+/*
+ * Kurzzeitgedächtnis für die Bewertung.
+ *
+ * `scoreAllJobs` liest alle Stellen, alle Anforderungen, alle Quellen
+ * und alle Bewertungen und rechnet daraus die Passung — bei 994 Stellen
+ * knapp drei Sekunden. Ein Klick auf „nächste Seite" ist derselbe
+ * Aufruf mit demselben Ergebnis; ihn zweimal zu rechnen ist reine
+ * Wartezeit.
+ *
+ * 45 Sekunden Haltbarkeit. Lange genug, dass Blättern und Filtern
+ * sofort reagieren; kurz genug, dass eine frische Ingestion in
+ * absehbarer Zeit sichtbar wird.
+ *
+ * Bewusst im Prozessspeicher und je Nutzer: die Bewertung enthält
+ * dessen Bedingungen. Ein gemeinsamer Zwischenspeicher wäre ein Weg,
+ * fremde Passungen zu sehen.
+ */
+const BEWERTUNG_TTL_MS = 45_000;
+const bewertungsCache = new Map<string, { at: number; profil: string; jobs: ScoredJob[] }>();
+
+/** Ändert sich das Profil, ist der Zwischenspeicher wertlos. */
+function profilAbdruck(ctx: UserProfileContext): string {
+  return JSON.stringify({
+    e: ctx.evidence.length,
+    // Bestätigte Belege ändern die Passung stärker als ihre Anzahl.
+    b: ctx.evidence.filter((x) => x.userConfirmed).length,
+    c: ctx.constraints,
+    t: [ctx.energisingTasks.length, ctx.drainingTasks.length, ctx.rankedValues.length],
+    p: ctx.profileConfirmed,
+  });
+}
+
 export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Promise<ScoredJob[]> {
+  const abdruck = profilAbdruck(ctx);
+  const gemerkt = bewertungsCache.get(userId);
+  if (gemerkt && gemerkt.profil === abdruck && Date.now() - gemerkt.at < BEWERTUNG_TTL_MS) {
+    return gemerkt.jobs;
+  }
+
+  const ergebnis = await scoreAllJobsUncached(userId, ctx);
+  bewertungsCache.set(userId, { at: Date.now(), profil: abdruck, jobs: ergebnis });
+  return ergebnis;
+}
+
+async function scoreAllJobsUncached(
+  userId: string,
+  ctx: UserProfileContext,
+): Promise<ScoredJob[]> {
   const db = await getDb();
 
   const allJobRows = await db

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useNina, type NinaScopeValue } from "./NinaProvider";
+import { useNinaActions, type NinaScopeValue } from "./NinaProvider";
 
 /**
  * Was diese Seite Nina über sich sagt.
@@ -20,7 +20,7 @@ import { useNina, type NinaScopeValue } from "./NinaProvider";
  * ergibt dort keinen fremden Datensatz, sondern nichts.
  */
 export function NinaScope(scope: NinaScopeValue) {
-  const { setScope } = useNina();
+  const { setScope } = useNinaActions();
   const { jobId, applicationId, documentId } = scope;
 
   useEffect(() => {

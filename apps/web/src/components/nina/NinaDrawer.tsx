@@ -71,8 +71,13 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-0 z-50 flex flex-col",
-        "sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[420px]",
+        "fixed z-50 flex flex-col",
+        // Auf schmalen Geräten ein Bogen von unten — dort ist der Daumen.
+        "inset-x-0 bottom-0",
+        // Auf breiten eine Fläche von rechts über die volle Höhe. Ein
+        // kleines Fenster unten rechts sieht aus wie ein Support-Widget;
+        // Nina ist kein Support-Widget.
+        "sm:inset-y-3 sm:left-auto sm:right-3 sm:w-[440px]",
       )}
       role="dialog"
       aria-modal="false"
@@ -83,11 +88,9 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
         tabIndex={-1}
         className={cn(
           "flex max-h-[85dvh] flex-col overflow-hidden bg-raised shadow-xl outline-none",
-          // Auf schmalen Geräten ein Bogen von unten — dort ist der
-          // Daumen. Oben abgerundet, unten bündig: ein Blatt, das
-          // hochgeschoben wurde, hat unten keine Ecken zu zeigen.
-          "rounded-t-(--radius-sheet) sm:max-h-[min(640px,70dvh)] sm:rounded-(--radius-sheet)",
+          "rounded-t-(--radius-sheet) sm:h-full sm:max-h-none sm:rounded-(--radius-sheet)",
           "motion-safe:animate-[nina-rise_240ms_cubic-bezier(0.16,1,0.3,1)]",
+          "sm:motion-safe:animate-[nina-slide_240ms_cubic-bezier(0.16,1,0.3,1)]",
         )}
       >
         {/* ── Kopf ────────────────────────────────────────────── */}
@@ -280,36 +283,5 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
         </div>
       </div>
     </div>
-  );
-}
-
-/**
- * Der Knopf.
- *
- * Klein, rund, unten rechts — und auf schmalen Geräten über der
- * Navigationsleiste statt darauf. Die Vorgabe verlangt ausdrücklich,
- * dass er nichts verdeckt; deshalb rechnet der Abstand die Höhe der
- * Leiste plus die sichere Fläche des Geräts mit ein.
- */
-export function NinaLauncher({ assistantName }: { assistantName: string }) {
-  const nina = useNina();
-
-  if (nina.open) return null;
-
-  return (
-    <button
-      type="button"
-      onClick={() => nina.setOpen(true)}
-      aria-label={`${assistantName} fragen`}
-      className={cn(
-        "fixed right-4 z-40 flex h-14 items-center gap-2.5 rounded-(--radius-control) bg-raised pl-4 pr-6 shadow-lg",
-        "transition-[transform,box-shadow] duration-(--duration-base) ease-(--ease-out)",
-        "hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0",
-        "bottom-[calc(56px+env(safe-area-inset-bottom)+16px)] md:bottom-6 md:right-6",
-      )}
-    >
-      <NinaSignal size="sm" state="active" />
-      <span className="text-sm font-medium">{assistantName}</span>
-    </button>
   );
 }

@@ -133,25 +133,29 @@
      durchgehend darunter — deshalb wirkte alles eckig, obwohl überall
      ein Radius stand. */
   --radius-xs: 12px;
-  --radius-sm: 16px;
-  --radius-md: 20px;
-  --radius-lg: 26px;
-  --radius-xl: 32px;
-  --radius-2xl: 40px;
-  --radius-full: 999px;
+  --radius-sm: 18px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+  --radius-xl: 44px;
+  --radius-2xl: 56px;
+  --radius-pill: 999px;
+  /* Der alte Name bleibt als Weiterleitung: rund zwanzig Dateien
+     benutzen ihn noch, und ein halb umbenanntes Token ist schlimmer als
+     ein altes. */
+  --radius-full: var(--radius-pill);
 
   /* Benannt nach der Aufgabe, nicht nach der Größe. Die Werte folgen
      der Vorgabe: kleine Controls ab 16, Eingaben ab 20, Textfelder ab
      26, Jobflächen 24–32, Schubladen 32–40, große Flächen 36–56. */
-  --radius-control: 999px;
-  --radius-chip: 999px;
+  --radius-control: var(--radius-pill);
+  --radius-chip: var(--radius-pill);
   --radius-input: 22px;
-  --radius-textarea: 28px;
+  --radius-textarea: var(--radius-md);
   --radius-surface: 28px;
   --radius-job: 28px;
   --radius-sheet: 36px;
-  --radius-modal: 34px;
-  --radius-canvas: 44px;
+  --radius-modal: var(--radius-lg);
+  --radius-canvas: var(--radius-xl);
 
   /* ---- Bewegung ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);

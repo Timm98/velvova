@@ -4,7 +4,12 @@ import { ArrowRight } from "lucide-react";
 import { brand } from "@paycheck/config";
 import { getPageContext } from "@/lib/locale";
 import { CareerSignal } from "@/components/marketing/CareerSignal";
-import { ApplyVisual, HeroVisual, ProfileVisual } from "@/components/marketing/ProductVisual";
+import {
+  ApplyVisual,
+  HeroVisual,
+  ProfileVisual,
+  RoleFanVisual,
+} from "@/components/marketing/ProductVisual";
 
 export const metadata: Metadata = {
   title: "Nicht mehr suchen. Den richtigen nächsten Schritt sehen.",
@@ -53,7 +58,10 @@ export default async function LandingPage() {
         className="sticky top-0 z-30 backdrop-blur-xl"
         style={{
           background: "color-mix(in oklab, var(--ed-canvas) 82%, transparent)",
-          borderBottom: "1px solid var(--ed-hairline)",
+          // Ein sehr weicher Schatten statt einer Linie. Eine
+          // 1-Pixel-Kante quer über den Bildschirm ist das härteste
+          // Element auf einer Seite, die weich wirken soll.
+          boxShadow: "0 1px 24px rgba(9, 11, 18, 0.05)",
         }}
       >
         <div className="mx-auto flex h-16 w-full max-w-[1180px] items-center gap-6 px-5 md:px-8">
@@ -74,13 +82,17 @@ export default async function LandingPage() {
           <nav aria-label="Hauptnavigation" className="ml-auto hidden items-center gap-7 md:flex">
             {([
               [t("landing.navProduct"), "/product"],
-              [t("landing.navHow"), "/how-it-works"],
+              [`So funktioniert ${brand.assistantName}`, "/how-it-works"],
+              ["Jobs", "/pricing"],
               [t("landing.navSecurity"), "/security"],
+              ["Über uns", "/about"],
             ] as const).map(([label, href]) => (
               <Link
                 key={href}
                 href={href}
-                className="text-sm transition-colors"
+                /* 44 Pixel Höhe, auch für ein kurzes Wort wie „Jobs". Ein
+                   Berührungsziel misst sich an der Fläche, nicht am Text. */
+                className="inline-flex min-h-11 items-center rounded-full px-2 text-sm transition-colors"
                 style={{ color: "var(--ed-ink-2)" }}
               >
                 {label}
@@ -113,7 +125,8 @@ export default async function LandingPage() {
             className="ed-glow pointer-events-none absolute inset-x-0 -top-32 h-[560px] motion-safe:animate-[ed-drift_14s_ease-in-out_infinite]"
           />
 
-          <div className="relative mx-auto w-full max-w-[1180px] px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24">
+          <div className="relative mx-auto grid w-full max-w-[1240px] items-center gap-14 px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+            <div>
             {/* Kein Monospace mehr im Vorspann. Eine technische
                 Schrift über einem Satz wie „Deine persönliche
                 Karrierebegleitung" nimmt ihm genau das Menschliche,
@@ -126,7 +139,7 @@ export default async function LandingPage() {
             </p>
 
             <h1
-              className="mt-5 max-w-[15ch] font-display text-[2.5rem] font-semibold leading-[1.04] tracking-[-0.035em] md:text-[4.25rem]"
+              className="mt-5 max-w-[14ch] font-display text-[2.5rem] font-semibold leading-[1.06] tracking-[-0.035em] md:text-[3.5rem]"
               style={{ color: "var(--ed-ink)" }}
             >
               {t("landing.headlineLine1")}
@@ -135,7 +148,7 @@ export default async function LandingPage() {
             </h1>
 
             <p
-              className="mt-7 max-w-[54ch] text-lg leading-relaxed md:text-xl"
+              className="mt-7 max-w-[46ch] text-lg leading-relaxed"
               style={{ color: "var(--ed-ink-2)" }}
             >
               {t("landing.subheadline", { assistant: brand.assistantName })}
@@ -168,9 +181,15 @@ export default async function LandingPage() {
               </Link>
             </div>
 
-            {/* Die Produktansicht direkt unter dem Hero. Überlappende
-                weiche Flächen statt vier Screens nebeneinander. */}
-            <div className="mt-16 md:mt-20">
+            {/* Eine Vertrauenszeile, keine Behauptung über Ergebnisse. */}
+            <p className="mt-8 max-w-[42ch] text-sm leading-relaxed" style={{ color: "var(--ed-ink-3)" }}>
+              Deine Angaben bleiben kontrollierbar. Jede Empfehlung wird begründet.
+            </p>
+            </div>
+
+            {/* Rechts die Produktansicht. Überlappende weiche Flächen
+                statt vier Screens nebeneinander. */}
+            <div className="lg:pl-4">
               <HeroVisual assistantName={brand.assistantName} />
             </div>
           </div>
@@ -180,9 +199,10 @@ export default async function LandingPage() {
         <section
           className="relative"
           >
-          <div className="mx-auto w-full max-w-[1180px] px-5 py-20 md:px-8 md:py-28">
+          <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+            <div>
             <p
-              className="max-w-[20ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[3.25rem]"
+              className="max-w-[20ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]"
               style={{ color: "var(--ed-ink)" }}
             >
               {t("landing.coreLine1")}
@@ -206,6 +226,19 @@ export default async function LandingPage() {
             >
               {t("landing.coreSub")}
             </p>
+            <p
+              className="mt-5 max-w-[46ch] leading-relaxed"
+              style={{ color: "var(--ed-ink-3)" }}
+            >
+              {t("landing.learnsBody")}
+            </p>
+            </div>
+
+            {/* Das Profil-Visual gehört hierher, nicht in eine eigene
+                Sektion: es zeigt genau das, wovon der Absatz spricht. */}
+            <div className="justify-self-center lg:justify-self-end">
+              <ProfileVisual />
+            </div>
           </div>
         </section>
 
@@ -245,88 +278,38 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        {/* ══ Drei Unterschiede ═════════════════════════════════ */}
-        <section
-          aria-labelledby="unterschiede"
-          >
-          <div className="mx-auto w-full max-w-[1180px] px-5 py-20 md:px-8 md:py-28">
-            <h2 id="unterschiede" className="sr-only">
-              Was {brand.name} anders macht
-            </h2>
-
-            {/* Getrennt durch Linien und Typografie, nicht durch Kästen.
-                Drei Karten nebeneinander wären genau die Wand aus
-                Rechtecken, die hier nicht hingehört. */}
-            <div className="grid gap-y-14 md:grid-cols-3 md:gap-x-14">
-              {[
-                {
-                  label: t("landing.diffUnderstand"),
-                  text: t("landing.diffUnderstandBody", { assistant: brand.assistantName }),
-                  farbe: "var(--ed-violet)",
-                },
-                {
-                  label: t("landing.diffCheck"),
-                  text: t("landing.diffCheckBody"),
-                  farbe: "var(--ed-ice)",
-                },
-                {
-                  label: t("landing.diffAct"),
-                  text: t("landing.diffActBody", { assistant: brand.assistantName }),
-                  farbe: "var(--ed-mint)",
-                },
-              ].map(({ label, text, farbe }) => (
-                <div key={label} className="grid gap-4">
-                  <span
-                    aria-hidden
-                    className="block h-px w-full"
-                    style={{ background: farbe }}
-                  />
-                  <p
-                    className="font-mono text-2xs uppercase tracking-[0.18em]"
-                    style={{ color: "var(--ed-ink-3)" }}
-                  >
-                    {label}
-                  </p>
-                  <p
-                    className="max-w-[34ch] font-display text-xl font-medium leading-snug tracking-[-0.02em] md:text-[1.5rem]"
-                    style={{ color: "var(--ed-ink)" }}
-                  >
-                    {text}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ══ Was Nina über dich lernt ══════════════════════════ */}
-        {/*
-          Zwei Abschnitte mit je einem Visual, gespiegelt angeordnet.
-          Kein Raster aus gleichen Karten: der Rhythmus trennt sie, nicht
-          eine Linie und nicht ein Kasten.
-        */}
-        <section aria-labelledby="lernt">
-          <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-5 py-20 md:grid-cols-2 md:px-8 md:py-28">
+        {/* ══ Unerwartete Möglichkeiten ═════════════════════════ */}
+        <section aria-labelledby="unerwartet">
+          <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-5 py-20 md:px-8 md:py-28 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div>
               <p className="text-sm font-medium" style={{ color: "var(--ed-violet-text)" }}>
-                {t("landing.learnsEyebrow", { assistant: brand.assistantName })}
+                Unerwartete Möglichkeiten
               </p>
               <h2
-                id="lernt"
-                className="mt-4 max-w-[16ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]"
+                id="unerwartet"
+                className="mt-4 max-w-[18ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]"
                 style={{ color: "var(--ed-ink)" }}
               >
-                {t("landing.learnsTitle")}
+                Auch Jobs, nach denen du selbst nie gesucht hättest.
               </h2>
               <p
                 className="mt-6 max-w-[46ch] text-lg leading-relaxed"
                 style={{ color: "var(--ed-ink-2)" }}
               >
-                {t("landing.learnsBody")}
+                Wer im Kundenservice Prozesse geordnet und neue Kolleginnen eingearbeitet hat,
+                sucht meistens wieder Kundenservice. Dabei passen dieselben Fähigkeiten oft auf
+                Rollen, deren Namen man gar nicht kennt.
+              </p>
+              <p
+                className="mt-5 max-w-[46ch] leading-relaxed"
+                style={{ color: "var(--ed-ink-3)" }}
+              >
+                Zu jedem ungewöhnlichen Vorschlag steht, worauf er beruht, was anders wäre, was
+                fehlt — und wie du ihn klein ausprobieren kannst.
               </p>
             </div>
-            <div className="justify-self-center md:justify-self-end">
-              <ProfileVisual />
+            <div className="justify-self-center lg:justify-self-end">
+              <RoleFanVisual />
             </div>
           </div>
         </section>
@@ -438,7 +421,7 @@ export default async function LandingPage() {
         </section>
       </main>
 
-      <footer style={{ borderTop: "1px solid var(--ed-hairline)" }}>
+      <footer>
         <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-x-7 gap-y-3 px-5 py-10 text-sm md:px-8">
           <span style={{ color: "var(--ed-ink-3)" }}>
             {brand.name} — {brand.tagline.de}

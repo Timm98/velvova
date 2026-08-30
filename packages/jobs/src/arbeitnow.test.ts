@@ -72,13 +72,17 @@ describe("ArbeitnowAdapter", () => {
     created_at: 1_756_000_000,
   };
 
-  function adapterWith(body: unknown, status = 200): ArbeitnowAdapter {
+  function adapterWith(
+    body: unknown,
+    status = 200,
+    optionen: { backoffMs?: number } = {},
+  ): ArbeitnowAdapter {
     const fetchImpl = (async () =>
       new Response(JSON.stringify(body), {
         status,
         headers: { "content-type": "application/json" },
       })) as unknown as typeof fetch;
-    return new ArbeitnowAdapter({ fetchImpl });
+    return new ArbeitnowAdapter({ fetchImpl, ...optionen });
   }
 
   it("normalisiert eine Anzeige ohne etwas zu erfinden", async () => {
@@ -100,7 +104,9 @@ describe("ArbeitnowAdapter", () => {
   });
 
   it("übernimmt bei einem Fehler der Quelle nichts", async () => {
-    await expect(adapterWith({}, 503).fetchListings()).rejects.toThrow(/503/);
+    // 503 ist wiederholbar — der Adapter versucht es viermal. Ohne
+    // verkürzte Wartezeit dauerte dieser Test über zehn Sekunden.
+    await expect(adapterWith({}, 503, { backoffMs: 1 }).fetchListings()).rejects.toThrow(/503/);
   });
 
   it("gilt immer als eingerichtet, weil kein Schlüssel nötig ist", () => {
