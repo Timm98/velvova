@@ -29,7 +29,20 @@ export function middleware(request: NextRequest): NextResponse {
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
     `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
-    `media-src 'self'`,
+    /*
+     * `blob:` ist für Ninas Stimme nötig.
+     *
+     * Der Ton kommt als Strom von der eigenen Route, wird im Browser zu
+     * einem Blob und über einen Objekt-URL abgespielt. Ohne `blob:`
+     * lehnt der Browser ihn ab — mit „Media load rejected by URL safety
+     * check", und zwar lautlos: die Anfrage gelingt, die Daten sind
+     * korrekt, es passiert nur nichts.
+     *
+     * `blob:` ist hier ungefährlich: ein Blob-URL entsteht
+     * ausschließlich im eigenen Dokument aus Daten, die schon durch
+     * `connect-src` mussten. Er lädt nichts von außen nach.
+     */
+    `media-src 'self' blob:`,
     `object-src 'none'`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,

@@ -4,9 +4,27 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Maximize2, MessageSquarePlus, Minus, ScrollText, X } from "lucide-react";
 import { cn } from "@/lib/cn";
+import type { NinaVisualState } from "@/components/nina/NinaProvider";
+
+/**
+ * Vom Produktzustand zum Bild.
+ *
+ * Das Signal kennt vier Zustände, der Provider sechs. `success` und
+ * `error` sind beruhigt — ein Signal, das bei einem Fehler zappelt,
+ * macht aus einer Panne ein Ereignis.
+ */
+const SIGNAL_ZUSTAND: Record<NinaVisualState, "idle" | "active" | "thinking" | "speaking"> = {
+  idle: "active",
+  thinking: "thinking",
+  talking: "speaking",
+  listening: "active",
+  success: "active",
+  error: "idle",
+};
 import { NinaSignal } from "./NinaSignal";
 import { Composer } from "./Composer";
 import { JobSuggestions } from "./JobSuggestions";
+import { SpeakButton } from "./SpeakButton";
 import { useNina } from "./NinaProvider";
 
 /**
@@ -95,7 +113,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
       >
         {/* ── Kopf ────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 px-5 pb-3 pt-4">
-          <NinaSignal size="sm" state={nina.busy ? "thinking" : "active"} />
+          <NinaSignal size="sm" state={SIGNAL_ZUSTAND[nina.visualState]} />
           <div className="grid min-w-0 flex-1">
             <span className="font-display text-[15px] font-semibold tracking-[-0.01em]">
               {assistantName}
@@ -254,6 +272,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
                         />
                       )}
                     </p>
+                    {!m.streaming && <SpeakButton messageId={m.id} className="-ml-3" />}
                   </div>
                 )}
               </li>
@@ -277,6 +296,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
           <Composer
             onSend={(text, options) => void nina.send(text, options)}
             busy={nina.busy}
+            onListeningChange={nina.setListening}
             placeholder={`${assistantName} fragen …`}
             className="shadow-none ring-0"
           />

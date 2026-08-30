@@ -7,10 +7,28 @@ import { confirmEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
 import { NinaSignal } from "@/components/nina/NinaSignal";
+import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { useNina } from "@/components/nina/NinaProvider";
 import { cn } from "@/lib/cn";
+import type { NinaVisualState } from "@/components/nina/NinaProvider";
+
+/**
+ * Vom Produktzustand zum Bild.
+ *
+ * Das Signal kennt vier Zustände, der Provider sechs. `success` und
+ * `error` sind beruhigt — ein Signal, das bei einem Fehler zappelt,
+ * macht aus einer Panne ein Ereignis.
+ */
+const SIGNAL_ZUSTAND: Record<NinaVisualState, "idle" | "active" | "thinking" | "speaking"> = {
+  idle: "active",
+  thinking: "thinking",
+  talking: "speaking",
+  listening: "active",
+  success: "active",
+  error: "idle",
+};
 
 /**
  * Das Karrieregespräch.
@@ -150,7 +168,9 @@ export function InterviewRoom({
       <div className="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-[820px] flex-col">
         {/* ── Kopf ────────────────────────────────────────────── */}
         <header className="flex flex-wrap items-center gap-x-4 gap-y-3 pb-10">
-          <NinaSignal size="lg" state={nina.busy ? "thinking" : "active"} />
+          {/* Das Signal folgt dem echten Zustand, nicht einer
+              Zeitschaltung: zuhören, denken, sprechen, still. */}
+          <NinaSignal size="lg" state={SIGNAL_ZUSTAND[nina.visualState]} />
 
           <div className="grid min-w-0 flex-1 gap-0.5">
             <h1 className="font-display text-xl font-semibold tracking-[-0.02em]">
@@ -232,6 +252,9 @@ export function InterviewRoom({
                         />
                       )}
                     </p>
+                  )}
+                  {m.role === "assistant" && !m.streaming && (
+                    <SpeakButton messageId={m.id} className="mt-2 -ml-3" />
                   )}
                 </li>
               );
@@ -338,6 +361,7 @@ export function InterviewRoom({
           <Composer
             onSend={(text, options) => void nina.send(text, options)}
             busy={nina.busy}
+            onListeningChange={nina.setListening}
             placeholder={labels.yourAnswer}
             autoFocus
           />

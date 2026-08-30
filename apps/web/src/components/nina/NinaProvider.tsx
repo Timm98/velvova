@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import type { JobVorschlag } from "./JobSuggestions";
+import { useNinaVoice } from "./useNinaVoice";
 
 /**
  * Ninas Zustand für die ganze Anwendung.
@@ -44,6 +45,22 @@ export interface NinaReadiness {
   reason: string;
 }
 
+/**
+ * Was Nina gerade tut — für das Auge.
+ *
+ * Ausdrücklich eine ABLEITUNG aus dem, was ohnehin schon bekannt ist,
+ * und keine zweite Zustandsmaschine daneben. Zwei Maschinen für
+ * denselben Sachverhalt laufen irgendwann auseinander, und dann zeigt
+ * die Oberfläche etwas anderes an als das, was passiert.
+ */
+export type NinaVisualState =
+  | "idle"
+  | "thinking"
+  | "talking"
+  | "listening"
+  | "success"
+  | "error";
+
 /** Ändert sich nie. Deshalb rendert niemand deswegen neu. */
 interface NinaActions {
   setOpen: (open: boolean) => void;
@@ -56,6 +73,12 @@ interface NinaActions {
   ) => void;
   setScope: (scope: NinaScopeValue) => void;
   agreeToSeeJobs: () => void;
+  /** Eine Antwort mit Ninas Stimme vorlesen. */
+  speak: (messageId: string) => void;
+  /** Sofort verstummen: Ton, Anfrage und Warteschlange. */
+  stopSpeaking: () => void;
+  /** Meldet, dass das Mikrofon zuhört. Aus dem Composer. */
+  setListening: (listening: boolean) => void;
 }
 
 /** Ändert sich oft — beim Streamen bei jedem Zeichen. */
@@ -88,6 +111,14 @@ interface NinaState {
   offeringJobs: boolean;
   /** Von der Seite gesetzt, damit Nina weiß, worüber gesprochen wird. */
   scope: NinaScopeValue;
+  /** Spricht Nina gerade? Welche Nachricht? */
+  speakingMessageId: string | null;
+  isSpeaking: boolean;
+  isListening: boolean;
+  /** Nur die Sprachausgabe betreffend. Der Textchat läuft weiter. */
+  voiceError: string | null;
+  /** Die Ableitung für das Nina-Bild. */
+  visualState: NinaVisualState;
 }
 
 type NinaContextValue = NinaActions & NinaState;
@@ -146,9 +177,19 @@ export function useNina(): NinaContextValue {
 export function NinaProvider({
   children,
   initialConversationId,
+  autoSpeak = false,
 }: {
   children: React.ReactNode;
   initialConversationId?: string | null;
+  /**
+   * Ninas Antworten von selbst vorlesen.
+   *
+   * Voreinstellung AUS. Ton, der ungefragt losgeht, ist im Büro, im Zug
+   * und im Wartezimmer ein Problem — und wer einen Job sucht, sitzt oft
+   * an genau solchen Orten. Wer es will, schaltet es in den
+   * Einstellungen ein.
+   */
+  autoSpeak?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -165,6 +206,8 @@ export function NinaProvider({
   const [stageStatus, setStageStatus] = useState<string | null>(null);
   const [readiness, setReadiness] = useState<NinaReadiness | null>(null);
   const [jobs, setJobs] = useState<JobVorschlag[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const stimme = useNinaVoice();
   const [progressGroups, setProgressGroups] = useState<
     { key: string; label: string; done: boolean }[] | null
   >(null);
@@ -290,6 +333,21 @@ export function NinaProvider({
     setOfferingJobs(false);
   }, []);
 
+  /*
+   * Das Mikrofon unterbricht Nina.
+   *
+   * Wer zu sprechen anfängt, während Nina spricht, will nicht warten,
+   * bis sie ausgeredet hat — er will, dass sie aufhört. Das ist der
+   * Unterschied zwischen einem Gespräch und einer Ansage.
+   */
+  const setListening = useCallback(
+    (listening: boolean) => {
+      setIsListening(listening);
+      if (listening) stimme.stoppen();
+    },
+    [stimme],
+  );
+
   const send = useCallback(
     async (text: string, options: { fromVoice?: boolean } = {}) => {
       const inhalt = text.trim();
@@ -297,6 +355,9 @@ export function NinaProvider({
 
       setError(null);
       setBusy(true);
+      // Eine neue Frage unterbricht die laufende Antwort. Sonst redet
+      // Nina über die eigene nächste Antwort hinweg.
+      stimme.stoppen();
 
       const eigeneId = `lokal-${Date.now()}`;
       const antwortId = `${eigeneId}-antwort`;
@@ -453,6 +514,18 @@ export function NinaProvider({
               continue;
             }
 
+            if (ereignis.type === "saved" && autoSpeak && typeof ereignis.messageId === "string") {
+              /*
+               * Erst wenn die Nachricht gespeichert ist.
+               *
+               * Vorher gibt es keine Kennung, und die Sprachroute liest
+               * ausschließlich gespeicherte Nachrichten vor — sie nimmt
+               * keinen Text vom Client entgegen.
+               */
+              void stimme.vorlesen(ereignis.messageId as string);
+              continue;
+            }
+
             if (ereignis.type === "done") {
               setMessages((m) =>
                 m.map((n) => (n.id === antwortId ? { ...n, streaming: false } : n)),
@@ -472,7 +545,7 @@ export function NinaProvider({
         abbruch.current = null;
       }
     },
-    [busy, conversationId, pathname, scope.jobId, scope.applicationId],
+    [busy, conversationId, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak],
   );
 
   const loadConversation = useCallback(async (id: string) => {
@@ -526,8 +599,29 @@ export function NinaProvider({
    * seltene Änderungen, keine je Zeichen.
    */
   const handlungen = useMemo<NinaActions>(
-    () => ({ setOpen, send, reset, loadConversation, hydrate, setScope, agreeToSeeJobs }),
-    [send, reset, loadConversation, hydrate, setScope, agreeToSeeJobs],
+    () => ({
+      setOpen,
+      send,
+      reset,
+      loadConversation,
+      hydrate,
+      setScope,
+      agreeToSeeJobs,
+      speak: stimme.vorlesen,
+      stopSpeaking: stimme.stoppen,
+      setListening,
+    }),
+    [
+      send,
+      reset,
+      loadConversation,
+      hydrate,
+      setScope,
+      agreeToSeeJobs,
+      stimme.vorlesen,
+      stimme.stoppen,
+      setListening,
+    ],
   );
 
   const zustand = useMemo<NinaState>(
@@ -546,6 +640,25 @@ export function NinaProvider({
       progressGroups,
       offeringJobs,
       scope,
+      speakingMessageId: stimme.aktiveNachricht,
+      isSpeaking: stimme.zustand === "spricht",
+      isListening,
+      voiceError: stimme.fehler,
+      /*
+       * Die Reihenfolge ist die Rangfolge.
+       *
+       * Zuhören schlägt Sprechen (das Mikrofon hat Nina eben
+       * unterbrochen), Sprechen schlägt Denken (der Ton läuft bereits),
+       * Denken schlägt Stille. Keine Zeitschaltung, keine Zufälle —
+       * jeder Zustand hat eine technische Ursache.
+       */
+      visualState: (isListening
+        ? "listening"
+        : stimme.zustand === "spricht"
+          ? "talking"
+          : busy
+            ? "thinking"
+            : "idle") as NinaVisualState,
     }),
     [
       open,
@@ -562,6 +675,10 @@ export function NinaProvider({
       progressGroups,
       offeringJobs,
       scope,
+      stimme.aktiveNachricht,
+      stimme.zustand,
+      stimme.fehler,
+      isListening,
     ],
   );
 

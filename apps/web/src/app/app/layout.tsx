@@ -33,7 +33,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { t, brand } = await getPageContext();
   const db = await getDb();
 
-  const [unreadRows, workflow] = await Promise.all([
+  const [unreadRows, workflow, einstellungen] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx
         .select({ value: count() })
@@ -47,10 +47,24 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         ),
     ),
     ensureWorkflowState(user.id),
+    // Die Voreinstellung fürs automatische Vorlesen. Sie gehört zur
+    // Person, nicht zum Gerät — deshalb aus der Datenbank.
+    withUser(db, user.id, async (tx) =>
+      (
+        await tx
+          .select({ voiceAutoplay: schema.userSettings.voiceAutoplay })
+          .from(schema.userSettings)
+          .where(eq(schema.userSettings.userId, user.id))
+          .limit(1)
+      )[0],
+    ),
   ]);
 
   return (
-    <NinaProvider initialConversationId={workflow.activeConversationId}>
+    <NinaProvider
+      initialConversationId={workflow.activeConversationId}
+      autoSpeak={einstellungen?.voiceAutoplay ?? false}
+    >
       <AppShell
         brandName={brand.name}
         assistantName={brand.assistantName}

@@ -90,6 +90,22 @@ const RuntimeSchema = z.object({
   voice: z.object({
     provider: z.enum(["none", "browser", "openai", "anthropic"]).default("browser"),
     storeTranscripts: z.coerce.boolean().default(false),
+    /*
+     * Ninas Stimme.
+     *
+     * Getrennt vom `provider` oben: der beschreibt, wie ZUGEHÖRT wird
+     * (Diktat im Browser, Realtime bei OpenAI). Hier steht, wie Nina
+     * SPRICHT. Beides zusammenzulegen hieße, dass ein fehlendes
+     * Mikrofon ihre Stimme abschaltet.
+     *
+     * Der Schlüssel ist ausschließlich serverseitig lesbar — kein
+     * NEXT_PUBLIC_-Präfix, und er verlässt diese Konfiguration nie.
+     */
+    tts: z.object({
+      apiKey: z.string().optional(),
+      voiceId: z.string().optional(),
+      modelId: z.string().default("eleven_turbo_v2_5"),
+    }),
   }),
 
   mail: z.object({
@@ -176,6 +192,11 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
     voice: {
       provider: env.VOICE_PROVIDER ?? "browser",
       storeTranscripts: env.VOICE_STORE_TRANSCRIPTS === "true",
+      tts: {
+        apiKey: env.ELEVENLABS_API_KEY,
+        voiceId: env.ELEVENLABS_VOICE_ID,
+        modelId: env.ELEVENLABS_MODEL_ID ?? "eleven_turbo_v2_5",
+      },
     },
     mail: { provider: env.MAIL_PROVIDER ?? "draft", smtpUrl: env.SMTP_URL, from: env.MAIL_FROM },
     storage: {

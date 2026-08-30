@@ -67,6 +67,7 @@ export function Composer({
   onSkip,
   skipLabel,
   className,
+  onListeningChange,
 }: {
   onSend: (text: string, options?: { fromVoice?: boolean }) => void;
   busy: boolean;
@@ -76,6 +77,8 @@ export function Composer({
   onSkip?: () => void;
   skipLabel?: string;
   className?: string;
+  /** Meldet, ob das Mikrofon gerade zuhört. */
+  onListeningChange?: (listening: boolean) => void;
 }) {
   const [text, setText] = useState("");
   const [hört, setHört] = useState(false);
@@ -94,6 +97,16 @@ export function Composer({
     if (autoFocus) feld.current?.focus();
   }, [autoFocus]);
 
+  // Beim Verlassen der Komponente aufräumen. Ohne das bleibt Nina im
+  // Zustand „hört zu", während niemand mehr spricht.
+  useEffect(
+    () => () => {
+      erkennung.current?.stop();
+      erkennung.current = null;
+    },
+    [],
+  );
+
   // Das Feld wächst mit dem Text, bis zu einer Grenze. Ein Feld, das
   // unbegrenzt wächst, schiebt irgendwann den Senden-Knopf aus dem Bild.
   useEffect(() => {
@@ -106,6 +119,15 @@ export function Composer({
   function diktatStarten() {
     const neue = erkennungBauen(locale);
     if (!neue) return;
+
+    /*
+     * Das Mikrofon meldet sich beim Provider an.
+     *
+     * Zwei Dinge hängen daran: Nina verstummt sofort (wer zu sprechen
+     * anfängt, will nicht warten, bis sie ausgeredet hat), und das
+     * Nina-Bild wechselt auf „zuhören".
+     */
+    onListeningChange?.(true);
 
     festerTeil.current = "";
     setTranskript("");
@@ -133,6 +155,7 @@ export function Composer({
     erkennung.current?.stop();
     erkennung.current = null;
     setHört(false);
+    onListeningChange?.(false);
   }
 
   function übernehmen() {
