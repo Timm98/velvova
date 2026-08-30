@@ -1,3 +1,5 @@
+import { claimStatus, isArtifactSendable, type Claim } from "@paycheck/domain";
+import { computeConfidence, weightedScore } from "@paycheck/matching";
 import { checkOutput, detectInjection, minimiseForExternalProvider, wrapUntrusted } from "../guardrails.ts";
 import { buildNinaSystemPrompt } from "../prompts/nina.ts";
 import { EVAL_CASES, EXPECTATION_LABEL, type EvalCase } from "./cases.ts";
@@ -17,6 +19,60 @@ interface CaseResult {
   title: string;
   passed: boolean;
   checks: { name: string; passed: boolean; detail: string }[];
+}
+
+const JETZT = new Date("2026-08-30T12:00:00Z");
+
+/**
+ * Eine Stelle für die Gegenproben.
+ *
+ * `vollstaendig: false` lässt genau die Felder weg, die eine echte
+ * Anzeige gern weglässt — Gehalt, Vertragsart, Arbeitszeit. Es ist kein
+ * konstruierter Extremfall, sondern der Normalfall.
+ */
+function demoJob({ vollstaendig }: { vollstaendig: boolean }) {
+  return {
+    id: "eval-job",
+    title: "Fachkraft Lagerlogistik",
+    companyId: "eval-company",
+    companyName: "Beispiel GmbH",
+    location: "Hamburg",
+    country: "DE",
+    workModel: "on_site" as const,
+    remotePercent: vollstaendig ? 0 : null,
+    salary: {
+      min: vollstaendig ? 38000 : null,
+      max: vollstaendig ? 44000 : null,
+      currency: "EUR",
+      period: "year" as const,
+      disclosed: vollstaendig,
+    },
+    contractType: vollstaendig ? ("permanent" as const) : null,
+    weeklyHours: vollstaendig ? 40 : null,
+    shiftWork: null,
+    travelPercent: null,
+    experienceLevel: vollstaendig ? ("mid" as const) : null,
+    industry: null,
+    languageRequirements: {},
+    requiredLicenses: [],
+    workPermitRequired: null,
+    coreTasks: vollstaendig ? ["Waren annehmen", "Kommissionieren"] : [],
+    description: "Eine Beschreibung.",
+    benefits: [],
+    applyMethod: "unknown" as const,
+    applyTarget: null,
+    publishedAt: new Date("2026-08-25T00:00:00Z"),
+    expiresAt: null,
+    fetchedAt: JETZT,
+    lastLinkCheckAt: null,
+    lastLinkCheckOk: vollstaendig ? true : null,
+    originalUrl: "https://example.invalid/1",
+    sourceId: "eval-source",
+    contentHash: "eval",
+    isDemo: false,
+    latitude: null,
+    longitude: null,
+  };
 }
 
 function evaluateCase(c: EvalCase): CaseResult {
@@ -117,18 +173,96 @@ function evaluateCase(c: EvalCase): CaseResult {
         break;
       }
 
-      case "claims_have_evidence":
-      case "unknown_is_neutral":
-      case "uncertainty_shown":
+      case "claims_have_evidence": {
+        // Gegenprobe statt Zusicherung: eine Aussage ohne Beleg muss den
+        // Versand blockieren. Die frühere Fassung hat hier `passed: true`
+        // gesetzt und auf Tests in anderen Paketen verwiesen — das ist
+        // ein Fall, der immer besteht, und ein Fall, der immer besteht,
+        // prüft nichts.
+        const ohneBeleg: Claim = {
+          id: "eval:0", artifactId: "eval", text: c.input,
+          evidenceIds: [], status: claimStatus([], new Set()), note: "",
+        };
+        const urteil = isArtifactSendable([ohneBeleg]);
+        checks.push({
+          name: EXPECTATION_LABEL[kind],
+          passed: !urteil.ok && urteil.blockers.length === 1,
+          detail: urteil.ok
+            ? "Eine unbelegte Aussage wurde freigegeben — der Riegel greift nicht"
+            : "Unbelegte Aussage sperrt die Freigabe",
+        });
+        break;
+      }
+
+      case "unknown_is_neutral": {
+        // Ein fehlender Faktor darf das Ergebnis nicht wie eine Null
+        // nach unten ziehen, sondern sein Gewicht auf die übrigen
+        // verteilen. Zwei Rechnungen, ein Unterschied: einmal fehlt der
+        // Faktor, einmal ist er schlecht.
+        const vorhanden = weightedScore([
+          { key: "a", label: "A", raw: 0.8, weight: 0.5, explanation: "" },
+          { key: "b", label: "B", raw: 0.8, weight: 0.5, explanation: "" },
+        ]);
+        const fehlt = weightedScore([
+          { key: "a", label: "A", raw: 0.8, weight: 0.5, explanation: "" },
+          { key: "b", label: "B", raw: null, weight: 0.5, explanation: "" },
+        ]);
+        const schlecht = weightedScore([
+          { key: "a", label: "A", raw: 0.8, weight: 0.5, explanation: "" },
+          { key: "b", label: "B", raw: 0, weight: 0.5, explanation: "" },
+        ]);
+        // Ein null-Ergebnis wäre selbst ein Fehler: bei mindestens einem
+        // vorhandenen Faktor muss eine Zahl herauskommen.
+        const [v, f, sch] = [vorhanden.value, fehlt.value, schlecht.value];
+        const neutral =
+          v !== null && f !== null && sch !== null &&
+          Math.abs(f - v) < 0.001 && sch < f;
+        checks.push({
+          name: EXPECTATION_LABEL[kind],
+          passed: neutral,
+          detail: neutral
+            ? `Fehlend ${f!.toFixed(2)} = vorhanden ${v!.toFixed(2)}, schlecht ${sch!.toFixed(2)} darunter`
+            : "Ein Schweigen wird nicht neutral behandelt",
+        });
+        break;
+      }
+
+      case "uncertainty_shown": {
+        // Eine dünne Datenlage muss die Zuversicht senken UND den Grund
+        // benennen. Eine gesenkte Zahl ohne Begründung ist für die
+        // Person wertlos.
+        const gut = computeConfidence({
+          job: demoJob({ vollstaendig: true }),
+          fitCoverage: 0.9, profileCoverage: 0.9, requirementCount: 6,
+          reviews: [], now: JETZT,
+        });
+        const duenn = computeConfidence({
+          job: demoJob({ vollstaendig: false }),
+          fitCoverage: 0.3, profileCoverage: 0.3, requirementCount: 0,
+          reviews: [], now: JETZT,
+        });
+        const gezeigt = duenn.score < gut.score && duenn.reducedBy.length > 0;
+        checks.push({
+          name: EXPECTATION_LABEL[kind],
+          passed: gezeigt,
+          detail: gezeigt
+            ? `${duenn.score.toFixed(2)} statt ${gut.score.toFixed(2)}, mit ${duenn.reducedBy.length} genannten Gründen`
+            : "Dünne Datenlage senkt die Zuversicht nicht oder nennt keinen Grund",
+        });
+        break;
+      }
+
       case "explainable":
       case "consent_respected": {
-        // Diese Erwartungen sind in den Unit-Tests der jeweiligen Pakete
-        // geprüft (matching, documents, db). Hier wird nur festgehalten,
-        // dass der Fall abgedeckt IST - nicht, dass er hier läuft.
+        // Diese beiden hängen an der Oberfläche beziehungsweise an der
+        // Datenbank und sind dort geprüft: die Begründung je Wert in
+        // packages/matching, der Widerruf in packages/db. Hier wird
+        // festgehalten, dass der Fall abgedeckt IST — nicht, dass er
+        // hier läuft.
         checks.push({
           name: EXPECTATION_LABEL[kind],
           passed: true,
-          detail: "Abgedeckt durch Unit-Tests in packages/matching bzw. packages/documents",
+          detail: "Abgedeckt in packages/matching bzw. packages/db",
         });
         break;
       }

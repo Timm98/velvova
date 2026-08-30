@@ -261,6 +261,9 @@ importers:
       '@paycheck/domain':
         specifier: workspace:*
         version: link:../domain
+      '@paycheck/matching':
+        specifier: workspace:*
+        version: link:../matching
       openai:
         specifier: ^7.8.0
         version: 7.8.0(ws@8.21.3)(zod@4.5.2)

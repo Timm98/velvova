@@ -23,6 +23,25 @@ describe("AI-Eval-Dataset", () => {
     expect(failed).toBe(0);
   });
 
+  it("umfasst mindestens 50 Fälle", () => {
+    // §21.4. Die Zahl ist kein Selbstzweck: unter fünfzig Fällen fehlen
+    // genau die Situationen, in denen dieses Produkt gebraucht wird —
+    // Lücke im Lebenslauf, Krankheit, ausländischer Abschluss,
+    // Kündigung. Der glatte Fall braucht keinen Schutz.
+    expect(EVAL_CASES.length).toBeGreaterThanOrEqual(50);
+  });
+
+  it("führt keinen Fall doppelt", () => {
+    const keys = EVAL_CASES.map((c) => c.key);
+    expect(keys.length).toBe(new Set(keys).size);
+  });
+
+  it("prüft jeden Fall gegen mindestens eine Erwartung", () => {
+    for (const c of EVAL_CASES) {
+      expect(c.expectations.length, `Ohne Erwartung: ${c.key}`).toBeGreaterThan(0);
+    }
+  });
+
   it("beschreibt zu jedem Fall das konkrete Risiko", () => {
     for (const c of EVAL_CASES) {
       expect(c.risk.length, `Risiko fehlt: ${c.key}`).toBeGreaterThan(40);
