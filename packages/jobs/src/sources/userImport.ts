@@ -10,7 +10,11 @@ import { normalise, type JobSourceAdapter, type RawListing } from "../adapter.ts
  * nachgeladen.
  */
 export class UserTextImportAdapter implements JobSourceAdapter {
-  readonly key = "user_text";
+  // Muss dem Eintrag im Quellenverzeichnis entsprechen. Hiess einmal
+  // "user_text" — die Policy Engine fand dazu nichts und entschied
+  // "unbekannte Quelle", also fail-closed mit der falschen Begründung.
+  // Gefunden hat das die verallgemeinerte Driftprüfung.
+  readonly key = "user_private_import";
   readonly displayName = "Von dir eingefuegt";
   readonly kind = "user_text" as const;
   readonly licenseStatus = "user_provided" as const;

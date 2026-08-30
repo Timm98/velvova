@@ -4,6 +4,7 @@ import { UserTextImportAdapter } from "./sources/userImport.ts";
 import { ArbeitnowAdapter } from "./sources/arbeitnow.ts";
 import { AdzunaAdapter } from "./sources/adzuna.ts";
 import { JoobleAdapter } from "./sources/jooble.ts";
+import { AtsBoardAdapter, type BoardKind, type BoardRegistration } from "./sources/ats/board.ts";
 
 /**
  * Welche Quellen aktiv sind.
@@ -23,8 +24,34 @@ export interface SourceStatus {
   real: boolean;
 }
 
+/**
+ * Registrierte Arbeitgeberboards, prozessweit gehalten.
+ *
+ * Der Adapter fragt sie synchron ab (`isConfigured()`), der
+ * Datenbankzugriff ist asynchron. Deshalb wird die Liste vom Abrufpfad
+ * gesetzt, statt sie im Adapter zu laden. Ist sie leer, fragt der
+ * Adapter niemanden — und das ist die richtige Antwort, nicht ein
+ * Versehen: wir kennen dann keinen Arbeitgeber, dessen Stellen wir
+ * abrufen dürfen.
+ */
+const boardRegistrations = new Map<BoardKind, BoardRegistration[]>();
+
+export function setBoardRegistrations(board: BoardKind, rows: BoardRegistration[]): void {
+  boardRegistrations.set(board, rows);
+}
+
+export const ATS_BOARDS: BoardKind[] = ["greenhouse", "lever", "ashby", "smartrecruiters"];
+
 function allAdapters(): JobSourceAdapter[] {
-  return [new ArbeitnowAdapter(), new AdzunaAdapter(), new JoobleAdapter(), new UserTextImportAdapter()];
+  return [
+    new ArbeitnowAdapter(),
+    new AdzunaAdapter(),
+    new JoobleAdapter(),
+    ...ATS_BOARDS.map(
+      (board) => new AtsBoardAdapter(board, () => boardRegistrations.get(board) ?? []),
+    ),
+    new UserTextImportAdapter(),
+  ];
 }
 
 export function adapterByKey(key: string): JobSourceAdapter | undefined {

@@ -178,6 +178,49 @@ export const sourceCitations = pgTable("source_citations", {
  * der niedrigsten Zahl. Eine direkte Karriereseite steht vor einem
  * Portal, weil dort weniger zwischen Person und Unternehmen steht.
  */
+/**
+ * Registrierte Arbeitgeberboards.
+ *
+ * Der Board-Bezeichner steht hier und nirgends sonst. Das ist der
+ * Unterschied zwischen „wir rufen die veröffentlichten Stellen eines
+ * Arbeitgebers ab, der uns dazu berechtigt hat" und „wir probieren
+ * Firmennamen durch, bis ein Endpunkt antwortet".
+ *
+ * Die Endpunkte der ATS-Anbieter antworten nämlich jedem. Sie
+ * unterscheiden nicht, ob jemand berechtigt ist — das muss diese
+ * Tabelle tun.
+ *
+ * `verifiedAt` ist Pflicht: eine Autorisierung ohne Zeitpunkt lässt
+ * sich später nicht nachvollziehen, und genau das wird bei einer
+ * Beschwerde verlangt.
+ */
+export const employerBoards = pgTable("employer_boards", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** greenhouse | lever | ashby | smartrecruiters */
+  board: text("board").notNull(),
+  /** Der Bezeichner beim ATS-Anbieter. */
+  boardToken: text("board_token").notNull(),
+  employerName: text("employer_name").notNull(),
+  /** Die verifizierte Domäne des Arbeitgebers. */
+  employerDomain: text("employer_domain"),
+  /** verified_domain | written_authorization | own_employer_account */
+  authorizationKind: text("authorization_kind").notNull(),
+  /** Worauf sich die Berechtigung stützt: Domäne, Vertragsnummer, Vorgang. */
+  authorizationReference: text("authorization_reference").notNull(),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }).notNull(),
+  /** Abschalten ohne Löschen: die Nachvollziehbarkeit bleibt erhalten. */
+  enabled: boolean("enabled").notNull().default(true),
+  disabledReason: text("disabled_reason"),
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  lastSyncOk: boolean("last_sync_ok"),
+  lastSyncError: text("last_sync_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("employer_boards_unique").on(t.board, t.boardToken),
+  index("employer_boards_enabled_idx").on(t.enabled),
+]);
+
 export const jobSourceLinks = pgTable("job_source_links", {
   id: uuid("id").primaryKey().defaultRandom(),
   jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),

@@ -78,6 +78,122 @@ Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach schriftlic
 
 Attribution ist vertraglich zwingend. Geschätzte Gehälter werden als Schätzung geführt und nie als offengelegte Angabe dargestellt.
 
+## Greenhouse (Arbeitgeberboards)
+
+`ats_greenhouse`
+
+| | |
+|---|---|
+| **Zweck** | ats |
+| **Rechts-/Vertragsgrundlage** | `employer_authorization` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **freigegeben** |
+| **Erlaubte Vorgänge** | `Search`, `FetchDetails`, `Cache`, `PublicDisplay`, `Summarize`, `Embed`, `Rank` |
+| **Erlaubte Felder** | `title`, `company_name`, `location_text`, `source_url`, `published_at`, `provider`, `description_text`, `description_summary`, `employment_type`, `workplace_type`, `salary_min`, `salary_max`, `salary_currency`, `salary_period`, `requirements`, `benefits`, `apply_url`, `valid_through` |
+| **Volltext** | erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Direkt vom Arbeitgeber veröffentlicht. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | DE, AT, CH, EU |
+| **Bedingungen** | — |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | ja |
+| **Entfernungsweg** | — |
+
+Veröffentlichte Stellen eines einzelnen Arbeitgeberboards. Kein globaler Feed: der Board-Bezeichner kommt aus einer Registrierung mit verifizierter Domäne, nie aus einer Suche.
+
+## Lever (Arbeitgeberboards)
+
+`ats_lever`
+
+| | |
+|---|---|
+| **Zweck** | ats |
+| **Rechts-/Vertragsgrundlage** | `employer_authorization` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **freigegeben** |
+| **Erlaubte Vorgänge** | `Search`, `FetchDetails`, `Cache`, `PublicDisplay`, `Summarize`, `Embed`, `Rank` |
+| **Erlaubte Felder** | `title`, `company_name`, `location_text`, `source_url`, `published_at`, `provider`, `description_text`, `description_summary`, `employment_type`, `workplace_type`, `salary_min`, `salary_max`, `salary_currency`, `salary_period`, `requirements`, `benefits`, `apply_url`, `valid_through` |
+| **Volltext** | erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Direkt vom Arbeitgeber veröffentlicht. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | DE, AT, CH, EU |
+| **Bedingungen** | — |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | ja |
+| **Entfernungsweg** | — |
+
+Public Postings je Site. Der Endpunkt antwortet jedem, der den Firmennamen errät — deshalb kommt er hier ausschliesslich aus einer hinterlegten Autorisierung.
+
+## Ashby (Arbeitgeberboards)
+
+`ats_ashby`
+
+| | |
+|---|---|
+| **Zweck** | ats |
+| **Rechts-/Vertragsgrundlage** | `employer_authorization` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **freigegeben** |
+| **Erlaubte Vorgänge** | `Search`, `FetchDetails`, `Cache`, `PublicDisplay`, `Summarize`, `Embed`, `Rank` |
+| **Erlaubte Felder** | `title`, `company_name`, `location_text`, `source_url`, `published_at`, `provider`, `description_text`, `description_summary`, `employment_type`, `workplace_type`, `salary_min`, `salary_max`, `salary_currency`, `salary_period`, `requirements`, `benefits`, `apply_url`, `valid_through` |
+| **Volltext** | erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Direkt vom Arbeitgeber veröffentlicht. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | DE, AT, CH, EU |
+| **Bedingungen** | — |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | ja |
+| **Entfernungsweg** | — |
+
+Veröffentlichte Stellen je Job Board. Gehaltsangaben nur, soweit der Arbeitgeber sie selbst veröffentlicht hat.
+
+## SmartRecruiters (Arbeitgeberboards)
+
+`ats_smartrecruiters`
+
+| | |
+|---|---|
+| **Zweck** | ats |
+| **Rechts-/Vertragsgrundlage** | `employer_authorization` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **freigegeben** |
+| **Erlaubte Vorgänge** | `Search`, `FetchDetails`, `Cache`, `PublicDisplay`, `Summarize`, `Embed`, `Rank` |
+| **Erlaubte Felder** | `title`, `company_name`, `location_text`, `source_url`, `published_at`, `provider`, `description_text`, `description_summary`, `employment_type`, `workplace_type`, `salary_min`, `salary_max`, `salary_currency`, `salary_period`, `requirements`, `benefits`, `apply_url`, `valid_through` |
+| **Volltext** | erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Direkt vom Arbeitgeber veröffentlicht. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | DE, AT, CH, EU |
+| **Bedingungen** | — |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | ja |
+| **Entfernungsweg** | — |
+
+Aktive Veröffentlichungen je Unternehmen. Die Listenantwort trägt keinen Volltext; die Beschreibung bleibt leer statt erfunden.
+
 ## Arbeitnow
 
 `arbeitnow`

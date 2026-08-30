@@ -24,6 +24,10 @@ Stand: 2026-08-30
 |---|---|---|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | Jooble Deutschland | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
 | Adzuna Deutschland | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
+| Greenhouse (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Lever (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Ashby (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| SmartRecruiters (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Arbeitnow | `official_api_terms` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Lightcast | `commercial_contract` | nur Verweis | — | — | — | — | — | — | — | — |
 | LinkedIn | `link_only` | nur Verweis | — | — | — | — | — | — | — | — |

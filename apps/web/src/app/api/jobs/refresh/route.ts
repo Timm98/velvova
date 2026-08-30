@@ -3,6 +3,7 @@ import { loadRuntimeConfig } from "@paycheck/config";
 import { adapterByKey, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
 import { currentUser } from "@/lib/auth";
 import { decideForProvider } from "@paycheck/sources";
+import { ATS_BOARDS, loadRegistrations, setBoardRegistrations } from "@paycheck/jobs";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -43,8 +44,21 @@ export async function POST(request: Request) {
    * dieselbe Frage sind einer zu viel; der schwächere gewinnt dann
    * stillschweigend.
    */
+  /*
+   * Die registrierten Arbeitgeberboards laden, bevor die Adapter
+   * gebaut werden.
+   *
+   * Ohne diesen Schritt meldet jeder ATS-Adapter „nicht eingerichtet"
+   * — was formal stimmt, aber die falsche Ursache nennt: nicht die
+   * Zugangsdaten fehlen, sondern die Liste der Arbeitgeber, die uns
+   * berechtigt haben.
+   */
+  for (const board of ATS_BOARDS) {
+    setBoardRegistrations(board, await loadRegistrations(board));
+  }
+
   const adapters = cfg.jobs.sources
-    .filter((key) => key !== "user_text" && key !== "seed")
+    .filter((key) => key !== "user_private_import" && key !== "seed")
     .map((key) => adapterByKey(key))
     .filter((a): a is NonNullable<typeof a> => a !== undefined);
 

@@ -106,11 +106,23 @@ export class CircuitBreaker {
   private openedAt: number | null = null;
   private halfOpen = false;
 
+  // Ebenfalls ohne Parameter-Properties: Node strippt Typen, es
+  // übersetzt sie nicht. `private readonly` im Konstruktor erzeugt
+  // Code und lässt die Datei unter --experimental-strip-types
+  // scheitern — wovon die Skripte hier abhängen.
+  private readonly threshold: number;
+  private readonly cooldownMs: number;
+  private readonly now: () => number;
+
   constructor(
-    private readonly threshold = 3,
-    private readonly cooldownMs = 5 * 60_000,
-    private readonly now: () => number = () => Date.now(),
-  ) {}
+    threshold = 3,
+    cooldownMs = 5 * 60_000,
+    now: () => number = () => Date.now(),
+  ) {
+    this.threshold = threshold;
+    this.cooldownMs = cooldownMs;
+    this.now = now;
+  }
 
   /** Darf gefragt werden? */
   allows(): boolean {

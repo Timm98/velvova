@@ -19,7 +19,7 @@ Drei Dinge machen das wirksam, und alle drei sind leicht zu übersehen:
    dann NULL, und `user_id = NULL` ist niemals wahr. Ein vergessenes `withUser()` führt
    zu einer leeren Liste, nicht zu fremden Daten.
 
-Stand dieser Datei: **33 von 57 Tabellen** mit aktivem RLS, **33 Richtlinien**.
+Stand dieser Datei: **33 von 59 Tabellen** mit aktivem RLS, **33 Richtlinien**.
 
 ## Tabellen mit Row Level Security
 
@@ -65,7 +65,7 @@ Diese Tabellen enthalten keine personenbezogenen Zeilen: Stellenanzeigen, Untern
 Quellen, Nachschlagewerte. Sie sind für alle gleich, und eine Zeilenfilterung hätte
 nichts zu filtern.
 
-`_migrations`, `analytics_events`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `feature_flag_overrides`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_sources`, `jobs`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
+`_migrations`, `analytics_events`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `employer_boards`, `feature_flag_overrides`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_source_links`, `job_sources`, `jobs`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
 
 ## Prüfung auf Lücken
 

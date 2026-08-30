@@ -74,6 +74,6 @@ describe("Quellen", () => {
     const cfg = loadRuntimeConfig({ JOB_SOURCES: "seed" });
     const statuses = sourceStatuses(cfg);
     expect(statuses.find((s) => s.key === "seed")?.active).toBe(true);
-    expect(statuses.find((s) => s.key === "user_text")?.active).toBe(false);
+    expect(statuses.find((s) => s.key === "user_private_import")?.active).toBe(false);
   });
 });
