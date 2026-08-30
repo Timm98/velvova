@@ -42,7 +42,7 @@ export function Toggle({
         type="checkbox"
         name={name}
         defaultChecked={defaultChecked}
-        className="mt-0.5 size-5 shrink-0 accent-[hsl(var(--accent))]"
+        className="mt-0.5 size-5 shrink-0 accent-accent"
       />
       <span className="min-w-0">
         <span className="block text-sm font-medium">{label}</span>
@@ -81,7 +81,7 @@ export function ChoiceGroup({
               name={name}
               value={option.value}
               defaultChecked={defaultValue === option.value}
-              className="mt-0.5 size-4 shrink-0 accent-[hsl(var(--accent))]"
+              className="mt-0.5 size-4 shrink-0 accent-accent"
             />
             <span className="min-w-0">
               <span className="block text-sm font-medium">{option.label}</span>

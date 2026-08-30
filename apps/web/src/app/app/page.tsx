@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bell, Briefcase, Sparkles, Target } from "lucide-react";
+import { ArrowRight, Bell, Briefcase, History, Sparkles, Target } from "lucide-react";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { countSentApplications, listJobsForUser, loadProfileContext } from "@/lib/matching";
 import { loadGate } from "@/lib/gate";
+import { buildContextEnvelope } from "@/lib/nina/context/build-context-envelope";
 import { diagnoseFunnel } from "@/lib/funnel";
 import { Badge, Button, Card, Separator } from "@/components/ui";
 import { ConfidenceMeter, ScoreRing, StatTile } from "@/components/ui/score";
@@ -30,10 +31,14 @@ export default async function DashboardPage() {
   const { t, brand } = await getPageContext();
   const db = await getDb();
 
-  const [ctx, sentCount, gate] = await Promise.all([
+  const [ctx, sentCount, gate, envelope] = await Promise.all([
     loadProfileContext(user.id),
     countSentApplications(user.id),
     loadGate(user.id),
+    // Der gespeicherte Vorgangszustand. Er liegt in der Datenbank, nicht
+    // im Kontextfenster eines Modells — deshalb überlebt er einen
+    // Neustart, einen Gerätewechsel und drei Tage Pause.
+    buildContextEnvelope(user.id),
   ]);
 
   const [applications, reminders] = await Promise.all([
@@ -136,6 +141,17 @@ export default async function DashboardPage() {
             <Sparkles className="size-3" strokeWidth={2} />
             {brand.assistantName}
           </Badge>
+
+          {/* Woran zuletzt gearbeitet wurde. Steht nur da, wenn es
+              tatsächlich ein Ereignis dazu gibt — eine erfundene
+              Fortsetzung wäre schlimmer als gar keine. */}
+          {envelope.lastCompletedAction && (
+            <p className="mt-4 flex items-center gap-2 font-mono text-2xs uppercase tracking-wider text-ink-3">
+              <History aria-hidden className="size-3" strokeWidth={2} />
+              Zuletzt: {envelope.lastCompletedAction}
+            </p>
+          )}
+
           <h2 className="mt-4 max-w-[34ch] text-xl font-semibold md:text-2xl">{next.title}</h2>
           <p className="mt-3 max-w-[var(--measure)] leading-relaxed text-ink-2">{next.body}</p>
           <div className="mt-6">

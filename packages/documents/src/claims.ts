@@ -99,7 +99,7 @@ export function analyseClaims(
       artifactId,
       text: sentence,
       evidenceIds: matches.slice(0, 3).map((m) => m.id),
-      status: strong ? "supported" : "weakened",
+      status: strong ? "supported" : "needs_confirmation",
       note: strong
         ? "Belegt durch eine von dir bestätigte Erfahrung."
         : "Nur teilweise belegt. Prüfe, ob die Formulierung nicht mehr behauptet als der Beleg hergibt.",

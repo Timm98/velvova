@@ -13,7 +13,7 @@ import {
   zodToJsonSchema,
   type ToolName,
 } from "@paycheck/ai";
-import { loadGate } from "@/lib/gate";
+import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 
@@ -76,25 +76,22 @@ export async function POST(request: Request) {
   const { provider, usingRequested, fallbackReason } = await selectProvider();
   const db = await getDb();
 
-  // Kontext: die verdichtete Zusammenfassung plus die letzten Züge.
-  // Der vollständige Verlauf bleibt in der Datenbank.
-  const recent = await withUser(db, user.id, (tx) =>
-    tx
-      .select({
-        role: schema.interviewTurns.role,
-        content: schema.interviewTurns.content,
-      })
-      .from(schema.interviewTurns)
-      .where(eq(schema.interviewTurns.userId, user.id))
-      .orderBy(sql`${schema.interviewTurns.createdAt} desc`)
-      .limit(12),
-  );
+  /*
+   * Der Kontext-Umschlag.
+   *
+   * Die Nutzerkennung stammt aus `requireUser()` — also aus der
+   * Sitzung. Sie wird nicht aus dem Anfragekörper gelesen, und es gibt
+   * kein Feld, über das sie hereinkäme. Ein manipuliertes Gespräch
+   * kann deshalb keine fremden Daten erreichen.
+   */
+  const envelope = await buildContextEnvelope(user.id, {
+    conversationId: parsed.data.sessionId,
+    locale: "de",
+  });
+  const scoped = await buildScopedContext(envelope, { recentTurnLimit: 10 });
 
   const messages = [
-    ...recent
-      .reverse()
-      .filter((t) => t.role === "user" || t.role === "assistant")
-      .map((t) => ({ role: t.role as "user" | "assistant", content: t.content })),
+    ...scoped.recentTurns,
     { role: "user" as const, content: parsed.data.message },
   ];
 
@@ -104,29 +101,13 @@ export async function POST(request: Request) {
     parameters: zodToJsonSchema(ToolSchemas[name]),
   }));
 
-  // Der Prompt kennt den Zustand des Profils. Ohne ihn würde Nina nach
-  // Dingen fragen, die längst bestätigt sind — und Bestätigtes erneut
-  // als Vermutung behandeln.
-  const gate = await loadGate(user.id);
-  const evidence = await withUser(db, user.id, (tx) =>
-    tx
-      .select({
-        statement: schema.evidenceItems.statement,
-        confirmed: schema.evidenceItems.userConfirmed,
-        rejected: schema.evidenceItems.userRejected,
-      })
-      .from(schema.evidenceItems)
-      .where(eq(schema.evidenceItems.userId, user.id))
-      .limit(120),
-  );
-
   const systemPrompt = buildNinaSystemPrompt({
     locale: "de",
-    confirmedFacts: evidence.filter((e) => e.confirmed && !e.rejected).map((e) => e.statement),
-    openHypotheses: evidence.filter((e) => !e.confirmed && !e.rejected).map((e) => e.statement),
-    hardConstraints: [],
-    rejectedStatements: evidence.filter((e) => e.rejected).map((e) => e.statement),
-    currentStage: parsed.data.stage ?? gate.missingStages[0] ?? "experience_episodes",
+    confirmedFacts: scoped.confirmedFacts,
+    openHypotheses: scoped.openHypotheses,
+    hardConstraints: scoped.hardConstraints,
+    rejectedStatements: scoped.rejectedStatements,
+    currentStage: parsed.data.stage ?? envelope.workflowStage,
     externalProviderActive: provider.name !== "mock",
   });
 

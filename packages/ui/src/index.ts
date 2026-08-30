@@ -39,7 +39,7 @@ export function toneForConstraintVerdict(verdict: string): Tone {
 
 export function toneForClaimStatus(status: string): Tone {
   if (status === "supported") return "positive";
-  if (status === "weakened") return "caution";
+  if (status === "needs_confirmation") return "caution";
   return "critical";
 }
 

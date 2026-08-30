@@ -418,7 +418,7 @@ export const de = {
       "Diese Stelle verlangt kein Anschreiben. Eine kurze E-Mail reicht vermutlich.",
     claimSupported: "belegt",
     claimUnsupported: "nicht belegt",
-    claimWeakened: "abgeschwächt",
+    claimNeedsConfirmation: "Beleg bestätigen",
     unsupportedBlocked:
       "Solange eine Aussage keinen Beleg hat, kann das Dokument nicht freigegeben werden. " +
       "Ergänze einen Beleg oder schwäche die Aussage ab.",

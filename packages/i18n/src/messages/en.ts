@@ -409,7 +409,7 @@ export const en: Messages = {
       "This role does not ask for a cover letter. A short email is probably enough.",
     claimSupported: "evidenced",
     claimUnsupported: "not evidenced",
-    claimWeakened: "softened",
+    claimNeedsConfirmation: "needs confirmation",
     unsupportedBlocked:
       "While a claim has no evidence, the document cannot be approved. Add evidence or soften " +
       "the claim.",

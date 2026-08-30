@@ -72,7 +72,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
           generateEmail: t("studio.generateEmail"),
           claimSupported: t("studio.claimSupported"),
           claimUnsupported: t("studio.claimUnsupported"),
-          claimWeakened: t("studio.claimWeakened"),
+          claimNeedsConfirmation: t("studio.claimNeedsConfirmation"),
           unsupportedBlocked: t("studio.unsupportedBlocked"),
           preview: t("studio.preview"),
           recipient: t("studio.recipient"),

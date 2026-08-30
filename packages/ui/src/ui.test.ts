@@ -15,7 +15,7 @@ describe("Zustandstoene", () => {
 
   it("markiert eine unbelegte Aussage als kritisch", () => {
     expect(toneForClaimStatus("unsupported")).toBe("critical");
-    expect(toneForClaimStatus("weakened")).toBe("caution");
+    expect(toneForClaimStatus("needs_confirmation")).toBe("caution");
   });
 });
 

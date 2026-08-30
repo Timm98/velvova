@@ -66,7 +66,7 @@ export const artifactKindEnum = pgEnum("artifact_kind", [
   "cv_ats", "cv_designed", "cover_letter", "application_email",
   "portal_answers", "recruiter_message", "attachment_list", "portfolio_checklist",
 ]);
-export const claimStatusEnum = pgEnum("claim_status", ["supported", "unsupported", "weakened", "user_override"]);
+export const claimStatusEnum = pgEnum("claim_status", ["supported", "unsupported", "needs_confirmation", "user_override"]);
 
 export const consentKindEnum = pgEnum("consent_kind", [
   "career_profile", "document_analysis", "voice_input", "transcript_storage",

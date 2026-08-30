@@ -17,7 +17,7 @@ import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 type Labels = Record<
   | "requirements" | "yourEvidence" | "document" | "checks" | "openPoints"
   | "generateCvAts" | "generateCoverLetter" | "generateEmail"
-  | "claimSupported" | "claimUnsupported" | "claimWeakened" | "unsupportedBlocked"
+  | "claimSupported" | "claimUnsupported" | "claimNeedsConfirmation" | "unsupportedBlocked"
   | "preview" | "recipient" | "subject" | "confirmSend" | "send" | "exportDraft"
   | "demoSendNotice" | "coverLetterNotNeeded",
   string
@@ -255,15 +255,15 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                         tone={
                           c.status === "supported"
                             ? "positive"
-                            : c.status === "weakened"
+                            : c.status === "needs_confirmation"
                               ? "caution"
                               : "critical"
                         }
                       >
                         {c.status === "supported"
                           ? labels.claimSupported
-                          : c.status === "weakened"
-                            ? labels.claimWeakened
+                          : c.status === "needs_confirmation"
+                            ? labels.claimNeedsConfirmation
                             : labels.claimUnsupported}
                       </Badge>
                       <p style={{ fontSize: "var(--text-sm)" }}>

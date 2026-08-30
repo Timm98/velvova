@@ -82,7 +82,7 @@ export const ClaimSchema = z.object({
   /** Der Satz, so wie er im Dokument steht. */
   text: z.string(),
   evidenceIds: z.array(z.string()),
-  status: z.enum(["supported", "unsupported", "weakened", "user_override"]),
+  status: z.enum(["supported", "unsupported", "needs_confirmation", "user_override"]),
   /** Warum der Status so ist - erscheint im Studio als offener Punkt. */
   note: z.string(),
 });
@@ -90,7 +90,7 @@ export type Claim = z.infer<typeof ClaimSchema>;
 
 export function claimStatus(evidenceIds: string[], confirmedIds: ReadonlySet<string>): Claim["status"] {
   if (evidenceIds.length === 0) return "unsupported";
-  return evidenceIds.every((id) => confirmedIds.has(id)) ? "supported" : "weakened";
+  return evidenceIds.every((id) => confirmedIds.has(id)) ? "supported" : "needs_confirmation";
 }
 
 /** Ein Dokument ist erst versandfertig, wenn keine Aussage unbelegt ist. */

@@ -104,5 +104,9 @@ describe("Wiederaufnahme", () => {
     const message = resumeMessage(state, "Nina");
     expect(message).toContain("Zuletzt: Bewerbung begonnen");
     expect(message).toContain("Offen ist:");
+    // Substantive bleiben groß. Der Satz geht ungefiltert an die
+    // Person, und "Offen ist: bewerbung fortsetzen" liest sich wie ein
+    // Fehler — weil es einer ist.
+    expect(message).not.toMatch(/Offen ist: [a-zäöü]/);
   });
 });

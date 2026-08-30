@@ -268,8 +268,12 @@ export function resumeMessage(state: WorkflowState, assistantName: string): stri
   if (!state.lastCompletedAction) {
     return `Lass uns anfangen. ${state.nextRecommendedAction ?? "Wir richten dein Konto ein."}`;
   }
+  // Der erste Buchstabe bleibt, wie er ist. Fast jede dieser Handlungen
+  // beginnt mit einem Substantiv — "Bewerbung fortsetzen", "Profil
+  // bestätigen" — und kleingeschrieben wäre das schlicht falsches
+  // Deutsch, in einem Satz, den die Person als erstes zu lesen bekommt.
   const next = state.nextRecommendedAction
-    ? ` Offen ist: ${state.nextRecommendedAction.charAt(0).toLowerCase()}${state.nextRecommendedAction.slice(1)}.`
+    ? ` Offen ist: ${state.nextRecommendedAction}.`
     : "";
   return `Zuletzt: ${state.lastCompletedAction}.${next} Möchtest du dort weitermachen? — ${assistantName}`;
 }

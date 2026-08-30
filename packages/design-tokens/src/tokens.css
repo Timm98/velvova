@@ -119,6 +119,61 @@
 
   /* Ungefähr 65 bis 75 Zeichen. Längere Zeilen verliert das Auge. */
   --measure: 68ch;
+
+  /* ---- Abstände ----
+     Vierer-Raster. Es fehlte bisher vollständig, und mehrere Seiten
+     haben `var(--space-4)` benutzt — eine Variable, die es nicht gab.
+     Eine ungültige CSS-Deklaration wird stillschweigend verworfen:
+     die Abstände dieser Seiten sind einfach zusammengefallen, ohne
+     Fehlermeldung, ohne dass ein Test es gemerkt hätte. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+
+  /* ---- Übergangsnamen ────────────────────────────────────────
+     Die Umstellung auf Obsidian & Ice hat die Farbvokabel geändert:
+     aus `--accent` wurde `--primary-fill`, aus `--positive` wurde
+     `--success`. Achtzehn Dateien benutzen aber noch die alten Namen
+     in Inline-Stilen.
+
+     Das hier sind reine Weiterleitungen — keine zweiten Werte. Sie
+     zeigen auf dieselben Tokens und wechseln deshalb mit dem Thema
+     mit. Sobald die letzte Datei auf die semantischen Tailwind-Klassen
+     umgestellt ist, fällt dieser Block ersatzlos weg. */
+  --surface-raised: var(--surface-1);
+  --surface-sunken: var(--background-subtle);
+  --border-default: var(--border-subtle);
+  --text-muted: var(--text-tertiary);
+
+  --accent: var(--primary-fill);
+  --accent-text: var(--primary-text);
+  --accent-subtle: var(--primary-soft);
+
+  --assistant: var(--signal-violet);
+  --assistant-text: var(--signal-violet-text);
+  --assistant-subtle: var(--signal-violet-soft);
+  --assistant-border: color-mix(in oklab, var(--signal-violet) 28%, transparent);
+
+  /* Diese drei stehen in den Altdateien fast ausschließlich als
+     `color`. Deshalb zeigen sie auf die Textfassung, nicht auf die
+     Flächenfassung: #d84c70 auf Weiß erreicht 4,04:1 und fällt durch,
+     #a32547 erreicht 7,4:1. Für die vereinzelten Rahmen ist die
+     dunklere Farbe ebenfalls richtig. */
+  --positive: var(--success-text);
+  --positive-subtle: var(--success-soft);
+  --caution: var(--warning-text);
+  --caution-subtle: var(--warning-soft);
+  --critical: var(--danger-text);
+  --critical-subtle: var(--danger-soft);
+
+  --ease: var(--ease-out);
+  --leading-3xl: 1.2;
 }
 
 /* ── Polar: die helle Fassung ─────────────────────────────────── */
