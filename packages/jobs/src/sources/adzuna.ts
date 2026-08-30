@@ -37,7 +37,7 @@ export interface AdzunaOptions {
 }
 
 export class AdzunaAdapter implements JobSourceAdapter {
-  readonly key = "adzuna";
+  readonly key = "adzuna_de";
   readonly displayName = "Adzuna";
   readonly kind = "licensed_api" as const;
   readonly licenseStatus = "licensed" as const;

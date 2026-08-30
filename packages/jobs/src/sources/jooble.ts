@@ -78,7 +78,7 @@ export function parseSalary(raw: string | undefined): {
 }
 
 export class JoobleAdapter implements JobSourceAdapter {
-  readonly key = "jooble";
+  readonly key = "jooble_de";
   readonly displayName = "Jooble";
   readonly kind = "licensed_api" as const;
   readonly licenseStatus = "licensed" as const;
@@ -92,7 +92,9 @@ export class JoobleAdapter implements JobSourceAdapter {
   private readonly location: string;
 
   constructor(options: JoobleOptions = {}) {
-    this.apiKey = options.apiKey ?? process.env.JOOBLE_API_KEY;
+    // Ein Schlüssel je Land. Ein gemeinsamer Schlüssel für mehrere
+    // Länder verletzt die Bedingungen der Quelle.
+    this.apiKey = options.apiKey ?? process.env.JOOBLE_API_KEY_DE;
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.keywords = options.keywords ?? process.env.JOOBLE_KEYWORDS ?? "";
     this.location = options.location ?? process.env.JOOBLE_LOCATION ?? "Deutschland";

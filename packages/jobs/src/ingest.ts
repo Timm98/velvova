@@ -195,11 +195,50 @@ async function writeListing(
   return "inserted";
 }
 
+/**
+ * Die Entscheidung der Policy Engine, wie der Abruf sie braucht.
+ *
+ * Der Ingest kennt die Engine nicht — sie lebt in der Anwendung. Er
+ * bekommt die Entscheidung übergeben und weigert sich, ohne sie zu
+ * arbeiten. So kann kein Aufrufer sie versehentlich überspringen.
+ */
+export interface IngestPolicy {
+  decision: "approved" | "link_only" | "private_import" | "blocked" | "pending_review";
+  allowedOperations: string[];
+  reason: string;
+}
+
 export async function ingestFromAdapter(
   adapter: JobSourceAdapter,
-  options: { limit?: number; since?: Date } = {},
+  options: { limit?: number; since?: Date; policy?: IngestPolicy } = {},
 ): Promise<IngestResult> {
   const startedAt = new Date();
+
+  /*
+   * Ohne Freigabe wird nichts abgerufen.
+   *
+   * Die Prüfung steht VOR dem ersten Netzzugriff, nicht danach. Ein
+   * Abruf, der erst hinterher als unzulässig erkannt wird, hat bereits
+   * stattgefunden — und das ist genau der Fehler, den diese Zeile
+   * verhindert.
+   */
+  if (options.policy) {
+    const { decision, allowedOperations, reason } = options.policy;
+    if (decision !== "approved" || !allowedOperations.includes("Search")) {
+      return {
+        sourceKey: adapter.key,
+        fetched: 0,
+        inserted: 0,
+        updated: 0,
+        unchanged: 0,
+        failed: 0,
+        errors: [`Abruf nicht freigegeben (${decision}): ${reason}`],
+        startedAt,
+        finishedAt: new Date(),
+      };
+    }
+  }
+
   const db = await getDb();
   const sourceId = await upsertSource(db, adapter);
 

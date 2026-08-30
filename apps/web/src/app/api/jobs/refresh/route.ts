@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { loadRuntimeConfig } from "@paycheck/config";
-import { activeAdapters, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
+import { adapterByKey, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
 import { currentUser } from "@/lib/auth";
+import { decideForProvider } from "@/lib/sources/policy-engine";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -32,7 +33,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const adapters = activeAdapters(cfg).filter((a) => a.key !== "user_text");
+  /*
+   * Die Policy Engine ist die einzige Instanz, die über den Abruf
+   * entscheidet.
+   *
+   * Vorher filterte zusätzlich die Registry nach „eingerichtet" — mit
+   * dem Ergebnis, dass eine nicht eingerichtete Quelle die Prüfung nie
+   * erreichte und im Bericht auch nicht auftauchte. Zwei Filter für
+   * dieselbe Frage sind einer zu viel; der schwächere gewinnt dann
+   * stillschweigend.
+   */
+  const adapters = cfg.jobs.sources
+    .filter((key) => key !== "user_text" && key !== "seed")
+    .map((key) => adapterByKey(key))
+    .filter((a): a is NonNullable<typeof a> => a !== undefined);
+
   if (adapters.length === 0) {
     return NextResponse.json(
       {
@@ -47,8 +62,38 @@ export async function POST(request: Request) {
   const limit = Math.min(200, Number(new URL(request.url).searchParams.get("limit") ?? 100));
   const results: IngestResult[] = [];
 
+  const skipped: { key: string; reason: string }[] = [];
+
   for (const adapter of adapters) {
-    results.push(await ingestFromAdapter(adapter, { limit }));
+    // Jede Quelle einzeln. Eine gesperrte blockiert nicht die anderen —
+    // und eine freigegebene deckt keine gesperrte mit ab.
+    const policy = decideForProvider(adapter.key);
+
+    if (policy.decision !== "approved") {
+      skipped.push({ key: adapter.key, reason: policy.reason });
+      continue;
+    }
+
+    // Freigegeben, aber ohne Zugangsdaten: auch das gehört in den
+    // Bericht statt in einen stillen Abbruch.
+    if (!adapter.isConfigured()) {
+      skipped.push({
+        key: adapter.key,
+        reason: "Freigegeben, aber es sind keine Zugangsdaten hinterlegt.",
+      });
+      continue;
+    }
+
+    results.push(
+      await ingestFromAdapter(adapter, {
+        limit,
+        policy: {
+          decision: policy.decision,
+          allowedOperations: policy.allowedOperations,
+          reason: policy.reason,
+        },
+      }),
+    );
   }
 
   const total = results.reduce(
@@ -63,6 +108,9 @@ export async function POST(request: Request) {
   );
 
   return NextResponse.json({
+    // Was NICHT abgerufen wurde und warum — das gehört in dieselbe
+    // Antwort wie das, was abgerufen wurde.
+    skipped,
     total,
     sources: results.map((r) => ({
       key: r.sourceKey,
