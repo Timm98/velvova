@@ -9,3 +9,5 @@ export * from "./canonical.ts";
 export * from "./health.ts";
 export * from "./sources/ats/board.ts";
 export * from "./sources/ats/registrations.ts";
+export * from "./sources/partners.ts";
+export * from "./sources/lightcast.ts";

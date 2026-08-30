@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SOURCE_REGISTRY } from "@paycheck/sources";
 import { ATS_BOARDS, adapterByKey } from "./registry.ts";
-import { ArbeitnowAdapter, AdzunaAdapter, JoobleAdapter } from "./index.ts";
+import { ArbeitnowAdapter, AdzunaAdapter, JoobleAdapter, JOOBLE_COUNTRIES } from "./index.ts";
+import { PARTNER_ADAPTERS } from "./sources/partners.ts";
 import { UserTextImportAdapter } from "./sources/userImport.ts";
 
 /**
@@ -22,7 +23,8 @@ describe("Adapter und Quellenverzeichnis", () => {
   const alleSchluessel = [
     new ArbeitnowAdapter().key,
     new AdzunaAdapter().key,
-    new JoobleAdapter().key,
+    ...JOOBLE_COUNTRIES.map((c) => new JoobleAdapter({ country: c }).key),
+    ...PARTNER_ADAPTERS.map((A) => new A().key),
     new UserTextImportAdapter().key,
     ...ATS_BOARDS.map((b) => `ats_${b}`),
   ];
@@ -41,6 +43,15 @@ describe("Adapter und Quellenverzeichnis", () => {
     for (const key of alleSchluessel) {
       expect(adapterByKey(key), `Kein Adapter für „${key}"`).toBeDefined();
     }
+  });
+
+  it("gibt jedem Jooble-Land einen eigenen Schlüssel", () => {
+    // Jooble verlangt einen Schlüssel je Land. Ein gemeinsamer Adapter
+    // mit Länderparameter würde die Trennung verwischen — und der
+    // Rückfall auf den deutschen Schlüssel wäre ein Vertragsbruch, den
+    // niemand bemerkt.
+    const schluessel = JOOBLE_COUNTRIES.map((c) => new JoobleAdapter({ country: c }).key);
+    expect(new Set(schluessel).size).toBe(JOOBLE_COUNTRIES.length);
   });
 
   it("führt jedes ATS-Board als Arbeitgeberquelle, nicht als Aggregator", () => {

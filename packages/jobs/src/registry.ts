@@ -3,8 +3,10 @@ import type { JobSourceAdapter } from "./adapter.ts";
 import { UserTextImportAdapter } from "./sources/userImport.ts";
 import { ArbeitnowAdapter } from "./sources/arbeitnow.ts";
 import { AdzunaAdapter } from "./sources/adzuna.ts";
-import { JoobleAdapter } from "./sources/jooble.ts";
+import { JOOBLE_COUNTRIES, JoobleAdapter } from "./sources/jooble.ts";
 import { AtsBoardAdapter, type BoardKind, type BoardRegistration } from "./sources/ats/board.ts";
+import { PARTNER_ADAPTERS } from "./sources/partners.ts";
+import { LightcastAdapter } from "./sources/lightcast.ts";
 
 /**
  * Welche Quellen aktiv sind.
@@ -46,10 +48,17 @@ function allAdapters(): JobSourceAdapter[] {
   return [
     new ArbeitnowAdapter(),
     new AdzunaAdapter(),
-    new JoobleAdapter(),
+    ...JOOBLE_COUNTRIES.map((country) => new JoobleAdapter({ country })),
+    new LightcastAdapter(),
     ...ATS_BOARDS.map(
       (board) => new AtsBoardAdapter(board, () => boardRegistrations.get(board) ?? []),
     ),
+    // Ohne Vertrag. Sie rufen nichts ab und werfen, wenn es jemand
+    // versucht — aber sie machen die Lücke sichtbar. Fehlt der Adapter
+    // ganz, sieht die Betriebsansicht aus, als gäbe es LinkedIn nicht,
+    // und die nächste Person schreibt einen Scraper statt nach einem
+    // Vertrag zu fragen.
+    ...PARTNER_ADAPTERS.map((Adapter) => new Adapter()),
     new UserTextImportAdapter(),
   ];
 }

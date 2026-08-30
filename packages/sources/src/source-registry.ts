@@ -108,6 +108,70 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
       "vorher zu dokumentieren.",
   },
   {
+    providerKey: "jooble_ch",
+    displayName: "Jooble Schweiz",
+    baseDomains: ["jooble.org", "de.jooble.org"],
+    sourceType: "aggregator",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    // Bewusst OHNE PublicDisplay des Volltexts: Jooble liefert Ausschnitte
+    // fremder Anzeigen. Angezeigt werden Metadaten und der Originallink.
+    allowedOperations: ["Search", "FetchDetails", "Cache", "Summarize", "Embed", "Rank"],
+    allowedFields: [...METADATA_ONLY, "description_summary", "employment_type", "salary_min", "salary_max"],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten über Jooble. Bewerbung über die Originalquelle.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["CH"],
+    termsUrl: "https://jooble.org/api/about",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: false,
+    killSwitchReason: "Kein Schlüssel hinterlegt (JOOBLE_API_KEY_CH).",
+    note:
+      "Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach " +
+      "schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind " +
+      "vorher zu dokumentieren.",
+  },
+  {
+    providerKey: "jooble_at",
+    displayName: "Jooble Österreich",
+    baseDomains: ["jooble.org", "de.jooble.org"],
+    sourceType: "aggregator",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    // Bewusst OHNE PublicDisplay des Volltexts: Jooble liefert Ausschnitte
+    // fremder Anzeigen. Angezeigt werden Metadaten und der Originallink.
+    allowedOperations: ["Search", "FetchDetails", "Cache", "Summarize", "Embed", "Rank"],
+    allowedFields: [...METADATA_ONLY, "description_summary", "employment_type", "salary_min", "salary_max"],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten über Jooble. Bewerbung über die Originalquelle.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["AT"],
+    termsUrl: "https://jooble.org/api/about",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: false,
+    killSwitchReason: "Kein Schlüssel hinterlegt (JOOBLE_API_KEY_AT).",
+    note:
+      "Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach " +
+      "schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind " +
+      "vorher zu dokumentieren.",
+  },
+  {
     providerKey: "adzuna_de",
     displayName: "Adzuna Deutschland",
     baseDomains: ["adzuna.de", "adzuna.com", "api.adzuna.com"],

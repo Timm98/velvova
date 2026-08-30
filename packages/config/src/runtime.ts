@@ -17,6 +17,12 @@ export type OperatingMode = z.infer<typeof OperatingModeSchema>;
 const RuntimeSchema = z.object({
   mode: OperatingModeSchema.default("demo"),
   nodeEnv: z.enum(["development", "test", "production"]).default("development"),
+  /** Absolute Basisadresse. Für Links in E-Mails und für Rückkehradressen —
+   *  dort ist ein relativer Pfad wertlos. */
+  appUrl: z.string().default("http://localhost:3000"),
+  /** Die fachliche Umgebung, unabhängig von NODE_ENV. Ein Staging-System
+   *  läuft als Produktionsbuild und ist trotzdem keine Produktion. */
+  appEnv: z.string().default("development"),
 
   db: z.object({
     driver: z.enum(["pglite", "pg"]).default("pglite"),
@@ -102,6 +108,8 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
   return RuntimeSchema.parse({
     mode: env.PAYCHECK_DEMO_MODE === "live" ? "live" : "demo",
     nodeEnv: env.NODE_ENV ?? "development",
+    appUrl: env.APP_URL ?? "http://localhost:3000",
+    appEnv: env.APP_ENV ?? env.NODE_ENV ?? "development",
     db: {
       driver: env.DATABASE_DRIVER ?? "pglite",
       url: env.DATABASE_URL,
@@ -124,10 +132,17 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
             ? (env.SELF_HOSTED_API_KEY ?? "nicht-erforderlich")
             : env.OPENAI_API_KEY,
       baseUrl: env.AI_PROVIDER === "self_hosted" ? env.SELF_HOSTED_BASE_URL : undefined,
-      modelInteractive: env.OPENAI_MODEL_INTERACTIVE ?? "gpt-5.6-terra",
+      // Die Namen aus .env.example haben Vorrang. Die alten bleiben als
+      // Rückfall, damit eine vorhandene .env.local nicht plötzlich
+      // stumm auf Standardwerte fällt — die Drift war schon da: das
+      // Beispiel dokumentierte OPENAI_MODEL_DEFAULT, gelesen wurde
+      // OPENAI_MODEL_INTERACTIVE. Wer dem Beispiel folgte, setzte eine
+      // Variable, die niemand las.
+      modelInteractive:
+        env.OPENAI_MODEL_DEFAULT ?? env.OPENAI_MODEL_INTERACTIVE ?? "gpt-5.6-terra",
       modelDeep: env.OPENAI_MODEL_DEEP ?? "gpt-5.6-sol",
       modelFast: env.OPENAI_MODEL_FAST ?? "gpt-5.6-luna",
-      modelRealtime: env.OPENAI_REALTIME_MODEL ?? "gpt-realtime-2.1",
+      modelRealtime: env.OPENAI_MODEL_REALTIME ?? env.OPENAI_REALTIME_MODEL ?? "gpt-realtime-2.1",
       modelTranscribe: env.OPENAI_TRANSCRIBE_MODEL,
       modelSpeech: env.OPENAI_SPEECH_MODEL,
       // Ohne echten Anbieter bleibt die lokale Hash-Einbettung: sie ist

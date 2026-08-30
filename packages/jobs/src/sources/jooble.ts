@@ -78,9 +78,26 @@ export function parseSalary(raw: string | undefined): {
   return { min, max, period };
 }
 
+/**
+ * Die Länder, für die es einen eigenen Schlüssel geben kann.
+ *
+ * Jooble verlangt einen Schlüssel je Land. Einen gemeinsamen zu
+ * verwenden verletzt die Bedingungen der Quelle — deshalb je Land ein
+ * eigener Adapter mit eigenem Verzeichniseintrag, statt eines Adapters
+ * mit einem Länderparameter.
+ */
+export const JOOBLE_COUNTRIES = ["de", "ch", "at"] as const;
+export type JoobleCountry = (typeof JOOBLE_COUNTRIES)[number];
+
+const LAND: Record<JoobleCountry, { name: string; code: string; standardOrt: string }> = {
+  de: { name: "Deutschland", code: "DE", standardOrt: "Deutschland" },
+  ch: { name: "Schweiz", code: "CH", standardOrt: "Schweiz" },
+  at: { name: "Österreich", code: "AT", standardOrt: "Österreich" },
+};
+
 export class JoobleAdapter implements JobSourceAdapter {
-  readonly key = "jooble_de";
-  readonly displayName = "Jooble";
+  readonly key: string;
+  readonly displayName: string;
   readonly kind = "licensed_api" as const;
   readonly licenseStatus = "licensed" as const;
   readonly attributionRequired = true;
@@ -91,14 +108,29 @@ export class JoobleAdapter implements JobSourceAdapter {
   private readonly fetchImpl: typeof fetch;
   private readonly keywords: string;
   private readonly location: string;
+  private readonly country: JoobleCountry;
 
-  constructor(options: JoobleOptions = {}) {
+  constructor(options: JoobleOptions & { country?: JoobleCountry } = {}) {
+    this.country = options.country ?? "de";
+    const land = LAND[this.country];
+
+    this.key = `jooble_${this.country}`;
+    this.displayName = `Jooble ${land.name}`;
+
     // Ein Schlüssel je Land. Ein gemeinsamer Schlüssel für mehrere
-    // Länder verletzt die Bedingungen der Quelle.
-    this.apiKey = options.apiKey ?? process.env.JOOBLE_API_KEY_DE;
+    // Länder verletzt die Bedingungen der Quelle — deshalb wird hier
+    // ausdrücklich NICHT auf den deutschen Schlüssel zurückgefallen.
+    this.apiKey =
+      options.apiKey ??
+      process.env[`JOOBLE_API_KEY_${this.country.toUpperCase()}`] ??
+      // Ältere Schreibweise ohne Land, nur für Deutschland. Sie stand
+      // in bestehenden .env-Dateien, während .env.example schon die
+      // Länderfassung dokumentierte — eine Drift, die niemand bemerkt,
+      // weil sie sich als "nicht eingerichtet" tarnt.
+      (this.country === "de" ? process.env.JOOBLE_API_KEY : undefined);
     this.fetchImpl = options.fetchImpl ?? fetch;
     this.keywords = options.keywords ?? process.env.JOOBLE_KEYWORDS ?? "";
-    this.location = options.location ?? process.env.JOOBLE_LOCATION ?? "Deutschland";
+    this.location = options.location ?? process.env.JOOBLE_LOCATION ?? land.standardOrt;
   }
 
   /**
@@ -123,7 +155,10 @@ export class JoobleAdapter implements JobSourceAdapter {
 
   async fetchListings(options: FetchOptions = {}): Promise<RawListing[]> {
     if (!this.isConfigured()) {
-      throw new Error("Jooble ist nicht eingerichtet: JOOBLE_API_KEY fehlt. Es wird nichts abgerufen.");
+      throw new Error(
+        `${this.displayName} ist nicht eingerichtet: ` +
+          `JOOBLE_API_KEY_${this.country.toUpperCase()} fehlt. Es wird nichts abgerufen.`,
+      );
     }
 
     const response = await this.fetchImpl(`https://jooble.org/api/${this.apiKey}`, {
@@ -156,7 +191,7 @@ export class JoobleAdapter implements JobSourceAdapter {
       title: j.title.trim(),
       companyName: j.company?.trim() || "Nicht angegeben",
       location,
-      country: "DE",
+      country: LAND[this.country].code,
       workModel: normaliseWorkModel(`${j.title} ${location} ${j.type ?? ""}`),
       salaryMin: salary.min,
       salaryMax: salary.max,

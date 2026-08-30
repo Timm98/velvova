@@ -23,6 +23,8 @@ Stand: 2026-08-30
 | Quelle | Grundlage | Entscheidung | Suchen | Abrufen | Cachen | Anzeigen | Zusammenfassen | Einbetten | Ranken | Native Apply |
 |---|---|---|---|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
 | Jooble Deutschland | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
+| Jooble Schweiz | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
+| Jooble Österreich | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
 | Adzuna Deutschland | `official_api_terms` | nur Verweis | — | — | — | — | — | — | — | — |
 | Greenhouse (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Lever (Arbeitgeberboards) | `employer_authorization` | freigegeben | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |

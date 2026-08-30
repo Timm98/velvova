@@ -49,6 +49,64 @@ Stand: 2026-08-30
 
 Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind vorher zu dokumentieren.
 
+## Jooble Schweiz
+
+`jooble_ch`
+
+| | |
+|---|---|
+| **Zweck** | aggregator |
+| **Rechts-/Vertragsgrundlage** | `official_api_terms` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **nur Verweis** |
+| **Erlaubte Vorgänge** | keine |
+| **Erlaubte Felder** | `source_url` |
+| **Volltext** | nicht erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Stellendaten über Jooble. Bewerbung über die Originalquelle. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | CH |
+| **Bedingungen** | [https://jooble.org/api/about](https://jooble.org/api/about) |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | nein — Kein Schlüssel hinterlegt (JOOBLE_API_KEY_CH). |
+| **Entfernungsweg** | — |
+
+Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind vorher zu dokumentieren.
+
+## Jooble Österreich
+
+`jooble_at`
+
+| | |
+|---|---|
+| **Zweck** | aggregator |
+| **Rechts-/Vertragsgrundlage** | `official_api_terms` |
+| **Zugangsart** | `api` |
+| **Entscheidung** | **nur Verweis** |
+| **Erlaubte Vorgänge** | keine |
+| **Erlaubte Felder** | `source_url` |
+| **Volltext** | nicht erlaubt |
+| **Logo** | nicht erlaubt |
+| **Zwischenspeicherung** | höchstens 24 h |
+| **Attribution** | Stellendaten über Jooble. Bewerbung über die Originalquelle. |
+| **Original-Link Pflicht** | ja |
+| **Native Bewerbung** | nicht erlaubt |
+| **Länder** | AT |
+| **Bedingungen** | [https://jooble.org/api/about](https://jooble.org/api/about) |
+| **Fassung** | — |
+| **Zuletzt geprüft** | **nie** |
+| **Nächste Prüfung** | — |
+| **Verantwortlich** | unbesetzt |
+| **In Betrieb** | nein — Kein Schlüssel hinterlegt (JOOBLE_API_KEY_AT). |
+| **Entfernungsweg** | — |
+
+Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind vorher zu dokumentieren.
+
 ## Adzuna Deutschland
 
 `adzuna_de`
