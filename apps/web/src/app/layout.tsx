@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
-import { Manrope } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import { brand } from "@paycheck/config";
 import { isLocale } from "@paycheck/i18n";
 import { ServiceWorker } from "@/components/ServiceWorker";
@@ -29,6 +29,25 @@ const display = Manrope({
   variable: "--font-manrope",
   display: "swap",
   weight: ["500", "600", "700"],
+});
+
+/**
+ * Inter für die redaktionelle Fläche.
+ *
+ * Geist ist für dichte Oberflächen gebaut — eng, ruhig, sparsam. Auf
+ * einer Landingpage mit langen Zeilen und grossem Weissraum wirkt genau
+ * das karg. Inter hat die offenere Zeichnung, die längere Absätze
+ * tragen, ohne dabei dekorativ zu werden.
+ *
+ * Zwei Textschriften sind eine Entscheidung, kein Versehen: die
+ * Anwendung und die öffentliche Seite haben verschiedene Aufgaben und
+ * dürfen verschieden klingen.
+ */
+const editorial = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -67,7 +86,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
          gegen Tiefe. Polar bleibt vollwertig und folgt der
          Systemeinstellung, wenn nichts gewählt wurde. */
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
-      className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable}`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable} ${editorial.variable}`}
       suppressHydrationWarning
     >
       <body>

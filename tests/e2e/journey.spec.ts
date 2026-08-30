@@ -32,11 +32,13 @@ test.describe("Öffentlicher Bereich", () => {
     expect(body).not.toMatch(/über \d+\.?\d* (zufriedene )?(Nutzer|Kunden)/i);
   });
 
-  test("Das gezeigte Match ist als Beispiel gekennzeichnet", async ({ page }) => {
+  test("Die Landingpage zeigt gar keine Stellen — auch keine als Beispiel", async ({ page }) => {
+    // Vorher stand hier eine Beispielstelle, die als solche gekennzeichnet
+    // sein musste. Die neue Seite zeigt keine: die sicherste Kennzeichnung
+    // ist die, die man nicht braucht.
     await page.goto("/");
-    const matchCard = page.locator("text=Customer Success Manager").first().locator("xpath=ancestor::div[1]");
-    await expect(page.getByText("Beispiel").first()).toBeVisible();
-    void matchCard;
+    const body = (await page.textContent("main")) ?? "";
+    expect(body).not.toMatch(/Customer Success Manager|GmbH\b|AG\b/);
   });
 
   test("Methodik legt die Gewichte und die Grenzen offen", async ({ page }) => {
@@ -473,13 +475,13 @@ test.describe("Sprache und Darstellung", () => {
     await setLocale(context, "en");
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Your career. Not by keywords",
+      "Stop searching",
     );
     await expect(page.getByRole("link", { name: /Start with/i }).first()).toBeVisible();
 
     // Kein deutscher Rest auf einer englischen Seite.
     const body = (await page.textContent("body")) ?? "";
-    expect(body).not.toMatch(/Konto anlegen|Anmelden|Datenschutz\b/);
+    expect(body).not.toMatch(/Konto anlegen|Anmelden|Datenschutz\b|Sicherheit\b|Impressum/);
   });
 
   test("Dunkle Darstellung greift serverseitig ohne Aufblitzen", async ({ page, context }) => {
@@ -575,6 +577,55 @@ test.describe("Chancenraum und Entscheidungsvorlage", () => {
     for (const url of ["http://169.254.169.254/latest/meta-data/", "file:///etc/passwd"]) {
       const response = await page.request.post("/api/jobs/import-url", { data: { url } });
       expect(response.status()).toBe(400);
+    }
+  });
+});
+
+test.describe("Öffentliche Wurzelroute", () => {
+  test("/ liefert die Landingpage ohne Anmeldung", async ({ page }) => {
+    const antwort = await page.goto("/");
+    expect(antwort?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: /Nicht mehr suchen/ }),
+    ).toBeVisible();
+  });
+
+  test("/ leitet Angemeldete nicht weg", async ({ page }) => {
+    // Vorher sprang ein angemeldeter Besucher sofort auf /app. Wer die
+    // eigene Startseite ansehen will, kam nicht hin — und wenn /app
+    // einmal ausfiel, sah er nie eine Landingpage.
+    await page.goto("/api/dev/login");
+    const antwort = await page.goto("/");
+    expect(antwort?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { name: /Nicht mehr suchen/ })).toBeVisible();
+  });
+
+  test("Die Landingpage zeigt den Weg als Linie, nicht als Kästen", async ({ page }) => {
+    await page.goto("/");
+    const stationen = page.locator("ol li");
+    await expect(stationen).toHaveCount(7);
+    // Alle sieben sind sichtbar, auch ohne Scrollen: der Inhalt darf
+    // nicht an einer Animation hängen.
+    await expect(stationen.first()).toBeVisible();
+    await expect(stationen.last()).toBeVisible();
+  });
+
+  test("Die Landingpage nennt keine erfundenen Zahlen", async ({ page }) => {
+    await page.goto("/");
+    const text = (await page.textContent("main")) ?? "";
+    // Keine Nutzerzahlen, keine Erfolgsquoten, keine Bewertungen.
+    expect(text).not.toMatch(/\d[\d.]*\s*(zufriedene|Nutzer|Kunden|Bewerbungen erfolgreich)/i);
+    expect(text).not.toMatch(/\d+\s?% (Erfolg|mehr Interviews|Trefferquote)/i);
+  });
+
+  test("Geschützte Routen verlangen eine Anmeldung", async ({ page, context }) => {
+    await context.clearCookies();
+    for (const pfad of ["/app", "/app/nina", "/app/jobs", "/app/settings"]) {
+      const antwort = await page.goto(pfad);
+      expect(antwort?.status(), pfad).toBe(200);
+      await expect(page, pfad).toHaveURL(/\/login/);
     }
   });
 });

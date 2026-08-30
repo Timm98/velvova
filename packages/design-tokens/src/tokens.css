@@ -298,3 +298,139 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Future Editorial / Luminous Intelligence
+   ═══════════════════════════════════════════════════════════════
+
+   Eine zweite Gestaltungssprache, ausdrücklich begrenzt auf die
+   öffentlichen Seiten. Sie wird über `data-surface="editorial"`
+   angefordert und gilt nur innerhalb dieses Elements.
+
+   Warum getrennt und nicht als Ersatz: die Anwendung ist eine dichte
+   Arbeitsfläche — Listen, Formulare, Tabellen, viel Information auf
+   wenig Raum. Die öffentliche Seite ist das Gegenteil: wenige Aussagen,
+   grosse Flächen, lange Zeilen. Dieselbe Palette für beides zwingt eine
+   von beiden in die falsche Form.
+
+   Das ist bewusst ein Zwischenstand. Wenn die Anwendung nachzieht,
+   wandern diese Werte nach oben und dieser Block fällt weg. Bis dahin
+   steht hier, dass es zwei sind — und warum.
+
+   Hell ist der Standard. Anders als in der Anwendung: eine öffentliche
+   Seite wird meist bei Tageslicht und oft am Telefon geöffnet. */
+
+[data-surface="editorial"] {
+  color-scheme: light;
+
+  --ed-canvas: #f5f7fb;
+  --ed-surface: #ffffff;
+  --ed-surface-raised: #ffffff;
+  --ed-ink: #090b12;
+  --ed-ink-2: #566070;
+  /* 4,86:1 auf dem Canvas. Die erste Wahl (#7c8698) lag bei 3,42 und
+     fiel durch — sie trägt die kleinen Labels über den Abschnitten,
+     also genau die Schrift, bei der ein zu heller Ton am ehesten
+     durchgeht und am wenigsten auffällt. */
+  --ed-ink-3: #646d7e;
+  --ed-hairline: rgba(9, 11, 18, 0.1);
+  --ed-hairline-strong: rgba(9, 11, 18, 0.18);
+
+  /* Farbe ist Signal, keine Fläche. Diese drei tauchen als Linie, als
+     Punkt und als Verlauf auf — nie als grosser gefüllter Block. */
+  --ed-violet: #665cff;
+  --ed-violet-text: #4b41d6;
+  --ed-ice: #55d8ff;
+  --ed-mint: #70f0c1;
+  --ed-violet-soft: #eae8ff;
+
+  --ed-shadow-soft: 0 1px 2px rgba(9, 11, 18, 0.04), 0 8px 32px rgba(9, 11, 18, 0.06);
+  --ed-shadow-lift: 0 2px 6px rgba(9, 11, 18, 0.05), 0 24px 64px rgba(9, 11, 18, 0.09);
+
+  background: var(--ed-canvas);
+  color: var(--ed-ink);
+  font-family: var(--font-inter), var(--font-sans);
+}
+
+/* Nur bei ausdrücklich dunklem Thema.
+   
+   Die erste Fassung hatte hier zusätzlich
+   `:root:not([data-theme="light"])` stehen — und dieser Selektor trifft
+   immer, solange kein Thema gesetzt ist. Ohne Cookie ist genau das der
+   Normalfall, und die Landingpage kam dunkel heraus, obwohl hell der
+   Standard sein soll. Die Systemeinstellung wird weiter unten in der
+   Medienabfrage berücksichtigt; sie gehört dorthin und nicht hierher. */
+:root[data-theme="dark"] [data-surface="editorial"] {
+  color-scheme: dark;
+
+  --ed-canvas: #070910;
+  --ed-surface: #0e111b;
+  --ed-surface-raised: #151927;
+  --ed-ink: #f7f8fc;
+  --ed-ink-2: #9da7b8;
+  /* 5,56:1 auf dunklem Grund. */
+  --ed-ink-3: #7e8899;
+  --ed-hairline: rgba(255, 255, 255, 0.1);
+  --ed-hairline-strong: rgba(255, 255, 255, 0.18);
+
+  --ed-violet: #8b83ff;
+  --ed-violet-text: #a9a3ff;
+  --ed-ice: #7ee2ff;
+  --ed-mint: #8ff5d3;
+  --ed-violet-soft: rgba(102, 92, 255, 0.16);
+
+  --ed-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.4);
+  --ed-shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.45), 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) [data-surface="editorial"] {
+    color-scheme: dark;
+    --ed-canvas: #070910;
+    --ed-surface: #0e111b;
+    --ed-surface-raised: #151927;
+    --ed-ink: #f7f8fc;
+    --ed-ink-2: #9da7b8;
+    --ed-ink-3: #7e8899;
+    --ed-hairline: rgba(255, 255, 255, 0.1);
+    --ed-hairline-strong: rgba(255, 255, 255, 0.18);
+    --ed-violet: #8b83ff;
+    --ed-violet-text: #a9a3ff;
+    --ed-ice: #7ee2ff;
+    --ed-mint: #8ff5d3;
+    --ed-violet-soft: rgba(102, 92, 255, 0.16);
+  }
+}
+
+/* Die Signallinie. Sie trägt den Karriereweg und ist der einzige Ort,
+   an dem alle drei Signalfarben zusammenkommen. */
+[data-surface="editorial"] .ed-signal-line {
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--ed-violet) 0%, transparent) 0%,
+    var(--ed-violet) 12%,
+    var(--ed-ice) 50%,
+    var(--ed-mint) 84%,
+    color-mix(in oklab, var(--ed-mint) 0%, transparent) 100%
+  );
+}
+
+[data-surface="editorial"] .ed-glow {
+  background: radial-gradient(
+    60% 50% at 50% 40%,
+    color-mix(in oklab, var(--ed-violet) 18%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* Ein sehr weiches Wandern des Lichts. Zehn Sekunden, kaum sichtbar —
+   es soll den Blick nicht holen, sondern die Fläche lebendig halten. */
+@keyframes ed-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); opacity: 0.85; }
+  50% { transform: translate3d(0, -1.5%, 0) scale(1.04); opacity: 1; }
+}
+
+@keyframes ed-trace {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}

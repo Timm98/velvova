@@ -66,117 +66,63 @@ export const en: Messages = {
   },
 
   landing: {
-    eyebrow: "Career Operating System",
-    headline: "Your career. Not by keywords — by you.",
+    eyebrow: "AI Career Intelligence",
+    headline: "Stop searching. See the right next step.",
+    headlineLine1: "Stop searching.",
+    headlineLine2: "See the right next step.",
     subheadline:
-      "{assistant} understands your experience, uncovers roles that fit, and stays with you from " +
-      "first orientation to a finished application.",
+      "{assistant} understands your experience, finds fresh roles from verified sources and " +
+      "stays with you from orientation to application.",
     ctaPrimary: "Start with {assistant}",
     ctaSecondary: "How it works",
-    trustProfile: "Private profile",
-    trustReasons: "Every match explained",
-    trustNoInvention: "Nothing invented",
 
-    understandEyebrow: "First",
-    understandTitle: "{assistant} understands you first.",
-    understandBody:
-      "No form, no personality test. A conversation about concrete situations: what you did, what " +
-      "came of it, what gives you energy. From that comes a profile where every strength is tied " +
-      "to a named experience.",
+    coreLine1: "We do not show you more jobs.",
+    coreLine2: "We show you the right ones.",
+    coreSub: "Not 10,000 results. The few chances that actually matter.",
 
-    discoverEyebrow: "Then",
-    discoverTitle: "Options you would not have searched for.",
-    discoverBody:
-      "Search for your job title and you find your job title. {assistant} searches across tasks " +
-      "and transferable skills — which surfaces adjacent and unusual roles too.",
+    pathEyebrow: "The path",
+    pathTitle: "From what you can do to what you get.",
+    pathBody:
+      "Every step rests on the one before. What is not evidenced is not claimed — neither in a " +
+      "recommendation nor in an application.",
 
-    explainEyebrow: "Always",
-    explainTitle: "Every match explains itself.",
-    explainBody:
-      "A score from 0 to 100, with confidence beside it, the breakdown, the missing information " +
-      "and any conditions that are violated. No percentage without a reason.",
+    step1: "Your experience",
+    step1Detail: "What you actually did — not what the CV says.",
+    step2: "{assistant} understands you",
+    step2Detail: "A conversation about situations, not about buzzwords.",
+    step3: "Skills and working style",
+    step3Detail: "Evidenced, with provenance. Nothing invented.",
+    step4: "Realistic roles",
+    step4Detail: "Three to five directions, each with a reason.",
+    step5: "Fresh roles",
+    step5Detail: "From verified sources, with original link and check time.",
+    step6: "Fit and reality",
+    step6Detail: "What fits, what does not, what is still open.",
+    step7: "Application",
+    step7Detail: "Only statements you can back up.",
 
-    applyEyebrow: "All the way",
-    applyTitle: "From a role to a finished application.",
-    applyBody:
-      "Documents are built from your evidenced experience. Every factual claim traces back to " +
-      "evidence or your explicit confirmation. Nothing is ever sent without your approval.",
+    diffUnderstand: "Understand",
+    diffUnderstandBody: "{assistant} does not start with a job title. She starts with you.",
+    diffCheck: "Verify",
+    diffCheckBody: "Every role is checked for fit, freshness, conditions and open questions.",
+    diffAct: "Act",
+    diffActBody:
+      "{assistant} prepares the next sensible step – from the application to the interview.",
 
-    methodEyebrow: "Method",
-    methodTitle: "Four kinds of knowledge. Never mixed.",
-    methodBody:
-      "The most common failure in AI products is letting a guess look like a fact. So every " +
-      "statement in your profile carries its origin — and you can confirm, change or delete any " +
-      "inference.",
-    methodLink: "The full method",
-    knowledgeSaidTitle: "What you said",
-    knowledgeSaidBody: "Your own words, stored verbatim.",
-    knowledgeEvidenceTitle: "What is evidenced",
-    knowledgeEvidenceBody:
-      "A statement with a concrete situation, action and outcome — confirmed by you.",
-    knowledgeGuessTitle: "What is inferred",
-    knowledgeGuessBody:
-      "A hypothesis from {assistant}. Always marked as one, never quietly adopted.",
-    knowledgeExternalTitle: "What comes from outside",
-    knowledgeExternalBody: "Listings, registries, reviews — with source and retrieval date.",
-
-    privacyTitle: "Your data stays under your control.",
-    privacyBody:
-      "You can see what is stored, change or delete each item, and withdraw every consent " +
-      "separately. Only the context a given step needs ever reaches the language model — never " +
-      "your name, never your address.",
-    privacyLink: "Security and privacy",
-
-    faqTitle: "Common questions",
-    faq1Q: "Does this cost anything?",
-    faq1A:
-      "Not while we are building it. There is no pricing model yet, and we are not putting up a " +
-      "table that does not exist.",
-    faq2Q: "Where do the jobs come from?",
-    faq2A:
-      "From sources that publish their listings openly for retrieval. Every listing names its " +
-      "source and retrieval time and links to the original. Portals that forbid scraping are not " +
-      "queried.",
-    faq3Q: "Does the AI write my application?",
-    faq3A:
-      "It phrases — it does not invent. Every claim about experience, outcome or responsibility " +
-      "needs evidence from your profile or your explicit confirmation. Without evidence it is " +
-      "softened or queried.",
-    faq4Q: "Can employers see my profile?",
-    faq4A:
-      "No. {brand} works for the person looking. There is no employer side, no candidate search " +
-      "and no sharing of your profile.",
-
-    closingTitle: "Start with what you can already do.",
+    closingTitle: "Start with a conversation.",
     closingBody:
-      "The first conversation takes about fifteen minutes. You can pause at any point and pick it " +
-      "up later.",
-    closingCta: "Start for free",
+      "No sign-up required for a first look, no marketing email, no sharing of your profile. " +
+      "Every detail stays in your hands.",
 
     navProduct: "Product",
-    navPricing: "Pricing",
-    footerProduct: "Product",
-    footerTrust: "Trust",
-    footerCompany: "Company",
-    footerOverview: "Overview",
-    footerNote:
-      "{brand} and {assistant} are working names. Candidate-side — this product works for the " +
-      "person looking, not for employers.",
-    footerLanguage:
-      "You choose language and region when you create your account, and can change them any time " +
-      "under Account → Language & region.",
-
-    exampleSaid: "What you say",
-    exampleSaidText: "\"I often calmed down difficult customers.\"",
-    exampleAsked: "What {assistant} asks back",
-    exampleAskedText:
-      "\"Tell me about an escalation you took on. What exactly did you do — and what came out of " +
-      "it?\"",
-    exampleEvidence: "Evidenced strength",
-    exampleEvidenceText: "Conflict resolution · technical mediation · responsibility under pressure",
-    exampleRoles: "Roles that fit",
-    exampleJobs: "Real open roles for this",
-    exampleJobsNote: "Fetched live, with source and date.",
+    navHow: "How it works",
+    navSecurity: "Security",
+    navSignIn: "Sign in",
+    footerPrivacy: "Privacy",
+    footerSecurity: "Security",
+    footerMethodology: "Methodology",
+    footerImprint: "Imprint",
+    footerTerms: "Terms",
   },
 
   auth: {

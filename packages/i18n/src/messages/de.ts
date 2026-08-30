@@ -66,120 +66,64 @@ export const de = {
   },
 
   landing: {
-    eyebrow: "Career Operating System",
-    headline: "Deine Karriere. Nicht nach Keywords, sondern nach dir.",
+    eyebrow: "AI Career Intelligence",
+    headline: "Nicht mehr suchen. Den richtigen nächsten Schritt sehen.",
+    headlineLine1: "Nicht mehr suchen.",
+    headlineLine2: "Den richtigen nächsten Schritt sehen.",
     subheadline:
-      "{assistant} versteht deine Erfahrungen, entdeckt passende Rollen und bringt dich von der " +
-      "Orientierung bis zur Bewerbung.",
+      "{assistant} versteht deine Erfahrungen, findet frische Jobs aus geprüften Quellen und " +
+      "begleitet dich von der Orientierung bis zur Bewerbung.",
     ctaPrimary: "Mit {assistant} starten",
     ctaSecondary: "So funktioniert es",
-    trustProfile: "Privates Profil",
-    trustReasons: "Jeder Match erklärt",
-    trustNoInvention: "Keine erfundenen Angaben",
 
-    understandEyebrow: "Zuerst",
-    understandTitle: "{assistant} versteht erst dich.",
-    understandBody:
-      "Kein Formular, kein Persönlichkeitstest. Ein Gespräch über konkrete Situationen: was du " +
-      "gemacht hast, was dabei herauskam, was dir Energie gibt. Daraus entsteht ein Profil, in " +
-      "dem jede Stärke an einer benannten Erfahrung hängt.",
+    coreLine1: "Wir zeigen dir nicht mehr Jobs.",
+    coreLine2: "Wir zeigen dir die richtigen.",
+    coreSub: "Nicht 10.000 Treffer. Die wenigen Chancen, die wirklich zählen.",
 
-    discoverEyebrow: "Dann",
-    discoverTitle: "Möglichkeiten, die du selbst nicht gesucht hättest.",
-    discoverBody:
-      "Wer nach seinem Jobtitel sucht, findet seinen Jobtitel. {assistant} sucht über Tätigkeiten " +
-      "und übertragbare Fähigkeiten — und findet damit auch angrenzende und spezielle Rollen.",
+    pathEyebrow: "Der Weg",
+    pathTitle: "Von dem, was du kannst, zu dem, was du bekommst.",
+    pathBody:
+      "Jeder Schritt trägt den vorigen. Was nicht belegt ist, wird auch nicht behauptet — nicht " +
+      "in einer Empfehlung und nicht in einer Bewerbung.",
 
-    explainEyebrow: "Immer",
-    explainTitle: "Jeder Match wird erklärt.",
-    explainBody:
-      "Ein Wert von 0 bis 100, daneben die Sicherheit, die Aufschlüsselung, die fehlenden Angaben " +
-      "und die Bedingungen, die verletzt sind. Kein Prozentwert ohne Begründung.",
+    step1: "Deine Erfahrungen",
+    step1Detail: "Was du wirklich gemacht hast — nicht, was im Lebenslauf steht.",
+    step2: "{assistant} versteht dich",
+    step2Detail: "Ein Gespräch über Situationen, nicht über Schlagworte.",
+    step3: "Skills und Arbeitsweise",
+    step3Detail: "Belegt, mit Herkunft. Nichts davon erfunden.",
+    step4: "Realistische Rollen",
+    step4Detail: "Drei bis fünf Richtungen, jede mit Begründung.",
+    step5: "Frische Jobs",
+    step5Detail: "Aus geprüften Quellen, mit Original-Link und Prüfzeit.",
+    step6: "Passung und Realität",
+    step6Detail: "Was passt, was hakt, was noch offen ist.",
+    step7: "Bewerbung",
+    step7Detail: "Nur Aussagen, die du belegen kannst.",
 
-    applyEyebrow: "Bis zum Schluss",
-    applyTitle: "Vom Job zur fertigen Bewerbung.",
-    applyBody:
-      "Unterlagen entstehen aus deinen belegten Erfahrungen. Jede Tatsachenbehauptung hängt an " +
-      "einem Beleg oder an deiner ausdrücklichen Bestätigung. Versendet wird nie ohne deine " +
-      "Freigabe.",
+    diffUnderstand: "Verstehen",
+    diffUnderstandBody: "{assistant} beginnt nicht mit einem Jobtitel. Sie beginnt mit dir.",
+    diffCheck: "Prüfen",
+    diffCheckBody:
+      "Jeder Job wird auf Passung, Aktualität, Bedingungen und offene Fragen geprüft.",
+    diffAct: "Handeln",
+    diffActBody:
+      "{assistant} bereitet den nächsten sinnvollen Schritt vor – von der Bewerbung bis zum Gespräch.",
 
-    methodEyebrow: "Methodik",
-    methodTitle: "Vier Arten von Wissen. Nie vermischt.",
-    methodBody:
-      "Der häufigste Fehler in KI-Produkten ist, eine Vermutung wie eine Tatsache aussehen zu " +
-      "lassen. Deshalb trägt jede Aussage im Profil sichtbar, woher sie stammt — und du kannst " +
-      "jede Ableitung bestätigen, ändern oder löschen.",
-    methodLink: "Ausführliche Methodik",
-    knowledgeSaidTitle: "Was du gesagt hast",
-    knowledgeSaidBody: "Deine eigenen Angaben, wörtlich gespeichert.",
-    knowledgeEvidenceTitle: "Was belegt ist",
-    knowledgeEvidenceBody:
-      "Eine Aussage mit konkreter Situation, Handlung und Ergebnis — von dir bestätigt.",
-    knowledgeGuessTitle: "Was vermutet wird",
-    knowledgeGuessBody:
-      "Eine Hypothese von {assistant}. Immer als solche gekennzeichnet, nie stillschweigend " +
-      "übernommen.",
-    knowledgeExternalTitle: "Was von außen kommt",
-    knowledgeExternalBody:
-      "Stellenanzeigen, Register, Bewertungen — mit Quelle und Abrufdatum.",
-
-    privacyTitle: "Deine Daten bleiben unter deiner Kontrolle.",
-    privacyBody:
-      "Du siehst, was gespeichert ist, kannst alles einzeln ändern oder löschen und jede " +
-      "Einwilligung getrennt widerrufen. An das Sprachmodell geht nur der Kontext, den die " +
-      "jeweilige Aufgabe braucht — nie dein Name, nie deine Adresse.",
-    privacyLink: "Sicherheit und Datenschutz",
-
-    faqTitle: "Häufige Fragen",
-    faq1Q: "Kostet das etwas?",
-    faq1A:
-      "In der Aufbauphase nicht. Ein Preismodell steht noch nicht fest, und wir stellen hier " +
-      "keine Tabelle hin, die es nicht gibt.",
-    faq2Q: "Woher kommen die Stellen?",
-    faq2A:
-      "Aus Quellen, die ihre Anzeigen selbst öffentlich zum Abruf anbieten. Jede Anzeige nennt " +
-      "ihre Herkunft und ihren Abrufzeitpunkt und verlinkt auf das Original. Portale, die das " +
-      "Auslesen untersagen, werden nicht abgefragt.",
-    faq3Q: "Schreibt die KI meine Bewerbung?",
-    faq3A:
-      "Sie formuliert — aber sie erfindet nichts. Jede Aussage über Erfahrung, Ergebnis oder " +
-      "Verantwortung braucht einen Beleg aus deinem Profil oder deine ausdrückliche Bestätigung. " +
-      "Ohne Beleg wird abgeschwächt oder nachgefragt.",
-    faq4Q: "Sehen Arbeitgeber mein Profil?",
-    faq4A:
-      "Nein. {brand} arbeitet für die suchende Person. Es gibt keine Arbeitgeberseite, keine " +
-      "Kandidatensuche und keine Weitergabe deines Profils.",
-
-    closingTitle: "Fang mit dem an, was du schon kannst.",
+    closingTitle: "Fang mit einem Gespräch an.",
     closingBody:
-      "Das erste Gespräch dauert etwa fünfzehn Minuten. Du kannst jederzeit pausieren und später " +
-      "weitermachen.",
-    closingCta: "Kostenlos beginnen",
+      "Keine Registrierungspflicht für den ersten Blick, keine Werbe-E-Mails, keine Weitergabe " +
+      "deines Profils. Du behältst jede Angabe in der Hand.",
 
     navProduct: "Produkt",
-    navPricing: "Preise",
-    footerProduct: "Produkt",
-    footerTrust: "Vertrauen",
-    footerCompany: "Unternehmen",
-    footerOverview: "Überblick",
-    footerNote:
-      "{brand} und {assistant} sind vorläufige Namen. Kandidatenseitig — dieses Produkt arbeitet " +
-      "für die suchende Person, nicht für Arbeitgeber.",
-    footerLanguage:
-      "Sprache und Region wählst du beim Anlegen des Kontos und änderst sie jederzeit unter " +
-      "Konto → Sprache & Region.",
-
-    exampleSaid: "Was du erzählst",
-    exampleSaidText: "„Ich habe oft schwierige Kunden beruhigt.“",
-    exampleAsked: "Was {assistant} nachfragt",
-    exampleAskedText:
-      "„Erzähl mir von einer Eskalation, die du übernommen hast. Was hast du konkret getan — und " +
-      "was kam dabei heraus?“",
-    exampleEvidence: "Belegte Stärke",
-    exampleEvidenceText: "Konfliktklärung · technische Vermittlung · Verantwortung unter Druck",
-    exampleRoles: "Passende Rollen",
-    exampleJobs: "Echte offene Stellen dazu",
-    exampleJobsNote: "Live abgerufen, mit Quelle und Datum.",
+    navHow: "So funktioniert’s",
+    navSecurity: "Sicherheit",
+    navSignIn: "Anmelden",
+    footerPrivacy: "Datenschutz",
+    footerSecurity: "Sicherheit",
+    footerMethodology: "Methodik",
+    footerImprint: "Impressum",
+    footerTerms: "AGB",
   },
 
   auth: {
