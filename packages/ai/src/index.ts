@@ -15,3 +15,6 @@ export * from "./tools.ts";
 // zöge das OpenAI-SDK in jedes Modul, das dieses Paket anfasst — auch in
 // Installationen ohne Schlüssel, die es nie brauchen.
 export { OpenAiConfigurationError } from "./providers/errors.ts";
+
+/* Ninas Gesprächsmaschine: Stufen, Jobreife, strukturierte Ausgabe. */
+export * from "./nina/index.ts";

@@ -6,6 +6,7 @@ import { Maximize2, MessageSquarePlus, Minus, ScrollText, X } from "lucide-react
 import { cn } from "@/lib/cn";
 import { NinaSignal } from "./NinaSignal";
 import { Composer } from "./Composer";
+import { JobSuggestions } from "./JobSuggestions";
 import { useNina } from "./NinaProvider";
 
 /**
@@ -82,6 +83,9 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
         tabIndex={-1}
         className={cn(
           "flex max-h-[85dvh] flex-col overflow-hidden bg-raised shadow-xl outline-none",
+          // Auf schmalen Geräten ein Bogen von unten — dort ist der
+          // Daumen. Oben abgerundet, unten bündig: ein Blatt, das
+          // hochgeschoben wurde, hat unten keine Ecken zu zeigen.
           "rounded-t-(--radius-sheet) sm:max-h-[min(640px,70dvh)] sm:rounded-(--radius-sheet)",
           "motion-safe:animate-[nina-rise_240ms_cubic-bezier(0.16,1,0.3,1)]",
         )}
@@ -93,8 +97,12 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
             <span className="font-display text-[15px] font-semibold tracking-[-0.01em]">
               {assistantName}
             </span>
-            {nina.scopeLabel && (
-              <span className="truncate text-xs text-ink-3">{nina.scopeLabel}</span>
+            {/* Erst der Seitenkontext, sonst die Statuszeile. Beides
+                zugleich wäre eine Zeile zu viel für einen Kopf. */}
+            {(nina.scopeLabel || nina.stageStatus) && (
+              <span className="truncate text-xs text-ink-3">
+                {nina.scopeLabel ?? nina.stageStatus}
+              </span>
             )}
           </div>
 
@@ -189,6 +197,13 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
                   ))}
                 </ul>
               )}
+            </div>
+          )}
+
+          {/* Jobvorschläge auch im Drawer — höchstens drei. */}
+          {nina.jobs.length > 0 && (
+            <div className="py-2">
+              <JobSuggestions jobs={nina.jobs} readiness={nina.readiness} />
             </div>
           )}
 
@@ -287,7 +302,7 @@ export function NinaLauncher({ assistantName }: { assistantName: string }) {
       onClick={() => nina.setOpen(true)}
       aria-label={`${assistantName} fragen`}
       className={cn(
-        "fixed right-4 z-40 flex h-12 items-center gap-2.5 rounded-(--radius-control) bg-raised pl-3.5 pr-5 shadow-lg",
+        "fixed right-4 z-40 flex h-14 items-center gap-2.5 rounded-(--radius-control) bg-raised pl-4 pr-6 shadow-lg",
         "transition-[transform,box-shadow] duration-(--duration-base) ease-(--ease-out)",
         "hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0",
         "bottom-[calc(56px+env(safe-area-inset-bottom)+16px)] md:bottom-6 md:right-6",

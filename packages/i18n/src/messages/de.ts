@@ -64,20 +64,41 @@ export const de = {
   },
 
   landing: {
-    eyebrow: "Dein persönlicher KI-Karriereassistent",
-    headline: "Finde nicht mehr Jobs. Finde den richtigen.",
-    headlineLine1: "Finde nicht mehr Jobs.",
-    headlineLine2: "Finde den richtigen.",
+    eyebrow: "Deine persönliche KI-Karrierebegleitung",
+    headline: "Finde einen Job, der wirklich zu dir passt.",
+    headlineLine1: "Finde einen Job,",
+    headlineLine2: "der wirklich zu dir passt.",
     subheadline:
-      "{assistant} versteht deine Erfahrungen, erkennt passende berufliche Wege und zeigt dir " +
-      "aktuelle Jobs, die wirklich zu dir passen.",
+      "{assistant} lernt deine Erfahrungen, Stärken und Wünsche kennen, entdeckt auch " +
+      "unerwartete berufliche Möglichkeiten und begleitet dich bis zur Bewerbung.",
     ctaPrimary: "Kostenlos mit {assistant} starten",
-    ctaSecondary: "So funktioniert es",
+    ctaSecondary: "So funktioniert {assistant}",
 
-    coreLine1: "Wir zeigen dir nicht mehr Jobs.",
-    coreLine2: "Wir zeigen dir die richtigen.",
-    coreSub: "Nicht 10.000 Treffer. Die wenigen Chancen, die wirklich zählen.",
+    coreLine1: "Jobbörsen beginnen mit einem Suchbegriff.",
+    coreLine2: "{assistant} beginnt mit dir.",
+    coreSub:
+      "Nicht nur passende Titel. Passende Aufgaben, Bedingungen und Entwicklung.",
 
+    learnsEyebrow: "Was {assistant} über dich lernt",
+    learnsTitle: "Erst verstehen, dann suchen.",
+    learnsBody:
+      "Konkrete Situationen statt Selbstbeschreibung. Was du getan hast, was dabei " +
+      "herauskam, woran man es erkennen würde. Daraus entsteht ein Profil, das trägt.",
+    rolesEyebrow: "Richtungen",
+    rolesTitle: "Passende und unerwartete Rollen.",
+    rolesBody:
+      "Naheliegend, angrenzend, ungewöhnlich. Zu jedem Vorschlag: worauf er beruht, " +
+      "was anders wäre, was fehlt — und wie du ihn klein ausprobieren kannst.",
+    jobsEyebrow: "Aktuelle Stellen",
+    jobsTitle: "Jede Empfehlung mit Begründung, Quelle und offener Unsicherheit.",
+    jobsBody:
+      "Echte Anzeigen aus offen angebotenen Quellen, mit Link auf das Original und " +
+      "dem Zeitpunkt der letzten Prüfung. Gehalt nur, wenn es dort steht.",
+    applyEyebrow: "Bewerbung",
+    applyTitle: "Wenn ein Job passt, macht {assistant} dich bereit.",
+    applyBody:
+      "Unterlagen auf die Stelle zugeschnitten — Sprache und Reihenfolge, nicht die " +
+      "Wahrheit. Nichts wird ohne deine ausdrückliche Freigabe verschickt.",
     pathEyebrow: "Der Weg",
     pathTitle: "Von dem, was du kannst, zu dem, was du bekommst.",
     pathBody:

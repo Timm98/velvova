@@ -82,6 +82,10 @@
      man sieht, ohne dass eine Linie sie einsperrt. */
   --color-soft: var(--surface-soft);
   --color-soft-hover: var(--surface-soft-hover);
+  /* Die zwei farbigen Ruheflächen: Lavendel für Erkenntnisse, Eis für
+     Quellen. */
+  --color-lavender: var(--surface-lavender);
+  --color-ice: var(--surface-ice);
 
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
@@ -93,9 +97,14 @@
      liest sich als Absicht; `rounded-full` an einer Eingabe liest sich
      als Versehen. */
   --radius-control: var(--radius-control);
+  --radius-chip: var(--radius-chip);
   --radius-input: var(--radius-input);
+  --radius-textarea: var(--radius-textarea);
   --radius-surface: var(--radius-surface);
+  --radius-job: var(--radius-job);
   --radius-sheet: var(--radius-sheet);
+  --radius-modal: var(--radius-modal);
+  --radius-canvas: var(--radius-canvas);
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);

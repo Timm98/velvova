@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { brand } from "@paycheck/config";
 import { getPageContext } from "@/lib/locale";
 import { CareerSignal } from "@/components/marketing/CareerSignal";
+import { ApplyVisual, HeroVisual, ProfileVisual } from "@/components/marketing/ProductVisual";
 
 export const metadata: Metadata = {
   title: "Nicht mehr suchen. Den richtigen nächsten Schritt sehen.",
@@ -94,10 +95,7 @@ export default async function LandingPage() {
             <Link
               href="/register"
               className="inline-flex h-10 items-center rounded-full px-4 text-sm font-medium transition-transform hover:-translate-y-px"
-              style={{
-                background: "var(--ed-ink)",
-                color: "var(--ed-canvas)",
-              }}
+              style={{ background: "var(--ed-violet)", color: "#ffffff" }}
             >
               {t("landing.ctaPrimary", { assistant: brand.assistantName })}
             </Link>
@@ -116,8 +114,12 @@ export default async function LandingPage() {
           />
 
           <div className="relative mx-auto w-full max-w-[1180px] px-5 pb-20 pt-16 md:px-8 md:pb-28 md:pt-24">
+            {/* Kein Monospace mehr im Vorspann. Eine technische
+                Schrift über einem Satz wie „Deine persönliche
+                Karrierebegleitung" nimmt ihm genau das Menschliche,
+                das er behauptet. */}
             <p
-              className="font-mono text-2xs uppercase tracking-[0.18em]"
+              className="text-sm font-medium tracking-[0.01em]"
               style={{ color: "var(--ed-violet-text)" }}
             >
               {t("landing.eyebrow")}
@@ -143,10 +145,14 @@ export default async function LandingPage() {
               <Link
                 href="/register"
                 className="inline-flex h-12 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-transform hover:-translate-y-px"
+                /* Der Markenton statt Schwarz. Ein schwarzer Knopf über
+                   einem Satz wie „Deine persönliche Karrierebegleitung"
+                   ist der härteste Kontrast auf der Seite — und damit
+                   das Gegenteil dessen, was der Satz verspricht. */
                 style={{
-                  background: "var(--ed-ink)",
-                  color: "var(--ed-canvas)",
-                  boxShadow: "var(--ed-shadow-lift)",
+                  background: "var(--ed-violet)",
+                  color: "#ffffff",
+                  boxShadow: "0 6px 24px rgba(99, 91, 255, 0.28)",
                 }}
               >
                 {t("landing.ctaPrimary", { assistant: brand.assistantName })}
@@ -158,8 +164,14 @@ export default async function LandingPage() {
                 className="inline-flex h-12 items-center gap-1.5 text-[15px] underline underline-offset-[5px]"
                 style={{ color: "var(--ed-ink-2)", textDecorationColor: "var(--ed-hairline-strong)" }}
               >
-                {t("landing.ctaSecondary")}
+                {t("landing.ctaSecondary", { assistant: brand.assistantName })}
               </Link>
+            </div>
+
+            {/* Die Produktansicht direkt unter dem Hero. Überlappende
+                weiche Flächen statt vier Screens nebeneinander. */}
+            <div className="mt-16 md:mt-20">
+              <HeroVisual assistantName={brand.assistantName} />
             </div>
           </div>
         </section>
@@ -167,8 +179,7 @@ export default async function LandingPage() {
         {/* ══ Die Kernbotschaft ═════════════════════════════════ */}
         <section
           className="relative"
-          style={{ borderTop: "1px solid var(--ed-hairline)" }}
-        >
+          >
           <div className="mx-auto w-full max-w-[1180px] px-5 py-20 md:px-8 md:py-28">
             <p
               className="max-w-[20ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[3.25rem]"
@@ -185,7 +196,7 @@ export default async function LandingPage() {
                   color: "transparent",
                 }}
               >
-                {t("landing.coreLine2")}
+                {t("landing.coreLine2", { assistant: brand.assistantName })}
               </span>
             </p>
 
@@ -201,8 +212,7 @@ export default async function LandingPage() {
         {/* ══ Der Weg ═══════════════════════════════════════════ */}
         <section
           aria-labelledby="weg"
-          style={{ borderTop: "1px solid var(--ed-hairline)" }}
-        >
+          >
           <div className="mx-auto grid w-full max-w-[1180px] gap-12 px-5 py-20 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] md:gap-20 md:px-8 md:py-28">
             <div className="md:sticky md:top-28 md:self-start">
               <p
@@ -238,8 +248,7 @@ export default async function LandingPage() {
         {/* ══ Drei Unterschiede ═════════════════════════════════ */}
         <section
           aria-labelledby="unterschiede"
-          style={{ borderTop: "1px solid var(--ed-hairline)" }}
-        >
+          >
           <div className="mx-auto w-full max-w-[1180px] px-5 py-20 md:px-8 md:py-28">
             <h2 id="unterschiede" className="sr-only">
               Was {brand.name} anders macht
@@ -290,8 +299,108 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        {/* ══ Was Nina über dich lernt ══════════════════════════ */}
+        {/*
+          Zwei Abschnitte mit je einem Visual, gespiegelt angeordnet.
+          Kein Raster aus gleichen Karten: der Rhythmus trennt sie, nicht
+          eine Linie und nicht ein Kasten.
+        */}
+        <section aria-labelledby="lernt">
+          <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-5 py-20 md:grid-cols-2 md:px-8 md:py-28">
+            <div>
+              <p className="text-sm font-medium" style={{ color: "var(--ed-violet-text)" }}>
+                {t("landing.learnsEyebrow", { assistant: brand.assistantName })}
+              </p>
+              <h2
+                id="lernt"
+                className="mt-4 max-w-[16ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]"
+                style={{ color: "var(--ed-ink)" }}
+              >
+                {t("landing.learnsTitle")}
+              </h2>
+              <p
+                className="mt-6 max-w-[46ch] text-lg leading-relaxed"
+                style={{ color: "var(--ed-ink-2)" }}
+              >
+                {t("landing.learnsBody")}
+              </p>
+            </div>
+            <div className="justify-self-center md:justify-self-end">
+              <ProfileVisual />
+            </div>
+          </div>
+        </section>
+
+        {/* ══ Richtungen und Stellen ════════════════════════════ */}
+        <section aria-labelledby="richtungen">
+          <div className="mx-auto grid w-full max-w-[1180px] gap-12 px-5 py-20 md:grid-cols-2 md:px-8 md:py-28">
+            <div>
+              <p className="text-sm font-medium" style={{ color: "var(--ed-violet-text)" }}>
+                {t("landing.rolesEyebrow")}
+              </p>
+              <h2
+                id="richtungen"
+                className="mt-4 max-w-[16ch] font-display text-[1.75rem] font-semibold leading-[1.14] tracking-[-0.03em] md:text-[2.25rem]"
+                style={{ color: "var(--ed-ink)" }}
+              >
+                {t("landing.rolesTitle")}
+              </h2>
+              <p
+                className="mt-5 max-w-[46ch] text-lg leading-relaxed"
+                style={{ color: "var(--ed-ink-2)" }}
+              >
+                {t("landing.rolesBody")}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium" style={{ color: "var(--ed-violet-text)" }}>
+                {t("landing.jobsEyebrow")}
+              </p>
+              <h2
+                className="mt-4 max-w-[18ch] font-display text-[1.75rem] font-semibold leading-[1.14] tracking-[-0.03em] md:text-[2.25rem]"
+                style={{ color: "var(--ed-ink)" }}
+              >
+                {t("landing.jobsTitle")}
+              </h2>
+              <p
+                className="mt-5 max-w-[46ch] text-lg leading-relaxed"
+                style={{ color: "var(--ed-ink-2)" }}
+              >
+                {t("landing.jobsBody")}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ══ Bewerbung vorbereiten ═════════════════════════════ */}
+        <section aria-labelledby="bewerbung">
+          <div className="mx-auto grid w-full max-w-[1180px] items-center gap-12 px-5 py-20 md:grid-cols-2 md:px-8 md:py-28">
+            <div className="order-2 justify-self-center md:order-1 md:justify-self-start">
+              <ApplyVisual />
+            </div>
+            <div className="order-1 md:order-2">
+              <p className="text-sm font-medium" style={{ color: "var(--ed-violet-text)" }}>
+                {t("landing.applyEyebrow")}
+              </p>
+              <h2
+                id="bewerbung"
+                className="mt-4 max-w-[16ch] font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]"
+                style={{ color: "var(--ed-ink)" }}
+              >
+                {t("landing.applyTitle", { assistant: brand.assistantName })}
+              </h2>
+              <p
+                className="mt-6 max-w-[46ch] text-lg leading-relaxed"
+                style={{ color: "var(--ed-ink-2)" }}
+              >
+                {t("landing.applyBody")}
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* ══ Abschluss ═════════════════════════════════════════ */}
-        <section style={{ borderTop: "1px solid var(--ed-hairline)" }}>
+        <section>
           <div className="relative mx-auto w-full max-w-[1180px] overflow-hidden px-5 py-24 md:px-8 md:py-32">
             <div
               aria-hidden
@@ -315,9 +424,9 @@ export default async function LandingPage() {
                   href="/register"
                   className="inline-flex h-12 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-transform hover:-translate-y-px"
                   style={{
-                    background: "var(--ed-ink)",
-                    color: "var(--ed-canvas)",
-                    boxShadow: "var(--ed-shadow-lift)",
+                    background: "var(--ed-violet)",
+                    color: "#ffffff",
+                    boxShadow: "0 6px 24px rgba(99, 91, 255, 0.28)",
                   }}
                 >
                   {t("landing.ctaPrimary", { assistant: brand.assistantName })}

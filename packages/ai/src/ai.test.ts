@@ -134,13 +134,13 @@ describe("Ninas Systemprompt", () => {
     openHypotheses: ["Könnte Projektkoordination liegen"],
     hardConstraints: ["mindestens 42.000 EUR"],
     rejectedStatements: [],
-    currentStage: "experience_episodes",
+    currentStage: "evidence_discovery",
     externalProviderActive: false,
   };
 
   it("trennt Fakten, Hypothesen und Bedingungen sichtbar", () => {
     const p = buildNinaSystemPrompt(base);
-    expect(p).toContain("BESTAETIGTE FAKTEN");
+    expect(p).toContain("BESTÄTIGTE FAKTEN");
     expect(p).toContain("OFFENE HYPOTHESEN");
     expect(p).toContain("HARTE BEDINGUNGEN");
     expect(p).toContain("Zwei Jahre Kundenservice");

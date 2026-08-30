@@ -209,7 +209,10 @@ export function AppShell({
                       title={expanded ? undefined : labels[item.key]}
                       className={cn(
                         "group relative flex items-center gap-3 rounded-(--radius-control) text-sm transition-colors duration-(--duration-fast)",
-                        expanded ? "px-3 py-2.5" : "h-11 justify-center",
+                        // Die aktive Fläche ist oval, nicht rechteckig:
+                        // `rounded-control` ist 999 Pixel, und bei 44
+                        // Pixel Höhe ergibt das genau die weiche Kapsel.
+                        expanded ? "px-4 py-3" : "size-12 justify-center",
                         active
                           ? "bg-raised font-medium text-ink shadow-sm"
                           : "text-ink-2 hover:bg-raised/60 hover:text-ink",
@@ -220,7 +223,7 @@ export function AppShell({
                       {active && (
                         <span
                           aria-hidden
-                          className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 rounded-full bg-accent"
+                          className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-full bg-accent"
                         />
                       )}
                       <Icon

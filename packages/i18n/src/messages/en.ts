@@ -64,20 +64,40 @@ export const en: Messages = {
   },
 
   landing: {
-    eyebrow: "Your personal AI career assistant",
-    headline: "Don't find more jobs. Find the right one.",
-    headlineLine1: "Don't find more jobs.",
-    headlineLine2: "Find the right one.",
+    eyebrow: "Your personal AI career companion",
+    headline: "Find a job that genuinely fits you.",
+    headlineLine1: "Find a job",
+    headlineLine2: "that genuinely fits you.",
     subheadline:
       "{assistant} understands your experience, finds fresh roles from verified sources and " +
       "stays with you from orientation to application.",
     ctaPrimary: "Start free with {assistant}",
-    ctaSecondary: "How it works",
+    ctaSecondary: "How {assistant} works",
 
     coreLine1: "We do not show you more jobs.",
     coreLine2: "We show you the right ones.",
     coreSub: "Not 10,000 results. The few chances that actually matter.",
 
+    learnsEyebrow: "What {assistant} learns about you",
+    learnsTitle: "Understand first, then search.",
+    learnsBody:
+      "Concrete situations instead of self-description. What you did, what came of it, " +
+      "how someone would recognise it. That is what a profile can rest on.",
+    rolesEyebrow: "Directions",
+    rolesTitle: "Fitting and unexpected roles.",
+    rolesBody:
+      "Adjacent, neighbouring, unusual. For each: what it rests on, what would differ, " +
+      "what is missing — and how to test it small.",
+    jobsEyebrow: "Current roles",
+    jobsTitle: "Every recommendation with reasoning, source and open uncertainty.",
+    jobsBody:
+      "Real listings from openly offered sources, linked to the original, with the time " +
+      "of the last check. Salary only when it is stated there.",
+    applyEyebrow: "Application",
+    applyTitle: "When a job fits, {assistant} gets you ready.",
+    applyBody:
+      "Documents tailored to the role — language and priority, not the truth. Nothing is " +
+      "sent without your explicit approval.",
     pathEyebrow: "The path",
     pathTitle: "From what you can do to what you get.",
     pathBody:

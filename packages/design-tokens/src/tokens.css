@@ -1,5 +1,5 @@
 /*
- * Modern Soft Premium
+ * Soft Human Premium
  *
  * Die Haltung: ruhig, hochwertig, freundlich, übersichtlich. Weich statt
  * eckig, Licht statt Linien.
@@ -40,18 +40,25 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  --background: #f6f7fb;
-  --background-subtle: #eef1f8;
+  --background: #f7f8fc;
+  --background-subtle: #f0f2f8;
   --surface-1: #ffffff;
-  --surface-2: #f9fafd;
-  --surface-3: #eef1f8;
-  --surface-glass: rgba(255, 255, 255, 0.82);
+  --surface-2: #fbfcfe;
+  --surface-3: #f0f2f8;
+  --surface-glass: rgba(255, 255, 255, 0.84);
+
+  /* ---- Die beiden farbigen Ruheflächen ----
+     Lavendel trägt, was Nina verstanden hat. Eis trägt, was aus einer
+     Quelle kommt. Zwei Bedeutungen, zwei Töne — und keine dritte, weil
+     eine dritte niemand mehr auseinanderhält. */
+  --surface-lavender: #f0eeff;
+  --surface-ice: #edf6ff;
 
   /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
      eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
      einsperrt. */
-  --surface-soft: #f1f4fa;
-  --surface-soft-hover: #e9edf7;
+  --surface-soft: #f0f2f8;
+  --surface-soft-hover: #e7eaf4;
 
   --text-primary: #0b0e16;
   /*
@@ -61,8 +68,12 @@
    * mit 4,39 und 3,53 durch. Genau dort steht die kleine Schrift, bei
    * der ein zu heller Ton am wenigsten auffällt und am meisten schadet.
    */
-  --text-secondary: #61697b;
-  --text-tertiary: #63697a;
+  --text-secondary: #636d82;
+  /* Aufgehellt wirkt „muted" wie Nebensache — und genau deshalb steht
+     dort oft etwas, das man lesen muss. #9299A8 aus der Vorgabe erreicht
+     2,50:1 auf der Lavendelfläche. Der Ton bleibt zurückhaltend, aber
+     lesbar. */
+  --text-tertiary: #686d78;
   --text-on-primary: #ffffff;
 
   /* Linien gibt es noch — für Tabellen, Trennungen in dichten Listen
@@ -71,25 +82,25 @@
   --border-subtle: rgba(11, 14, 22, 0.07);
   --border-strong: rgba(11, 14, 22, 0.13);
 
-  --primary: #625cff;
-  --primary-fill: #625cff;
-  --primary-strong: #4f48e6;
-  --primary-soft: #eeeafe;
+  --primary: #635bff;
+  --primary-fill: #635bff;
+  --primary-strong: #4f47e8;
+  --primary-soft: #f0eeff;
   /* 4,53:1 auf der ungünstigsten Fläche (Soft Lavender). Der Markenton
      selbst liegt dort bei 4,13 und trägt deshalb Flächen, aber keine
      Schrift. */
-  --primary-text: #5953e9;
+  --primary-text: #5d56f1;
 
-  --signal-cyan: #55d8ff;
+  --signal-cyan: #b9d8ff;
   --signal-cyan-text: #0e7290;
-  --signal-cyan-soft: #ddebff;
-  --signal-violet: #8b82ff;
+  --signal-cyan-soft: #edf6ff;
+  --signal-violet: #8b83ff;
   --signal-violet-text: #5b4fd6;
-  --signal-violet-soft: #eeeafe;
+  --signal-violet-soft: #f0eeff;
 
-  --success: #21b97a;
-  --success-text: #15784f;
-  --success-soft: #ddf5ea;
+  --success: #24b47e;
+  --success-text: #187c57;
+  --success-soft: #e2f5ec;
   --warning: #e0a52a;
   --warning-text: #7a5d0a;
   --warning-soft: #fbf0d8;
@@ -99,8 +110,12 @@
 
   /* Zwei Lichtflächen. Sie sind der Ersatz für „noch eine Karte“:
      ein Abschnitt bekommt Tiefe durch Licht, nicht durch eine Kante. */
-  --wash-lavender: linear-gradient(180deg, #ffffff 0%, #eeeafe 100%);
-  --wash-ice: linear-gradient(180deg, #ffffff 0%, #ddebff 100%);
+  --wash-lavender: linear-gradient(180deg, #ffffff 0%, #f0eeff 100%);
+  --wash-ice: linear-gradient(180deg, #ffffff 0%, #edf6ff 100%);
+  /* Das Licht hinter Nina. Radial, sehr weit, sehr schwach — es soll
+     den Blick nicht holen, sondern die Fläche atmen lassen. */
+  --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(99, 91, 255, 0.14) 0%, transparent 72%);
+  --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(185, 216, 255, 0.5) 0%, transparent 72%);
 
   /* ---- Schatten ----
      Weit, weich, fast farblos. Ein harter Schatten ist eine Kante mit
@@ -117,18 +132,26 @@
      24–32, Schubladen 28–36. Die alten Werte (6 bis 22) lagen
      durchgehend darunter — deshalb wirkte alles eckig, obwohl überall
      ein Radius stand. */
-  --radius-xs: 10px;
-  --radius-sm: 14px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
-  --radius-xl: 30px;
-  --radius-2xl: 36px;
+  --radius-xs: 12px;
+  --radius-sm: 16px;
+  --radius-md: 20px;
+  --radius-lg: 26px;
+  --radius-xl: 32px;
+  --radius-2xl: 40px;
   --radius-full: 999px;
-  /* Alles, was man drückt: Pille. Ohne Ausnahme. */
+
+  /* Benannt nach der Aufgabe, nicht nach der Größe. Die Werte folgen
+     der Vorgabe: kleine Controls ab 16, Eingaben ab 20, Textfelder ab
+     26, Jobflächen 24–32, Schubladen 32–40, große Flächen 36–56. */
   --radius-control: 999px;
-  --radius-input: 18px;
-  --radius-surface: 26px;
-  --radius-sheet: 32px;
+  --radius-chip: 999px;
+  --radius-input: 22px;
+  --radius-textarea: 28px;
+  --radius-surface: 28px;
+  --radius-job: 28px;
+  --radius-sheet: 36px;
+  --radius-modal: 34px;
+  --radius-canvas: 44px;
 
   /* ---- Bewegung ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -349,7 +372,7 @@
 [data-surface="editorial"] {
   color-scheme: light;
 
-  --ed-canvas: #f5f7fb;
+  --ed-canvas: #f7f8fc;
   --ed-surface: #ffffff;
   --ed-surface-raised: #ffffff;
   --ed-ink: #090b12;
@@ -364,11 +387,11 @@
 
   /* Farbe ist Signal, keine Fläche. Diese drei tauchen als Linie, als
      Punkt und als Verlauf auf — nie als grosser gefüllter Block. */
-  --ed-violet: #665cff;
+  --ed-violet: #635bff;
   --ed-violet-text: #4b41d6;
   --ed-ice: #55d8ff;
   --ed-mint: #70f0c1;
-  --ed-violet-soft: #eae8ff;
+  --ed-violet-soft: #f0eeff;
 
   --ed-shadow-soft: 0 1px 2px rgba(9, 11, 18, 0.04), 0 8px 32px rgba(9, 11, 18, 0.06);
   --ed-shadow-lift: 0 2px 6px rgba(9, 11, 18, 0.05), 0 24px 64px rgba(9, 11, 18, 0.09);

@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import type { JobVorschlag } from "./JobSuggestions";
 
 /**
  * Ninas Zustand für die ganze Anwendung.
@@ -36,6 +37,13 @@ export interface NinaScopeValue {
   documentId?: string | null;
 }
 
+export interface NinaReadiness {
+  state: "not_ready" | "exploratory" | "ready";
+  score: number;
+  missing: string[];
+  reason: string;
+}
+
 interface NinaContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -45,6 +53,27 @@ interface NinaContextValue {
   conversationId: string | null;
   scopeLabel: string | null;
   suggestions: string[];
+  /** Die serverseitig gültige Stufe. Nie vom Client gesetzt. */
+  stage: string | null;
+  /** Die menschliche Statuszeile zur Stufe. */
+  stageStatus: string | null;
+  /** Was der Server über die Jobreife weiß. */
+  readiness: NinaReadiness | null;
+  /** Jobvorschläge, die Nina in diesem Zug gezeigt hat. Höchstens drei. */
+  jobs: JobVorschlag[];
+  /** Der aktuelle Fortschritt. `null`, solange der Server nichts geschickt hat. */
+  progressGroups: { key: string; label: string; done: boolean }[] | null;
+  /**
+   * Bietet Nina gerade Stellen an?
+   *
+   * Kommt aus `recommended_action` und ist die Voraussetzung dafür,
+   * dass die Oberfläche einen Zustimmungsknopf zeigt. Ohne diesen
+   * Zwischenschritt landen Stellen ungefragt auf dem Bildschirm — und
+   * genau das soll nicht passieren.
+   */
+  offeringJobs: boolean;
+  /** Ausdrückliche Zustimmung, Stellen zu sehen. */
+  agreeToSeeJobs: () => void;
   send: (text: string, options?: { fromVoice?: boolean }) => Promise<void>;
   reset: () => void;
   loadConversation: (id: string) => Promise<void>;
@@ -97,6 +126,18 @@ export function NinaProvider({
   );
   const [scopeLabel, setScopeLabel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [stage, setStage] = useState<string | null>(null);
+  const [stageStatus, setStageStatus] = useState<string | null>(null);
+  const [readiness, setReadiness] = useState<NinaReadiness | null>(null);
+  const [jobs, setJobs] = useState<JobVorschlag[]>([]);
+  const [progressGroups, setProgressGroups] = useState<
+    { key: string; label: string; done: boolean }[] | null
+  >(null);
+  const [offeringJobs, setOfferingJobs] = useState(false);
+  /* Die Zustimmung geht beim nächsten Senden einmalig mit und wird
+     serverseitig vermerkt. Danach steht sie in der Datenbank, nicht
+     hier — ein Zustand im Browser ist keine Zustimmung. */
+  const zustimmung = useRef(false);
   const [scope, setScopeState] = useState<NinaScopeValue>({});
 
   /*
@@ -159,9 +200,24 @@ export function NinaProvider({
      * Das Ergebnis darf hier gefahrlos ankommen: `setMessages`
      * überschreibt nichts, wenn schon etwas da ist.
      */
+    /*
+     * Beim Verlassen der Seite sauber abbrechen.
+     *
+     * Ohne das bleibt beim Neuladen eine Anfrage im Flug, die der Browser
+     * abschneidet. Safari meldet das als Seitenfehler — nicht als
+     * gefangene Ausnahme, sondern in der Konsole, sichtbar für jeden, der
+     * hinschaut. Ein sauberer Abbruch vor dem Entladen erzeugt gar keinen
+     * Fehler, statt einen zu verstecken.
+     */
+    const steuerung = new AbortController();
+    const beiVerlassen = () => steuerung.abort();
+    window.addEventListener("pagehide", beiVerlassen);
+
     void (async () => {
       try {
-        const antwort = await fetch(`/api/nina/conversations/${initialConversationId}`);
+        const antwort = await fetch(`/api/nina/conversations/${initialConversationId}`, {
+          signal: steuerung.signal,
+        });
         if (!antwort.ok) return;
         const daten = (await antwort.json()) as {
           messages: { id: string; role: string; content: string }[];
@@ -182,7 +238,27 @@ export function NinaProvider({
         // Fehlermeldung dafür wäre lauter als der Verlust.
       }
     })();
+
+    /*
+     * Beim Aufräumen NICHT abbrechen.
+     *
+     * React ruft den Effekt in der Entwicklung doppelt auf: einbinden,
+     * aufräumen, wieder einbinden. Ein `abort()` im Aufräumen killt
+     * damit die einzige Anfrage — der Wächter oben verhindert ja, dass
+     * eine zweite startet. Safari meldete das als „cancelled“, und der
+     * Verlauf kam nie an.
+     *
+     * Abgebrochen wird nur, wenn die Seite wirklich verlassen wird.
+     */
+    return () => {
+      window.removeEventListener("pagehide", beiVerlassen);
+    };
   }, [initialConversationId]);
+
+  const agreeToSeeJobs = useCallback(() => {
+    zustimmung.current = true;
+    setOfferingJobs(false);
+  }, []);
 
   const send = useCallback(
     async (text: string, options: { fromVoice?: boolean } = {}) => {
@@ -216,6 +292,7 @@ export function NinaProvider({
             jobId: scope.jobId ?? null,
             applicationId: scope.applicationId ?? null,
             fromVoice: options.fromVoice ?? false,
+            agreeToSeeJobs: zustimmung.current,
           }),
         });
 
@@ -268,6 +345,11 @@ export function NinaProvider({
               }
               setScopeLabel((ereignis.scopeLabel as string | null) ?? null);
               setSuggestions((ereignis.suggestions as string[]) ?? []);
+              if (typeof ereignis.stage === "string") setStage(ereignis.stage);
+              if (typeof ereignis.stageStatus === "string") setStageStatus(ereignis.stageStatus);
+              if (ereignis.readiness) setReadiness(ereignis.readiness as NinaReadiness);
+              // Die Zustimmung ist verbraucht — sie steht jetzt serverseitig.
+              zustimmung.current = false;
               continue;
             }
 
@@ -314,6 +396,30 @@ export function NinaProvider({
 
             if (ereignis.type === "error") {
               setError(String(ereignis.message));
+              continue;
+            }
+
+            if (ereignis.type === "jobs") {
+              // Höchstens drei — auch wenn der Server mehr schickte.
+              setJobs(((ereignis.jobs as JobVorschlag[]) ?? []).slice(0, 3));
+              continue;
+            }
+
+            if (ereignis.type === "turn") {
+              /*
+               * Die Auswertung des Zuges. Sie kommt NACH dem Text —
+               * deshalb aktualisiert sie Stufe und Reife hier und nicht
+               * im meta-Ereignis.
+               */
+              if (typeof ereignis.stage === "string") setStage(ereignis.stage);
+              if (typeof ereignis.stageStatus === "string") setStageStatus(ereignis.stageStatus);
+              if (ereignis.readiness) setReadiness(ereignis.readiness as NinaReadiness);
+              setOfferingJobs(ereignis.recommendedAction === "offer_jobs");
+              if (Array.isArray(ereignis.progressGroups)) {
+                setProgressGroups(
+                  ereignis.progressGroups as { key: string; label: string; done: boolean }[],
+                );
+              }
               continue;
             }
 
@@ -378,6 +484,7 @@ export function NinaProvider({
     setConversationId(null);
     setError(null);
     setBusy(false);
+    setJobs([]);
   }, []);
 
   const wert = useMemo<NinaContextValue>(
@@ -390,6 +497,13 @@ export function NinaProvider({
       conversationId,
       scopeLabel,
       suggestions,
+      stage,
+      stageStatus,
+      readiness,
+      jobs,
+      progressGroups,
+      offeringJobs,
+      agreeToSeeJobs,
       send,
       reset,
       loadConversation,
@@ -405,6 +519,13 @@ export function NinaProvider({
       conversationId,
       scopeLabel,
       suggestions,
+      stage,
+      stageStatus,
+      readiness,
+      jobs,
+      progressGroups,
+      offeringJobs,
+      agreeToSeeJobs,
       send,
       reset,
       loadConversation,

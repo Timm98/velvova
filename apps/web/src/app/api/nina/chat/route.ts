@@ -16,6 +16,9 @@ import {
   type ToolName,
 } from "@paycheck/ai";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { completedGroups, looksLikeJobRequest, PROGRESS_GROUPS, STAGE_STATUS_DE } from "@paycheck/ai";
+import { bestandAufnehmen, extrahieren, zugAnwenden, zustimmungVermerken } from "@/lib/nina/engine";
+import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
 import { buildPageContext } from "@/lib/nina/page-context";
 import { appendMessage, ensureConversation, loadModelContext } from "@/lib/nina/conversations";
@@ -60,6 +63,13 @@ const BodySchema = z.object({
   jobId: z.string().uuid().nullish(),
   applicationId: z.string().uuid().nullish(),
   fromVoice: z.boolean().default(false),
+  /*
+   * Ausdrückliche Zustimmung, Stellen zu sehen.
+   *
+   * Kommt von einem Knopf, nicht aus dem Gesprächsverlauf. „Klang, als
+   * wollte er" ist keine Grundlage dafür, jemandem Stellen vorzusetzen.
+   */
+  agreeToSeeJobs: z.boolean().default(false),
 });
 
 /**
@@ -173,6 +183,19 @@ export async function POST(request: Request) {
       : Promise.resolve(null),
   ]);
 
+  if (eingabe.agreeToSeeJobs) await zustimmungVermerken(user.id, true);
+
+  /*
+   * Bestand und Jobreife stehen VOR dem Modellaufruf fest.
+   *
+   * Sie gehen als Ansage in den Systemprompt. Ein Modell, das selbst
+   * entscheidet, ob es schon Stellen zeigen darf, entscheidet
+   * wohlwollend — und behauptet nach drei Antworten, den passenden Job
+   * gefunden zu haben.
+   */
+  const jobAnfrage = looksLikeJobRequest(eingabe.message);
+  const bestand = await bestandAufnehmen(user.id, { userAskedForJobs: jobAnfrage });
+
   const [envelope, seite, verlauf] = await Promise.all([
     buildContextEnvelope(user.id, {
       conversationId: gespräch.id,
@@ -209,16 +232,22 @@ export async function POST(request: Request) {
     ...verlauf.turns,
   ];
 
-  const systemPrompt =
-    buildNinaSystemPrompt({
-      locale: user.locale,
-      confirmedFacts: scoped.confirmedFacts,
-      openHypotheses: scoped.openHypotheses,
-      hardConstraints: scoped.hardConstraints,
-      rejectedStatements: scoped.rejectedStatements,
-      currentStage: envelope.workflowStage,
-      externalProviderActive: true,
-    }) + (seite.briefing ? `\n\nSEITENKONTEXT\n${seite.briefing}` : "");
+  const systemPrompt = buildNinaSystemPrompt({
+    locale: user.locale,
+    confirmedFacts: scoped.confirmedFacts,
+    openHypotheses: scoped.openHypotheses,
+    hardConstraints: scoped.hardConstraints,
+    rejectedStatements: scoped.rejectedStatements,
+    currentStage: bestand.stage,
+    jobReadiness: {
+      state: bestand.readiness.state,
+      score: bestand.readiness.score,
+      missing: bestand.readiness.missing,
+    },
+    userName: user.displayName,
+    pageBriefing: seite.briefing || undefined,
+    externalProviderActive: true,
+  });
 
   /*
    * Nur die Werkzeuge anbieten, die es wirklich gibt.
@@ -265,6 +294,15 @@ export async function POST(request: Request) {
         conversationId: gespräch.id,
         scopeLabel: seite.scopeLabel,
         suggestions: seite.suggestions,
+        stage: bestand.stage,
+        // Eine menschliche Statuszeile, kein „Frage 3 von 40“.
+        stageStatus: STAGE_STATUS_DE[bestand.stage],
+        readiness: {
+          state: bestand.readiness.state,
+          score: bestand.readiness.score,
+          missing: bestand.readiness.missing,
+          reason: bestand.readiness.reason,
+        },
         workflow: {
           stage: envelope.workflowStage,
           lastCompletedAction: envelope.lastCompletedAction,
@@ -476,6 +514,91 @@ export async function POST(request: Request) {
             latencyMs: latenz,
           }).catch(() => null);
           send({ type: "saved", messageId: gespeichert?.id ?? null });
+
+          /*
+           * Die strukturierte Auswertung — NACH dem sichtbaren Text.
+           *
+           * Die Person hat ihre Antwort schon gelesen; eine Analyse
+           * davor wäre Wartezeit, die niemand sieht und jeder spürt.
+           * Sie läuft auf der schnellen Stufe und schreibt
+           * ausschließlich UNBESTÄTIGTE Hypothesen.
+           *
+           * Schlägt sie fehl, ist das kein Fehler des Gesprächs: die
+           * Nachrichten stehen, es fehlt nur die Auswertung — und die
+           * holt der nächste Zug nach.
+           */
+          const turn = await extrahieren({
+            userId: user.id,
+            locale: user.locale,
+            stage: bestand.stage,
+            userMessage: eingabe.message,
+            assistantMessage: antwort,
+            bekannteFakten: [...scoped.confirmedFacts, ...scoped.openHypotheses].slice(0, 40),
+          }).catch(() => null);
+
+          if (turn) {
+            const angewendet = await zugAnwenden(user.id, turn, {
+              conversationId: gespräch.id,
+              userAskedForJobs: jobAnfrage,
+            }).catch(() => null);
+
+            if (angewendet) {
+              await db
+                .update(schema.ninaMessages)
+                .set({
+                  stage: angewendet.stage,
+                  recommendedAction: turn.recommended_action,
+                })
+                .where(eq(schema.ninaMessages.id, gespeichert!.id))
+                .catch(() => undefined);
+
+              /*
+               * Jobs nur, wenn der Server sie erlaubt UND Nina sie
+               * gerade zeigen will.
+               *
+               * Zwei Bedingungen, die beide gelten müssen: die Reife ist
+               * die Serverentscheidung, `show_jobs` die des Modells. Nur
+               * eine von beiden reicht nicht — sonst zeigt entweder ein
+               * Modell Stellen, die es nicht zeigen darf, oder der
+               * Server drängt sie mitten in eine andere Frage.
+               */
+              if (
+                turn.recommended_action === "show_jobs" &&
+                angewendet.readiness.state !== "not_ready"
+              ) {
+                const vorschläge = await ninaJobSuggestions(user.id, 3).catch(() => []);
+                if (vorschläge.length > 0) send({ type: "jobs", jobs: vorschläge });
+              }
+
+              send({
+                type: "turn",
+                stage: angewendet.stage,
+                stageStatus: STAGE_STATUS_DE[angewendet.stage],
+                stageChanged: angewendet.stageChanged,
+                recommendedAction: turn.recommended_action,
+                readiness: {
+                  state: angewendet.readiness.state,
+                  score: angewendet.readiness.score,
+                  missing: angewendet.readiness.missing,
+                  reason: angewendet.readiness.reason,
+                },
+                confirmationRequired: angewendet.zurBestätigung,
+                roleHypotheses: angewendet.gespeicherteHypothesen,
+                /*
+                 * Der Fortschritt geht mit hinaus.
+                 *
+                 * Vorher kam er nur beim Seitenaufbau — der Drawer zeigte
+                 * dann bei 97 Reifepunkten noch „0 Bereiche klar“, weil er
+                 * den Stand vom Öffnen der Seite trug.
+                 */
+                progressGroups: PROGRESS_GROUPS.map((g) => ({
+                  key: g.key,
+                  label: g.label,
+                  done: completedGroups(angewendet.evidence).includes(g.key),
+                })),
+              });
+            }
+          }
         }
 
         send({ type: "done", model: modell, latencyMs: latenz });

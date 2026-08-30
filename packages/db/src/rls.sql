@@ -104,7 +104,8 @@ DECLARE
     -- Ninas Gedächtnis. Alle drei tragen eine Nutzerkennung, und genau
     -- hier liegt das Gespräch: wer diesen Filter vergisst, gibt fremde
     -- Karrieregespräche frei.
-    'nina_conversations','nina_messages','workflow_states'
+    'nina_conversations','nina_messages','workflow_states',
+    'nina_role_hypotheses'
   ];
 BEGIN
   FOREACH t IN ARRAY user_tables LOOP

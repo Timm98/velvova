@@ -1,5 +1,6 @@
 import {
   boolean,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -46,6 +47,23 @@ export const careerInterviewStatusEnum = pgEnum("career_interview_status", [
   "paused",
   "completed",
   "needs_review",
+]);
+
+/**
+ * Ninas Gesprächsstufen.
+ *
+ * Sie liegen in der Datenbank und nicht im Modellkontext. Das ist der
+ * Unterschied zwischen „der Server weiß, wo wir stehen“ und „das Modell
+ * erinnert sich hoffentlich“.
+ */
+export const ninaStageEnum = pgEnum("nina_stage", [
+  "orientation", "current_situation", "evidence_discovery", "task_preferences",
+  "work_style", "values_and_tradeoffs", "constraints", "role_hypotheses",
+  "validation", "job_ready", "job_search", "application", "follow_up", "career_mode",
+]);
+
+export const jobReadinessStateEnum = pgEnum("job_readiness_state", [
+  "not_ready", "exploratory", "ready",
 ]);
 
 export const careerProfileStatusEnum = pgEnum("career_profile_status", [
@@ -133,6 +151,11 @@ export const ninaMessages = pgTable(
     contextRoute: text("context_route"),
     contextJobId: uuid("context_job_id").references(() => jobs.id, { onDelete: "set null" }),
 
+    /** In welcher Stufe dieser Zug entstand. Sonst ist er später nicht einzuordnen. */
+    stage: ninaStageEnum("stage"),
+    /** Was Nina in diesem Zug für richtig hielt: ask, confirm, offer_jobs … */
+    recommendedAction: text("recommended_action"),
+
     model: text("model"),
     inputTokens: integer("input_tokens"),
     outputTokens: integer("output_tokens"),
@@ -178,6 +201,18 @@ export const workflowStates = pgTable("workflow_states", {
   /** Der Schritt im Produktablauf, nicht im Gespräch. */
   currentWorkflowStep: text("current_workflow_step").notNull().default("account_setup"),
 
+  /* ---- Ninas Gesprächsstufe und Jobreife ----
+     Beides ist eine Serverentscheidung. Das Modell darf die Stufe
+     vorschlagen; ob sie gilt, prüft `resolveStage()` gegen die
+     tatsächlich vorhandenen Angaben. */
+  ninaStage: ninaStageEnum("nina_stage").notNull().default("orientation"),
+  jobReadinessState: jobReadinessStateEnum("job_readiness_state").notNull().default("not_ready"),
+  jobReadinessScore: integer("job_readiness_score").notNull().default(0),
+  /* Zustimmung als eigene Spalte, nicht als abgeleiteter Wert: „hat wohl
+     zugestimmt“ ist keine Grundlage dafür, jemandem Stellen vorzusetzen. */
+  agreedToSeeJobs: boolean("agreed_to_see_jobs").notNull().default(false),
+  profileCompleteness: integer("profile_completeness").notNull().default(0),
+
   /*
    * Die letzte Stelle, an der jemand gearbeitet hat.
    *
@@ -193,3 +228,38 @@ export const workflowStates = pgTable("workflow_states", {
 
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Rollenhypothesen.
+ *
+ * Eine ungewöhnliche Rolle darf nur mit Begründung erscheinen: worauf
+ * sie beruht, was anders wäre, was fehlt, wie man es klein testet.
+ * Deshalb sind das eigene Spalten und kein Freitext — ein Vorschlag
+ * ohne diese vier Angaben lässt sich hier gar nicht vollständig
+ * ablegen, und das ist der Punkt.
+ */
+export const ninaRoleHypotheses = pgTable(
+  "nina_role_hypotheses",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    conversationId: uuid("conversation_id").references(() => ninaConversations.id, {
+      onDelete: "set null",
+    }),
+    role: text("role").notNull(),
+    /** adjacent | neighbouring | unusual */
+    groupKind: text("group_kind").notNull(),
+    basedOn: text("based_on").notNull(),
+    difference: text("difference"),
+    gap: text("gap"),
+    smallTest: text("small_test"),
+    confidence: doublePrecision("confidence").notNull().default(0.5),
+    userConfirmed: boolean("user_confirmed").notNull().default(false),
+    userRejected: boolean("user_rejected").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("nina_role_hypotheses_user_idx").on(t.userId)],
+);

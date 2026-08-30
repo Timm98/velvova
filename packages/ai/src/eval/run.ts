@@ -159,10 +159,10 @@ function evaluateCase(c: EvalCase): CaseResult {
           openHypotheses: [],
           hardConstraints: [],
           rejectedStatements: [],
-          currentStage: "experience_episodes",
+          currentStage: "evidence_discovery",
           externalProviderActive: false,
         });
-        const forbids = /erfinden/i.test(p) && /BESTAETIGTE FAKTEN/.test(p);
+        const forbids = /erfinden/i.test(p) && /BESTÄTIGTE FAKTEN/.test(p);
         checks.push({
           name: EXPECTATION_LABEL[kind],
           passed: forbids,
