@@ -249,7 +249,14 @@ export function AppShell({
       {/* ══ Inhalt ════════════════════════════════════════════ */}
       <div className="grid min-h-dvh min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] md:block md:min-h-0">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-page/80 px-4 backdrop-blur-xl md:px-6">
-          <Link href="/app" className="md:hidden" aria-label={brandName}>
+          {/* Ein 20 Pixel großes Zeichen ist ein schönes Logo und ein
+              schlechtes Berührungsziel. Die Fläche darum trägt die
+              geforderten 24 Pixel, das Zeichen bleibt klein. */}
+          <Link
+            href="/app"
+            className="-ml-1.5 grid size-9 place-items-center rounded-[--radius-md] md:hidden"
+            aria-label={brandName}
+          >
             <NinaSignal size="sm" />
           </Link>
 

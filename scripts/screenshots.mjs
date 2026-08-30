@@ -11,6 +11,8 @@ import { mkdir } from "node:fs/promises";
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const LABEL = process.argv[2] ?? "aktuell";
 
+const SCHEME = process.env.SCHEME === "light" ? "light" : "dark";
+
 const VIEWPORTS = [
   { name: "desktop-1440", width: 1440, height: 1000 },
   { name: "laptop-1280", width: 1280, height: 800 },
@@ -29,7 +31,8 @@ const APP_PAGES = [
   ["dashboard", "/app"],
   ["nina", "/app/nina"],
   ["jobs", "/app/jobs"],
-  ["profile", "/app/profile"],
+  ["career", "/app/career"],
+  ["documents", "/app/documents"],
   ["applications", "/app/applications"],
   ["settings", "/app/settings"],
   ["settings-language", "/app/settings/language-region"],
@@ -45,7 +48,7 @@ for (const vp of VIEWPORTS) {
   const context = await browser.newContext({
     viewport: { width: vp.width, height: vp.height },
     deviceScaleFactor: 2,
-    colorScheme: "light",
+    colorScheme: SCHEME,
   });
   const page = await context.newPage();
 

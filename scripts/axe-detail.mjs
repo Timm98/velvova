@@ -12,7 +12,11 @@ const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3000";
 const paths = process.argv.slice(2);
 
 const browser = await chromium.launch();
-const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+const scheme = process.env.SCHEME === "dark" ? "dark" : "light";
+const context = await browser.newContext({
+  viewport: { width: 1440, height: 1000 },
+  colorScheme: scheme,
+});
 const page = await context.newPage();
 
 // Anmelden nur, wenn App-Seiten geprüft werden: die Landingpage leitet
@@ -31,7 +35,7 @@ for (const path of paths) {
     (v) => v.impact === "serious" || v.impact === "critical",
   );
 
-  console.log(`\n=== ${path} — ${serious.length} Regeln ===`);
+  console.log(`\n=== ${path} (${scheme}) — ${serious.length} Regeln ===`);
   for (const v of serious) {
     console.log(`\n[${v.id}] ${v.help}`);
     for (const node of v.nodes) {

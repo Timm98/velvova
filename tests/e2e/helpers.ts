@@ -60,6 +60,25 @@ export async function expectNoHorizontalOverflow(page: Page): Promise<void> {
  * Formulierung.
  */
 export async function openFirstJob(page: Page): Promise<void> {
-  await page.getByRole("article").first().getByRole("link").first().click();
+  /*
+   * Die Einzelseite direkt ansteuern.
+   *
+   * Der Weg ueber Klicks haengt an der Fensterbreite: unterhalb von
+   * 1024 Pixeln gibt es kein Nebeneinander, und die rechte Spalte
+   * erscheint erst nach einer ausdruecklichen Auswahl. Ein Test, der
+   * das nachbaut, prueft am Ende das Layout statt der Seite.
+   *
+   * Die Kennung steht im Listeneintrag; von dort fuehrt die Route.
+   */
+  const id = await page.locator("[data-job-id]").first().getAttribute("data-job-id");
+  if (!id) throw new Error("Kein Listeneintrag gefunden. Wurden Stellen geladen?");
+
+  await page.goto(`/app/jobs/${id}`);
   await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+}
+
+/** Waehlt die erste Stelle in der geteilten Ansicht aus. */
+export async function selectFirstJob(page: Page): Promise<void> {
+  await page.locator("[data-job-id] a").first().click();
+  await page.waitForURL(/[?&]job=/);
 }

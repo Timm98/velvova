@@ -189,6 +189,7 @@ export default async function JobsPage({
       <JobSplitView
         rows={rows}
         selectedId={selected?.jobId ?? null}
+        explicitSelection={Boolean(requested)}
         emptyState={
           <EmptyState
             icon={<Compass className="size-5" strokeWidth={1.7} />}
@@ -221,7 +222,7 @@ export default async function JobsPage({
           <Link
             href={includeBlocked ? "/app/jobs" : "/app/jobs?blocked=1"}
             scroll={false}
-            className="text-accent-text underline underline-offset-[3px]"
+            className="inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
           >
             {includeBlocked ? "Wieder ausblenden" : "Mit Begründung anzeigen"}
           </Link>

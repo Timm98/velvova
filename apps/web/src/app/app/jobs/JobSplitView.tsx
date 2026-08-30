@@ -21,11 +21,23 @@ import { JobRow, type JobRowData } from "@/components/jobs/JobRow";
 export function JobSplitView({
   rows,
   selectedId,
+  explicitSelection,
   detail,
   emptyState,
 }: {
   rows: JobRowData[];
   selectedId: string | null;
+  /**
+   * Hat die Person eine Stelle ausgewählt, oder ist es die
+   * Vorauswahl?
+   *
+   * Auf breiten Geräten ist die Vorauswahl richtig: die rechte Spalte
+   * wäre sonst leer. Auf schmalen ist sie falsch — dort ist die Liste
+   * die Seite, und wer sie öffnet, will die Liste sehen, nicht die
+   * erste Stelle. Serverseitig lässt sich die Fensterbreite nicht
+   * kennen; deshalb entscheidet der Suchparameter.
+   */
+  explicitSelection: boolean;
   detail: React.ReactNode;
   emptyState: React.ReactNode;
 }) {
@@ -69,9 +81,10 @@ export function JobSplitView({
         ref={listRef}
         className={cn(
           "min-w-0 border-line lg:overflow-y-auto lg:border-r",
-          selectedId && "hidden lg:block",
+          explicitSelection && "hidden lg:block",
         )}
       >
+        <h2 className="sr-only">Gefundene Stellen</h2>
         <ul className="divide-y divide-line">
           {rows.map((row) => (
             <li key={row.id} data-job-id={row.id}>
@@ -82,9 +95,10 @@ export function JobSplitView({
       </div>
 
       {/* ── Auswahl ────────────────────────────────────────── */}
-      <div className={cn("min-w-0 lg:overflow-y-auto", !selectedId && "hidden lg:block")}>
+      <div className={cn("min-w-0 lg:overflow-y-auto", !explicitSelection && "hidden lg:block")}>
         {selectedId ? (
           <>
+            <h2 className="sr-only">Ausgewählte Stelle</h2>
             <div className="sticky top-0 z-10 border-b border-line bg-raised/90 px-4 py-2.5 backdrop-blur lg:hidden">
               <button
                 type="button"

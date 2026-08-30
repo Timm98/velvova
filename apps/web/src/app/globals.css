@@ -35,7 +35,10 @@
   --color-line-3: var(--border-strong);
 
   /* ---- Marke: Indigo. Kein Orange, nirgends. ---- */
-  --color-accent: var(--primary);
+  /* Die klickbare Fläche trägt weiße Schrift und braucht deshalb den
+     tieferen Ton: auf dem hellen Indigo erreicht Weiß nur 4,44:1. */
+  --color-accent: var(--primary-fill);
+  --color-accent-brand: var(--primary);
   --color-accent-hover: var(--primary-strong);
   --color-accent-pressed: var(--primary-strong);
   --color-accent-soft: var(--primary-soft);
@@ -47,18 +50,29 @@
 
   /* ---- Signale: Cyan und Violett. Ninas Farben. ---- */
   --color-cyan: var(--signal-cyan);
+  --color-cyan-text: var(--signal-cyan-text);
   --color-cyan-soft: var(--signal-cyan-soft);
   --color-assistant: var(--signal-violet);
   --color-assistant-soft: var(--signal-violet-soft);
   --color-assistant-border: var(--border-strong);
-  --color-assistant-text: var(--signal-violet);
+  /* Für Schrift, nicht für Flächen: siehe Kommentar in den Tokens. */
+  --color-assistant-text: var(--signal-violet-text);
 
   /* ---- Bedeutung. Nie alleiniger Träger einer Information. ---- */
-  --color-positive: var(--success);
+  /*
+   * Der Haupt-Token zeigt auf die TEXT-sichere Fassung. Die meisten
+   * Verwendungen sind Schrift; Flächen und Punkte tragen keine
+   * Kontrastpflicht und vertragen den dunkleren Ton problemlos. Die
+   * reine Signalfarbe bleibt als *-fill erreichbar.
+   */
+  --color-positive: var(--success-text);
+  --color-positive-fill: var(--success);
   --color-positive-soft: var(--success-soft);
-  --color-caution: var(--warning);
+  --color-caution: var(--warning-text);
+  --color-caution-fill: var(--warning);
   --color-caution-soft: var(--warning-soft);
-  --color-critical: var(--danger);
+  --color-critical: var(--danger-text);
+  --color-critical-fill: var(--danger);
   --color-critical-soft: var(--danger-soft);
   --color-neutral: var(--text-secondary);
   --color-neutral-soft: var(--surface-2);

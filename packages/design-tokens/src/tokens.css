@@ -41,27 +41,51 @@
 
   --text-primary: #f7f9ff;
   --text-secondary: #a5aec2;
-  --text-tertiary: #747e95;
+  /* Aufgehellt gegenüber der Vorgabe (#747E95): auf --surface-2 und
+     --surface-3 lag der Kontrast bei 4,35 und darunter. Die Farbe wird
+     genau dort benutzt, wo sie durchfiel — in Etiketten auf Karten. */
+  --text-tertiary: #8892a8;
   --text-on-primary: #06080f;
 
   --border-subtle: rgba(174, 190, 225, 0.11);
   --border-strong: rgba(174, 190, 225, 0.2);
 
   --primary: #7182ff;
-  --primary-strong: #5b6bff;
+  --primary-fill: #5b6bff;
+  --primary-strong: #4a5bff;
   --primary-soft: rgba(113, 130, 255, 0.14);
   --primary-text: #9aa6ff;
 
+  /*
+   * Signalfarben in zwei Fassungen.
+   *
+   * Die reine Farbe trägt Flächen, Verläufe und Punkte. Für TEXT gibt es
+   * eine eigene Fassung — auf hellem Grund erreicht das Cyan der Vorgabe
+   * nur 2,55:1. Die Marke bleibt dieselbe, die Schrift wird lesbar.
+   */
   --signal-cyan: #67d8ff;
+  --signal-cyan-text: #67d8ff;
   --signal-cyan-soft: rgba(103, 216, 255, 0.13);
   --signal-violet: #a68cff;
+  --signal-violet-text: #b9a6ff;
   --signal-violet-soft: rgba(166, 140, 255, 0.13);
 
+  /*
+   * Bedeutungsfarben, ebenfalls in zwei Fassungen.
+   *
+   * Auf dunklem Grund trägt die Farbe selbst auch Schrift. Auf hellem
+   * Grund nicht: dort erreicht das Grün der Vorgabe auf seiner eigenen
+   * weichen Fläche nur 2,95:1. Die Fläche behält ihre Farbe, die
+   * Schrift bekommt eine dunklere.
+   */
   --success: #46d6a2;
+  --success-text: #46d6a2;
   --success-soft: rgba(70, 214, 162, 0.12);
   --warning: #f3d56b;
+  --warning-text: #f3d56b;
   --warning-soft: rgba(243, 213, 107, 0.12);
   --danger: #ff6f91;
+  --danger-text: #ff6f91;
   --danger-soft: rgba(255, 111, 145, 0.12);
 
   /* ---- Schatten ----
@@ -110,28 +134,36 @@
 
   --text-primary: #0a1020;
   --text-secondary: #5f687d;
-  --text-tertiary: #8a93a8;
+  /* Abgedunkelt gegenüber der Vorgabe (#8A93A8): dort lag der Kontrast
+     auf weißer Fläche bei 3,07 und auf --surface-2 bei 2,92. */
+  --text-tertiary: #5c6376;
   --text-on-primary: #ffffff;
 
   --border-subtle: #e0e6f0;
   --border-strong: #cdd6e5;
 
   --primary: #5868f6;
-  --primary-strong: #4253e8;
+  --primary-fill: #4253e8;
+  --primary-strong: #3543cf;
   --primary-soft: rgba(88, 104, 246, 0.1);
   --primary-text: #4253e8;
 
   --signal-cyan: #1dafdb;
+  --signal-cyan-text: #0f7391;
   --signal-cyan-soft: rgba(29, 175, 219, 0.10);
   --signal-violet: #8068e8;
+  --signal-violet-text: #6449d4;
   --signal-violet-soft: rgba(128, 104, 232, 0.10);
 
   --success: #149b70;
   --success-soft: rgba(20, 155, 112, 0.1);
+  --success-text: #0e7454;
   --warning: #b88c14;
   --warning-soft: rgba(184, 140, 20, 0.1);
+  --warning-text: #7a5d0a;
   --danger: #d84c70;
   --danger-soft: rgba(216, 76, 112, 0.1);
+  --danger-text: #a32547;
 
   --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
   --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);
@@ -155,28 +187,36 @@
 
     --text-primary: #0a1020;
     --text-secondary: #5f687d;
-    --text-tertiary: #8a93a8;
+    /* Abgedunkelt gegenüber der Vorgabe (#8A93A8): dort lag der Kontrast
+       auf weißer Fläche bei 3,07 und auf --surface-2 bei 2,92. */
+    --text-tertiary: #5c6376;
     --text-on-primary: #ffffff;
 
     --border-subtle: #e0e6f0;
     --border-strong: #cdd6e5;
 
     --primary: #5868f6;
-    --primary-strong: #4253e8;
+    --primary-fill: #4253e8;
+    --primary-strong: #3543cf;
     --primary-soft: rgba(88, 104, 246, 0.1);
     --primary-text: #4253e8;
 
     --signal-cyan: #1dafdb;
+    --signal-cyan-text: #0f7391;
     --signal-cyan-soft: rgba(29, 175, 219, 0.10);
     --signal-violet: #8068e8;
+    --signal-violet-text: #6449d4;
     --signal-violet-soft: rgba(128, 104, 232, 0.10);
 
     --success: #149b70;
     --success-soft: rgba(20, 155, 112, 0.1);
+    --success-text: #0e7454;
     --warning: #b88c14;
     --warning-soft: rgba(184, 140, 20, 0.1);
+    --warning-text: #7a5d0a;
     --danger: #d84c70;
     --danger-soft: rgba(216, 76, 112, 0.1);
+    --danger-text: #a32547;
 
     --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
     --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);

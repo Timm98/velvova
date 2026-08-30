@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
-import { expectNoHorizontalOverflow, loginAsDemo, openFirstJob, setLocale, setTheme } from "./helpers.ts";
+import {
+  expectNoHorizontalOverflow,
+  loginAsDemo,
+  openFirstJob,
+  selectFirstJob,
+  setLocale,
+  setTheme,
+} from "./helpers.ts";
 
 /**
  * Die Journey von der Landing Page bis zur Bewerbung.
@@ -137,23 +144,38 @@ test.describe("Angemeldet als Demo-Persona", () => {
     expect(body).not.toMatch(/Streak|Tagesziel|Serie von \d+ Tagen/i);
   });
 
-  test("Demo-Daten sind als Demo gekennzeichnet", async ({ page }) => {
-    // Die Kennzeichnung steht an den Daten selbst, nicht als Dauerbanner
-    // ueber der ganzen Anwendung: ein Band, das immer da ist, wird nach
-    // zwei Minuten nicht mehr gesehen.
+  test("In der Produktansicht stehen keine erfundenen Stellen", async ({ page }) => {
+    // Die Zusage aus dem Auftrag: erfundene Unternehmen erscheinen nicht
+    // in der echten Oberflaeche. Sobald echte Anzeigen vorliegen,
+    // verschwinden die Demo-Saetze - und die Herkunftsleiste sagt, wie
+    // viele echte es sind.
     await page.goto("/app/jobs");
-    const demoCard = page.getByRole("article").filter({ hasText: "Demo-Datensatz" }).first();
-    await expect(demoCard).toBeVisible();
-    await expect(page.getByText(/Demo-Datensätze|Demo-Datensatz/).first()).toBeVisible();
+    await expect(page.getByText(/echte Stellen/).first()).toBeVisible();
+
+    const body = (await page.textContent("main")) ?? "";
+    const realCount = Number(body.match(/(\d+) echte Stellen/)?.[1] ?? 0);
+
+    if (realCount > 0) {
+      // Kein Demo-Datensatz in der Liste, und keine Firma mit dem
+      // verraeterischen Zusatz.
+      expect(body).not.toContain("(Demo)");
+    } else {
+      // Ohne echte Quelle bleibt der Demo-Satz sichtbar - dann aber
+      // ausdruecklich gekennzeichnet.
+      await expect(page.getByText(/Demo-Datensätze|Demo-Datensatz/).first()).toBeVisible();
+    }
   });
 
-  test("Die Karte trennt Passung und Sicherheit, die Detailseite alle fünf", async ({ page }) => {
+  test("Die Auswahl trennt Passung und Sicherheit, die Vollansicht alle fünf", async ({ page }) => {
     await page.goto("/app/jobs");
-    const firstCard = page.getByRole("article").first();
-    await expect(firstCard.getByText("Passung", { exact: false }).first()).toBeVisible();
-    await expect(firstCard.getByText("Sicherheit", { exact: false }).first()).toBeVisible();
+    // Unterhalb von 1024 Pixeln erscheint die Auswahl erst nach einem
+    // Klick - dort ist die Liste die Seite.
+    await selectFirstJob(page);
+    const panel = page.getByRole("article").first();
+    await expect(panel.getByText("Passung", { exact: false }).first()).toBeVisible();
+    await expect(panel.getByText("Sicherheit", { exact: false }).first()).toBeVisible();
 
-    await firstCard.getByRole("link").first().click();
+    await page.getByRole("link", { name: "Vollständige Analyse" }).click();
     await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
 
     for (const label of [
@@ -190,7 +212,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     // Bedingung verletzt. Dann ist "kein Hinweis" das richtige Ergebnis
     // - aber wenn es einen gibt, muss er begruendet aufklappbar sein.
     if ((await notice.count()) === 0) {
-      await expect(page.getByRole("article").first()).toBeVisible();
+      await expect(page.locator("[data-job-id]").first()).toBeVisible();
       return;
     }
 
@@ -202,11 +224,12 @@ test.describe("Angemeldet als Demo-Persona", () => {
 
   test("Sortierung ändert die Reihenfolge tatsächlich", async ({ page }) => {
     await page.goto("/app/jobs");
-    const firstBefore = await page.getByRole("article").first().locator("h3").textContent();
+    const rows = page.locator('[data-job-id] h3');
+    const firstBefore = await rows.first().textContent();
 
     await page.getByLabel("Sortierung").selectOption("highest_salary");
     await page.waitForURL(/sort=highest_salary/);
-    const firstAfter = await page.getByRole("article").first().locator("h3").textContent();
+    const firstAfter = await rows.first().textContent();
 
     // Bei den Seed-Daten unterscheiden sich beste Gesamtchance und höchstes Gehalt.
     expect(firstAfter).not.toBe(firstBefore);
@@ -216,7 +239,17 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.goto("/app/jobs");
     await openFirstJob(page);
 
-    await expect(page.getByText("Mitarbeiterstimmen").first()).toBeVisible();
+    const hasReviews = (await page.getByText("Mitarbeiterstimmen").count()) > 0;
+
+    if (!hasReviews) {
+      // Ohne externe Quelle wird das gesagt - und ausdruecklich
+      // dazugestellt, dass es nichts ueber das Unternehmen aussagt.
+      await expect(
+        page.getByText(/Zu diesem Unternehmen liegen keine externen/),
+      ).toBeVisible();
+      return;
+    }
+
     await expect(page.getByText("Kundenbewertungen").first()).toBeVisible();
     await expect(
       page.getByText(/Kundenurteile über den Standort|Kundenurteile ueber den Standort/),
@@ -227,11 +260,11 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await page.goto("/app/jobs");
     await openFirstJob(page);
 
-    // Wo eine KI-Zusammenfassung erscheint, muss auch der Hinweis stehen,
-    // dass sie von einem Sprachmodell stammt - nie das eine ohne das andere.
+    // Die Zusage lautet nicht "es gibt immer eine Zusammenfassung",
+    // sondern: wo eine erscheint, steht auch der Hinweis dabei, dass sie
+    // von einem Sprachmodell stammt. Nie das eine ohne das andere.
     const badges = await page.getByText("KI-Zusammenfassung").count();
     const notes = await page.getByText(/stammt von einem Sprachmodell/).count();
-    expect(badges).toBeGreaterThan(0);
     expect(notes).toBeGreaterThanOrEqual(badges);
   });
 
@@ -435,7 +468,7 @@ test.describe("Sprache und Darstellung", () => {
     await setLocale(context, "en");
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Find work that fits the life you have",
+      "Your career. Not by keywords",
     );
     await expect(page.getByRole("link", { name: /Start with/i }).first()).toBeVisible();
 

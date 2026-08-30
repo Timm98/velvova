@@ -412,8 +412,8 @@ function RoleFan() {
               role.kind === "naheliegend"
                 ? "font-mono text-2xs uppercase tracking-wider text-ink-3"
                 : role.kind === "angrenzend"
-                  ? "font-mono text-2xs uppercase tracking-wider text-assistant"
-                  : "font-mono text-2xs uppercase tracking-wider text-cyan"
+                  ? "font-mono text-2xs uppercase tracking-wider text-assistant-text"
+                  : "font-mono text-2xs uppercase tracking-wider text-cyan-text"
             }
           >
             {role.kind}
