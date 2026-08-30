@@ -26,7 +26,7 @@ export function createSupabaseAdminClient() {
   if (!url || !key) {
     throw new Error(
       "Für serverseitige Läufe fehlen NEXT_PUBLIC_SUPABASE_URL oder " +
-        "SUPABASE_SERVICE_ROLE_KEY. Es wird nichts geschrieben.",
+        "SUPABASE_SECRET_KEY. Es wird nichts geschrieben.",
     );
   }
 

@@ -150,6 +150,6 @@ describe("Geheimnisse", () => {
     // RLS - er dort hineinzugeben waere der schwerste denkbare Fehler.
     const config = readFileSync(path.resolve(import.meta.dirname, "config.ts"), "utf8");
     expect(config).not.toContain("NEXT_PUBLIC_SUPABASE_SERVICE");
-    expect(config).toContain("process.env.SUPABASE_SERVICE_ROLE_KEY");
+    expect(config).toContain("process.env.SUPABASE_SECRET_KEY");
   });
 });

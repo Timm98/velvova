@@ -3,23 +3,60 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 /**
- * Die .env liegt in der Wurzel des Monorepos, nicht in dieser App - eine
- * Konfiguration fuer alle Teile. Next sucht sie standardmaessig neben der
- * App, deshalb wird sie hier ausdruecklich gelesen. Bereits gesetzte
- * Variablen gewinnen, damit die Umgebung die Datei ueberstimmen kann.
+ * Die Umgebungsdateien liegen in der Wurzel des Monorepos, nicht neben
+ * dieser App — eine Konfiguration für alle Teile. Next sucht sie
+ * standardmässig neben der App, deshalb werden sie hier ausdrücklich
+ * gelesen.
+ *
+ * Die Reihenfolge ist die von Next.js, und sie ist wichtig:
+ *
+ *   1. Was schon in der Umgebung steht, gewinnt immer. So kann ein
+ *      Deployment die Dateien überstimmen.
+ *   2. `.env.local` schlägt `.env`. Dort stehen die persönlichen Werte.
+ *   3. `.env` ist der gemeinsame Grundstock.
+ *
+ * Die erste Fassung las **nur** `.env`. Damit lief die eigene
+ * Setup-Anleitung ins Leere: wer wie dokumentiert eine `.env.local`
+ * anlegte, änderte nichts — und nichts schlug fehl, es blieb einfach
+ * beim alten Wert. Genau die Sorte Fehler, die einen Nachmittag kostet.
  */
 const repoRoot = path.resolve(process.cwd(), "../..");
-try {
-  for (const line of readFileSync(path.join(repoRoot, ".env"), "utf8").split("\n")) {
-    const match = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
-    if (match && process.env[match[1]!] === undefined) {
-      process.env[match[1]!] = match[2]!.replace(/^["']|["']$/g, "");
-    }
+
+function loadEnvFile(file: string, overrideFromFile: Set<string>): void {
+  let inhalt: string;
+  try {
+    inhalt = readFileSync(path.join(repoRoot, file), "utf8");
+  } catch {
+    // Datei fehlt: gültiger Zustand, kein Fehler. Ohne .env läuft das
+    // Projekt mit den Standardwerten im Demo-Modus.
+    return;
   }
-} catch {
-  // Keine .env vorhanden: das Projekt laeuft dann mit den Standardwerten
-  // im Demo-Modus. Das ist ein gueltiger Zustand, kein Fehler.
+
+  for (const line of inhalt.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const match = /^([A-Z0-9_]+)=(.*)$/.exec(trimmed);
+    if (!match) continue;
+
+    const [, name, rohwert] = match;
+    // Aus der echten Umgebung gesetzte Werte bleiben unangetastet —
+    // ausser sie stammen aus einer zuvor gelesenen Datei niedrigeren
+    // Rangs.
+    if (process.env[name!] !== undefined && !overrideFromFile.has(name!)) continue;
+    process.env[name!] = rohwert!.replace(/^["']|["']$/g, "");
+  }
 }
+
+// `.env` zuerst, dann `.env.local` darüber. Die zweite Menge merkt sich,
+// welche Namen aus einer Datei stammen und deshalb überschrieben werden
+// dürfen.
+const ausDatei = new Set<string>();
+const vorher = new Set(Object.keys(process.env));
+loadEnvFile(".env", ausDatei);
+for (const name of Object.keys(process.env)) {
+  if (!vorher.has(name)) ausDatei.add(name);
+}
+loadEnvFile(".env.local", ausDatei);
 process.env.PAYCHECK_REPO_ROOT ??= repoRoot;
 
 const config: NextConfig = {
