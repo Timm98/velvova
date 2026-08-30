@@ -1,3 +1,4 @@
+import { plural } from "@paycheck/domain";
 import type { ConfidenceResult, Job, ReviewAggregate } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
 import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
@@ -84,7 +85,7 @@ export function computeConfidence(input: ConfidenceInput): ConfidenceResult {
         : "Alter der Anzeige, letzter Linkcheck und Verfügbarkeit der Originalquelle." },
     { key: "external_coverage", label: "Externe Unternehmensinformationen", raw: external, weight: 0.15,
       explanation: external === null ? "Keine externen Quellen vorhanden."
-        : `${input.reviews.length} Quellen, nach Art getrennt ausgewiesen.` },
+        : `${plural(input.reviews.length, "Quelle", "Quellen")}, nach Art getrennt ausgewiesen.` },
   ];
 
   const { value, factors } = weightedScore(inputs);

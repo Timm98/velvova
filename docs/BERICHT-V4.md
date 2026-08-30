@@ -1,187 +1,194 @@
-# Statusbericht — Legal Global Metasearch (V4)
+# Statusbericht V4 — Legal Global Metasearch
 
-Branch `feature/legal-global-metasearch`, Stand 30. August 2026.
+Stand: 30. August 2026. Branch `feature/legal-global-metasearch`.
 
----
-
-## ⚠️ Zuerst: vier Schlüssel sind kompromittiert
-
-In deiner Nachricht standen im Klartext:
-
-| Anbieter | Variable | Was zu tun ist |
-|---|---|---|
-| OpenAI | `OPENAI_API_KEY` | **Sofort widerrufen**, neuen Projektschlüssel erzeugen, Usage und Billing auf Fremdnutzung prüfen |
-| Jooble | `JOOBLE_API_KEY_DE` | Widerrufen bzw. neu ausstellen lassen |
-| Adzuna | `ADZUNA_APP_ID` + `ADZUNA_APP_KEY` | In der Developer-Konsole neu erzeugen |
-| Supabase | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Öffentlicher Schlüssel — unkritisch, aber prüfen, dass RLS greift, bevor produktive Daten hineingehen |
-
-**Ich habe keinen davon verwendet, gespeichert oder in eine Datei
-geschrieben.** Neue Schlüssel gehören in `.env.local` — die Datei ist
-ignoriert und wird nie eingecheckt.
-
-### Ergebnis des Audits
-
-```
-Git-Historie              keine Schlüsselmuster
-Arbeitsverzeichnis        keine Schlüssel außerhalb ignorierter Dateien
-.gitignore                .env und .env.* ignoriert, nur .env.example versioniert
-Gesetzte Anbieterschlüssel  keine
-```
-
-Checkpoint: `chore/checkpoint-before-metasearch-platform`, Sicherung
-unter `~/projekt-sicherungen/paycheck-v3-final-*.bundle`.
+Dieser Bericht sagt, was läuft, was nicht läuft und was ich unterwegs kaputt
+gefunden habe. Die dritte Kategorie ist die interessanteste.
 
 ---
 
-## Was gebaut wurde
+## Kurzfassung
 
-### Source Registry und Policy Engine — das Kernstück
-
-Eine Sperre im Code, nicht eine Beschreibung davon.
-
-```
-apps/web/src/lib/sources/
-  decision-types.ts      Begriffe: Rechtsgrundlage, Zugangsart, Vorgang
-  source-registry.ts     15 Quellen — auch und gerade die gesperrten
-  policy-engine.ts       die Entscheidung, und assertAllowed() wirft
-  provenance.ts          feldgenaue Herkunft, mit Validierung
-  web-discovery.ts       Kandidaten mit Entscheidung, niemals Inhalt
-app/admin/sources/       die berechneten Entscheidungen, sichtbar
-```
-
-**Was durchgesetzt wird:**
-
-| Regel | Wie |
-|---|---|
-| Unbekannte Domain | → `ungeprüft`, keine Vorgänge. Nicht „vermutlich in Ordnung". |
-| LinkedIn, Indeed, StepStone, Monster, XING, kununu, Glassdoor, Google | → `nur Verweis`. Kein Abruf, kein Cache, kein Embedding, kein Ranking. **Unterdomains inbegriffen** — sonst wäre die Sperre mit `de.linkedin.com` zu umgehen. |
-| Umformulieren als Umgehung | → unmöglich: **kein `Summarize` ohne `FetchDetails`**. Wer nicht lesen darf, darf auch nicht zusammenfassen. |
-| Stelle ohne Original-Link | → wird nicht veröffentlicht. |
-| Abgelaufene Prüfung | → Quelle wechselt selbsttätig auf `ungeprüft`. |
-| Kill Switch | → wirkt **vor** dem ersten Netzzugriff. |
-| `ai_summary` ohne Herkunftsfelder | → Validierungsfehler, nicht Schönheitsfehler. |
-| Reichweitenaussage | → aus gezählten Entscheidungen gebildet; „das gesamte Internet" ist strukturell ausgeschlossen. |
-
-**31 Tests** sichern das ab, darunter jeder gesperrte Anbieter einzeln.
-
-Die Engine sitzt im echten Abrufpfad. Dabei kam ein Fehler heraus: Die
-Prüfung auf „eingerichtet" lief **vor** der Policy-Prüfung und verdeckte
-sie — eine nicht eingerichtete Quelle erreichte die Rechtsprüfung nie und
-tauchte im Bericht nicht auf. Zwei Filter für dieselbe Frage sind einer
-zu viel; der schwächere gewinnt dann stillschweigend.
-
-Live nachgewiesen:
-
-```json
-"skipped": [
-  { "key": "adzuna_de", "reason": "… nicht in Betrieb: Keine Zugangsdaten
-     hinterlegt (ADZUNA_APP_ID, ADZUNA_APP_KEY). Der Verweis auf die
-     Originalquelle bleibt möglich." },
-  { "key": "jooble_de", "reason": "… Kein Schlüssel hinterlegt
-     (JOOBLE_API_KEY_DE). …" }
-]
-```
-
-### Ninas Gedächtnis und Vorgangszustand (§15B)
-
-Migration mit `job_search_campaigns`, `workflow_states`,
-`nina_memory_items`, `conversation_summaries`, `context_snapshots`,
-`nina_tasks`, `job_field_provenance`, `web_discovery_candidates` — alle
-mit RLS und vier getrennten Policies.
-
-Der Zustandsautomat ist **reine Logik ohne Datenbank**: vierzehn Stufen,
-testbar ohne laufendes Postgres.
-
-- **Idempotent** — dieselbe Stelle zweimal gemerkt bleibt einmal
-  gemerkt. Ein doppelter Klick ist der Normalfall.
-- **Kein Rückschritt durch Zufall** — ein verzögertes Ereignis aus einem
-  früheren Schritt wirft den Vorgang nicht zurück.
-- `resumeMessage()` **behauptet nichts, wofür kein Ereignis vorliegt.**
-
-### Dokumentation, die nicht auseinanderlaufen kann
-
-`LEGAL_SOURCE_REGISTER.md` und `SOURCE_COMPLIANCE_MATRIX.md` werden von
-`scripts/generate-source-docs.mjs` aus derselben Datei erzeugt, die die
-Policy Engine benutzt. Von Hand gepflegte Compliance-Tabellen laufen
-auseinander — diese kann es nicht.
+| | |
+| --- | --- |
+| Unit-Tests | 284, grün |
+| E2E-Tests | 305, grün (5 übersprungen: nur mobil) |
+| Evaluationsfälle | 50 von 50 bestanden |
+| Typecheck / Build | fehlerfrei |
+| Barrierefreiheit | 0 schwere Verstösse, beide Themen |
+| Echte Stellen | rund 150 von Arbeitnow, live abgerufen |
+| Freigegebene Quellen | 1 von 15 |
+| Dokumente | 36, davon 4 aus dem Code erzeugt |
+| Produktivbetrieb | **nein** |
 
 ---
 
-## Prüfergebnisse
+## Was in diesem Durchgang entstanden ist
 
-| Prüfung | Ergebnis |
-|---|---|
-| `pnpm typecheck` | 16 / 16 |
-| `pnpm lint` | 16 / 16 |
-| `pnpm test` | **216 Tests**, 17 Dateien |
-| `pnpm eval` | 19 / 19 |
-| `pnpm build` | 4 / 4 |
-| `pnpm test:e2e` | **305 Tests**, fünf Breitenpunkte |
-| axe, beide Themes | 0 Verstöße |
+### Ninas Gedächtnis (§15B)
 
----
+Der Vorgangszustand liegt in der Datenbank, nicht im Kontextfenster. Nach einem
+Neustart, einem Gerätewechsel oder drei Tagen Pause kommt dieselbe Antwort:
 
-## Ehrlicher Stand gegen die Definition of Done
+> Zuletzt: Bewerbung begonnen. Offen ist: Bewerbung fortsetzen. Möchtest du dort
+> weitermachen? — Nina
 
-| Punkt | Stand |
-|---|---|
-| Keine Secrets im Repository oder Client-Bundle | ✅ auditiert |
-| RLS getestet | ✅ Migrationstest + PGlite-RLS-Test |
-| Mindestens ein erlaubter Provider funktioniert | ✅ Arbeitnow, 150 Stellen |
-| Kanonische eigene Jobtabelle | ✅ |
-| Quellen, Attribution, Aktualität sichtbar | ✅ |
-| Keine erfundenen Gehälter | ✅ |
-| Provider über Kill Switch abschaltbar | ✅ |
-| Kein blockierter Anbieter wird durch Umformulieren umgangen | ✅ **getestet** |
-| Reichweitenaussage nicht überzogen | ✅ strukturell |
-| Feldgenaue Provenienz | ✅ Schema + Validierung |
-| Workflow setzt nach Reload fort | ⚠️ Automat fertig und getestet, **noch nicht an die Route angeschlossen** |
-| Nina führt echte OpenAI-Calls aus | ❌ **Schlüssel fehlt** |
-| Jeder AI-Task über den Router zum vorgesehenen Modell | ⚠️ Router steht, drei Stufen verdrahtet; Realtime fehlt |
-| Dubletten über mehrere Quellen zusammengeführt | ⚠️ Inhaltshash je Quelle vorhanden, quellenübergreifend noch nicht |
-| ESCO-Integration | ❌ noch nicht begonnen |
-| Bewerbungs-Claim-Map | ⚠️ Schema in der Migration, Erzwingung im Studio fehlt |
+Liegt kein Ereignis vor, behauptet die Antwort nichts.
 
----
+Die Nutzerkennung im Kontext-Umschlag ist ein **Aufrufparameter aus der
+Serversitzung**. Es gibt kein Feld, über das eine fremde Kennung hereinkäme —
+auch nicht über einen manipulierten Gesprächsverlauf. Acht Tests gegen echtes
+Postgres mit aktivem RLS belegen das.
 
-## Was du jetzt tun musst
+### Kanonischer Stellen-Graph (§10.3)
 
-1. **Die vier Schlüssel widerrufen.** Zuerst den OpenAI-Schlüssel — er
-   kostet Geld, wenn ihn jemand findet.
-2. Neue Schlüssel erzeugen und lokal eintragen:
+Eine Stelle, mehrere Quellen. Der Abgleich läuft über Titel, Unternehmen und
+Ort — nicht über den Volltext, weil jedes Portal denselben Text anders kürzt.
 
-```bash
-cd ~/paycheck-rebuild
-cp .env.example .env.local
-$EDITOR .env.local      # OPENAI_API_KEY, JOOBLE_API_KEY_DE,
-                        # ADZUNA_APP_ID, ADZUNA_APP_KEY,
-                        # NEXT_PUBLIC_SUPABASE_* , SUPABASE_SERVICE_ROLE_KEY
-```
+Im Zweifel wird getrennt. Zusammenwerfen verschluckt eine echte Möglichkeit und
+ist unsichtbar; trennen macht die Liste länger und ist sichtbar.
 
-3. Danach sind ohne weitere Codeänderung freigeschaltet:
-   - Nina antwortet mit einem echten Modell (Router, Werkzeuge,
-     Streaming und Protokollierung sind gebaut und getestet)
-   - Jooble und Adzuna liefern Stellen — die Policy Engine lässt sie
-     dann durch, weil `enabled` und Zugangsdaten zusammenkommen
-   - Supabase übernimmt Anmeldung, Datenbank und Ablage
+### Modell-Router (§12)
 
-**Ich frage nicht nach den Werten und will sie nicht sehen.**
+TERRA, SOL, LUNA, REALTIME. Die Zuordnung Aufgabe → Stufe steht an genau einer
+Stelle, mit der Begründung als Feld statt als Kommentar. Im Fachcode steht
+weiterhin nirgends ein Modellname.
 
----
+Nicht jede Aufgabe hat einen Rückfall. Eine Profilsynthese auf dem schnellen
+Modell sähe aus wie ein Urteil und wäre keines — dort ist Scheitern die
+ehrlichere Antwort.
 
-## Nächster konkreter Schritt
+### Quellenschicht als eigenes Paket (§9)
 
-Den Kontext-Umschlag an `/api/nina/stream` anschließen, damit Nina den
-Vorgangszustand liest und nach einem Neustart an der richtigen Stelle
-fortsetzt. Der Automat ist fertig und geprüft; es fehlt die Verbindung.
+Der wichtigste Teil ist ein Umzug. Solange die Policy Engine in der
+Weboberfläche lag, nahm `ingestFromAdapter` die Entscheidung als **optionalen**
+Parameter entgegen. Wer ihn vergass, rief ungeprüft ab — und nichts schlug
+fehl. Ein Riegel, den man durch Weglassen öffnet, ist keiner.
+
+Dazu Fähigkeiten je Anbieter, eine Gesundheitsprüfung, die vier verschiedene
+Ausfallarten auseinanderhält, und eine Sicherung nach drei Fehlschlägen. Die
+Sicherung schützt nicht uns, sondern den anderen: einen überlasteten Dienst
+weiter im Minutentakt anzufragen, verlängert seinen Ausfall.
+
+### 50 Evaluationsfälle (§21.4)
+
+Die 31 neuen stammen aus der Frage, wer dieses Produkt tatsächlich benutzt:
+Menschen mit Lücke im Lebenslauf, mit Krankheit, mit Pflegezeiten, mit einem
+Abschluss aus einem anderen Land, mit einer Kündigung, die sie sich nicht
+ausgesucht haben. Der glatte Fall braucht keinen Schutz.
+
+### 17 Pflichtdokumente (§22)
+
+Vier davon werden aus dem Code erzeugt. Der Unterschied ist der Punkt: eine von
+Hand gepflegte Tabelle beschreibt irgendwann etwas anderes, als der Code tut,
+und dann glaubt die nächste Prüfung dem Dokument.
 
 ---
 
-## Keine Rechtsberatung
+## Was ich kaputt gefunden habe
 
-Das ist eine technische Risikosteuerung mit dokumentierten
-Quellenentscheidungen. Vor einem öffentlichen Betrieb, großflächiger
-Metasuche, Bewertungsaggregation oder nativer Bewerbung muss eine auf
-Datenbank-, Wettbewerbs-, Urheber-, Datenschutz- und Plattformrecht
-spezialisierte Kanzlei die konkreten Verträge, Länder und Datenflüsse
-prüfen.
+Der Teil, der am meisten wert war.
+
+**Drei Tabellen mit Nutzerkennung ohne Zeilenfilter.** `auth_accounts`,
+`memberships`, `ai_runs`. Sie sahen geschützt aus. Gefunden hat sie nicht ein
+Mensch beim Lesen, sondern der Generator für `RLS_POLICIES.md` — nachdem sein
+erster Anlauf selbst falsch war: er las die SQL-Dateien mit einem regulären
+Ausdruck und fand 4 von 33 Richtlinien, weil sie in einer PL/pgSQL-Schleife
+entstehen. Ein Dokument aus einem solchen Abzug ist schlimmer als keines: es
+behauptet Vollständigkeit und liefert eine Stichprobe. Die Katalogabfrage hat
+dann die echte Zahl gebracht — und die Lücke.
+
+**25 Gestaltungsvariablen, die es nicht gab.** Darunter das komplette
+Abstandsraster. CSS verwirft eine Deklaration mit unbekannter Variable
+stillschweigend: kein Übersetzungsfehler, keine Warnung, kein roter Test — auf
+achtzehn Seiten sind die Abstände einfach zusammengefallen. Ein neuer Test
+prüft das jetzt.
+
+**`accent-[hsl(var(--accent))]`** umschloss einen Hexwert mit `hsl()`. Ergebnis:
+die Kontrollkästchen in den Einstellungen hatten die Standardfarbe des Browsers
+statt der Markenfarbe. Auch das war unsichtbar, solange niemand hinsah.
+
+**Zwei Angriffsformen, die die Erkennung durchgelassen hat.** `SYSTEM:` am
+Zeilenanfang war nicht abgedeckt — nur die Form mit spitzen Klammern. Und
+„Ignoriere ab jetzt die Belegpflicht" nicht, weil das Muster das Wort
+„Anweisung" in der Nähe verlangte. Es war also gegen den Lehrbuchangriff
+gerichtet und nicht gegen den, der hier am meisten kostet. Beide Fälle sind
+durch die neuen Evaluationsfälle aufgefallen.
+
+**Drei Prüfungen im Eval-Lauf, die immer bestanden haben.** Sie standen auf
+`passed: true` und verwiesen auf Tests in anderen Paketen. Eine Prüfung, die
+immer besteht, prüft nichts. Jetzt rechnen sie.
+
+**„13 Bewerbungen, 1 Gespräche."** Ein Fehler, den kein Test bemerkt und jede
+Person sofort sieht. Die Suche danach fand fünf weitere Stellen.
+
+**Ein E2E-Test ohne eigenen Ausgangszustand.** Er schrieb bei jedem Lauf eine
+Antwort in dieselbe Entwicklungsdatenbank; irgendwann war das Gespräch am Ende
+und es gab kein Eingabefeld mehr. Ein Test, dessen Ergebnis davon abhängt, wie
+oft er vorher gelaufen ist, prüft nichts Verlässliches.
+
+**Das Bildschirmfoto-Skript brach beim ersten zu langen Seitenlauf ab** und
+verlor dabei alle folgenden Seiten.
+
+---
+
+## Was nicht läuft
+
+**ESCO ist nicht angebunden** (§4.4, Phase 3). Die Rollenzuordnung ist
+regelbasiert und gröber. Nicht begonnen.
+
+**Die Zusammenführung über Anbieter hinweg ist nicht im Betrieb belegt.** Sie
+ist implementiert und mit zwölf Tests geprüft, aber es ist nur eine Quelle
+freigegeben — und innerhalb einer Quelle greift schon die Eindeutigkeit über
+(Quelle, externe Kennung). Der Zähler `merged` steht deshalb auf null. Das ist
+kein Fehler, aber auch kein Nachweis.
+
+**Kein Ratenlimit.** Weder auf der Anmeldung noch auf den Gesprächsendpunkten.
+Vor Produktivbetrieb nötig.
+
+**Keine Verschlüsselung schutzbedürftiger Freitexte.** Das Feld ist vorgesehen
+und wird nicht befüllt. In der Folgenabschätzung als **nicht getragenes**
+Restrisiko geführt.
+
+**Kein Auftragsverarbeitungsvertrag** mit einem Modellanbieter. Ohne den ist
+kein Produktivbetrieb möglich.
+
+**Kein Versandweg verbunden.** Bewerbungen werden erzeugt und geprüft, aber
+nicht versendet. Im Produkt als „nicht verbunden" ausgewiesen.
+
+**Kein Penetrationstest, kein unabhängiges Audit.** Was in `SECURITY.md` steht,
+ist durch Tests belegt, nicht durch eine externe Prüfung.
+
+**Achtzehn Seiten benutzen noch Inline-Stile** mit den alten Variablennamen. Sie
+funktionieren über eine Weiterleitungsschicht in `tokens.css`, die als solche
+gekennzeichnet ist. Sauber wäre die Umstellung auf die semantischen Klassen.
+
+---
+
+## Was du tun musst
+
+**Die vier Schlüssel rotieren**, die im Chat standen. Sie gelten als
+kompromittiert, auch wenn sie niemand benutzt hat. Die neuen gehören in
+`.env.local` — nie in einen Chat, ein Bild oder eine Datei im Repository.
+
+Ohne sie läuft alles ausser dem Sprachmodell und den beiden zusätzlichen
+Stellenquellen. Die Bewertungslogik braucht kein Modell.
+
+---
+
+## Das Muster, das sich durchzieht
+
+Fast jeder gefundene Fehler war lautlos.
+
+Eine Richtlinie ohne aktives RLS filtert nichts und sieht beruhigend aus. Eine
+CSS-Variable, die es nicht gibt, verwirft die Deklaration ohne Warnung. Ein
+optionaler Sicherheitsparameter, den man weglässt, ändert nichts — ausser der
+Sicherheit. Eine Prüfung auf `passed: true` leuchtet grün.
+
+Deshalb sind mehrere Dokumente jetzt erzeugt statt geschrieben, deshalb fragt
+der RLS-Generator den Datenbankkatalog statt die SQL-Dateien, und deshalb ist
+der rechtliche Riegel kein Parameter mehr.
+
+**Wo zwei Mechanismen dieselbe Frage beantworten, gewinnt stillschweigend der
+schwächere.** Das war schon die Lehre aus `isConfigured()` gegen die Policy
+Engine, und es galt in diesem Durchgang noch dreimal.

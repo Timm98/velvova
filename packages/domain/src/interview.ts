@@ -1,3 +1,4 @@
+import { plural, pluralVerb } from "./plural.ts";
 import { z } from "zod";
 
 /**
@@ -126,7 +127,7 @@ export function evaluateGate(
       unlocked: false,
       missingStages: missing,
       profileConfirmed,
-      reason: `Es fehlen noch ${missing.length} Themen, bevor Empfehlungen sinnvoll sind.`,
+      reason: `Es ${pluralVerb(missing.length, "fehlt", "fehlen")} noch ${plural(missing.length, "Thema", "Themen")}, bevor Empfehlungen sinnvoll sind.`,
     };
   }
   if (!profileConfirmed) {

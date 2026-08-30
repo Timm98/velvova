@@ -1,3 +1,4 @@
+import { plural } from "@paycheck/domain";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Bell, Briefcase, History, Sparkles, Target } from "lucide-react";
@@ -72,7 +73,7 @@ export default async function DashboardPage() {
   const next = !gate.unlocked
     ? {
         title: gate.hasAnySession
-          ? `Noch ${gate.missingStages.length} Themen bis zu deinem Profil`
+          ? `Noch ${plural(gate.missingStages.length, "Thema", "Themen")} bis zu deinem Profil`
           : `Lern ${brand.assistantName} kennen`,
         body: gate.reason,
         cta: gate.hasAnySession ? "Gespräch fortsetzen" : "Gespräch beginnen",

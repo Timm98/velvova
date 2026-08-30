@@ -5,3 +5,4 @@ export * from "./job.ts";
 export * from "./interview.ts";
 export * from "./application.ts";
 export * from "./role.ts";
+export * from "./plural.ts";

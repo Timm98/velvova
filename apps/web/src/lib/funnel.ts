@@ -1,3 +1,4 @@
+import { plural } from "@paycheck/domain";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { eq } from "drizzle-orm";
 
@@ -126,7 +127,7 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
     findings.push({
       key: "interview_no_offer",
       title: "Gespräche ohne Angebot",
-      observation: `${counts.interviews} Gespräche, bisher kein Angebot.`,
+      observation: `${plural(counts.interviews, "Gespräch", "Gespräche")}, bisher kein Angebot.`,
       suggestion:
         "Bis zum Gespräch stimmt offenbar viel. Lohnend sind jetzt konkrete Beispiele mit " +
         "benanntem Ergebnis und eigene Rückfragen - oder die ehrliche Frage, ob die Rollen " +
@@ -148,10 +149,21 @@ export async function diagnoseFunnel(userId: string): Promise<FunnelDiagnosis> {
     });
   }
 
+  /*
+   * Ein Satz mit drei Zahlen, und jede davon kann eins sein.
+   *
+   * "13 Bewerbungen, 1 Gespräche" stand so auf der Seite. Ein Fehler,
+   * den kein Test bemerkt und jede Person sofort sieht — und der einen
+   * Text, der Sorgfalt behauptet, unglaubwürdig macht.
+   */
+  const bewerbungen = plural(counts.sent, "Bewerbung", "Bewerbungen");
+  const gespraeche = plural(counts.interviews, "Gespräch", "Gespräche");
+  const auffaellig = plural(findings.length, "Auffälligkeit", "Auffälligkeiten");
+
   const headline =
     findings.length === 0
-      ? `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. Kein auffälliges Muster.`
-      : `${counts.sent} Bewerbungen, ${counts.interviews} Gespräche. ${findings.length} Auffälligkeit${findings.length === 1 ? "" : "en"}.`;
+      ? `${bewerbungen}, ${gespraeche}. Kein auffälliges Muster.`
+      : `${bewerbungen}, ${gespraeche}. ${auffaellig}.`;
 
   return {
     counts,

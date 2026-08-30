@@ -42,6 +42,24 @@ const APP_PAGES = [
 const dir = `docs/screenshots/${LABEL}`;
 await mkdir(dir, { recursive: true });
 
+/**
+ * Ein Bildschirmfoto, das auch bei sehr langen Seiten ankommt.
+ *
+ * Chrome bricht die Ganzseitenaufnahme ab einer bestimmten Höhe ab. Der
+ * erste Lauf ist genau daran gescheitert — und zwar mit einem Abbruch
+ * des ganzen Skripts, sodass die restlichen Seiten gar nicht erst
+ * aufgenommen wurden. Ein Werkzeug, das wegen einer Seite alle anderen
+ * verliert, ist im Zweifel das falsche Werkzeug.
+ */
+async function shoot(page, path, label) {
+  try {
+    await page.screenshot({ path, fullPage: true });
+  } catch {
+    await page.screenshot({ path });
+    console.warn(`${label}: zu lang für eine Ganzseitenaufnahme, nur der sichtbare Bereich.`);
+  }
+}
+
 const browser = await chromium.launch();
 
 for (const vp of VIEWPORTS) {
@@ -54,14 +72,14 @@ for (const vp of VIEWPORTS) {
 
   for (const [name, path] of PUBLIC_PAGES) {
     await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
-    await page.screenshot({ path: `${dir}/${vp.name}--${name}.png`, fullPage: true });
+    await shoot(page, `${dir}/${vp.name}--${name}.png`, `${vp.name} ${path}`);
   }
 
   const login = await page.goto(`${BASE}/api/dev/login`);
   if (login && login.ok()) {
     for (const [name, path] of APP_PAGES) {
       await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
-      await page.screenshot({ path: `${dir}/${vp.name}--${name}.png`, fullPage: true });
+      await shoot(page, `${dir}/${vp.name}--${name}.png`, `${vp.name} ${path}`);
     }
   } else {
     console.warn(`Anmeldung fehlgeschlagen (${login?.status()}) — App-Seiten übersprungen.`);
@@ -74,7 +92,7 @@ for (const vp of VIEWPORTS) {
 
   if (jobLink) {
     await page.goto(`${BASE}${jobLink}`, { waitUntil: "networkidle" });
-    await page.screenshot({ path: `${dir}/${vp.name}--job-detail.png`, fullPage: true });
+    await shoot(page, `${dir}/${vp.name}--job-detail.png`, `${vp.name} job-detail`);
   }
 
   await context.close();

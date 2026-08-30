@@ -1,3 +1,4 @@
+import { plural } from "@paycheck/domain";
 /**
  * Der Zustandsautomat des Vorgangs.
  *
@@ -163,7 +164,7 @@ export function transition(state: WorkflowState, event: WorkflowEvent): Workflow
     case "SEARCH_EXECUTED":
       return next(
         "JOB_REVIEW",
-        `${event.resultCount} Stellen geprüft`,
+        `${plural(event.resultCount, "Stelle", "Stellen")} geprüft`,
         "Stellen ansehen",
         event.resultCount > 0
           ? "Sieh dir die begründetsten Treffer an"
