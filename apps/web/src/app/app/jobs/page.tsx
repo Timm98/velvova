@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { plural } from "@paycheck/domain";
 import type { SortKey } from "@paycheck/matching";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Compass, Sparkles, Target } from "lucide-react";
+import { Compass, Link2, Sparkles, Target } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
@@ -159,7 +160,19 @@ export default async function JobsPage({
       <PageHeader
         eyebrow="Entdecken"
         title="Deine besten Möglichkeiten"
-        lead={`${brand.assistantName} hat ${jobs.length + blockedCount} Stellen gegen dein bestätigtes Profil geprüft. Sortiert nach begründeter Passung — nicht nach Werbebudget.`}
+        lead={`${brand.assistantName} hat ${plural(jobs.length + blockedCount, "Stelle", "Stellen")} gegen dein bestätigtes Profil geprüft. Sortiert nach begründeter Passung — nicht nach Werbebudget.`}
+        actions={
+          // Wer die Stelle woanders gefunden hat, soll sie hier
+          // trotzdem prüfen lassen können. Ohne diesen Weg endet jede
+          // Empfehlung an der Grenze unserer Quellen.
+          <Link
+            href="/app/jobs/import"
+            className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+          >
+            <Link2 aria-hidden className="size-3.5" strokeWidth={1.9} />
+            Job-Link analysieren
+          </Link>
+        }
       />
 
       <Suspense fallback={<SkeletonText lines={2} />}>

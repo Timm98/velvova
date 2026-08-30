@@ -259,3 +259,23 @@ describe("Unbekannte Quelle", () => {
     expect(decision.allowedOperations).toEqual([]);
   });
 });
+
+describe("Begründungen als Sätze", () => {
+  it("hängt keinen zweiten Punkt an", () => {
+    // "keine schriftliche Freigabe.. Der Verweis" stand so in jeder
+    // Antwort des Import-Endpunkts. Kein Test bemerkt das, und jede
+    // Person sieht es.
+    for (const entry of SOURCE_REGISTRY) {
+      const { reason } = decideForEntry(entry, new Date());
+      expect(reason, entry.providerKey).not.toMatch(/\.\./);
+      expect(reason, entry.providerKey).not.toMatch(/\s\./);
+    }
+  });
+
+  it("begründet jede Entscheidung in ganzen Sätzen", () => {
+    for (const entry of SOURCE_REGISTRY) {
+      const { reason } = decideForEntry(entry, new Date());
+      expect(reason.length, entry.providerKey).toBeGreaterThan(15);
+    }
+  });
+});

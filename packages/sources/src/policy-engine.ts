@@ -58,6 +58,12 @@ function reviewOverdue(entry: SourceEntry, now: Date): boolean {
  * `now` ist ein Parameter und kein `new Date()` im Rumpf: nur so lässt
  * sich das Ablaufen einer Prüfung überhaupt testen.
  */
+/** Genau ein Satzzeichen am Ende, nicht zwei und nicht keins. */
+function satzende(text: string): string {
+  const t = text.trim();
+  return /[.!?]$/.test(t) ? t : `${t}.`;
+}
+
 export function decideForEntry(entry: SourceEntry | null, now = new Date()): SourceDecision {
   if (!entry) {
     return deny(
@@ -96,7 +102,11 @@ export function decideForEntry(entry: SourceEntry | null, now = new Date()): Sou
         entry,
         "link_only",
         "provider_disabled",
-        `${entry.displayName} ist nicht in Betrieb: ${entry.killSwitchReason ?? "kein Grund hinterlegt"}. ` +
+        // Der Grund im Verzeichnis endet mal mit Punkt, mal ohne. Ein
+        // fest angehängter Punkt ergab "keine Freigabe.. Der Verweis" —
+        // sichtbar in jeder Antwort des Import-Endpunkts.
+        `${entry.displayName} ist nicht in Betrieb: ` +
+          `${satzende(entry.killSwitchReason ?? "kein Grund hinterlegt")} ` +
           `Der Verweis auf die Originalquelle bleibt möglich.`,
       ),
       allowedFields: ["source_url"],
