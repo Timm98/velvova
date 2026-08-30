@@ -32,7 +32,7 @@ export default async function PrivacyPage() {
           <p style={{ color: "var(--text-secondary)" }}>
             {externalAi
               ? "Es ist ein externer KI-Anbieter verbunden. Texte werden zur Analyse dorthin übermittelt. Direkte Identifikatoren wie E-Mail-Adresse, Telefonnummer und Profillinks werden vorher entfernt."
-              : "Es ist kein externer KI-Anbieter verbunden. Die Antworten stammen von einem lokalen Demo-Anbieter und verlassen dieses Gerät nicht."}
+              : "Es ist kein KI-Anbieter eingerichtet. Es werden keine Texte an einen externen Dienst übermittelt."}
           </p>
           <p style={{ color: "var(--text-secondary)" }}>
             {integrations.mail === "draft-only"

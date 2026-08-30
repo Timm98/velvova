@@ -1,7 +1,8 @@
 "use client";
 
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { saveTheme } from "@/lib/settings-actions";
 import { cn } from "@/lib/cn";
 
 type Theme = "light" | "dark" | "system";
@@ -9,34 +10,61 @@ type Theme = "light" | "dark" | "system";
 /**
  * Darstellung wählen.
  *
- * Die Wahl landet in einem Cookie, damit der Server sie beim nächsten
- * Laden schon kennt und die Seite nicht kurz in der falschen Farbe
- * aufblitzt. "System" entfernt das Attribut — dann entscheiden die
- * Medienabfragen in den Tokens.
+ * Die Wahl geht an zwei Orte, und beide sind nötig:
  *
- * Steht ab jetzt in den Einstellungen, nicht mehr in der Kopfzeile.
+ *   **Cookie** — damit der Server sie beim nächsten Laden schon im
+ *   ersten Byte kennt. Ohne das blitzt die Seite kurz in der falschen
+ *   Farbe auf, und zwar bei jedem einzelnen Aufruf.
+ *
+ *   **Datenbank** — damit sie einen Gerätewechsel überlebt. Ein Cookie
+ *   gilt für einen Browser; die Einstellung gehört aber zur Person.
+ *
+ * Drei Werte, drei verschiedene Ergebnisse:
+ *
+ *   light    immer hell
+ *   dark     immer dunkel
+ *   system   folgt dem Gerät
+ *
+ * Und der vierte Fall, der keiner ist: nichts gewählt. Der ist **hell**,
+ * nicht „System“. Wer sich neu anmeldet, soll nicht deshalb in einer
+ * dunklen Oberfläche landen, weil sein Betriebssystem gerade dunkel
+ * eingestellt ist. Deshalb setzt „System“ ein eigenes Attribut, statt
+ * einfach alle Attribute zu entfernen — sonst wäre „System“ nicht von
+ * „nie gewählt“ zu unterscheiden.
  */
 export function ThemeToggle({
   labels,
+  initial,
 }: {
   labels: { light: string; dark: string; system: string; group: string };
+  initial?: Theme;
 }) {
-  const [theme, setTheme] = useState<Theme>("system");
+  const [theme, setTheme] = useState<Theme>(initial ?? "light");
+  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const stored = document.documentElement.dataset.theme;
-    setTheme(stored === "light" || stored === "dark" ? stored : "system");
-  }, []);
+    if (initial) return;
+    const el = document.documentElement;
+    const gesetzt = el.dataset.theme;
+    if (gesetzt === "light" || gesetzt === "dark") setTheme(gesetzt);
+    else if (el.dataset.themeMode === "system") setTheme("system");
+    else setTheme("light");
+  }, [initial]);
 
   function choose(next: Theme) {
     setTheme(next);
+
+    const el = document.documentElement;
     if (next === "system") {
-      delete document.documentElement.dataset.theme;
-      document.cookie = "paycheck_theme=; Path=/; Max-Age=0; SameSite=Lax";
+      delete el.dataset.theme;
+      el.dataset.themeMode = "system";
     } else {
-      document.documentElement.dataset.theme = next;
-      document.cookie = `paycheck_theme=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      delete el.dataset.themeMode;
+      el.dataset.theme = next;
     }
+
+    document.cookie = `paycheck_theme=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    startTransition(() => void saveTheme(next));
   }
 
   const options = [
@@ -46,15 +74,16 @@ export function ThemeToggle({
   ];
 
   return (
-    <fieldset className="inline-flex gap-1 rounded-[--radius-md] border border-line-2 bg-sunken p-1">
+    <fieldset className="inline-flex gap-1 rounded-(--radius-control) bg-soft p-1">
       <legend className="sr-only">{labels.group}</legend>
       {options.map(({ value, label, Icon }) => (
         <label
           key={value}
           className={cn(
-            "flex min-h-9 cursor-pointer items-center gap-2 rounded-[--radius-sm] px-3 text-sm transition-colors duration-[--duration-fast]",
+            "flex min-h-11 cursor-pointer items-center gap-2 rounded-(--radius-control) px-4 text-sm transition-colors duration-(--duration-fast)",
+            "has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
             theme === value
-              ? "bg-raised font-medium text-ink shadow-xs"
+              ? "bg-raised font-medium text-ink shadow-sm"
               : "text-ink-2 hover:text-ink",
           )}
         >

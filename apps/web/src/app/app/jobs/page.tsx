@@ -17,6 +17,7 @@ import type { JobRowData } from "@/components/jobs/JobRow";
 import { JobFilters } from "./JobFilters";
 import { JobSplitView } from "./JobSplitView";
 import { JobDetailPanel } from "./JobDetailPanel";
+import { NinaSearchBar } from "@/components/jobs/NinaSearchBar";
 
 export const metadata: Metadata = { title: "Matches" };
 export const dynamic = "force-dynamic";
@@ -54,26 +55,6 @@ export default async function JobsPage({
   // Der Riegel: ohne bestätigtes Mindestprofil keine personalisierten
   // Vorschläge. Kein Gimmick, sondern der Unterschied zwischen
   // Empfehlung und Zufall.
-  if (!gate.unlocked) {
-    return (
-      <div className="grid gap-8">
-        <PageHeader eyebrow="Matches" title="Deine besten Möglichkeiten" />
-        <EmptyState
-          icon={<Target className="size-5" strokeWidth={1.7} />}
-          title={`${brand.assistantName} braucht noch etwas mehr von dir`}
-          body={`${t("jobs.lockedBody")} ${gate.reason}`}
-          action={
-            <Button asChild variant="primary">
-              <Link href={gate.profileConfirmed ? "/app/nina" : "/app/career"}>
-                {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
-              </Link>
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
-
   const db = await getDb();
   const ctx = await loadProfileContext(user.id);
   const includeBlocked = params.blocked === "1";
@@ -121,8 +102,7 @@ export default async function JobsPage({
         .slice(0, 6)
     : [];
 
-  const realCount = filtered.filter((j) => !j.job.isDemo).length;
-  const demoCount = filtered.length - realCount;
+  const realCount = filtered.length;
 
   // Die Auswahl steht im Suchparameter, damit sie verlinkbar ist und der
   // Zurück-Knopf das Erwartete tut.
@@ -188,6 +168,38 @@ export default async function JobsPage({
         }
       />
 
+      {/*
+       * Die Sperre sperrt die PERSONALISIERUNG, nicht die Seite.
+       *
+       * Vorher ersetzte sie die ganze Jobliste durch einen Hinweis: wer
+       * sein Gespräch noch nicht weit genug geführt hatte, sah gar keine
+       * Stellen. Das war zu viel. Die Anzeigen sind echt und öffentlich
+       * — sie zurückzuhalten schützt niemanden. Was ohne belegtes Profil
+       * nicht geht, ist die Reihenfolge zu begründen, und genau das
+       * steht hier.
+       */}
+      {!gate.unlocked && (
+        <div className="rounded-(--radius-surface) bg-accent-soft px-5 py-4">
+          <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+            <span className="font-medium text-ink">
+              Diese Reihenfolge ist noch nicht auf dich zugeschnitten.
+            </span>{" "}
+            {gate.reason}{" "}
+            <Link
+              href={gate.profileConfirmed ? "/app/nina" : "/app/career"}
+              className="text-accent-text underline underline-offset-[3px]"
+            >
+              {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
+            </Link>
+          </p>
+        </div>
+      )}
+
+      {/* Zuerst der Weg in Worten, danach die Filter. Wer eine
+          Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
+          erst in Felder übersetzen müssen. */}
+      <NinaSearchBar assistantName={brand.assistantName} />
+
       <Suspense fallback={<SkeletonText lines={2} />}>
         <JobFilters resultCount={filtered.length} />
       </Suspense>
@@ -195,14 +207,12 @@ export default async function JobsPage({
       {/* Herkunft, immer sichtbar. */}
       <div className="flex flex-wrap items-center gap-3 text-sm">
         {realCount > 0 && (
-          <Badge tone="positive">
-            <span aria-hidden className="size-1.5 rounded-full bg-positive" />
-            {realCount} echte Stellen
-          </Badge>
+          <span className="text-ink-2">
+            {realCount} {realCount === 1 ? "Stelle" : "Stellen"}
+          </span>
         )}
-        {demoCount > 0 && <Badge tone="caution">{demoCount} Demo-Datensätze</Badge>}
         <span className="text-ink-3">
-          Echte Anzeigen stammen aus offen angebotenen Quellen und verlinken auf das Original.
+          Alle Anzeigen stammen aus offen angebotenen Quellen und verlinken auf das Original.
         </span>
         <Link
           href="/app/settings/integrations"

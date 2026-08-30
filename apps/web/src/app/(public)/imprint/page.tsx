@@ -33,7 +33,7 @@ export default async function ImprintPage() {
 
       <div
         role="note"
-        className="grid gap-3 rounded-[--radius-lg] border border-caution/30 bg-caution-soft p-5"
+        className="grid gap-3 rounded-(--radius-lg) border border-caution/30 bg-caution-soft p-5"
       >
         <p className="text-sm font-medium text-caution">
           Noch nicht vollständig — {statusLabel(dokument.reviewStatus)}

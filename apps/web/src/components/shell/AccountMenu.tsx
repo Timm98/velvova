@@ -62,7 +62,7 @@ export function AccountMenu({
         aria-haspopup="menu"
         aria-label="Kontomenü"
         className={cn(
-          "grid size-9 place-items-center rounded-[--radius-full] text-sm font-medium transition-colors",
+          "grid size-11 place-items-center rounded-(--radius-full) text-sm font-medium transition-colors",
           "bg-inset text-ink-2 hover:bg-line-2",
           open && "ring-2 ring-brand/40",
         )}
@@ -73,7 +73,7 @@ export function AccountMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 animate-fade-in rounded-[--radius-lg] border border-line-2 bg-overlay p-1.5 shadow-xl"
+          className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 animate-fade-in rounded-(--radius-lg) border border-line-2 bg-overlay p-1.5 shadow-xl"
         >
           <div className="border-b border-line px-3 py-2.5">
             <p className="truncate text-sm font-medium">{userName ?? "Konto"}</p>
@@ -89,7 +89,7 @@ export function AccountMenu({
                     href={item.href}
                     role="menuitem"
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 rounded-[--radius-sm] px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+                    className="flex items-center gap-2.5 rounded-(--radius-sm) px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
                   >
                     <Icon className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
                     {item.label}

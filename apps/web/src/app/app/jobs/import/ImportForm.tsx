@@ -83,7 +83,7 @@ export function ImportForm({ assistantName }: { assistantName: string }) {
               if (e.key === "Enter") pruefen();
             }}
             placeholder="https://…"
-            className="min-h-10 min-w-0 flex-1 rounded-[--radius-sm] border border-line-2 bg-inset px-3.5 text-sm outline-none focus-visible:border-accent"
+            className="min-h-10 min-w-0 flex-1 rounded-(--radius-sm) border border-line-2 bg-inset px-3.5 text-sm outline-none focus-visible:border-accent"
           />
           <Button type="button" variant="primary" onClick={pruefen} disabled={pending || !url.trim()}>
             {pending ? (

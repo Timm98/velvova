@@ -12,22 +12,33 @@ import type { ChatOptions } from "./provider.ts";
  * Stufe geht heraus, und die Begründung steht daneben — nicht als
  * Kommentar, sondern als Feld, das mitprotokolliert wird.
  *
- * §12 nennt die Stufen bei Namen. Die Namen sind keine Modellnamen: sie
- * beschreiben ein Verhalten, und welches Modell dahinter steht, ist
- * Konfiguration. Im Fachcode steht nie ein Modellname — sonst ist der
- * Anbieterwechsel ein Umbau statt einer Einstellung.
+ * Die Stufen heißen nach ihrer AUFGABE, nicht poetisch. Sie hießen
+ * einmal TERRA, SOL und LUNA — und genau das wurde zum Problem: in der
+ * Vorgabe stand TERRA für das Gespräch und LUNA für die billige
+ * Massenaufgabe, im Code war es umgekehrt. Zwei Dokumente, dieselben
+ * drei Wörter, entgegengesetzte Bedeutung. Ein Name, den man nachschlagen
+ * muss, ist ein Name, den irgendwann jemand falsch nachschlägt.
  *
- *   TERRA     Boden. Klassifizieren, extrahieren, normalisieren.
+ * Die Namen sind weiterhin keine Modellnamen: welches Modell dahinter
+ * steht, ist Konfiguration. Im Fachcode steht nie ein Modellname —
+ * sonst ist der Anbieterwechsel ein Umbau statt einer Einstellung.
+ *
+ *   FAST      Klassifizieren, extrahieren, normalisieren, verdichten.
  *             Hohe Menge, geringe Tiefe, muss billig sein.
- *   SOL       Tageslicht. Das Gespräch. Tempo vor Tiefe — eine
- *             Rückfrage nach vier Sekunden ist keine Rückfrage mehr.
- *   LUNA      Nachtarbeit. Profilsynthese, Rollenvergleich,
- *             Bewerbungstexte. Darf dauern, muss stimmen.
+ *             → OPENAI_MODEL_FAST
+ *   DEFAULT   Das Gespräch. Tempo vor Tiefe — eine Rückfrage nach vier
+ *             Sekunden ist keine Rückfrage mehr. Der Regelfall; nicht
+ *             jede Nachricht braucht die teure Stufe.
+ *             → OPENAI_MODEL_DEFAULT
+ *   DEEP      Profilsynthese, Rollenvergleich, Bewerbungstexte,
+ *             widersprüchliche Belege. Darf dauern, muss stimmen.
+ *             → OPENAI_MODEL_DEEP
  *   REALTIME  Sprache. Eigener Pfad, eigene Zugangsdaten, eigene
  *             kurze Lebensdauer.
+ *             → OPENAI_MODEL_REALTIME
  */
 
-export type ModelTier = "TERRA" | "SOL" | "LUNA" | "REALTIME";
+export type ModelTier = "FAST" | "DEFAULT" | "DEEP" | "REALTIME";
 
 /** Die Aufgaben, die im Produkt tatsächlich vorkommen. */
 export type AiTask =
@@ -51,7 +62,27 @@ export type AiTask =
   | "cv_section_draft"
   | "application_claim_check"
   // Sprache
-  | "voice_session";
+  | "voice_session"
+  /*
+   * Die Aufgabentypen aus der Produktvorgabe.
+   *
+   * Sie stehen neben den internen Namen, nicht statt ihrer: die
+   * bestehenden Aufrufstellen sollen nicht umbenannt werden, nur damit
+   * eine Liste passt. Wo beide dasselbe meinen, steht dieselbe Stufe.
+   */
+  | "conversation"
+  | "career_interview"
+  | "career_analysis"
+  | "career_role_exploration"
+  | "job_summary"
+  | "job_match"
+  | "job_long_term_analysis"
+  | "application_strategy"
+  | "document_generation"
+  | "document_extraction"
+  | "classification"
+  | "conversation_summary"
+  | "support";
 
 export interface RoutingDecision {
   task: AiTask;
@@ -67,9 +98,9 @@ export interface RoutingDecision {
 }
 
 const PROVIDER_TIER: Record<ModelTier, NonNullable<ChatOptions["tier"]>> = {
-  TERRA: "fast",
-  SOL: "interactive",
-  LUNA: "deep",
+  FAST: "fast",
+  DEFAULT: "interactive",
+  DEEP: "deep",
   // Sprache läuft über einen eigenen Pfad. Fällt der aus, ist die
   // Textstufe der ehrliche Rückfall — nicht ein stiller Abbruch.
   REALTIME: "interactive",
@@ -84,94 +115,94 @@ interface Regel {
 
 const ROUTEN: Record<AiTask, Regel> = {
   interview_turn: {
-    tier: "SOL",
+    tier: "DEFAULT",
     reason: "Ein Mensch wartet auf die nächste Frage.",
     timeoutMs: 20_000,
-    fallback: "TERRA",
+    fallback: "FAST",
   },
   interview_followup: {
-    tier: "SOL",
+    tier: "DEFAULT",
     reason: "Rückfrage im laufenden Gespräch.",
     timeoutMs: 20_000,
-    fallback: "TERRA",
+    fallback: "FAST",
   },
   nina_chat: {
-    tier: "SOL",
+    tier: "DEFAULT",
     reason: "Gespräch mit Werkzeugaufrufen; das Tempo trägt das Erlebnis.",
     timeoutMs: 60_000,
-    fallback: "TERRA",
+    fallback: "FAST",
   },
 
   evidence_extraction: {
-    tier: "TERRA",
+    tier: "FAST",
     reason: "Aussagen aus Text herauslösen. Menge statt Tiefe.",
     timeoutMs: 30_000,
     fallback: null,
   },
   language_detection: {
-    tier: "TERRA",
+    tier: "FAST",
     reason: "Einfache Klassifikation. Ein grosses Modell wäre Verschwendung.",
     timeoutMs: 10_000,
     fallback: null,
   },
   job_normalisation: {
-    tier: "TERRA",
+    tier: "FAST",
     reason: "Formatangleich über viele Datensätze.",
     timeoutMs: 30_000,
     fallback: null,
   },
   requirement_extraction: {
-    tier: "TERRA",
+    tier: "FAST",
     reason: "Anforderungen aus einer Anzeige lesen.",
     timeoutMs: 30_000,
     fallback: null,
   },
   review_theme_clustering: {
-    tier: "TERRA",
+    tier: "FAST",
     reason: "Wiederkehrende Themen in Bewertungen bündeln.",
     timeoutMs: 45_000,
     fallback: null,
   },
 
   profile_synthesis: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Aus vielen Belegen wird ein Bild. Fehler hier tragen weit.",
     timeoutMs: 120_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
   role_suggestion: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Rollenvorschläge müssen begründbar sein, nicht nur plausibel.",
     timeoutMs: 90_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
   job_fit_explanation: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Die Begründung wird der Person gezeigt und muss standhalten.",
     timeoutMs: 60_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
   career_transition_analysis: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Ein Wechselpfad über Jahre. Der teuerste Rat im Produkt.",
     timeoutMs: 120_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
 
   cover_letter_draft: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Der Text geht an einen Arbeitgeber. Er trägt einen Namen.",
     timeoutMs: 90_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
   cv_section_draft: {
-    tier: "LUNA",
+    tier: "DEEP",
     reason: "Wie beim Anschreiben: das Ergebnis verlässt das Haus.",
     timeoutMs: 90_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
   },
   application_claim_check: {
-    tier: "TERRA",
+    tier: "FAST",
     reason:
       "Abgleich Satz gegen Beleg. Die eigentliche Prüfung ist regelbasiert; " +
       "das Modell schlägt nur eine vorsichtigere Formulierung vor.",
@@ -183,7 +214,92 @@ const ROUTEN: Record<AiTask, Regel> = {
     tier: "REALTIME",
     reason: "Sprache in beide Richtungen, eigener Pfad und eigene Zugangsdaten.",
     timeoutMs: 15_000,
-    fallback: "SOL",
+    fallback: "DEFAULT",
+  },
+
+  /* ── Die Aufgabentypen aus der Produktvorgabe ──────────────── */
+
+  conversation: {
+    tier: "DEFAULT",
+    reason: "Der Regelfall. Ein Mensch wartet auf eine Antwort.",
+    timeoutMs: 60_000,
+    fallback: "FAST",
+  },
+  career_interview: {
+    tier: "DEFAULT",
+    reason: "Gespräch mit Rückfragen. Tempo trägt das Erlebnis.",
+    timeoutMs: 60_000,
+    fallback: "FAST",
+  },
+  support: {
+    tier: "DEFAULT",
+    reason: "Eine Frage zum Produkt. Braucht Klarheit, keine Tiefe.",
+    timeoutMs: 40_000,
+    fallback: "FAST",
+  },
+  job_summary: {
+    tier: "DEFAULT",
+    reason: "Eine Anzeige verständlich machen. Der Inhalt liegt vor.",
+    timeoutMs: 40_000,
+    fallback: "FAST",
+  },
+
+  career_analysis: {
+    tier: "DEEP",
+    reason: "Die abschließende Sicht auf ein Berufsleben. Fehler tragen weit.",
+    timeoutMs: 120_000,
+    fallback: "DEFAULT",
+  },
+  career_role_exploration: {
+    tier: "DEEP",
+    reason: "Rollen jenseits des Naheliegenden. Genau die Aufgabe, an der ein schnelles Modell das Naheliegende wiederholt.",
+    timeoutMs: 120_000,
+    fallback: "DEFAULT",
+  },
+  job_match: {
+    tier: "DEEP",
+    reason: "Die Begründung wird der Person gezeigt und muss standhalten.",
+    timeoutMs: 90_000,
+    fallback: "DEFAULT",
+  },
+  job_long_term_analysis: {
+    tier: "DEEP",
+    reason: "Was diese Stelle in fünf Jahren bedeutet. Der teuerste Rat im Produkt.",
+    timeoutMs: 120_000,
+    fallback: "DEFAULT",
+  },
+  application_strategy: {
+    tier: "DEEP",
+    reason: "Der Plan für eine Bewerbung, auf die jemand hofft.",
+    timeoutMs: 120_000,
+    fallback: "DEFAULT",
+  },
+  document_generation: {
+    tier: "DEEP",
+    reason: "Der Text verlässt das Haus und trägt einen Namen.",
+    timeoutMs: 90_000,
+    fallback: "DEFAULT",
+  },
+
+  document_extraction: {
+    tier: "FAST",
+    reason: "Angaben aus einem Dokument herauslösen. Menge statt Tiefe.",
+    timeoutMs: 30_000,
+    fallback: null,
+  },
+  classification: {
+    tier: "FAST",
+    reason: "Etikettieren und einsortieren. Ein grosses Modell wäre Verschwendung.",
+    timeoutMs: 15_000,
+    fallback: null,
+  },
+  conversation_summary: {
+    tier: "FAST",
+    reason:
+      "Verdichten läuft im Hintergrund und oft. Genau die Aufgabe, bei der " +
+      "die teure Stufe die Rechnung macht, ohne dass jemand den Unterschied sieht.",
+    timeoutMs: 30_000,
+    fallback: null,
   },
 };
 

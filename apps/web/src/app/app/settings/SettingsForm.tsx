@@ -33,7 +33,7 @@ export function Toggle({
   defaultChecked?: boolean;
 }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-[--radius-md] py-1.5">
+    <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-(--radius-md) py-1.5">
       {/* Das versteckte Feld sagt der Serveraktion: dieses Formular
           kannte den Schalter. Ohne es wäre "nicht gesendet" nicht von
           "nicht enthalten" zu unterscheiden. */}
@@ -74,7 +74,7 @@ export function ChoiceGroup({
         {options.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-start gap-3 rounded-[--radius-md] border border-line-2 bg-raised px-4 py-3 transition-colors hover:border-line-3 has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
+            className="flex cursor-pointer items-start gap-3 rounded-(--radius-md) border border-line-2 bg-raised px-4 py-3 transition-colors hover:border-line-3 has-[:checked]:border-accent has-[:checked]:bg-accent-soft"
           >
             <input
               type="radio"
@@ -117,7 +117,7 @@ export function ChipGroup({
         {options.map((option) => (
           <label
             key={option.value}
-            className="flex cursor-pointer items-center gap-2 rounded-[--radius-full] border border-line-2 bg-raised px-3.5 py-2 text-sm transition-colors hover:border-line-3 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:text-accent-text"
+            className="flex cursor-pointer items-center gap-2 rounded-(--radius-full) border border-line-2 bg-raised px-3.5 py-2 text-sm transition-colors hover:border-line-3 has-[:checked]:border-accent has-[:checked]:bg-accent-soft has-[:checked]:text-accent-text"
           >
             <input
               type="checkbox"

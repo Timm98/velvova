@@ -26,8 +26,6 @@ export const de = {
     showLess: "Weniger anzeigen",
     notSpecified: "nicht angegeben",
     unknown: "unbekannt",
-    demoMode: "Demo-Modus",
-    demoNotice: "Diese Daten sind erfunden. Es sind keine echten Stellen und keine echten Unternehmen.",
     notConnected: "nicht verbunden",
     openOriginal: "Im Original öffnen",
     dismiss: "Nicht mehr anzeigen",
@@ -66,14 +64,14 @@ export const de = {
   },
 
   landing: {
-    eyebrow: "AI Career Intelligence",
-    headline: "Nicht mehr suchen. Den richtigen nächsten Schritt sehen.",
-    headlineLine1: "Nicht mehr suchen.",
-    headlineLine2: "Den richtigen nächsten Schritt sehen.",
+    eyebrow: "Dein persönlicher KI-Karriereassistent",
+    headline: "Finde nicht mehr Jobs. Finde den richtigen.",
+    headlineLine1: "Finde nicht mehr Jobs.",
+    headlineLine2: "Finde den richtigen.",
     subheadline:
-      "{assistant} versteht deine Erfahrungen, findet frische Jobs aus geprüften Quellen und " +
-      "begleitet dich von der Orientierung bis zur Bewerbung.",
-    ctaPrimary: "Mit {assistant} starten",
+      "{assistant} versteht deine Erfahrungen, erkennt passende berufliche Wege und zeigt dir " +
+      "aktuelle Jobs, die wirklich zu dir passen.",
+    ctaPrimary: "Kostenlos mit {assistant} starten",
     ctaSecondary: "So funktioniert es",
 
     coreLine1: "Wir zeigen dir nicht mehr Jobs.",
@@ -173,8 +171,9 @@ export const de = {
       "Deine Texte werden zur Analyse an einen externen KI-Anbieter übermittelt. Direkte " +
       "Identifikatoren wie E-Mail-Adresse und Telefonnummer werden vorher entfernt.",
     externalAiBodyInactive:
-      "Zurzeit ist kein externer Anbieter verbunden. Es läuft ein lokaler Demo-Anbieter, " +
-      "seine Antworten sind Beispiele ohne inhaltliche Aussage.",
+      "Zurzeit ist kein KI-Anbieter eingerichtet. Nina antwortet dann nicht — " +
+      "es wird bewusst keine Beispielantwort erzeugt, weil sie von einer echten " +
+      "nicht zu unterscheiden wäre.",
     privacyCenter: "Zum Privacy Center",
     start: "Gespräch beginnen",
   },
@@ -377,8 +376,8 @@ export const de = {
     confirmSend: "Ich habe alles geprüft und möchte diese Bewerbung senden",
     send: "Jetzt senden",
     exportDraft: "Als Entwurf herunterladen",
-    demoSendNotice:
-      "Es ist kein E-Mail-Konto verbunden. Es wird nichts versendet - du bekommst einen " +
+    draftOnlySendNotice:
+      "Es ist kein E-Mail-Konto verbunden. Es wird nichts versendet — du bekommst einen " +
       "Entwurf zum Herunterladen.",
     portalGuide: "Zum Bewerbungsportal begleiten",
   },
@@ -426,8 +425,9 @@ export const de = {
     revokeSession: "Abmelden",
     currentSession: "Dieses Gerät",
     aiProvider: "KI-Verarbeitung",
-    aiProviderMock:
-      "Zurzeit läuft ein lokaler Demo-Anbieter. Es verlassen keine Daten dieses Gerät.",
+    aiProviderNone:
+      "Zurzeit ist kein KI-Anbieter eingerichtet. Es werden keine Texte übermittelt — " +
+      "und Nina antwortet auch nicht.",
     aiProviderExternal:
       "Verarbeitung durch einen externen Anbieter. Zweck, Region und Anbieter stehen unten.",
   },

@@ -77,11 +77,25 @@
   --color-neutral: var(--text-secondary);
   --color-neutral-soft: var(--surface-2);
 
+  /* ---- Die weiche Gruppenfläche ----
+     Sie ersetzt den Rahmen um eine Sektion. Zusammengehörigkeit, die
+     man sieht, ohne dass eine Linie sie einsperrt. */
+  --color-soft: var(--surface-soft);
+  --color-soft-hover: var(--surface-soft-hover);
+
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  /* Benannt nach der Aufgabe, nicht nach der Größe. `rounded-control`
+     liest sich als Absicht; `rounded-full` an einer Eingabe liest sich
+     als Versehen. */
+  --radius-control: var(--radius-control);
+  --radius-input: var(--radius-input);
+  --radius-surface: var(--radius-surface);
+  --radius-sheet: var(--radius-sheet);
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -100,7 +114,7 @@
    * Liste bei jedem Wert.
    */
   --font-display: var(--font-manrope), "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-geist-sans), "Inter Tight", ui-sans-serif, system-ui, -apple-system,
+  --font-sans: var(--font-inter), var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
@@ -308,6 +322,18 @@
   0%, 100% { transform: scale(1); opacity: 0.85; }
   50% { transform: scale(1.06); opacity: 1; }
 }
+/*
+ * Die schwebende Gesprächsfläche kommt von unten.
+ *
+ * Nur `transform` und `opacity` — beides läuft auf dem Compositor und
+ * kostet kein Layout. Und ausdrücklich mit `motion-safe`: wer weniger
+ * Bewegung eingestellt hat, bekommt die Fläche sofort, nicht gleitend.
+ */
+@keyframes nina-rise {
+  from { transform: translate3d(0, 12px, 0); opacity: 0; }
+  to { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+
 @keyframes nina-orbit {
   to { transform: rotate(360deg); }
 }

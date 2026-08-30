@@ -80,8 +80,15 @@ export interface ToolDefinition {
 
 export interface ConversationOptions extends ChatOptions {
   tools?: ToolDefinition[];
-  /** Ergebnisse bereits ausgeführter Werkzeuge aus derselben Runde. */
-  toolResults?: { id: string; name: string; output: unknown }[];
+  /**
+   * Ergebnisse bereits ausgeführter Werkzeuge aus derselben Runde.
+   *
+   * Die `arguments` gehören dazu, auch wenn sie nach der Ausführung
+   * redundant wirken: die Responses-API verlangt den ursprünglichen
+   * Aufruf UND sein Ergebnis als Paar. Wer nur das Ergebnis schickt,
+   * bekommt einen Fehler über einen Aufruf, den es angeblich nie gab.
+   */
+  toolResults?: { id: string; name: string; arguments?: unknown; output: unknown }[];
 }
 
 /**

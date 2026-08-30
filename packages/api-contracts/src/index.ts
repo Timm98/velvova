@@ -28,13 +28,13 @@ export const HealthResponse = z.object({
 export const IntegrationStatusResponse = z.object({
   marke: z.object({ name: z.string(), assistenz: z.string() }),
   modus: z.enum(["demo", "live"]),
-  ki: z.object({ zustand: z.enum(["connected", "mock"]), hinweis: z.string() }),
+  ki: z.object({ zustand: z.enum(["connected", "not-connected"]), hinweis: z.string() }),
   email: z.object({
     zustand: z.enum(["connected", "draft-only", "not-connected"]),
     hinweis: z.string(),
   }),
   speicher: z.enum(["connected", "local"]),
-  sprache: z.enum(["connected", "mock"]),
+  sprache: z.enum(["connected", "dictation-only", "not-connected"]),
   jobquellen: z.array(z.string()),
   bewertungsquellen: z.array(z.string()),
 });

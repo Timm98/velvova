@@ -75,7 +75,7 @@ export function JobSplitView({
   if (rows.length === 0) return <>{emptyState}</>;
 
   return (
-    <div className="grid overflow-hidden rounded-[--radius-lg] border border-line bg-raised lg:h-[calc(100dvh-11rem)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
+    <div className="grid overflow-hidden rounded-(--radius-lg) border border-line bg-raised lg:h-[calc(100dvh-11rem)] lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)]">
       {/* ── Liste ──────────────────────────────────────────── */}
       <div
         ref={listRef}

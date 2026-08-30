@@ -57,7 +57,7 @@ function CompanyMark({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className="grid size-10 shrink-0 place-items-center rounded-[--radius-md] border border-line bg-sunken text-sm font-semibold text-ink-2"
+      className="grid size-10 shrink-0 place-items-center rounded-(--radius-md) border border-line bg-sunken text-sm font-semibold text-ink-2"
     >
       {initials || <Building2 className="size-4" strokeWidth={1.8} />}
     </span>
@@ -99,7 +99,7 @@ export function JobCard({
   return (
     <article
       className={cn(
-        "group relative rounded-[--radius-lg] border bg-raised shadow-sm transition-[box-shadow,border-color,transform] duration-[--duration-base] ease-[--ease-out]",
+        "group relative rounded-(--radius-lg) border bg-raised shadow-sm transition-[box-shadow,border-color,transform] duration-(--duration-base) ease-(--ease-out)",
         "hover:-translate-y-0.5 hover:border-line-2 hover:shadow-lg",
         blocked ? "border-critical/25" : "border-line",
       )}
@@ -164,14 +164,11 @@ export function JobCard({
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            {job.isDemo ? (
-              <Badge tone="caution">Demo-Datensatz</Badge>
-            ) : (
-              <Badge tone="outline">
-                Quelle: {scored.source?.displayName ?? "unbekannt"}
-              </Badge>
-            )}
-            {age?.fresh && !job.isDemo && <Badge tone="positive">neu</Badge>}
+            {/* Die Quelle steht immer. Sie ist keine Warnung, sondern
+                die Grundlage: eine Stelle ohne nachprüfbare Herkunft ist
+                eine Behauptung. */}
+            <Badge tone="outline">Quelle: {scored.source?.displayName ?? "unbekannt"}</Badge>
+            {age?.fresh && <Badge tone="positive">neu</Badge>}
             {saved && <Badge tone="assistant">gemerkt</Badge>}
             {blocked && <Badge tone="critical">Ausschlusskriterium</Badge>}
             {scored.listingConfidence.possiblyStale && (

@@ -6,6 +6,7 @@ import { loadStudio } from "@/lib/studio";
 import { Studio } from "./Studio";
 import { StageControl } from "./StageControl";
 import { Badge, Card, PageHeader, Stack } from "@/components/ui";
+import { NinaScope } from "@/components/nina/NinaScope";
 
 export const metadata: Metadata = { title: "Bewerbung" };
 export const dynamic = "force-dynamic";
@@ -25,6 +26,8 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
 
   return (
     <Stack gap={6}>
+      {/* Nina weiß ab hier, worüber gesprochen wird. */}
+      <NinaScope applicationId={id} />
       <div>
         <p style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-2)" }}>
           <Link href="/app/applications" style={{ color: "var(--accent-text)" }}>
@@ -80,7 +83,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
           confirmSend: t("studio.confirmSend"),
           send: t("studio.send"),
           exportDraft: t("studio.exportDraft"),
-          demoSendNotice: t("studio.demoSendNotice"),
+          draftOnlySendNotice: t("studio.draftOnlySendNotice"),
           coverLetterNotNeeded: t("studio.coverLetterNotNeeded"),
         }}
       />

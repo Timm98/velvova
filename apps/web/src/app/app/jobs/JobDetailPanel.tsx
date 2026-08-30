@@ -94,7 +94,7 @@ export function JobDetailPanel({
           keine Hilfe.
         */}
         {brief && (
-          <div className="grid gap-3.5 rounded-[--radius-md] border border-line-2 bg-inset px-4 py-3.5">
+          <div className="grid gap-3.5 rounded-(--radius-md) border border-line-2 bg-inset px-4 py-3.5">
             <div className="flex flex-wrap items-center gap-2.5">
               <Badge
                 tone={
@@ -171,7 +171,7 @@ export function JobDetailPanel({
         {scored.scam.level === "additional_verification_recommended" && (
           <div
             role="note"
-            className="grid gap-3 rounded-[--radius-md] border border-caution/30 bg-caution-soft px-4 py-3.5"
+            className="grid gap-3 rounded-(--radius-md) border border-caution/30 bg-caution-soft px-4 py-3.5"
           >
             <p className="flex items-start gap-2 text-sm font-medium text-caution">
               <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2} />
@@ -335,7 +335,7 @@ export function JobDetailPanel({
             ))}
         </ul>
 
-        <div className="grid gap-2 rounded-[--radius-md] bg-inset px-4 py-3.5 text-sm leading-relaxed">
+        <div className="grid gap-2 rounded-(--radius-md) bg-inset px-4 py-3.5 text-sm leading-relaxed">
           <p>
             <span className="font-medium text-positive">Dafür spricht: </span>
             <span className="text-ink-2">{fit.topReason}</span>
@@ -354,7 +354,7 @@ export function JobDetailPanel({
         {constraints.overall === "blocked" && (
           <div
             role="note"
-            className="grid gap-2 rounded-[--radius-md] border border-critical/30 bg-critical-soft px-4 py-3.5"
+            className="grid gap-2 rounded-(--radius-md) border border-critical/30 bg-critical-soft px-4 py-3.5"
           >
             <p className="text-sm font-medium text-critical">{t("jobs.blockedBecause")}</p>
             <ul className="grid gap-1.5">
@@ -463,7 +463,7 @@ export function JobDetailPanel({
             <li key={prompt.key}>
               <Link
                 href={`/app/nina?job=${job.id}&ask=${prompt.key}`}
-                className="flex items-center gap-2.5 rounded-[--radius-md] border border-line-2 px-3.5 py-2.5 text-sm transition-colors hover:border-line-3 hover:bg-inset/60"
+                className="flex items-center gap-2.5 rounded-(--radius-md) border border-line-2 px-3.5 py-2.5 text-sm transition-colors hover:border-line-3 hover:bg-inset/60"
               >
                 <HelpCircle className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.8} />
                 {prompt.label}

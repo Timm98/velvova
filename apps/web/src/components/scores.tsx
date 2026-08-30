@@ -120,7 +120,7 @@ export function BlockedNotice({
   return (
     <div
       role="note"
-      className="grid gap-2 rounded-[--radius-md] border border-critical/30 bg-critical-soft px-4 py-3"
+      className="grid gap-2 rounded-(--radius-md) border border-critical/30 bg-critical-soft px-4 py-3"
     >
       <p className="text-sm font-medium text-critical">{t("jobs.blockedBecause")}</p>
       <ul className="grid gap-1.5">

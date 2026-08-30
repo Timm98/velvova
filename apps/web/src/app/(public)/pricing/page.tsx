@@ -23,7 +23,7 @@ export default async function PricingPage() {
         </h1>
       </header>
 
-      <div className="grid gap-4 rounded-[--radius-lg] border border-line bg-raised p-6">
+      <div className="grid gap-4 rounded-(--radius-lg) border border-line bg-raised p-6">
         <p className="max-w-[var(--measure)] leading-relaxed text-ink-2">
           {brand.name} befindet sich im Aufbau. Es gibt bisher kein Preismodell — und wir stellen
           hier keine Tabelle hin, die es nicht gibt.

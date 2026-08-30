@@ -307,7 +307,7 @@ export default async function DashboardPage() {
             </span>
             <div aria-hidden className="h-2 flex-1 overflow-hidden rounded-full bg-inset">
               <div
-                className="h-full rounded-full bg-accent transition-[width] duration-[--duration-slow] ease-[--ease-out]"
+                className="h-full rounded-full bg-accent transition-[width] duration-(--duration-slow) ease-(--ease-out)"
                 style={{ width: `${Math.round(ctx.coverage * 100)}%` }}
               />
             </div>

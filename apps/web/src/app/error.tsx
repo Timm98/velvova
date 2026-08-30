@@ -46,7 +46,7 @@ export default function ErrorBoundary({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex min-h-10 items-center gap-2 rounded-[--radius-full] bg-accent px-5 text-sm font-medium text-accent-on"
+            className="inline-flex min-h-10 items-center gap-2 rounded-(--radius-full) bg-accent px-5 text-sm font-medium text-accent-on"
           >
             <RotateCw className="size-4" strokeWidth={1.9} />
             Erneut versuchen

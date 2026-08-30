@@ -69,7 +69,7 @@ export default async function DocumentsPage() {
       {integrations.storage !== "connected" && (
         <div
           role="note"
-          className="flex flex-wrap items-center gap-3 rounded-[--radius-md] border border-line-2 bg-inset px-4 py-3"
+          className="flex flex-wrap items-center gap-3 rounded-(--radius-md) border border-line-2 bg-inset px-4 py-3"
         >
           <Badge tone="outline">lokale Ablage</Badge>
           <p className="text-sm text-ink-2">

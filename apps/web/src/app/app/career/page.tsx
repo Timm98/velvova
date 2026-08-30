@@ -85,7 +85,7 @@ export default async function ProfilePage() {
         </div>
         <div aria-hidden className="mt-3 h-2 overflow-hidden rounded-full bg-inset">
           <div
-            className="h-full rounded-full bg-accent transition-[width] duration-[--duration-slow] ease-[--ease-out]"
+            className="h-full rounded-full bg-accent transition-[width] duration-(--duration-slow) ease-(--ease-out)"
             style={{ width: `${Math.round(coverage * 100)}%` }}
           />
         </div>

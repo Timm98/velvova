@@ -15,9 +15,7 @@ import {
   PanelLeft,
   Search,
   ShieldCheck,
-  Sparkles,
   User,
-  Waypoints,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { BrandMark, NinaSignal } from "@/components/nina/NinaSignal";
@@ -71,11 +69,19 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+/**
+ * Vier Bereiche: Heute, Jobs, Bewerbungen, Profil.
+ *
+ * Nina steht bewusst NICHT dabei. Sie ist keine Seite, die man besucht,
+ * sondern eine Handlung, die man auslöst — und zwar von überall. Sie
+ * hätte als fünfter Eintrag denselben Rang wie „Bewerbungen“ und wäre
+ * damit an vier von fünf Stellen der falsche Weg dorthin.
+ */
 const PRIMARY: NavItem[] = [
   { key: "home", href: "/app", icon: LayoutGrid },
   { key: "discover", href: "/app/jobs", icon: Compass },
   { key: "applications", href: "/app/applications", icon: FileText },
-  { key: "career", href: "/app/career", icon: Waypoints },
+  { key: "career", href: "/app/profile", icon: User },
 ];
 
 function isActive(pathname: string, href: string): boolean {
@@ -175,10 +181,17 @@ export function AppShell({
       </a>
 
       {/* ══ Rail ══════════════════════════════════════════════ */}
-      <div className="hidden border-r border-line bg-sunken md:block">
+      <div className="hidden bg-soft md:block">
         <aside className="sticky top-0 flex h-dvh flex-col">
           <div className={cn("flex h-14 items-center px-4", !expanded && "justify-center px-0")}>
-            <Link href="/app" className="rounded-[--radius-sm]" aria-label={brandName}>
+            <Link
+              href="/app"
+              /* Das Zeichen ist 28 Pixel und ein schönes Logo. Die Fläche
+                 darum trägt die geforderten 44 — ein Berührungsziel misst
+                 sich an der Fläche, nicht am Bild darin. */
+              className="grid min-h-11 min-w-11 place-items-center rounded-(--radius-control)"
+              aria-label={brandName}
+            >
               <BrandMark name={brandName} showName={expanded} size="md" />
             </Link>
           </div>
@@ -195,11 +208,11 @@ export function AppShell({
                       aria-current={active ? "page" : undefined}
                       title={expanded ? undefined : labels[item.key]}
                       className={cn(
-                        "group relative flex items-center gap-3 rounded-[--radius-md] text-sm transition-colors duration-[--duration-fast]",
+                        "group relative flex items-center gap-3 rounded-(--radius-control) text-sm transition-colors duration-(--duration-fast)",
                         expanded ? "px-3 py-2.5" : "h-11 justify-center",
                         active
-                          ? "bg-inset font-medium text-ink"
-                          : "text-ink-2 hover:bg-inset/60 hover:text-ink",
+                          ? "bg-raised font-medium text-ink shadow-sm"
+                          : "text-ink-2 hover:bg-raised/60 hover:text-ink",
                       )}
                     >
                       {/* Der aktive Zustand trägt zusätzlich eine
@@ -229,13 +242,13 @@ export function AppShell({
               aria-expanded={expanded}
               title={expanded ? labels.collapse : labels.expand}
               className={cn(
-                "flex items-center gap-3 rounded-[--radius-md] text-sm text-ink-3 transition-colors hover:bg-inset/60 hover:text-ink",
+                "flex items-center gap-3 rounded-(--radius-control) text-sm text-ink-3 transition-colors hover:bg-raised/60 hover:text-ink",
                 expanded ? "px-3 py-2.5" : "h-11 justify-center",
               )}
             >
               <PanelLeft
                 className={cn(
-                  "size-[18px] shrink-0 transition-transform duration-[--duration-base]",
+                  "size-[18px] shrink-0 transition-transform duration-(--duration-base)",
                   expanded && "rotate-180",
                 )}
                 strokeWidth={1.7}
@@ -248,13 +261,13 @@ export function AppShell({
 
       {/* ══ Inhalt ════════════════════════════════════════════ */}
       <div className="grid min-h-dvh min-w-0 grid-rows-[auto_minmax(0,1fr)_auto] md:block md:min-h-0">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-line bg-page/80 px-4 backdrop-blur-xl md:px-6">
+        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 bg-page/85 px-4 backdrop-blur-xl md:px-6">
           {/* Ein 20 Pixel großes Zeichen ist ein schönes Logo und ein
               schlechtes Berührungsziel. Die Fläche darum trägt die
               geforderten 24 Pixel, das Zeichen bleibt klein. */}
           <Link
             href="/app"
-            className="-ml-1.5 grid size-9 place-items-center rounded-[--radius-md] md:hidden"
+            className="-ml-1.5 grid size-11 place-items-center rounded-(--radius-control) md:hidden"
             aria-label={brandName}
           >
             <NinaSignal size="sm" />
@@ -269,11 +282,11 @@ export function AppShell({
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="hidden h-9 items-center gap-2.5 rounded-[--radius-md] border border-line-2 bg-raised px-3 text-sm text-ink-3 transition-colors hover:border-line-3 hover:text-ink-2 lg:flex"
+              className="hidden h-10 items-center gap-2.5 rounded-(--radius-control) bg-soft px-4 text-sm text-ink-3 transition-colors hover:bg-soft-hover hover:text-ink-2 lg:flex"
             >
               <Search className="size-4" strokeWidth={1.7} />
               {labels.search}
-              <kbd className="ml-6 rounded-[--radius-xs] border border-line-2 bg-inset px-1.5 py-0.5 font-mono text-2xs text-ink-3">
+              <kbd className="ml-6 rounded-(--radius-xs) bg-raised px-1.5 py-0.5 font-mono text-2xs text-ink-2">
                 ⌘K
               </kbd>
             </button>
@@ -281,25 +294,10 @@ export function AppShell({
               type="button"
               onClick={() => setPaletteOpen(true)}
               aria-label={labels.search}
-              className="grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-inset lg:hidden"
+              className="grid size-11 place-items-center rounded-(--radius-control) text-ink-2 transition-colors hover:bg-soft lg:hidden"
             >
               <Search className="size-[18px]" strokeWidth={1.7} />
             </button>
-
-            {/* Nina ist eine Handlung, kein Ort. */}
-            <Link
-              href="/app/nina"
-              className={cn(
-                "hidden h-9 items-center gap-2 rounded-[--radius-md] border border-line-2 bg-raised px-3.5 text-sm font-medium transition-colors hover:border-line-3 sm:flex",
-                pathname.startsWith("/app/nina") && "border-accent/50 bg-accent-soft",
-              )}
-            >
-              <NinaSignal
-                size="xs"
-                state={pathname.startsWith("/app/nina") ? "active" : "idle"}
-              />
-              {assistantName} fragen
-            </Link>
 
             <Link
               href="/app/notifications"
@@ -308,7 +306,7 @@ export function AppShell({
                   ? `${labels.notifications}: ${unreadCount} ungelesen`
                   : labels.notifications
               }
-              className="relative grid size-9 place-items-center rounded-[--radius-md] text-ink-2 transition-colors hover:bg-inset"
+              className="relative grid size-11 place-items-center rounded-(--radius-control) text-ink-2 transition-colors hover:bg-soft"
             >
               <Bell className="size-[18px]" strokeWidth={1.7} />
               {unreadCount > 0 && (
@@ -339,27 +337,14 @@ export function AppShell({
             sonst Schaltflächen am Seitenende. */}
         <nav
           aria-label="Hauptbereiche"
-          className="app-nav-bottom relative border-t border-line bg-raised pb-[env(safe-area-inset-bottom)] md:hidden"
+          className="app-nav-bottom relative bg-raised shadow-[0_-1px_0_var(--border-subtle)] pb-[env(safe-area-inset-bottom)] md:hidden"
         >
-          {/* Nina sitzt mittig über der Leiste — erreichbar mit dem
-              Daumen, unabhängig von der aktuellen Seite. */}
-          <Link
-            href="/app/nina"
-            className="absolute -top-6 left-1/2 grid size-12 -translate-x-1/2 place-items-center rounded-full border border-line-3 bg-raised shadow-lg transition-transform active:scale-95"
-            aria-label={`${assistantName} fragen`}
-          >
-            <NinaSignal
-              size="md"
-              state={pathname.startsWith("/app/nina") ? "active" : "idle"}
-            />
-          </Link>
-
           <ul className="flex">
-            {PRIMARY.map((item, index) => {
+            {PRIMARY.map((item) => {
               const active = isActive(pathname, item.href);
               const Icon = item.icon;
               return (
-                <li key={item.key} className={cn("flex-1", index === 1 && "mr-7", index === 2 && "ml-7")}>
+                <li key={item.key} className="flex-1">
                   <Link
                     href={item.href}
                     aria-current={active ? "page" : undefined}

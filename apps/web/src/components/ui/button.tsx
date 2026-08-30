@@ -6,6 +6,15 @@ import { cn } from "@/lib/cn";
 /**
  * Schaltflächen.
  *
+ * Alle rund. `rounded-control` ist 999 Pixel und kennt keine Ausnahme —
+ * eine eckige Schaltfläche neben einer runden sieht nicht nach Absicht
+ * aus, sondern nach vergessen.
+ *
+ * Die zweite und dritte Stufe tragen keinen Rahmen mehr, sondern eine
+ * eigene Fläche. Das ist der Kern des Umbaus: Unterschied durch
+ * Helligkeit statt durch Linie. Ein Rahmen um jede Schaltfläche macht
+ * aus einer Werkzeugleiste ein Gitter.
+ *
  * Drei Dinge, die den Unterschied zwischen billig und hochwertig
  * ausmachen:
  *
@@ -14,13 +23,14 @@ import { cn } from "@/lib/cn";
  * 2. Ein Innenschein auf der primären Fläche — ein Hauch Licht von oben,
  *    der die Fläche plastisch macht, ohne wie ein Verlauf auszusehen.
  * 3. Mindesthöhe auch für <a> mit Knopf-Aussehen: die globale CSS-Regel
- *    greift nur für <button>.
+ *    greift nur für <button>. 44 Pixel ab der mittleren Größe — das ist
+ *    die kleinste Fläche, die ein Daumen zuverlässig trifft.
  */
 const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2 whitespace-nowrap",
-    "rounded-[--radius-md] font-medium",
-    "transition-[background-color,color,box-shadow,transform] duration-[--duration-fast] ease-[--ease-out]",
+    "rounded-(--radius-control) font-medium",
+    "transition-[background-color,color,box-shadow,transform] duration-(--duration-fast) ease-(--ease-out)",
     "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
     "disabled:pointer-events-none disabled:opacity-45",
     "active:translate-y-px",
@@ -36,22 +46,22 @@ const buttonVariants = cva(
           "inset-shadow-[0_1px_0_hsl(0_0%_100%/0.14)]",
         ],
         secondary: [
-          "bg-raised text-ink border border-line-2 shadow-xs",
-          "hover:bg-sunken hover:border-line-3",
+          "bg-raised text-ink shadow-sm",
+          "hover:bg-soft hover:shadow-md",
         ],
-        ghost: ["text-ink-2 hover:bg-sunken hover:text-ink"],
-        subtle: ["bg-sunken text-ink hover:bg-inset"],
+        ghost: ["text-ink-2 hover:bg-soft hover:text-ink"],
+        subtle: ["bg-soft text-ink hover:bg-soft-hover"],
         danger: [
-          "bg-raised text-critical border border-critical/40 shadow-xs",
-          "hover:bg-critical-soft hover:border-critical",
+          "bg-critical-soft text-critical",
+          "hover:bg-critical-soft hover:shadow-sm",
         ],
         link: ["text-accent-text underline underline-offset-[3px] hover:text-accent-hover"],
       },
       size: {
-        sm: "h-9 px-3.5 text-sm",
-        md: "h-11 px-5 text-sm",
-        lg: "h-12 px-6 text-base",
-        icon: "h-10 w-10",
+        sm: "h-9 px-4 text-sm",
+        md: "h-11 px-6 text-sm",
+        lg: "h-12 px-7 text-base",
+        icon: "size-11",
       },
       full: { true: "w-full", false: "" },
     },

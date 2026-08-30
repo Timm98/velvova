@@ -41,10 +41,10 @@ export function SettingsNav() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 whitespace-nowrap rounded-[--radius-md] px-3 py-2.5 text-sm transition-colors",
+                  "flex min-h-11 items-center gap-2.5 whitespace-nowrap rounded-(--radius-control) px-4 text-sm transition-colors",
                   active
-                    ? "bg-inset font-medium text-ink"
-                    : "text-ink-2 hover:bg-sunken hover:text-ink",
+                    ? "bg-soft font-medium text-ink"
+                    : "text-ink-2 hover:bg-soft hover:text-ink",
                 )}
               >
                 <Icon

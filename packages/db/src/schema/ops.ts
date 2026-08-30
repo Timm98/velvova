@@ -19,6 +19,16 @@ export const aiRuns = pgTable("ai_runs", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
   purpose: text("purpose").notNull(),
+  /*
+   * Die Aufgabe im Sinne des Routers.
+   *
+   * `purpose` sagt, wo im Produkt der Aufruf herkam; `taskType` sagt,
+   * welche Regel die Stufe gewählt hat. Ohne diese Spalte lässt sich
+   * nachher nicht beantworten, ob die teure Stufe zu Recht lief — und
+   * genau das ist die Frage, die eine Rechnung aufwirft.
+   */
+  taskType: text("task_type"),
+  tier: text("tier"),
   provider: text("provider").notNull(),
   model: text("model").notNull(),
   promptKey: text("prompt_key"),
@@ -33,6 +43,15 @@ export const aiRuns = pgTable("ai_runs", {
   /** Kurze, nachvollziehbare Begründung des Ergebnisses. Ausdrücklich
    *  kein gespeicherter innerer Gedankengang des Modells. */
   rationale: text("rationale"),
+  /*
+   * Hat die strukturierte Antwort das Schema erfüllt?
+   *
+   * `null` heißt: bei diesem Aufruf war keine Struktur verlangt. `false`
+   * ist die interessante Zeile — sie zeigt ein Modell, das plausibel
+   * antwortet und trotzdem das Falsche liefert. Ohne diese Spalte
+   * verschwindet genau dieser Fall in der Erfolgsquote.
+   */
+  structuredOutputValid: boolean("structured_output_valid"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [index("ai_runs_created_idx").on(t.createdAt), index("ai_runs_status_idx").on(t.status)]);
 

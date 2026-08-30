@@ -54,7 +54,7 @@ export default async function TermsPage() {
 
       <div
         role="note"
-        className="grid gap-3 rounded-[--radius-lg] border border-caution/30 bg-caution-soft p-5"
+        className="grid gap-3 rounded-(--radius-lg) border border-caution/30 bg-caution-soft p-5"
       >
         <p className="text-sm font-medium text-caution">Noch kein Vertragswerk</p>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">

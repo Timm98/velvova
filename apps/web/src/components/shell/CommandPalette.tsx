@@ -175,7 +175,7 @@ export function CommandPalette({
         aria-label={labels.search}
         onClick={(e) => e.stopPropagation()}
         onKeyDown={onKeyDown}
-        className="glass w-full max-w-[600px] overflow-hidden rounded-[--radius-xl] shadow-xl animate-fade-up"
+        className="glass w-full max-w-[600px] overflow-hidden rounded-(--radius-xl) shadow-xl animate-fade-up"
       >
         <div className="flex items-center gap-3 border-b border-line px-4">
           <Search className="size-[18px] shrink-0 text-ink-3" strokeWidth={1.8} />
@@ -212,7 +212,7 @@ export function CommandPalette({
                         onMouseEnter={() => setCursor(index)}
                         onClick={() => go(row.href)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-[--radius-md] px-3 py-2.5 text-left transition-colors",
+                          "flex w-full items-center gap-3 rounded-(--radius-md) px-3 py-2.5 text-left transition-colors",
                           index === cursor ? "bg-sunken" : "hover:bg-sunken/60",
                         )}
                       >
@@ -242,7 +242,7 @@ export function CommandPalette({
                       onMouseEnter={() => setCursor(index)}
                       onClick={() => go(row.href)}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-[--radius-md] px-3 py-2.5 text-left transition-colors",
+                        "flex w-full items-center gap-3 rounded-(--radius-md) px-3 py-2.5 text-left transition-colors",
                         index === cursor ? "bg-sunken" : "hover:bg-sunken/60",
                       )}
                     >

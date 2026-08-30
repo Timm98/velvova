@@ -20,6 +20,32 @@ BEGIN
   END IF;
 END $$
 --> statement-breakpoint
+/*
+ * Die verbindende Rolle muss in die Anwendungsrolle wechseln duerfen.
+ *
+ * Auf einer eingebetteten Datenbank faellt das nie auf: dort verbindet
+ * sich die Anwendung als Superuser, und ein Superuser darf ohnehin jede
+ * Rolle annehmen. Auf einem gehosteten Postgres — Supabase, RDS, Cloud
+ * SQL — ist die verbindende Rolle KEIN Superuser. Dort scheitert dann
+ * jede einzelne Abfrage mit
+ *
+ *     permission denied to set role "paycheck_app"
+ *
+ * und zwar erst zur Laufzeit, auf jeder Seite gleichzeitig. Genau das
+ * ist passiert. Die Zeile hier ist der Unterschied zwischen "laeuft
+ * lokal" und "laeuft".
+ */
+DO $$
+BEGIN
+  EXECUTE format('GRANT paycheck_app TO %I', current_user);
+EXCEPTION
+  -- Wenn die Mitgliedschaft schon besteht oder die verbindende Rolle
+  -- selbst Superuser ist, ist nichts zu tun. Ein Fehler hier duerfte
+  -- die Migration nicht anhalten.
+  WHEN duplicate_object THEN NULL;
+  WHEN insufficient_privilege THEN NULL;
+END $$
+--> statement-breakpoint
 GRANT USAGE ON SCHEMA public TO paycheck_app
 --> statement-breakpoint
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO paycheck_app
@@ -74,7 +100,11 @@ DECLARE
     'application_packages','application_package_documents',
     'application_screening_answers','application_handoffs',
     'connected_identities','auth_identity_audit',
-    'email_preferences','email_deliveries'
+    'email_preferences','email_deliveries',
+    -- Ninas Gedächtnis. Alle drei tragen eine Nutzerkennung, und genau
+    -- hier liegt das Gespräch: wer diesen Filter vergisst, gibt fremde
+    -- Karrieregespräche frei.
+    'nina_conversations','nina_messages','workflow_states'
   ];
 BEGIN
   FOREACH t IN ARRAY user_tables LOOP

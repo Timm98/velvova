@@ -1,14 +1,28 @@
 import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/cn";
 
+/*
+ * Eingabefelder.
+ *
+ * Kein sichtbarer Rahmen. Das Feld ist eine weiche Fläche mit eigenem
+ * Ton — man erkennt es daran, dass es heller oder dunkler ist als sein
+ * Grund, nicht daran, dass eine Linie es einrahmt.
+ *
+ * Der Fokus wird über Licht getragen: ein Ring aus der Akzentfarbe und
+ * ein weicher Schein. Das ist deutlicher sichtbar als eine Kante, die
+ * die Farbe wechselt, und es funktioniert auch für Menschen, die
+ * Farbtöne schlecht unterscheiden — die Fläche verändert sich, nicht
+ * nur ihr Rand.
+ */
 const fieldBase = [
-  "w-full rounded-[--radius-md] border border-line-2 bg-raised",
-  "px-3.5 text-base text-ink placeholder:text-ink-3",
-  "shadow-xs transition-[border-color,box-shadow] duration-[--duration-fast]",
-  "hover:border-line-3",
-  "focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30",
-  "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-sunken",
-  "aria-[invalid=true]:border-critical aria-[invalid=true]:outline-critical/25",
+  "w-full rounded-(--radius-input) bg-soft",
+  "px-4 text-base text-ink placeholder:text-ink-3",
+  "transition-[background-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)",
+  "hover:bg-soft-hover",
+  "focus-visible:bg-raised focus-visible:outline-none",
+  "focus-visible:shadow-[0_0_0_2px_var(--primary),0_6px_20px_rgba(98,92,255,0.16)]",
+  "disabled:cursor-not-allowed disabled:opacity-50",
+  "aria-[invalid=true]:shadow-[0_0_0_2px_var(--danger)]",
 ];
 
 /**
@@ -40,7 +54,7 @@ export function Textarea({
   return (
     <textarea
       ref={ref}
-      className={cn(fieldBase, "min-h-28 py-3 leading-relaxed resize-y", className)}
+      className={cn(fieldBase, "min-h-28 py-3.5 leading-relaxed resize-y", className)}
       {...props}
     />
   );
@@ -60,7 +74,7 @@ export function Select({
 }: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <div className="relative">
-      <select className={cn(fieldBase, "h-11 appearance-none pr-10", className)} {...props}>
+      <select className={cn(fieldBase, "h-11 appearance-none pr-11", className)} {...props}>
         {children}
       </select>
       <svg

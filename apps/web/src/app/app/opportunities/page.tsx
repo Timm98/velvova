@@ -95,10 +95,10 @@ export default async function OpportunitiesPage() {
                     sehen, nicht lesen müssen. */}
                 <div
                   aria-hidden
-                  className="h-1.5 rounded-[--radius-full] bg-inset"
+                  className="h-1.5 rounded-(--radius-full) bg-inset"
                 >
                   <div
-                    className={`h-full rounded-[--radius-full] ${letzteStufe ? "bg-accent" : "bg-line-2"}`}
+                    className={`h-full rounded-(--radius-full) ${letzteStufe ? "bg-accent" : "bg-line-2"}`}
                     style={{ width: `${anteil * 100}%` }}
                   />
                 </div>

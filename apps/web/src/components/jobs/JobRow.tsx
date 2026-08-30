@@ -53,7 +53,7 @@ function CompanyMark({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className="grid size-9 shrink-0 place-items-center rounded-[--radius-sm] border border-line bg-inset font-mono text-xs font-semibold text-ink-2"
+      className="grid size-9 shrink-0 place-items-center rounded-(--radius-sm) border border-line bg-inset font-mono text-xs font-semibold text-ink-2"
     >
       {initials || <Building2 className="size-4" strokeWidth={1.7} />}
     </span>
@@ -75,7 +75,7 @@ export function JobRow({
       scroll={false}
       aria-current={selected ? "true" : undefined}
       className={cn(
-        "relative block border-l-2 px-4 py-4 transition-colors duration-[--duration-fast]",
+        "relative block border-l-2 px-4 py-4 transition-colors duration-(--duration-fast)",
         selected
           ? "border-l-accent bg-inset"
           : "border-l-transparent hover:bg-inset/50",
@@ -162,12 +162,12 @@ export function JobRow({
       {(job.blocked || job.saved) && (
         <div className="mt-2.5 flex flex-wrap gap-1.5 pl-12">
           {job.blocked && (
-            <span className="rounded-[--radius-full] border border-critical/30 bg-critical-soft px-2 py-0.5 text-2xs text-critical">
+            <span className="rounded-(--radius-full) border border-critical/30 bg-critical-soft px-2 py-0.5 text-2xs text-critical">
               Ausschlusskriterium
             </span>
           )}
           {job.saved && (
-            <span className="rounded-[--radius-full] border border-line-2 px-2 py-0.5 text-2xs text-ink-3">
+            <span className="rounded-(--radius-full) border border-line-2 px-2 py-0.5 text-2xs text-ink-3">
               gemerkt
             </span>
           )}

@@ -20,17 +20,27 @@ export default async function PublicLayout({ children }: { children: React.React
   ];
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    /*
+     * Öffentliche Seiten sind immer hell.
+     *
+     * Auch wenn im Konto „dunkel“ steht: Landingpage, Anmeldung und
+     * Registrierung werden von Menschen geöffnet, die das Produkt noch
+     * nicht kennen — meist bei Tageslicht und oft am Telefon. Das
+     * Attribut hier überschreibt die Wahl auf `:root` für genau diesen
+     * Teilbaum; die Tokens definieren die helle Palette sowohl für
+     * `:root` als auch für `[data-theme="light"]`.
+     */
+    <div data-theme="light" className="flex min-h-dvh flex-col bg-page text-ink">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-line bg-page/80 backdrop-blur-md">
+      <header className="sticky top-0 z-40 bg-page/80 backdrop-blur-md">
         <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 px-5 py-3.5">
           <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight">
             <span
               aria-hidden
-              className="grid size-7 place-items-center rounded-[--radius-sm] bg-accent text-accent-on text-xs font-bold"
+              className="grid size-7 place-items-center rounded-(--radius-sm) bg-accent text-accent-on text-xs font-bold"
             >
               P
             </span>
@@ -39,13 +49,13 @@ export default async function PublicLayout({ children }: { children: React.React
           <nav aria-label="Seiten" className="flex items-center gap-1">
             <Link
               href="/login"
-              className="rounded-[--radius-md] px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+              className="rounded-(--radius-md) px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
             >
               {t("auth.login")}
             </Link>
             <Link
               href="/register"
-              className="inline-flex h-9 items-center rounded-[--radius-md] bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+              className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
             >
               {t("auth.register")}
             </Link>

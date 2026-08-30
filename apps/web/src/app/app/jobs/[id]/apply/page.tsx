@@ -134,7 +134,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
       {!paket.ready && (
         <section
           role="note"
-          className="grid gap-2 rounded-[--radius-md] border border-caution/30 bg-caution-soft px-4 py-3.5"
+          className="grid gap-2 rounded-(--radius-md) border border-caution/30 bg-caution-soft px-4 py-3.5"
         >
           <p className="text-sm font-medium text-caution">{paket.summary}</p>
           <ul className="grid gap-1">

@@ -11,7 +11,7 @@ export function Skeleton({ className }: { className?: string }) {
     <div
       aria-hidden
       className={cn(
-        "relative overflow-hidden rounded-[--radius-sm] bg-inset",
+        "relative overflow-hidden rounded-(--radius-sm) bg-inset",
         "after:absolute after:inset-0 after:-translate-x-full",
         "after:bg-gradient-to-r after:from-transparent after:via-white/25 after:to-transparent",
         "after:animate-[shimmer_1.8s_infinite]",

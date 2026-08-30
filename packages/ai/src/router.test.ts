@@ -13,7 +13,7 @@ describe("Modell-Router", () => {
     for (const task of ALL_TASKS) {
       const d = route(task);
       expect(d.task).toBe(task);
-      expect(["TERRA", "SOL", "LUNA", "REALTIME"]).toContain(d.tier);
+      expect(["FAST", "DEFAULT", "DEEP", "REALTIME"]).toContain(d.tier);
     }
   });
 
@@ -28,27 +28,27 @@ describe("Modell-Router", () => {
   it("gibt alles, was das Haus verlässt, auf die gründliche Stufe", () => {
     // Anschreiben und Lebenslauf gehen an einen Arbeitgeber und tragen
     // den Namen der Person. Hier zu sparen wäre am falschen Ende.
-    expect(route("cover_letter_draft").tier).toBe("LUNA");
-    expect(route("cv_section_draft").tier).toBe("LUNA");
+    expect(route("cover_letter_draft").tier).toBe("DEEP");
+    expect(route("cv_section_draft").tier).toBe("DEEP");
   });
 
   it("hält das Gespräch schnell", () => {
-    expect(route("interview_turn").tier).toBe("SOL");
+    expect(route("interview_turn").tier).toBe("DEFAULT");
     expect(route("interview_turn").timeoutMs).toBeLessThanOrEqual(20_000);
   });
 
   it("verschwendet keine Tiefe an Klassifikation", () => {
-    expect(route("language_detection").tier).toBe("TERRA");
-    expect(route("job_normalisation").tier).toBe("TERRA");
+    expect(route("language_detection").tier).toBe("FAST");
+    expect(route("job_normalisation").tier).toBe("FAST");
   });
 
   it("weicht bei einer Urteilsaufgabe nicht auf das schnelle Modell aus", () => {
     // Ein Rückfall auf TERRA würde ein Ergebnis erzeugen, das aussieht
     // wie ein Urteil, aber keines ist. Lieber gar keine Antwort.
-    const luna = ALL_TASKS.filter((t) => route(t).tier === "LUNA");
+    const luna = ALL_TASKS.filter((t) => route(t).tier === "DEEP");
     expect(luna.length).toBeGreaterThan(0);
     for (const task of luna) {
-      expect(route(task).fallback).not.toBe("TERRA");
+      expect(route(task).fallback).not.toBe("FAST");
     }
   });
 
@@ -60,15 +60,15 @@ describe("Modell-Router", () => {
 
   it("nennt im Rückfall beide Stufen", () => {
     const zurueck = fallbackRoute(route("profile_synthesis"));
-    expect(zurueck?.tier).toBe("SOL");
-    expect(zurueck?.reason).toContain("LUNA");
-    expect(zurueck?.reason).toContain("SOL");
+    expect(zurueck?.tier).toBe("DEFAULT");
+    expect(zurueck?.reason).toContain("DEEP");
+    expect(zurueck?.reason).toContain("DEFAULT");
   });
 
   it("führt Sprache über einen eigenen Pfad, mit ehrlichem Textrückfall", () => {
     const d = route("voice_session");
     expect(d.tier).toBe("REALTIME");
-    expect(d.fallback).toBe("SOL");
+    expect(d.fallback).toBe("DEFAULT");
   });
 
   it("nennt an keiner Stelle einen Modellnamen", () => {

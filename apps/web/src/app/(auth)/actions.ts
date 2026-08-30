@@ -12,6 +12,11 @@ import {
   registerUser,
   requireUser,
 } from "@/lib/auth";
+import {
+  ensureWorkflowState,
+  entryRoute,
+  updateWorkflowState,
+} from "@/lib/nina/workflow-state";
 
 /**
  * Server Actions für Anmeldung und Registrierung.
@@ -38,7 +43,18 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
 
   const h = await headers();
   await createSession(userId, h.get("user-agent") ?? undefined);
-  redirect("/app");
+
+  /*
+   * Wohin nach dem Login?
+   *
+   * Nicht pauschal auf die Startseite und schon gar nicht pauschal ins
+   * Interview. Der gespeicherte Vorgangszustand entscheidet: wer
+   * unterbrochen hat, macht dort weiter; wer fertig ist, landet bei
+   * seiner Jobliste. Genau der Fehler, den das Produkt vorher hatte —
+   * ein abgeschlossenes Interview begann bei jedem Login von vorn.
+   */
+  const state = await ensureWorkflowState(userId);
+  redirect(entryRoute(state));
 }
 
 export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -52,6 +68,9 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
 
   const h = await headers();
   await createSession(result.userId, h.get("user-agent") ?? undefined);
+  // Ein neues Konto geht immer durch das Setup. Der Zustand wird hier
+  // angelegt, damit die Weiterleitung ab jetzt eine Grundlage hat.
+  await ensureWorkflowState(result.userId);
   redirect("/setup");
 }
 
@@ -154,6 +173,25 @@ export async function saveSetupAction(formData: FormData): Promise<void> {
     } else {
       await tx.insert(schema.userConstraints).values({ userId: user.id, data });
     }
+
+    await tx
+      .update(schema.userSettings)
+      .set({ onboardingCompletedAt: new Date() })
+      .where(eq(schema.userSettings.userId, user.id));
+  });
+
+  /*
+   * Erst hier gilt das Onboarding als durchlaufen.
+   *
+   * Ohne diese Zeile schickt `entryRoute()` die Person bei jedem Login
+   * wieder ins Setup — und zwar für immer, weil das Setup selbst nie
+   * vermerkt hat, dass es fertig ist. Genau dieser Fall ist im
+   * Durchlauf aufgefallen: Konto angelegt, Setup ausgefüllt, beim
+   * zweiten Login wieder Setup.
+   */
+  await updateWorkflowState(user.id, {
+    onboardingComplete: true,
+    currentWorkflowStep: "career_interview",
   });
 
   redirect("/app/nina");

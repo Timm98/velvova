@@ -19,7 +19,7 @@ type Labels = Record<
   | "generateCvAts" | "generateCoverLetter" | "generateEmail"
   | "claimSupported" | "claimUnsupported" | "claimNeedsConfirmation" | "unsupportedBlocked"
   | "preview" | "recipient" | "subject" | "confirmSend" | "send" | "exportDraft"
-  | "demoSendNotice" | "coverLetterNotNeeded",
+  | "draftOnlySendNotice" | "coverLetterNotNeeded",
   string
 >;
 
@@ -310,7 +310,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                 </dl>
 
                 <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                  {labels.demoSendNotice}
+                  {labels.draftOnlySendNotice}
                 </p>
 
                 {!active.approved ? (

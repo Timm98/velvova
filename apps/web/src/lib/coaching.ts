@@ -32,7 +32,6 @@ export interface CoachingView {
   }[];
   starStories: { id: string; statement: string }[];
   questionsForCompany: string[];
-  providerIsMock: boolean;
 }
 
 /**
@@ -106,7 +105,7 @@ export async function loadCoaching(applicationId: string): Promise<CoachingView 
   const user = await requireUser();
   const db = await getDb();
   const cfg = loadRuntimeConfig();
-  const { provider } = await selectProvider(cfg);
+  const provider = await selectProvider(cfg);
 
   return withUser(db, user.id, async (tx) => {
     const [app] = await tx
@@ -191,7 +190,6 @@ export async function loadCoaching(applicationId: string): Promise<CoachingView 
         .filter((e) => e.type === "experience_episode" || e.type === "result")
         .map((e) => ({ id: e.id, statement: e.statement })),
       questionsForCompany: buildCompanyQuestions(app.job, themes),
-      providerIsMock: provider.isLocal,
     };
   });
 }

@@ -20,18 +20,34 @@ describe("brand", () => {
 });
 
 describe("runtime config", () => {
-  it("startet ohne einen einzigen Schlüssel im Demo-Modus", () => {
+  it("startet ohne einen einzigen Schlüssel, aber ohne KI-Anbieter", () => {
     const cfg = loadRuntimeConfig({} as Env);
     expect(cfg.mode).toBe("demo");
     expect(cfg.db.driver).toBe("pglite");
-    expect(cfg.ai.provider).toBe("mock");
+    /*
+     * "none", nicht "mock".
+     *
+     * Der simulierte Anbieter ist ersatzlos entfallen. Ohne
+     * eingerichteten Anbieter antwortet Nina nicht — sie erfindet
+     * nichts. Ein Wert namens "mock" hätte an dieser Stelle weiterhin
+     * behauptet, es gäbe etwas, das antwortet.
+     */
+    expect(cfg.ai.provider).toBe("none");
     expect(cfg.mail.provider).toBe("draft");
   });
 
   it("meldet Integrationen ehrlich als nicht verbunden", () => {
     const cfg = loadRuntimeConfig({ AI_PROVIDER: "anthropic" } as Env);
     // Provider gewählt, aber kein Schlüssel: darf nicht als verbunden gelten.
-    expect(integrationStatus(cfg).ai).toBe("mock");
+    expect(integrationStatus(cfg).ai).toBe("not-connected");
+  });
+
+  it("weist Diktat im Browser nicht als vollwertige Sprachverbindung aus", () => {
+    // "browser" ist eine echte, aber begrenzte Fähigkeit: Diktat auf dem
+    // Gerät, keine sprechende Nina. Als "connected" ausgewiesen wäre es
+    // genau die Verwechslung, die hier verboten ist.
+    const cfg = loadRuntimeConfig({ VOICE_PROVIDER: "browser" } as Env);
+    expect(integrationStatus(cfg).voice).toBe("dictation-only");
   });
 
   it("erkennt einen echten Provider erst mit Schlüssel", () => {

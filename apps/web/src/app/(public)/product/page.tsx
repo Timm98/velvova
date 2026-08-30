@@ -59,7 +59,7 @@ export default async function ProductPage() {
         </p>
       </header>
 
-      <ol className="grid gap-px overflow-hidden rounded-[--radius-lg] border border-line bg-line">
+      <ol className="grid gap-px overflow-hidden rounded-(--radius-lg) border border-line bg-line">
         {stages.map((stage, index) => (
           <li key={stage.title} className="bg-raised px-6 py-6">
             <span aria-hidden className="font-mono text-2xs font-medium tracking-widest text-accent-text">
@@ -74,7 +74,7 @@ export default async function ProductPage() {
       <p>
         <Link
           href="/register"
-          className="inline-flex h-12 items-center gap-2 rounded-[--radius-md] bg-accent px-6 text-base font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+          className="inline-flex h-12 items-center gap-2 rounded-(--radius-md) bg-accent px-6 text-base font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
         >
           Mit {brand.assistantName} starten
           <ArrowRight className="size-4" strokeWidth={2} />

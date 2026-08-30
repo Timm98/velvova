@@ -1,131 +1,145 @@
 /*
- * Future Minimal — Obsidian & Ice
+ * Modern Soft Premium
  *
- * Die Haltung: präzise, ruhig, schnell, hochwertig. Futuristisch heißt
- * hier technische Genauigkeit und Tiefe — nicht Neon, nicht Cyberpunk,
- * nicht Gaming.
+ * Die Haltung: ruhig, hochwertig, freundlich, übersichtlich. Weich statt
+ * eckig, Licht statt Linien.
  *
- * Vier Regeln, die alles andere bestimmen:
+ * Fünf Regeln, die alles andere bestimmen:
  *
- * 1. KEIN Orange, kein Coral, kein Kupfer. Die Marke ist Indigo mit
- *    Cyan und Violett als Signalfarben.
+ * 1. HELL ist der Standard. Nicht „hell, wenn das System hell ist“ —
+ *    hell, bis jemand ausdrücklich etwas anderes wählt. Ein neuer
+ *    Mensch soll nicht deshalb in einer dunklen Oberfläche landen, weil
+ *    sein Betriebssystem gerade dunkel eingestellt ist.
  *
- * 2. Der Verlauf aus Indigo, Cyan und Violett erscheint an genau vier
- *    Stellen: Ninas aktiver Zustand, die eine primäre Handlung, der
- *    Match-Halo, wenige fokussierte Datenbilder. Nirgends sonst.
+ * 2. KEIN Orange, kein Coral, kein Kupfer. Die Marke ist Indigo mit
+ *    einem weicheren Violett als zweitem Akzent.
  *
- * 3. Ebenen entstehen durch Flächenhelligkeit und 1-Pixel-Linien, nicht
- *    durch große Radien und schwere Schatten. Eine Oberfläche, auf der
- *    alles in einer runden Karte liegt, hat keine Hierarchie.
+ * 3. Ebenen entstehen durch FLÄCHENHELLIGKEIT, weiches Licht und
+ *    Weißraum — nicht durch Rahmen. Eine Linie ist die Ausnahme, nicht
+ *    das Mittel. Wo vorher ein Rahmen stand, steht jetzt ein anderer
+ *    Hintergrundton.
  *
- * 4. Der Großteil bleibt neutral. Farbe bedeutet "hier entscheidest du
- *    etwas" oder "das ist ein Signal" — nie "das ist unsere Marke".
+ * 4. RUND. Schaltflächen sind Pillen. Eingabefelder und Flächen haben
+ *    grosse Radien. Ein rechter Winkel ist eine Entscheidung, kein
+ *    Standardwert.
  *
- * Die Werte stehen als Hex bzw. rgba. Tailwind 4 erzeugt Transparenz
- * über color-mix(), Deckkraftmodifikatoren funktionieren also auf jedem
- * dieser Werte.
+ * 5. Der Großteil bleibt neutral. Farbe bedeutet „hier entscheidest du
+ *    etwas“ oder „das ist ein Signal“ — nie „das ist unsere Marke“.
+ *
+ * Zu jedem Markenton gehört eine TEXT-Fassung. Die Vorgabewerte sind
+ * für Flächen gemacht und fallen als Schrift durch: #625CFF erreicht
+ * auf der weichen Fläche 4,13:1, #21B97A nur 2,24:1. Die Marke bleibt
+ * dieselbe, die Schrift wird lesbar.
  */
 
-/* ── Obsidian: die Voreinstellung ─────────────────────────────────
-   Dunkel zuerst, weil die Designsprache dort ihren Charakter hat: das
-   Licht der Signale wirkt nur gegen Tiefe. Hell bleibt vollwertig. */
-:root {
-  color-scheme: dark;
+/* ── Hell: die Voreinstellung ───────────────────────────────────
+   Zweimal derselbe Block, mit Absicht: `:root` für den Normalfall,
+   `[data-theme="light"]` für Teilbäume, die hell BLEIBEN müssen, auch
+   wenn im Konto dunkel steht — die öffentlichen Seiten. */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
 
-  --background: #06080f;
-  --background-subtle: #080c15;
-  --surface-1: #0c111d;
-  --surface-2: #111827;
-  --surface-3: #172033;
-  --surface-glass: rgba(13, 19, 33, 0.72);
+  --background: #f6f7fb;
+  --background-subtle: #eef1f8;
+  --surface-1: #ffffff;
+  --surface-2: #f9fafd;
+  --surface-3: #eef1f8;
+  --surface-glass: rgba(255, 255, 255, 0.82);
 
-  --text-primary: #f7f9ff;
-  --text-secondary: #a5aec2;
-  /* Aufgehellt gegenüber der Vorgabe (#747E95): auf --surface-2 und
-     --surface-3 lag der Kontrast bei 4,35 und darunter. Die Farbe wird
-     genau dort benutzt, wo sie durchfiel — in Etiketten auf Karten. */
-  --text-tertiary: #8892a8;
-  --text-on-primary: #06080f;
+  /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
+     eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
+     einsperrt. */
+  --surface-soft: #f1f4fa;
+  --surface-soft-hover: #e9edf7;
 
-  --border-subtle: rgba(174, 190, 225, 0.11);
-  --border-strong: rgba(174, 190, 225, 0.2);
-
-  --primary: #7182ff;
-  --primary-fill: #5b6bff;
-  --primary-strong: #4a5bff;
-  --primary-soft: rgba(113, 130, 255, 0.14);
-  --primary-text: #9aa6ff;
-
+  --text-primary: #0b0e16;
   /*
-   * Signalfarben in zwei Fassungen.
-   *
-   * Die reine Farbe trägt Flächen, Verläufe und Punkte. Für TEXT gibt es
-   * eine eigene Fassung — auf hellem Grund erreicht das Cyan der Vorgabe
-   * nur 2,55:1. Die Marke bleibt dieselbe, die Schrift wird lesbar.
+   * Beide Textstufen sind gegen JEDE Fläche geprüft, auf der sie
+   * vorkommen — auch gegen die weiche Lavendel- und die Eisfläche, wo
+   * es am knappsten wird. Die erste Wahl (#687083 / #798195) fiel dort
+   * mit 4,39 und 3,53 durch. Genau dort steht die kleine Schrift, bei
+   * der ein zu heller Ton am wenigsten auffällt und am meisten schadet.
    */
-  --signal-cyan: #67d8ff;
-  --signal-cyan-text: #67d8ff;
-  --signal-cyan-soft: rgba(103, 216, 255, 0.13);
-  --signal-violet: #a68cff;
-  --signal-violet-text: #b9a6ff;
-  --signal-violet-soft: rgba(166, 140, 255, 0.13);
+  --text-secondary: #61697b;
+  --text-tertiary: #63697a;
+  --text-on-primary: #ffffff;
 
-  /*
-   * Bedeutungsfarben, ebenfalls in zwei Fassungen.
-   *
-   * Auf dunklem Grund trägt die Farbe selbst auch Schrift. Auf hellem
-   * Grund nicht: dort erreicht das Grün der Vorgabe auf seiner eigenen
-   * weichen Fläche nur 2,95:1. Die Fläche behält ihre Farbe, die
-   * Schrift bekommt eine dunklere.
-   */
-  --success: #46d6a2;
-  --success-text: #46d6a2;
-  --success-soft: rgba(70, 214, 162, 0.12);
-  --warning: #f3d56b;
-  --warning-text: #f3d56b;
-  --warning-soft: rgba(243, 213, 107, 0.12);
-  --danger: #ff6f91;
-  --danger-text: #ff6f91;
-  --danger-soft: rgba(255, 111, 145, 0.12);
+  /* Linien gibt es noch — für Tabellen, Trennungen in dichten Listen
+     und das eine Mal, an dem eine Fläche wirklich eine Kante braucht.
+     Sie sind bewusst zarter als vorher. */
+  --border-subtle: rgba(11, 14, 22, 0.07);
+  --border-strong: rgba(11, 14, 22, 0.13);
+
+  --primary: #625cff;
+  --primary-fill: #625cff;
+  --primary-strong: #4f48e6;
+  --primary-soft: #eeeafe;
+  /* 4,53:1 auf der ungünstigsten Fläche (Soft Lavender). Der Markenton
+     selbst liegt dort bei 4,13 und trägt deshalb Flächen, aber keine
+     Schrift. */
+  --primary-text: #5953e9;
+
+  --signal-cyan: #55d8ff;
+  --signal-cyan-text: #0e7290;
+  --signal-cyan-soft: #ddebff;
+  --signal-violet: #8b82ff;
+  --signal-violet-text: #5b4fd6;
+  --signal-violet-soft: #eeeafe;
+
+  --success: #21b97a;
+  --success-text: #15784f;
+  --success-soft: #ddf5ea;
+  --warning: #e0a52a;
+  --warning-text: #7a5d0a;
+  --warning-soft: #fbf0d8;
+  --danger: #ef5f7f;
+  --danger-text: #a32547;
+  --danger-soft: #fde8ed;
+
+  /* Zwei Lichtflächen. Sie sind der Ersatz für „noch eine Karte“:
+     ein Abschnitt bekommt Tiefe durch Licht, nicht durch eine Kante. */
+  --wash-lavender: linear-gradient(180deg, #ffffff 0%, #eeeafe 100%);
+  --wash-ice: linear-gradient(180deg, #ffffff 0%, #ddebff 100%);
 
   /* ---- Schatten ----
-     Weit und weich, nie schwarz und hart. Auf dunklem Grund trägt
-     zusätzlich ein Innenschein die Kante. */
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45), 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.35);
-  --shadow-xl: 0 24px 72px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 0 1px rgba(113, 130, 255, 0.3), 0 8px 32px rgba(113, 130, 255, 0.22);
+     Weit, weich, fast farblos. Ein harter Schatten ist eine Kante mit
+     Umweg. */
+  --shadow-xs: 0 1px 2px rgba(11, 14, 22, 0.03);
+  --shadow-sm: 0 1px 2px rgba(11, 14, 22, 0.04), 0 2px 8px rgba(11, 14, 22, 0.04);
+  --shadow-md: 0 2px 4px rgba(11, 14, 22, 0.04), 0 8px 28px rgba(11, 14, 22, 0.06);
+  --shadow-lg: 0 4px 10px rgba(11, 14, 22, 0.05), 0 20px 56px rgba(11, 14, 22, 0.09);
+  --shadow-xl: 0 8px 20px rgba(11, 14, 22, 0.06), 0 40px 100px rgba(11, 14, 22, 0.12);
+  --shadow-glow: 0 6px 24px rgba(98, 92, 255, 0.24);
 
   /* ---- Radien ----
-     14 Pixel als Norm. Große Flächen dürfen 18 bis 22. Alles darüber
-     sieht nach Spielzeug aus. */
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --radius-xl: 22px;
+     Die Vorgabe: Schaltflächen als Pille, Eingaben 16–22, Flächen
+     24–32, Schubladen 28–36. Die alten Werte (6 bis 22) lagen
+     durchgehend darunter — deshalb wirkte alles eckig, obwohl überall
+     ein Radius stand. */
+  --radius-xs: 10px;
+  --radius-sm: 14px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 30px;
+  --radius-2xl: 36px;
   --radius-full: 999px;
+  /* Alles, was man drückt: Pille. Ohne Ausnahme. */
+  --radius-control: 999px;
+  --radius-input: 18px;
+  --radius-surface: 26px;
+  --radius-sheet: 32px;
 
-  /* ---- Bewegung ----
-     160 bis 240 Millisekunden. Alles darüber wirkt träge, alles
-     darunter wie ein Sprung. */
+  /* ---- Bewegung ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --duration-fast: 160ms;
   --duration-base: 200ms;
   --duration-slow: 240ms;
 
-  /* Ungefähr 65 bis 75 Zeichen. Längere Zeilen verliert das Auge. */
   --measure: 68ch;
 
-  /* ---- Abstände ----
-     Vierer-Raster. Es fehlte bisher vollständig, und mehrere Seiten
-     haben `var(--space-4)` benutzt — eine Variable, die es nicht gab.
-     Eine ungültige CSS-Deklaration wird stillschweigend verworfen:
-     die Abstände dieser Seiten sind einfach zusammengefallen, ohne
-     Fehlermeldung, ohne dass ein Test es gemerkt hätte. */
+  /* ---- Abstände ---- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -137,17 +151,11 @@
   --space-9: 48px;
 
   /* ---- Übergangsnamen ────────────────────────────────────────
-     Die Umstellung auf Obsidian & Ice hat die Farbvokabel geändert:
-     aus `--accent` wurde `--primary-fill`, aus `--positive` wurde
-     `--success`. Achtzehn Dateien benutzen aber noch die alten Namen
-     in Inline-Stilen.
-
-     Das hier sind reine Weiterleitungen — keine zweiten Werte. Sie
-     zeigen auf dieselben Tokens und wechseln deshalb mit dem Thema
-     mit. Sobald die letzte Datei auf die semantischen Tailwind-Klassen
-     umgestellt ist, fällt dieser Block ersatzlos weg. */
+     Weiterleitungen für Dateien, die noch die alte Vokabel benutzen.
+     Keine zweiten Werte: sie zeigen auf dieselben Tokens und wechseln
+     deshalb mit dem Thema mit. */
   --surface-raised: var(--surface-1);
-  --surface-sunken: var(--background-subtle);
+  --surface-sunken: var(--surface-soft);
   --border-default: var(--border-subtle);
   --text-muted: var(--text-tertiary);
 
@@ -158,13 +166,8 @@
   --assistant: var(--signal-violet);
   --assistant-text: var(--signal-violet-text);
   --assistant-subtle: var(--signal-violet-soft);
-  --assistant-border: color-mix(in oklab, var(--signal-violet) 28%, transparent);
+  --assistant-border: transparent;
 
-  /* Diese drei stehen in den Altdateien fast ausschließlich als
-     `color`. Deshalb zeigen sie auf die Textfassung, nicht auf die
-     Flächenfassung: #d84c70 auf Weiß erreicht 4,04:1 und fällt durch,
-     #a32547 erreicht 7,4:1. Für die vereinzelten Rahmen ist die
-     dunklere Farbe ebenfalls richtig. */
   --positive: var(--success-text);
   --positive-subtle: var(--success-soft);
   --caution: var(--warning-text);
@@ -176,109 +179,132 @@
   --leading-3xl: 1.2;
 }
 
-/* ── Polar: die helle Fassung ─────────────────────────────────── */
-:root[data-theme="light"] {
-  color-scheme: light;
+/* ── Dunkel ────────────────────────────────────────────────────
+   Nur auf ausdrücklichen Wunsch. Zwei Wege führen hierher: eine
+   gespeicherte Wahl „dunkel“, oder eine gespeicherte Wahl „System“ bei
+   dunklem System. Kein dritter. */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  color-scheme: dark;
 
-  --background: #f5f7fc;
-  --background-subtle: #eef2f8;
-  --surface-1: #ffffff;
-  --surface-2: #f7f9fd;
-  --surface-3: #eaf0f9;
-  --surface-glass: rgba(255, 255, 255, 0.78);
+  --background: #0a0c14;
+  --background-subtle: #0d1019;
+  --surface-1: #12151f;
+  --surface-2: #171b27;
+  --surface-3: #1e2331;
+  --surface-glass: rgba(18, 21, 31, 0.8);
 
-  --text-primary: #0a1020;
-  --text-secondary: #5f687d;
-  /* Abgedunkelt gegenüber der Vorgabe (#8A93A8): dort lag der Kontrast
-     auf weißer Fläche bei 3,07 und auf --surface-2 bei 2,92. */
-  --text-tertiary: #5c6376;
-  --text-on-primary: #ffffff;
+  --surface-soft: #171b27;
+  --surface-soft-hover: #1e2331;
 
-  --border-subtle: #e0e6f0;
-  --border-strong: #cdd6e5;
+  --text-primary: #f7f8fc;
+  --text-secondary: #a8b0c2;
+  --text-tertiary: #8b93a6;
+  --text-on-primary: #0a0c14;
 
-  --primary: #5868f6;
-  --primary-fill: #4253e8;
-  --primary-strong: #3543cf;
-  --primary-soft: rgba(88, 104, 246, 0.1);
-  --primary-text: #4253e8;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
 
-  --signal-cyan: #1dafdb;
-  --signal-cyan-text: #0f7391;
-  --signal-cyan-soft: rgba(29, 175, 219, 0.10);
-  --signal-violet: #8068e8;
-  --signal-violet-text: #6449d4;
-  --signal-violet-soft: rgba(128, 104, 232, 0.10);
+  --primary: #8b82ff;
+  --primary-fill: #7169ff;
+  --primary-strong: #625cff;
+  --primary-soft: rgba(139, 130, 255, 0.16);
+  --primary-text: #a9a3ff;
 
-  --success: #149b70;
-  --success-soft: rgba(20, 155, 112, 0.1);
-  --success-text: #0e7454;
-  --warning: #b88c14;
-  --warning-soft: rgba(184, 140, 20, 0.1);
-  --warning-text: #7a5d0a;
-  --danger: #d84c70;
-  --danger-soft: rgba(216, 76, 112, 0.1);
-  --danger-text: #a32547;
+  --signal-cyan: #7ee2ff;
+  --signal-cyan-text: #7ee2ff;
+  --signal-cyan-soft: rgba(126, 226, 255, 0.14);
+  --signal-violet: #a89fff;
+  --signal-violet-text: #bcb5ff;
+  --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
-  --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
-  --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);
-  --shadow-md: 0 4px 16px rgba(10, 16, 32, 0.07), 0 1px 3px rgba(10, 16, 32, 0.04);
-  --shadow-lg: 0 12px 40px rgba(10, 16, 32, 0.09), 0 2px 8px rgba(10, 16, 32, 0.05);
-  --shadow-xl: 0 24px 72px rgba(10, 16, 32, 0.11), 0 4px 16px rgba(10, 16, 32, 0.06);
-  --shadow-glow: 0 0 0 1px rgba(88, 104, 246, 0.25), 0 8px 32px rgba(88, 104, 246, 0.16);
+  --success: #3fd79a;
+  --success-text: #4fe0a6;
+  --success-soft: rgba(63, 215, 154, 0.14);
+  --warning: #f0cc70;
+  --warning-text: #f4d788;
+  --warning-soft: rgba(240, 204, 112, 0.14);
+  --danger: #ff7d99;
+  --danger-text: #ff93aa;
+  --danger-soft: rgba(255, 125, 153, 0.14);
+
+  --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
+  --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.45), 0 8px 28px rgba(0, 0, 0, 0.38);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.5), 0 20px 56px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 8px 20px rgba(0, 0, 0, 0.55), 0 40px 100px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 6px 24px rgba(139, 130, 255, 0.3);
+
+  --assistant-border: transparent;
 }
 
-/* Systemvorgabe „hell" greift nur ohne ausdrückliche Wahl. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
+/*
+ * Systemeinstellung — aber nur, wenn sie ausdrücklich gewählt wurde.
+ *
+ * Der Server setzt `data-theme-mode="system"`, wenn jemand „System“
+ * gespeichert hat. Ohne diese Markierung greift die Medienabfrage
+ * nicht, und ein dunkel eingestelltes Betriebssystem ändert nichts.
+ *
+ * Genau hier lag der Fehler der vorigen Fassung: dort stand
+ * `:root:not([data-theme="dark"])`, und dieser Selektor trifft immer,
+ * solange nichts gesetzt ist.
+ */
+@media (prefers-color-scheme: dark) {
+  :root[data-theme-mode="system"] {
+    color-scheme: dark;
 
-    --background: #f5f7fc;
-    --background-subtle: #eef2f8;
-    --surface-1: #ffffff;
-    --surface-2: #f7f9fd;
-    --surface-3: #eaf0f9;
-    --surface-glass: rgba(255, 255, 255, 0.78);
+    --background: #0a0c14;
+    --background-subtle: #0d1019;
+    --surface-1: #12151f;
+    --surface-2: #171b27;
+    --surface-3: #1e2331;
+    --surface-glass: rgba(18, 21, 31, 0.8);
+    --surface-soft: #171b27;
+    --surface-soft-hover: #1e2331;
 
-    --text-primary: #0a1020;
-    --text-secondary: #5f687d;
-    /* Abgedunkelt gegenüber der Vorgabe (#8A93A8): dort lag der Kontrast
-       auf weißer Fläche bei 3,07 und auf --surface-2 bei 2,92. */
-    --text-tertiary: #5c6376;
-    --text-on-primary: #ffffff;
+    --text-primary: #f7f8fc;
+    --text-secondary: #a8b0c2;
+    --text-tertiary: #8b93a6;
+    --text-on-primary: #0a0c14;
 
-    --border-subtle: #e0e6f0;
-    --border-strong: #cdd6e5;
+    --border-subtle: rgba(255, 255, 255, 0.07);
+    --border-strong: rgba(255, 255, 255, 0.14);
 
-    --primary: #5868f6;
-    --primary-fill: #4253e8;
-    --primary-strong: #3543cf;
-    --primary-soft: rgba(88, 104, 246, 0.1);
-    --primary-text: #4253e8;
+    --primary: #8b82ff;
+    --primary-fill: #7169ff;
+    --primary-strong: #625cff;
+    --primary-soft: rgba(139, 130, 255, 0.16);
+    --primary-text: #a9a3ff;
 
-    --signal-cyan: #1dafdb;
-    --signal-cyan-text: #0f7391;
-    --signal-cyan-soft: rgba(29, 175, 219, 0.10);
-    --signal-violet: #8068e8;
-    --signal-violet-text: #6449d4;
-    --signal-violet-soft: rgba(128, 104, 232, 0.10);
+    --signal-cyan: #7ee2ff;
+    --signal-cyan-text: #7ee2ff;
+    --signal-cyan-soft: rgba(126, 226, 255, 0.14);
+    --signal-violet: #a89fff;
+    --signal-violet-text: #bcb5ff;
+    --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
-    --success: #149b70;
-    --success-soft: rgba(20, 155, 112, 0.1);
-    --success-text: #0e7454;
-    --warning: #b88c14;
-    --warning-soft: rgba(184, 140, 20, 0.1);
-    --warning-text: #7a5d0a;
-    --danger: #d84c70;
-    --danger-soft: rgba(216, 76, 112, 0.1);
-    --danger-text: #a32547;
+    --success: #3fd79a;
+    --success-text: #4fe0a6;
+    --success-soft: rgba(63, 215, 154, 0.14);
+    --warning: #f0cc70;
+    --warning-text: #f4d788;
+    --warning-soft: rgba(240, 204, 112, 0.14);
+    --danger: #ff7d99;
+    --danger-text: #ff93aa;
+    --danger-soft: rgba(255, 125, 153, 0.14);
 
-    --shadow-xs: 0 1px 2px rgba(10, 16, 32, 0.04);
-    --shadow-sm: 0 1px 3px rgba(10, 16, 32, 0.05), 0 1px 2px rgba(10, 16, 32, 0.03);
-    --shadow-md: 0 4px 16px rgba(10, 16, 32, 0.07), 0 1px 3px rgba(10, 16, 32, 0.04);
-    --shadow-lg: 0 12px 40px rgba(10, 16, 32, 0.09), 0 2px 8px rgba(10, 16, 32, 0.05);
-    --shadow-xl: 0 24px 72px rgba(10, 16, 32, 0.11), 0 4px 16px rgba(10, 16, 32, 0.06);
-    --shadow-glow: 0 0 0 1px rgba(88, 104, 246, 0.25), 0 8px 32px rgba(88, 104, 246, 0.16);
+    --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
+    --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.45), 0 8px 28px rgba(0, 0, 0, 0.38);
+    --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.5), 0 20px 56px rgba(0, 0, 0, 0.45);
+    --shadow-xl: 0 8px 20px rgba(0, 0, 0, 0.55), 0 40px 100px rgba(0, 0, 0, 0.55);
+    --shadow-glow: 0 6px 24px rgba(139, 130, 255, 0.3);
   }
 }
 
@@ -384,7 +410,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) [data-surface="editorial"] {
+  :root[data-theme-mode="system"] [data-surface="editorial"] {
     color-scheme: dark;
     --ed-canvas: #070910;
     --ed-surface: #0e111b;

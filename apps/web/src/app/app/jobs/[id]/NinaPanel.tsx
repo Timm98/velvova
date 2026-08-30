@@ -31,7 +31,7 @@ export function NinaPanel({
   return (
     <section
       aria-labelledby="nina-panel"
-      className="rounded-[--radius-lg] border border-assistant-border bg-assistant-soft p-5"
+      className="rounded-(--radius-lg) border border-assistant-border bg-assistant-soft p-5"
     >
       <h2 id="nina-panel" className="flex items-center gap-2 text-sm font-semibold">
         <Sparkles className="size-4 text-assistant-text" strokeWidth={2} />
@@ -43,7 +43,7 @@ export function NinaPanel({
           <li key={prompt.key}>
             <Link
               href={`/app/nina?job=${jobId}&ask=${prompt.key}`}
-              className="flex items-center justify-between gap-3 rounded-[--radius-md] bg-raised/70 px-3.5 py-2.5 text-sm transition-colors hover:bg-raised"
+              className="flex items-center justify-between gap-3 rounded-(--radius-md) bg-raised/70 px-3.5 py-2.5 text-sm transition-colors hover:bg-raised"
             >
               {prompt.label}
               <ArrowRight className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.9} />

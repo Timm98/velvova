@@ -42,7 +42,7 @@ export default async function IntegrationsPage() {
       detail:
         integrations.ai === "connected"
           ? `${integrations.aiProvider} mit dem Modell ${integrations.aiModel}. Übermittelt wird nur der Kontext, den der jeweilige Schritt braucht.`
-          : "Es ist kein Schlüssel hinterlegt. Es läuft der lokale Demo-Anbieter: seine Antworten sind Beispiele ohne inhaltliche Aussage und werden auch so gekennzeichnet.",
+          : "Es ist kein Zugangsschlüssel hinterlegt. Nina antwortet dann nicht — es wird bewusst keine Beispielantwort erzeugt, weil sie von einer echten nicht zu unterscheiden wäre.",
       env: "AI_PROVIDER, OPENAI_API_KEY, OPENAI_PRIMARY_MODEL",
     },
     {
@@ -130,7 +130,7 @@ export default async function IntegrationsPage() {
             <li key={source.key} className="flex flex-wrap items-center gap-3 px-6 py-4">
               <span className="text-sm font-medium">{source.displayName}</span>
               <Badge tone={source.active ? (source.real ? "positive" : "caution") : "outline"}>
-                {source.active ? (source.real ? "echte Stellen" : "Demo") : "aus"}
+                {source.active ? "aktiv" : "aus"}
               </Badge>
               <span className="text-sm text-ink-3">{source.reason}</span>
             </li>

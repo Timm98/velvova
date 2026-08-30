@@ -37,6 +37,9 @@ export default async function LandingPage() {
   return (
     <div
       data-surface="editorial"
+      /* Die Landingpage ist immer hell — auch für angemeldete Menschen
+         mit dunklem Thema. Sie ist die erste Seite, die jemand sieht. */
+      data-theme="light"
       className="min-h-dvh"
       style={{ background: "var(--ed-canvas)", color: "var(--ed-ink)" }}
     >
@@ -331,7 +334,10 @@ export default async function LandingPage() {
           <span style={{ color: "var(--ed-ink-3)" }}>
             {brand.name} — {brand.tagline.de}
           </span>
-          <nav aria-label="Rechtliches" className="ml-auto flex flex-wrap gap-x-6 gap-y-2">
+          {/* Die Abstände sitzen an den Links selbst, nicht zwischen
+              ihnen: „AGB“ ist 29 Pixel breit, und ein Wort ist kein
+              Berührungsziel. Die Fläche trägt die geforderten 44. */}
+          <nav aria-label="Rechtliches" className="-my-2 ml-auto flex flex-wrap gap-x-3 gap-y-0">
             {([
               ["Über uns", "/about"],
               ["Kontakt", "/contact"],
@@ -340,7 +346,12 @@ export default async function LandingPage() {
               [t("landing.footerImprint"), "/imprint"],
               [t("landing.footerTerms"), "/terms"],
             ] as const).map(([label, href]) => (
-              <Link key={href} href={href} style={{ color: "var(--ed-ink-2)" }}>
+              <Link
+                key={href}
+                href={href}
+                className="inline-flex min-h-11 items-center px-2"
+                style={{ color: "var(--ed-ink-2)" }}
+              >
                 {label}
               </Link>
             ))}

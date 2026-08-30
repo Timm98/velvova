@@ -6,9 +6,17 @@ import { Badge } from "./badge.tsx";
  * Zustände.
  *
  * Ein Produkt wird an seinen Randfällen beurteilt, nicht am Idealfall.
- * Leere Listen, fehlende Verbindungen, Demo-Daten und zu dünne
- * Datenlagen brauchen jeweils eine eigene, ehrliche Darstellung — und
- * sie dürfen nicht wie Fehler aussehen, wenn sie keine sind.
+ * Leere Listen, fehlende Verbindungen und zu dünne Datenlagen brauchen
+ * jeweils eine eigene, ehrliche Darstellung — und sie dürfen nicht wie
+ * Fehler aussehen, wenn sie keine sind.
+ *
+ * Was hier NICHT mehr steht: `DemoNotice`, `DemoBadge`,
+ * `LiveSourceNotice`. Die ersten beiden kennzeichneten erfundene
+ * Inhalte — es gibt keine mehr, und ein Bauteil, das nur darauf wartet,
+ * wieder benutzt zu werden, wird irgendwann wieder benutzt. Das dritte
+ * war ihr Gegenstück und damit überflüssig: dass Stellen echt sind, ist
+ * keine Auszeichnung, sondern die Voraussetzung. Die Herkunft steht
+ * weiterhin an jeder Stelle — in `SourceNote`, wo sie hingehört.
  */
 
 export function EmptyState({
@@ -23,9 +31,9 @@ export function EmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <div className="grid justify-items-center gap-4 rounded-[--radius-lg] border border-dashed border-line-2 bg-sunken/50 px-6 py-14 text-center">
+    <div className="grid justify-items-center gap-4 rounded-(--radius-surface) bg-soft px-6 py-14 text-center">
       {icon && (
-        <div className="grid size-11 place-items-center rounded-[--radius-full] bg-inset text-ink-3">
+        <div className="grid size-12 place-items-center rounded-(--radius-full) bg-raised text-ink-3 shadow-sm">
           {icon}
         </div>
       )}
@@ -55,57 +63,13 @@ export function NotConnected({
   action?: ReactNode;
 }) {
   return (
-    <div className="grid gap-3 rounded-[--radius-lg] border border-line bg-sunken/60 p-5">
+    <div className="grid gap-3 rounded-(--radius-surface) bg-soft p-5">
       <div className="flex flex-wrap items-center gap-2.5">
         <Badge tone="outline">nicht verbunden</Badge>
         <span className="text-sm font-medium">{what}</span>
       </div>
       <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">{detail}</p>
       {action}
-    </div>
-  );
-}
-
-/** Demo-Daten. Erscheint überall, wo synthetische Inhalte stehen. */
-export function DemoNotice({ compact = false }: { compact?: boolean }) {
-  if (compact) return <Badge tone="caution">Demo</Badge>;
-  return (
-    <div
-      role="note"
-      className="flex flex-wrap items-start gap-3 rounded-[--radius-md] border border-caution/30 bg-caution-soft px-4 py-3"
-    >
-      <Badge tone="caution">Demo-Daten</Badge>
-      <p className="text-sm leading-relaxed text-ink-2">
-        Diese Einträge sind erfunden. Keine echten Stellen, keine echten Unternehmen.
-      </p>
-    </div>
-  );
-}
-
-/**
- * Der frühere Name derselben Kennzeichnung.
- *
- * Bleibt erhalten, damit Demo-Daten nirgends versehentlich ungekennzeichnet
- * bleiben, während die Seiten nach und nach umgestellt werden.
- */
-export function DemoBadge({ inline = false }: { inline?: boolean }) {
-  return <DemoNotice compact={inline} />;
-}
-
-/** Echte Daten aus einer externen Quelle. Das Gegenstück zur Demo-Kennzeichnung. */
-export function LiveSourceNotice({ sourceName, count }: { sourceName: string; count: number }) {
-  return (
-    <div
-      role="note"
-      className="flex flex-wrap items-center gap-3 rounded-[--radius-md] border border-positive/25 bg-positive-soft px-4 py-3"
-    >
-      <Badge tone="positive">
-        <span aria-hidden className="size-1.5 rounded-full bg-positive" />
-        Echte Stellen
-      </Badge>
-      <p className="text-sm text-ink-2">
-        {count} Stellen aus <span className="font-medium">{sourceName}</span>.
-      </p>
     </div>
   );
 }
@@ -122,7 +86,7 @@ export function ErrorState({
   return (
     <div
       role="alert"
-      className="grid gap-3 rounded-[--radius-lg] border border-critical/30 bg-critical-soft p-5"
+      className="grid gap-3 rounded-(--radius-surface) bg-critical-soft p-5"
     >
       <h3 className="text-base font-semibold text-critical">{title}</h3>
       <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">{body}</p>
@@ -134,7 +98,7 @@ export function ErrorState({
 /** Zu dünne Datenlage. Ausdrücklich kein schlechtes Ergebnis. */
 export function InsufficientData({ what, why }: { what: string; why: string }) {
   return (
-    <div className="grid gap-2 rounded-[--radius-md] bg-sunken p-4">
+    <div className="grid gap-2 rounded-(--radius-lg) bg-soft p-4">
       <p className="text-sm font-medium">{what}</p>
       <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">{why}</p>
     </div>
@@ -199,7 +163,7 @@ export function PageHeader({
         {eyebrow && (
           <p className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">{eyebrow}</p>
         )}
-        <h1 className="text-3xl font-semibold">{title}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-[-0.03em]">{title}</h1>
         {lead && <p className="max-w-[var(--measure)] text-base text-ink-2">{lead}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2.5">{actions}</div>}
@@ -226,7 +190,7 @@ export function Section({
     <section aria-labelledby={headingId} className="grid gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="grid gap-1">
-          <h2 id={headingId} className="text-lg font-semibold">
+          <h2 id={headingId} className="font-display text-lg font-semibold tracking-[-0.02em]">
             {title}
           </h2>
           {description && (

@@ -43,7 +43,10 @@ const RuntimeSchema = z.object({
      * schutzbedürftige Verarbeitung muss ein Weg offenstehen, der das
      * Haus nicht verlässt — und der darf keinen Umbau erfordern.
      */
-    provider: z.enum(["mock", "openai", "anthropic", "self_hosted"]).default("mock"),
+    /* "none" statt "mock": es gibt keinen simulierten Anbieter mehr.
+       Ohne eingerichteten Anbieter antwortet Nina nicht — sie erfindet
+       nichts. */
+    provider: z.enum(["none", "openai", "anthropic", "self_hosted"]).default("none"),
     apiKey: z.string().optional(),
     baseUrl: z.string().optional(),
 
@@ -68,8 +71,24 @@ const RuntimeSchema = z.object({
     monthlyBudgetEur: z.coerce.number().nonnegative().default(0),
   }),
 
+  /*
+   * Stimme.
+   *
+   * "browser" ist die Spracherkennung des Geräts. Sie ist ehrlich
+   * benannt: nichts verlässt das Gerät, aber es ist auch nicht Nina,
+   * die zuhört — es ist ein Diktiergerät. Als vollständige Sprach-Nina
+   * darf sie nirgends ausgegeben werden.
+   *
+   * "openai" ist die echte Sprachverbindung über die Realtime- bzw.
+   * Audio-Modelle. Sie war bisher gar nicht als Wert erlaubt, obwohl
+   * die Anbieterklasse sie längst kann — wer VOICE_PROVIDER=openai
+   * setzte, bekam beim Start einen Schemafehler.
+   *
+   * "none" heißt: es gibt keinen Sprachmodus. Ehrlicher als der frühere
+   * Wert "mock", der so klang, als würde etwas simuliert.
+   */
   voice: z.object({
-    provider: z.enum(["mock", "browser", "anthropic"]).default("mock"),
+    provider: z.enum(["none", "browser", "openai", "anthropic"]).default("browser"),
     storeTranscripts: z.coerce.boolean().default(false),
   }),
 
@@ -121,7 +140,7 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       sessionTtlDays: env.AUTH_SESSION_TTL_DAYS ?? 30,
     },
     ai: {
-      provider: env.AI_PROVIDER ?? "mock",
+      provider: env.AI_PROVIDER ?? "none",
       // Je Anbieter ein eigener Schlüsselname. Ein gemeinsamer wäre die
       // Sorte Abkürzung, bei der irgendwann der falsche Schlüssel an den
       // falschen Anbieter geht.
@@ -155,7 +174,7 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       monthlyBudgetEur: env.AI_MONTHLY_BUDGET_EUR ?? 0,
     },
     voice: {
-      provider: env.VOICE_PROVIDER ?? "mock",
+      provider: env.VOICE_PROVIDER ?? "browser",
       storeTranscripts: env.VOICE_STORE_TRANSCRIPTS === "true",
     },
     mail: { provider: env.MAIL_PROVIDER ?? "draft", smtpUrl: env.SMTP_URL, from: env.MAIL_FROM },
@@ -177,9 +196,9 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
  */
 export function integrationStatus(cfg: RuntimeConfig) {
   return {
-    ai: cfg.ai.provider !== "mock" && !!cfg.ai.apiKey ? "connected" : "mock",
+    ai: cfg.ai.provider !== "none" && !!cfg.ai.apiKey ? "connected" : "not-connected",
     aiProvider: cfg.ai.provider,
-    aiModel: cfg.ai.provider === "mock" ? null : cfg.ai.modelInteractive,
+    aiModel: cfg.ai.provider === "none" ? null : cfg.ai.modelInteractive,
     mail:
       cfg.mail.provider === "draft"
         ? "draft-only"
@@ -187,7 +206,15 @@ export function integrationStatus(cfg: RuntimeConfig) {
           ? "connected"
           : "not-connected",
     storage: cfg.storage.driver === "s3" && cfg.storage.s3?.bucket ? "connected" : "local",
-    voice: cfg.voice.provider === "mock" ? "mock" : "connected",
+    /* "browser" ist eine echte, aber begrenzte Fähigkeit: Diktat auf dem
+       Gerät, keine sprechende Nina. Sie als "connected" auszuweisen
+       hätte genau die Verwechslung erzeugt, die hier verboten ist. */
+    voice:
+      cfg.voice.provider === "none"
+        ? "not-connected"
+        : cfg.voice.provider === "browser"
+          ? "dictation-only"
+          : "connected",
     jobSources: cfg.jobs.sources,
     reviewSources: cfg.reviews.sources,
   } as const;

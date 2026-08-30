@@ -246,12 +246,18 @@ export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Pro
    * und dann stünden erfundene Unternehmen neben echten — genau das
    * darf nicht passieren.
    *
-   * Ohne echte Stellen bleiben die Demo-Daten sichtbar, damit ein
-   * frisch aufgesetztes Projekt nicht leer wirkt. Sie sind an jeder
-   * Stelle als solche gekennzeichnet.
+   * Seed-Datensätze werden NIE ausgeliefert — auch nicht, wenn dadurch
+   * die Liste leer bleibt.
+   *
+   * Vorher standen sie da, sobald keine echten Stellen vorhanden waren,
+   * "damit ein frisch aufgesetztes Projekt nicht leer wirkt". Das war
+   * der Fehler: eine leere Liste ist eine wahre Aussage über den
+   * Zustand des Produkts. Eine gefüllte Liste mit erfundenen Stellen
+   * ist eine falsche — und die Kennzeichnung daneben trägt sie nicht,
+   * weil niemand ein Etikett liest, wenn darunter ein passender Job
+   * steht.
    */
-  const hasRealJobs = allJobRows.some((r) => !r.job.isDemo);
-  const jobRows = hasRealJobs ? allJobRows.filter((r) => !r.job.isDemo) : allJobRows;
+  const jobRows = allJobRows.filter((r) => !r.job.isDemo);
 
   const requirementRows = await db.select().from(schema.jobRequirements);
   const sourceRows = await db.select().from(schema.jobSources);

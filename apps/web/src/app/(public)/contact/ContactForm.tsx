@@ -52,7 +52,7 @@ export function ContactForm() {
 
   if (gesendet) {
     return (
-      <div className="grid gap-2 rounded-[--radius-md] border border-positive/25 bg-positive-soft px-4 py-3.5">
+      <div className="grid gap-2 rounded-(--radius-md) border border-positive/25 bg-positive-soft px-4 py-3.5">
         <p className="text-sm font-medium text-positive">Angekommen.</p>
         <p className="text-sm leading-relaxed text-ink-2">
           Wir melden uns, wenn du der Kontaktaufnahme zugestimmt hast.
@@ -86,7 +86,7 @@ export function ContactForm() {
           id="topic"
           name="topic"
           defaultValue="support"
-          className="min-h-10 w-full rounded-[--radius-sm] border border-line-2 bg-inset px-3 text-sm"
+          className="min-h-10 w-full rounded-(--radius-sm) border border-line-2 bg-inset px-3 text-sm"
         >
           {THEMEN.map(([wert, label]) => (
             <option key={wert} value={wert}>

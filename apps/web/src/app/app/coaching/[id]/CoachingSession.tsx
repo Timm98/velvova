@@ -14,7 +14,6 @@ export function CoachingSession({
   questions,
   turns,
   feedback,
-  providerIsMock,
   labels,
 }: {
   sessionId: string;
@@ -28,7 +27,6 @@ export function CoachingSession({
     clarity: string | null;
     missingPoints: string[];
   }[];
-  providerIsMock: boolean;
   labels: Record<
     "start" | "repeat" | "relevance" | "structure" | "evidence" | "clarity" | "missing" | "yourAnswer" | "send",
     string
@@ -179,8 +177,6 @@ export function CoachingSession({
                 )}
               </dl>
             )}
-
-            {providerIsMock && <Badge tone="neutral">Kriterienbasierte Rückmeldung</Badge>}
           </Stack>
         </Card>
       )}

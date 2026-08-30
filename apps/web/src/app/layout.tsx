@@ -61,17 +61,32 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  /* Hell zuerst — auch hier. Die Adressleiste des Telefons soll nicht
+     dunkel sein, während die Seite hell ist. */
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F5F7FC" },
-    { media: "(prefers-color-scheme: dark)", color: "#06080F" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F7FB" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0C14" },
   ],
 };
 
 /**
- * Das Theme wird serverseitig aus dem Cookie gesetzt, damit beim Laden
- * kein heller Blitz erscheint. Ohne gesetzte Wahl bleibt das Attribut
- * leer und die Systemeinstellung entscheidet — genau wie in den Tokens
- * vorgesehen.
+ * Das Thema wird serverseitig aus dem Cookie gesetzt, damit beim Laden
+ * kein Farbblitz erscheint.
+ *
+ * Drei Wege, drei Ergebnisse — und ein vierter Fall, der der wichtigste
+ * ist:
+ *
+ *   "dark"    → data-theme="dark"          immer dunkel
+ *   "light"   → data-theme="light"         immer hell
+ *   "system"  → data-theme-mode="system"   folgt dem Gerät
+ *   nichts    → kein Attribut              HELL
+ *
+ * Der letzte Fall war vorher falsch: ohne Cookie entschied die
+ * Systemeinstellung, und wer sein Betriebssystem dunkel eingestellt
+ * hatte, landete beim allerersten Besuch in einer dunklen Oberfläche,
+ * ohne je etwas gewählt zu haben. Deshalb hat „System“ jetzt ein
+ * eigenes Attribut: sonst ist es von „nie gewählt“ nicht zu
+ * unterscheiden.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
@@ -82,10 +97,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang={locale}
-      /* Obsidian ist die Voreinstellung: die Signalfarben wirken nur
-         gegen Tiefe. Polar bleibt vollwertig und folgt der
-         Systemeinstellung, wenn nichts gewählt wurde. */
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
+      data-theme-mode={theme === "system" ? "system" : undefined}
       className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable} ${editorial.variable}`}
       suppressHydrationWarning
     >

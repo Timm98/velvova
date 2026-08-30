@@ -12,7 +12,20 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   const { t, brand } = await getPageContext();
 
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]">
+    /*
+     * Öffentliche Seiten sind immer hell.
+     *
+     * Auch wenn im Konto „dunkel“ steht: Landingpage, Anmeldung und
+     * Registrierung werden von Menschen geöffnet, die das Produkt noch
+     * nicht kennen — meist bei Tageslicht und oft am Telefon. Das
+     * Attribut hier überschreibt die Wahl auf `:root` für genau diesen
+     * Teilbaum; die Tokens definieren die helle Palette sowohl für
+     * `:root` als auch für `[data-theme="light"]`.
+     */
+    <div
+      data-theme="light"
+      className="grid min-h-dvh bg-page text-ink lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]"
+    >
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
@@ -22,7 +35,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <Link href="/" className="inline-flex items-center gap-2.5 text-[15px] font-semibold">
             <span
               aria-hidden
-              className="grid size-7 place-items-center rounded-[--radius-sm] bg-accent text-xs font-bold text-accent-on"
+              className="grid size-7 place-items-center rounded-(--radius-control) bg-accent text-xs font-bold text-accent-on"
             >
               P
             </span>

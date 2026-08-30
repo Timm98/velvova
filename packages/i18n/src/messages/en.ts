@@ -26,8 +26,6 @@ export const en: Messages = {
     showLess: "Show less",
     notSpecified: "not specified",
     unknown: "unknown",
-    demoMode: "Demo mode",
-    demoNotice: "This data is invented. These are not real jobs and not real companies.",
     notConnected: "not connected",
     openOriginal: "Open the original",
     dismiss: "Don't show again",
@@ -66,14 +64,14 @@ export const en: Messages = {
   },
 
   landing: {
-    eyebrow: "AI Career Intelligence",
-    headline: "Stop searching. See the right next step.",
-    headlineLine1: "Stop searching.",
-    headlineLine2: "See the right next step.",
+    eyebrow: "Your personal AI career assistant",
+    headline: "Don't find more jobs. Find the right one.",
+    headlineLine1: "Don't find more jobs.",
+    headlineLine2: "Find the right one.",
     subheadline:
       "{assistant} understands your experience, finds fresh roles from verified sources and " +
       "stays with you from orientation to application.",
-    ctaPrimary: "Start with {assistant}",
+    ctaPrimary: "Start free with {assistant}",
     ctaSecondary: "How it works",
 
     coreLine1: "We do not show you more jobs.",
@@ -169,8 +167,8 @@ export const en: Messages = {
       "Your text is sent to an external AI provider for analysis. Direct identifiers such as " +
       "email address and phone number are removed first.",
     externalAiBodyInactive:
-      "No external provider is connected at the moment. A local demo provider is running; its " +
-      "answers are examples with no substantive meaning.",
+      "No AI provider is configured at the moment. Nina will not answer — we deliberately " +
+      "produce no sample answer, because it would be indistinguishable from a real one.",
     privacyCenter: "Go to the Privacy Center",
     start: "Start the conversation",
   },
@@ -370,8 +368,8 @@ export const en: Messages = {
     confirmSend: "I have checked everything and want to send this application",
     send: "Send now",
     exportDraft: "Download as draft",
-    demoSendNotice:
-      "No email account is connected. Nothing will be sent - you get a draft to download.",
+    draftOnlySendNotice:
+      "No email account is connected. Nothing will be sent — you get a draft to download.",
     portalGuide: "Guide me through the portal",
   },
 
@@ -417,8 +415,9 @@ export const en: Messages = {
     revokeSession: "Sign out",
     currentSession: "This device",
     aiProvider: "AI processing",
-    aiProviderMock:
-      "A local demo provider is running. No data leaves this machine.",
+    aiProviderNone:
+      "No AI provider is configured at the moment. No text is transmitted — and Nina does " +
+      "not answer either.",
     aiProviderExternal:
       "Processing by an external provider. Purpose, region and provider are listed below.",
   },

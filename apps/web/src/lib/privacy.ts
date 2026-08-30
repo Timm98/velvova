@@ -5,6 +5,7 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { destroySession, requireUser, revokeSession } from "./auth";
+import { cookies } from "next/headers";
 
 /**
  * Privacy Center.
@@ -148,9 +149,43 @@ export async function updateSettings(formData: FormData): Promise<void> {
     patch.onboardingCompletedAt = new Date();
   }
 
-  await withUser(db, user.id, (tx) =>
-    tx.update(schema.userSettings).set(patch).where(eq(schema.userSettings.userId, user.id)),
-  );
+  /*
+   * Erst sicherstellen, dass es die Zeile gibt.
+   *
+   * Ein UPDATE auf eine nicht vorhandene Zeile ändert null Zeilen — ohne
+   * Fehler, ohne Meldung, ohne dass die Oberfläche etwas anderes zeigt
+   * als "gespeichert". Der Datensatz entsteht sonst beim Onboarding;
+   * wer über einen anderen Weg hereinkommt, hätte Einstellungen
+   * vorgenommen, die nirgends ankommen.
+   */
+  await withUser(db, user.id, async (tx) => {
+    await tx
+      .insert(schema.userSettings)
+      .values({ userId: user.id })
+      .onConflictDoNothing({ target: schema.userSettings.userId });
+
+    await tx
+      .update(schema.userSettings)
+      .set(patch)
+      .where(eq(schema.userSettings.userId, user.id));
+  });
+
+  /*
+   * Die Oberflächensprache zusätzlich ins Cookie.
+   *
+   * Der Server liest sie beim ersten Byte aus dem Cookie, nicht aus der
+   * Datenbank. Ohne diese Zeile wäre die Sprache gespeichert und die
+   * Seite trotzdem in der alten — sichtbar erst beim nächsten Laden,
+   * und dann als "hat nicht funktioniert".
+   */
+  if (typeof patch.locale === "string") {
+    const store = await cookies();
+    store.set("paycheck_locale", patch.locale, {
+      path: "/",
+      maxAge: 31_536_000,
+      sameSite: "lax",
+    });
+  }
 
   revalidatePath("/app/settings", "layout");
   revalidatePath("/app");

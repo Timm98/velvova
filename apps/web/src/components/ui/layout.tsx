@@ -79,14 +79,14 @@ export function Disclosure({
   return (
     <details
       open={defaultOpen}
-      className="group rounded-[--radius-md] border border-line bg-raised shadow-xs [&[open]]:shadow-sm"
+      className="group rounded-(--radius-md) border border-line bg-raised shadow-xs [&[open]]:shadow-sm"
     >
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-sunken rounded-[--radius-md] group-[[open]]:rounded-b-none">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium transition-colors hover:bg-sunken rounded-(--radius-md) group-[[open]]:rounded-b-none">
         {summary}
         <svg
           aria-hidden
           viewBox="0 0 20 20"
-          className="size-4 shrink-0 text-ink-3 transition-transform duration-[--duration-fast] group-open:rotate-180"
+          className="size-4 shrink-0 text-ink-3 transition-transform duration-(--duration-fast) group-open:rotate-180"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.6"

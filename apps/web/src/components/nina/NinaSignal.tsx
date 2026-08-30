@@ -127,7 +127,7 @@ export function NinaSignal({
           fill={lit ? `url(#nina-arc-${state})` : "var(--text-tertiary)"}
           opacity={lit ? 1 : 0.55}
           className={cn(
-            "transition-all duration-[--duration-slow] ease-[--ease-out]",
+            "transition-all duration-(--duration-slow) ease-(--ease-out)",
             state === "speaking" &&
               "motion-safe:animate-[nina-breathe_1.8s_ease-in-out_infinite]",
           )}

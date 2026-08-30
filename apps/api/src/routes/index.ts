@@ -46,9 +46,9 @@ export function registerRoutes(app: FastifyInstance): void {
       ki: {
         zustand: status.ai,
         hinweis:
-          status.ai === "mock"
-            ? "Kein externer Anbieter verbunden. Antworten stammen von einem lokalen Demo-Anbieter."
-            : "Externer Anbieter verbunden. Texte werden dorthin uebermittelt.",
+          status.ai === "not-connected"
+            ? "Kein Anbieter eingerichtet. Nina antwortet nicht — es wird nichts erfunden."
+            : "Anbieter verbunden. Texte werden dorthin uebermittelt.",
       },
       email: {
         zustand: status.mail,

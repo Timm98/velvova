@@ -15,6 +15,7 @@ import { BlockedNotice, FactorBreakdown } from "@/components/scores";
 import { JobActions } from "./JobActions";
 import { NinaPanel } from "./NinaPanel";
 import { ViewTracker } from "./ViewTracker";
+import { NinaScope } from "@/components/nina/NinaScope";
 
 export const dynamic = "force-dynamic";
 
@@ -130,6 +131,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="grid gap-8">
+      {/* Nina weiß ab hier, worüber gesprochen wird. */}
+      <NinaScope jobId={job.id} />
       <ViewTracker jobId={job.id} />
 
       <p>
@@ -145,11 +148,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
       {/* ══ Kopf ══════════════════════════════════════════════ */}
       <header className="grid gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          {job.isDemo ? (
-            <Badge tone="caution">Demo-Datensatz</Badge>
-          ) : (
-            <Badge tone="outline">Quelle: {source?.displayName ?? "unbekannt"}</Badge>
-          )}
+          <Badge tone="outline">Quelle: {source?.displayName ?? "unbekannt"}</Badge>
           {listingConfidence.possiblyStale && (
             <Badge tone="caution">{t("jobDetail.staleWarning")}</Badge>
           )}
@@ -406,7 +405,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                   {aiTransition.complementarySkills.map((s) => (
                     <li
                       key={s}
-                      className="rounded-[--radius-full] border border-line-2 bg-sunken px-3 py-1.5 text-sm text-ink-2"
+                      className="rounded-(--radius-full) border border-line-2 bg-sunken px-3 py-1.5 text-sm text-ink-2"
                     >
                       {s}
                     </li>
@@ -447,7 +446,6 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                         <Badge tone={r.sourceKind === "employee_reviews" ? "assistant" : "neutral"}>
                           {SOURCE_KIND_LABEL[r.sourceKind] ?? r.sourceKind}
                         </Badge>
-                        {r.isDemo && <Badge tone="caution">Demo</Badge>}
                         {r.ratingAverage !== null && (
                           <span className="text-lg font-semibold tabular">
                             {r.ratingAverage.toFixed(1)}
@@ -460,7 +458,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                       </div>
 
                       {r.sourceKind === "customer_reviews" && (
-                        <p className="rounded-[--radius-md] bg-caution-soft px-4 py-3 text-sm leading-relaxed text-ink-2">
+                        <p className="rounded-(--radius-md) bg-caution-soft px-4 py-3 text-sm leading-relaxed text-ink-2">
                           Das sind Kundenurteile über den Standort oder das Produkt. Sie sagen nichts
                           über Arbeitsbedingungen und dürfen dafür nicht herangezogen werden.
                         </p>

@@ -48,7 +48,6 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
           questions={view.questions}
           turns={view.turns}
           feedback={view.feedback}
-          providerIsMock={view.providerIsMock}
           labels={{
             start: t("coaching.startSession"),
             repeat: t("coaching.repeatAnswer"),
@@ -101,17 +100,6 @@ export default async function CoachingPage({ params }: { params: Promise<{ id: s
             </Stack>
           </Card>
 
-          {view.providerIsMock && (
-            <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
-              <Stack gap={2}>
-                <Badge tone="neutral">Demo-Anbieter</Badge>
-                <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                  Die Rückmeldung entsteht aus festen, offen gezeigten Kriterien - nicht aus einem
-                  Sprachmodell. Sie ist dadurch schlichter, aber nachvollziehbar.
-                </p>
-              </Stack>
-            </Card>
-          )}
         </aside>
       </div>
 

@@ -46,7 +46,7 @@ export function HandoffConfirm({
             type="button"
             onClick={() => setGewaehlt(a.key)}
             aria-pressed={gewaehlt === a.key}
-            className={`inline-flex min-h-10 items-center rounded-[--radius-full] border px-4 text-sm transition-colors ${
+            className={`inline-flex min-h-10 items-center rounded-(--radius-full) border px-4 text-sm transition-colors ${
               gewaehlt === a.key
                 ? "border-accent bg-accent-soft text-accent-text"
                 : "border-line-2 text-ink-2"

@@ -12,7 +12,7 @@ export function ForgotForm({ labels }: { labels: Record<"email" | "submit" | "se
       {state.notice === "sent" && (
         <div
           role="status"
-          className="rounded-[--radius-md] border border-positive/30 bg-positive-soft px-4 py-3 text-sm text-ink-2"
+          className="rounded-(--radius-md) border border-positive/30 bg-positive-soft px-4 py-3 text-sm text-ink-2"
         >
           {labels.sent}
         </div>

@@ -60,7 +60,7 @@ export function ScoreRing({
               strokeWidth={stroke}
               strokeLinecap="round"
               strokeDasharray={`${filled} ${circumference}`}
-              className={cn("transition-[stroke-dasharray] duration-[--duration-slow] ease-[--ease-out]", tone)}
+              className={cn("transition-[stroke-dasharray] duration-(--duration-slow) ease-(--ease-out)", tone)}
               stroke="currentColor"
             />
           )}
@@ -188,7 +188,7 @@ export function FactorList({
               </div>
               <div aria-hidden className="h-1.5 overflow-hidden rounded-full bg-inset">
                 <div
-                  className="h-full rounded-full bg-accent transition-[width] duration-[--duration-slow] ease-[--ease-out]"
+                  className="h-full rounded-full bg-accent transition-[width] duration-(--duration-slow) ease-(--ease-out)"
                   style={{ width: `${Math.round((f.raw ?? 0) * 100)}%` }}
                 />
               </div>
@@ -199,7 +199,7 @@ export function FactorList({
       )}
 
       {unknown.length > 0 && (
-        <div className="grid gap-3 rounded-[--radius-md] bg-sunken p-4">
+        <div className="grid gap-3 rounded-(--radius-md) bg-sunken p-4">
           <p className="text-sm leading-relaxed text-ink-2">{emptyNote}</p>
           <ul className="grid gap-2">
             {unknown.map((f) => (

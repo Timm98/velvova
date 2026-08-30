@@ -100,7 +100,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Beschreib in eigenen Worten, was du suchst …"
               aria-label="Stellen durchsuchen"
-              className="h-11 w-full rounded-[--radius-md] border border-line-2 bg-raised pl-10 pr-3.5 text-base shadow-xs transition-colors placeholder:text-ink-3 hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
+              className="h-11 w-full rounded-(--radius-md) border border-line-2 bg-raised pl-10 pr-3.5 text-base shadow-xs transition-colors placeholder:text-ink-3 hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
             />
           </div>
         </form>
@@ -117,7 +117,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
             else next.set("sort", e.target.value);
             apply(next);
           }}
-          className="h-11 shrink-0 rounded-[--radius-md] border border-line-2 bg-raised px-3.5 text-sm shadow-xs transition-colors hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
+          className="h-11 shrink-0 rounded-(--radius-md) border border-line-2 bg-raised px-3.5 text-sm shadow-xs transition-colors hover:border-line-3 focus-visible:border-accent focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-accent/30"
         >
           {SORT.map((option) => (
             <option key={option.value} value={option.value}>
@@ -131,7 +131,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           className={cn(
-            "inline-flex h-11 shrink-0 items-center gap-2 rounded-[--radius-md] border px-4 text-sm font-medium shadow-xs transition-colors",
+            "inline-flex h-11 shrink-0 items-center gap-2 rounded-(--radius-md) border px-4 text-sm font-medium shadow-xs transition-colors",
             open || active.length > 0
               ? "border-accent bg-accent-soft text-accent-text"
               : "border-line-2 bg-raised hover:border-line-3",
@@ -150,7 +150,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
       {open && (
         <div
           ref={panelRef}
-          className="grid gap-5 rounded-[--radius-lg] border border-line bg-raised p-5 shadow-sm animate-fade-in"
+          className="grid gap-5 rounded-(--radius-lg) border border-line bg-raised p-5 shadow-sm animate-fade-in"
         >
           <FilterRow legend="Arbeitsmodell" name="remote" options={REMOTE} params={params} onToggle={toggle} />
           <FilterRow legend="Vertragsart" name="contract" options={CONTRACT} params={params} onToggle={toggle} />
@@ -196,7 +196,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
                 next.delete(key);
                 apply(next);
               }}
-              className="inline-flex items-center gap-1.5 rounded-[--radius-full] border border-accent-border bg-accent-soft px-3 py-1 text-xs font-medium text-accent-text transition-colors hover:border-accent"
+              className="inline-flex items-center gap-1.5 rounded-(--radius-full) border border-accent-border bg-accent-soft px-3 py-1 text-xs font-medium text-accent-text transition-colors hover:border-accent"
             >
               {label}
               <X className="size-3" strokeWidth={2.4} />
@@ -235,7 +235,7 @@ function FilterRow({
               aria-pressed={active}
               onClick={() => onToggle(name, option.value)}
               className={cn(
-                "inline-flex min-h-9 items-center rounded-[--radius-full] border px-3.5 text-sm transition-colors",
+                "inline-flex min-h-9 items-center rounded-(--radius-full) border px-3.5 text-sm transition-colors",
                 active
                   ? "border-accent bg-accent-soft font-medium text-accent-text"
                   : "border-line-2 bg-raised text-ink-2 hover:border-line-3 hover:text-ink",

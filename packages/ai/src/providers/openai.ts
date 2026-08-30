@@ -57,6 +57,39 @@ function isRetryable(error: unknown): boolean {
   return status === 408 || status === 409 || status === 429 || status >= 500;
 }
 
+/**
+ * Verträgt dieses Modell `temperature`?
+ *
+ * Die Reasoning-Modelle (gpt-5, o1, o3, o4) lehnen den Parameter ab —
+ * mit HTTP 400 und der Meldung
+ *
+ *     Unsupported parameter: 'temperature' is not supported with this model.
+ *
+ * Der Aufruf schlägt dabei vollständig fehl, es kommt kein einziges
+ * Zeichen zurück. In einem Ereignisstrom sieht das aus wie „Nina hat
+ * nicht geantwortet“, nicht wie ein Konfigurationsfehler — und genau so
+ * ist es hier aufgefallen: die Nutzernachrichten landeten in der
+ * Datenbank, die Antworten nicht.
+ *
+ * Bewusst eine Positivliste über Präfixe statt einer Fehlerbehandlung
+ * im Nachhinein: einen Parameter erst zu schicken und dann auf den
+ * Fehler zu reagieren, kostet bei jedem Aufruf eine volle Antwortzeit.
+ */
+function unterstütztTemperature(model: string): boolean {
+  return !/^(gpt-5|o1|o3|o4)/.test(model);
+}
+
+/**
+ * Wie viele Ausgabetoken höchstens?
+ *
+ * Bei Reasoning-Modellen zählen die internen Denkschritte in dieses
+ * Budget. 4096 reichen dort für die Gedanken und lassen für die Antwort
+ * nichts übrig — die Antwort kommt dann leer zurück, ohne Fehler.
+ */
+function ausgabegrenze(model: string, gewünscht: number): number {
+  return unterstütztTemperature(model) ? gewünscht : Math.max(gewünscht, 16_000);
+}
+
 export class OpenAiProvider implements AiProvider {
   readonly name = "openai";
   readonly isLocal = false;
@@ -132,8 +165,8 @@ export class OpenAiProvider implements AiProvider {
           model,
           instructions: options.system,
           input: options.messages.map((m) => ({ role: m.role, content: m.content })),
-          max_output_tokens: options.maxTokens ?? this.options.maxTokens,
-          temperature: options.temperature ?? 1,
+          max_output_tokens: ausgabegrenze(model, options.maxTokens ?? this.options.maxTokens),
+          ...(unterstütztTemperature(model) ? { temperature: options.temperature ?? 1 } : {}),
         },
         options.signal ? { signal: options.signal } : undefined,
       ),
@@ -154,8 +187,8 @@ export class OpenAiProvider implements AiProvider {
           model,
           instructions: options.system,
           input: options.messages.map((m) => ({ role: m.role, content: m.content })),
-          max_output_tokens: options.maxTokens ?? this.options.maxTokens,
-          temperature: options.temperature ?? 0,
+          max_output_tokens: ausgabegrenze(model, options.maxTokens ?? this.options.maxTokens),
+          ...(unterstütztTemperature(model) ? { temperature: options.temperature ?? 0 } : {}),
           text: {
             format: {
               type: "json_schema",
@@ -249,13 +282,53 @@ export async function* streamOpenAiConversation(
   const client = provider.rawClient();
   const model = provider.modelFor(options.tier);
 
+  /*
+   * Die Eingabe: das Gespräch, danach die Ergebnisse bereits gelaufener
+   * Werkzeuge.
+   *
+   * Ohne diesen zweiten Teil endet ein Zug mit einem Werkzeugaufruf und
+   * ganz ohne Text — das Modell hat etwas getan und nie erzählt, was
+   * dabei herauskam. In der Oberfläche sieht das aus, als hätte Nina
+   * geschwiegen.
+   */
+  const eingabe: Record<string, unknown>[] = options.messages.map((m) => ({
+    role: m.role,
+    content: m.content,
+  }));
+
+  for (const ergebnis of options.toolResults ?? []) {
+    eingabe.push({
+      type: "function_call",
+      call_id: ergebnis.id,
+      name: ergebnis.name,
+      arguments: JSON.stringify(ergebnis.arguments ?? {}),
+    });
+    eingabe.push({
+      type: "function_call_output",
+      call_id: ergebnis.id,
+      output: JSON.stringify(ergebnis.output ?? {}),
+    });
+  }
+
   const stream = await client.responses.stream(
     {
       model,
       instructions: options.system,
-      input: options.messages.map((m) => ({ role: m.role, content: m.content })),
-      max_output_tokens: options.maxTokens ?? 4096,
-      temperature: options.temperature ?? 0.8,
+      input: eingabe as never,
+      max_output_tokens: ausgabegrenze(model, options.maxTokens ?? 4096),
+      ...(unterstütztTemperature(model) ? { temperature: options.temperature ?? 0.8 } : {}),
+      /*
+       * Denkaufwand bewusst niedrig für das Gespräch.
+       *
+       * Bei einem Reasoning-Modell zählen die inneren Schritte in die
+       * Antwortzeit. Ohne diese Zeile lag ein einfacher Gesprächszug bei
+       * 21 Sekunden — für eine Rückfrage im Gespräch ist das keine
+       * Rückfrage mehr. Die tiefe Stufe bekommt ihren Aufwand über den
+       * Router, nicht über diesen Standardwert.
+       */
+      ...(unterstütztTemperature(model)
+        ? {}
+        : { reasoning: { effort: options.tier === "deep" ? "medium" : "low" } as never }),
       tools: (options.tools ?? []).map((tool) => ({
         type: "function" as const,
         name: tool.name,

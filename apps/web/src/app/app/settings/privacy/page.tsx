@@ -93,13 +93,13 @@ export default async function PrivacySettingsPage() {
           </p>
         </div>
 
-        <dl className="grid gap-3 rounded-[--radius-md] bg-sunken p-4 text-sm sm:grid-cols-2">
+        <dl className="grid gap-3 rounded-(--radius-md) bg-sunken p-4 text-sm sm:grid-cols-2">
           <div>
             <dt className="text-2xs font-medium uppercase tracking-wider text-ink-3">Anbieter</dt>
             <dd className="mt-1">
               {integrations.ai === "connected"
                 ? `${integrations.aiProvider} · ${integrations.aiModel}`
-                : "Keiner — es läuft der lokale Demo-Anbieter"}
+                : "Keiner eingerichtet — es werden keine Texte übermittelt"}
             </dd>
           </div>
           <div>

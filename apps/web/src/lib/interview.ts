@@ -39,8 +39,6 @@ export interface InterviewView {
   };
   confirmedFacts: { id: string; statement: string }[];
   openHypotheses: { id: string; statement: string }[];
-  /** Ehrlicher Zustand: läuft ein echtes Modell oder der Demo-Anbieter? */
-  providerIsMock: boolean;
   voiceAvailable: boolean;
 }
 
@@ -74,7 +72,6 @@ export async function loadInterview(): Promise<InterviewView> {
   const user = await requireUser();
   const db = await getDb();
   const cfg = loadRuntimeConfig();
-  const { provider } = await selectProvider(cfg);
 
   const sessionRow = await ensureSession(user.id, user.locale);
 
@@ -135,8 +132,7 @@ export async function loadInterview(): Promise<InterviewView> {
     openHypotheses: domainEvidence
       .filter((e) => !e.userConfirmed && !e.userRejected)
       .map((e) => ({ id: e.id, statement: e.statement })),
-    providerIsMock: provider.isLocal,
-    voiceAvailable: cfg.voice.provider !== "mock",
+    voiceAvailable: cfg.voice.provider !== "none",
   };
 }
 
@@ -278,7 +274,7 @@ export async function pauseSession(): Promise<void> {
 export async function assistantReply(userMessage: string): Promise<string> {
   const user = await requireUser();
   const cfg = loadRuntimeConfig();
-  const { provider } = await selectProvider(cfg);
+  const provider = await selectProvider(cfg);
   const view = await loadInterview();
 
   const system = buildNinaSystemPrompt({
@@ -288,10 +284,14 @@ export async function assistantReply(userMessage: string): Promise<string> {
     hardConstraints: [],
     rejectedStatements: [],
     currentStage: view.step.stage,
-    externalProviderActive: !provider.isLocal,
+    externalProviderActive: true,
   });
 
-  const content = provider.isLocal ? userMessage : minimiseForExternalProvider(userMessage);
+  // Vor der Übergabe an einen externen Anbieter werden direkte
+  // Identifikatoren entfernt. Es gibt keinen lokalen Anbieter mehr, für
+  // den man das überspringen könnte — die Bedingung wäre eine Ausnahme
+  // ohne Fall.
+  const content = minimiseForExternalProvider(userMessage);
 
   let text = "";
   for await (const chunk of provider.chatStream({

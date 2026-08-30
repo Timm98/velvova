@@ -76,7 +76,7 @@ export default async function AdminSourcesPage() {
 
       <div
         role="note"
-        className="grid gap-2 rounded-[--radius-md] border border-caution/30 bg-caution-soft px-5 py-4"
+        className="grid gap-2 rounded-(--radius-md) border border-caution/30 bg-caution-soft px-5 py-4"
       >
         <p className="flex items-center gap-2 text-sm font-medium text-caution">
           <AlertTriangle className="size-4" strokeWidth={2} />
@@ -175,7 +175,7 @@ export default async function AdminSourcesPage() {
                           ).map((op) => (
                             <li
                               key={op}
-                              className="rounded-[--radius-xs] border border-line-2 px-1.5 py-0.5 font-mono text-[10px] text-ink-2"
+                              className="rounded-(--radius-xs) border border-line-2 px-1.5 py-0.5 font-mono text-[10px] text-ink-2"
                             >
                               {op}
                             </li>
