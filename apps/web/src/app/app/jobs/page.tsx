@@ -3,12 +3,13 @@ import { plural } from "@paycheck/domain";
 import type { SortKey } from "@paycheck/matching";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Compass, Link2, Sparkles, Target } from "lucide-react";
+import { Compass, Filter, Link2, Sparkles, Target } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { listJobsForUser, loadProfileContext, type ScoredJob } from "@/lib/matching";
+import { buildDecisionBrief } from "@/lib/applications/decision-brief";
 import { loadGate } from "@/lib/gate";
 import { Badge, Button, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
@@ -165,13 +166,25 @@ export default async function JobsPage({
           // Wer die Stelle woanders gefunden hat, soll sie hier
           // trotzdem prüfen lassen können. Ohne diesen Weg endet jede
           // Empfehlung an der Grenze unserer Quellen.
-          <Link
-            href="/app/jobs/import"
-            className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-          >
-            <Link2 aria-hidden className="size-3.5" strokeWidth={1.9} />
-            Job-Link analysieren
-          </Link>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {/* Der Trichter gehört hierher, nicht in die Navigation: er
+                beantwortet eine Frage, die genau beim Blick auf diese
+                Liste entsteht — „ist das wirklich alles?". */}
+            <Link
+              href="/app/opportunities"
+              className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+            >
+              <Filter aria-hidden className="size-3.5" strokeWidth={1.9} />
+              Wie viele davon sind echte Chancen?
+            </Link>
+            <Link
+              href="/app/jobs/import"
+              className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+            >
+              <Link2 aria-hidden className="size-3.5" strokeWidth={1.9} />
+              Job-Link analysieren
+            </Link>
+          </div>
         }
       />
 
@@ -223,6 +236,20 @@ export default async function JobsPage({
               saved={savedIds.has(selected.jobId)}
               assistantName={brand.assistantName}
               labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
+              brief={buildDecisionBrief({
+                scored: selected,
+                // Die Jahre stehen nicht als Feld im Profil. Sie aus
+                // einer Zahl abzuleiten, die es nicht gibt, wäre eine
+                // Erfindung — also bleibt das Niveau unbekannt, und der
+                // Abgleich sagt das auch so.
+                userYearsExperience: null,
+                userConstraints: {
+                  maxTravelPercent: ctx.constraints.maxTravelPercent ?? null,
+                  maxCommuteMinutes: ctx.constraints.maxCommuteMinutes ?? null,
+                  minSalary: ctx.constraints.minSalaryPerYear ?? null,
+                  noShiftWork: ctx.constraints.acceptsShiftWork === false,
+                },
+              })}
             />
           ) : null
         }

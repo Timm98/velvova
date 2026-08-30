@@ -19,7 +19,7 @@ Drei Dinge machen das wirksam, und alle drei sind leicht zu übersehen:
    dann NULL, und `user_id = NULL` ist niemals wahr. Ein vergessenes `withUser()` führt
    zu einer leeren Liste, nicht zu fremden Daten.
 
-Stand dieser Datei: **33 von 59 Tabellen** mit aktivem RLS, **33 Richtlinien**.
+Stand dieser Datei: **46 von 78 Tabellen** mit aktivem RLS, **46 Richtlinien**.
 
 ## Tabellen mit Row Level Security
 
@@ -27,8 +27,11 @@ Stand dieser Datei: **33 von 59 Tabellen** mit aktivem RLS, **33 Richtlinien**.
 | --- | --- | --- | --- |
 | `ai_runs` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `application_events` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `application_process_observations` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `applications` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `auth_accounts` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `candidate_passport_fields` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `candidate_passport_uses` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `career_profiles` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `check_ins` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `coaching_sessions` | ✓ | 1 | `(user_id = app_current_user_id())` |
@@ -37,14 +40,18 @@ Stand dieser Datei: **33 von 59 Tabellen** mit aktivem RLS, **33 Richtlinien**.
 | `documents` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `evidence_edges` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `evidence_items` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `experience_equivalencies` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `experiences` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `generated_artifacts` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `integrations` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `interview_sessions` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `interview_turns` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `job_matches` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `market_reality_signals` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `memberships` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `micro_assessment_results` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `networking_contacts` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `networking_messages` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `notifications` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `offers` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `preferences` | ✓ | 1 | `(user_id = app_current_user_id())` |
@@ -54,10 +61,16 @@ Stand dieser Datei: **33 von 59 Tabellen** mit aktivem RLS, **33 Richtlinien**.
 | `role_clusters` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `role_hypotheses` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `saved_jobs` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `search_channel_activities` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `search_plans` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `search_space_snapshots` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `seniority_alignment_assessments` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `sessions` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `target_companies` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `user_constraints` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `user_settings` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `users` | ✓ | 1 | `(id = app_current_user_id())` |
+| `watchlist_job_events` | ✓ | 1 | `(user_id = app_current_user_id())` |
 
 ## Tabellen ohne Row Level Security
 
@@ -65,7 +78,7 @@ Diese Tabellen enthalten keine personenbezogenen Zeilen: Stellenanzeigen, Untern
 Quellen, Nachschlagewerte. Sie sind für alle gleich, und eine Zeilenfilterung hätte
 nichts zu filtern.
 
-`_migrations`, `analytics_events`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `employer_boards`, `feature_flag_overrides`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_source_links`, `job_sources`, `jobs`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
+`_migrations`, `analytics_events`, `application_effort_profiles`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `employer_boards`, `employer_process_aggregates`, `feature_flag_overrides`, `hiring_process_templates`, `job_condition_facts`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_source_links`, `job_source_timing`, `job_sources`, `jobs`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `research_evidence_registry`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
 
 ## Prüfung auf Lücken
 

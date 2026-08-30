@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { and, eq, ilike, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
@@ -8,6 +9,7 @@ import {
   ToolSchemas,
   WRITING_TOOLS,
   buildNinaSystemPrompt,
+  mockAllowed,
   route,
   selectProvider,
   validateToolCall,
@@ -117,6 +119,28 @@ export async function POST(request: Request) {
    * Router — nicht diese Datei. Sonst steht dieselbe Aufgabe an zwei
    * Stellen auf zwei Stufen und niemand kann sagen, warum.
    */
+  /*
+   * Ohne echte KI-Verbindung wird keine Beispielantwort ausgegeben.
+   *
+   * In der Entwicklung darf der Demo-Anbieter antworten — sonst könnte
+   * niemand ohne Schlüssel am Produkt arbeiten. In Produktion nicht:
+   * eine Beispielantwort, die aussieht wie eine Antwort von Nina, ist
+   * eine Lüge über das, was das Produkt gerade kann. Und die teuerste
+   * Sorte, weil die Person darauf Entscheidungen über ihre Bewerbung
+   * stützt.
+   */
+  if (provider.name === "mock" && !mockAllowed()) {
+    return NextResponse.json(
+      {
+        fehler: "ai_not_configured",
+        hinweis:
+          "Nina ist gerade nicht erreichbar. Wir geben dir bewusst keine Beispielantwort — " +
+          "sie wäre von einer echten nicht zu unterscheiden. Bitte versuch es später noch einmal.",
+      },
+      { status: 503 },
+    );
+  }
+
   const routing = route("nina_chat");
 
   const encoder = new TextEncoder();

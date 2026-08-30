@@ -22,6 +22,8 @@ export interface ProviderSelection {
   usingRequested: boolean;
   /** Verständlicher Grund, falls nicht. Wird in der Oberfläche gezeigt. */
   fallbackReason: string | null;
+  /** Name der fehlenden Umgebungsvariablen — nie ihr Wert. */
+  missingVariable?: string;
 }
 
 let cached: ProviderSelection | undefined;
@@ -30,10 +32,45 @@ function missingKey(envName: string): ProviderSelection {
   return {
     provider: new MockAiProvider(),
     usingRequested: false,
+    // Der Name der fehlenden Variablen, nie ihr Wert. Diese Zeichenkette
+    // landet in der Oberfläche.
+    missingVariable: envName,
     fallbackReason:
       `Es ist kein Zugangsschlüssel hinterlegt (${envName}). Es läuft der lokale Demo-Anbieter; ` +
       `die Antworten sind Beispiele ohne inhaltliche Aussage.`,
   };
+}
+
+/**
+ * Darf der Demo-Anbieter überhaupt antworten?
+ *
+ * In der Entwicklung ja — sonst könnte niemand ohne Schlüssel am
+ * Produkt arbeiten, und die Bewertungslogik braucht ohnehin kein
+ * Modell.
+ *
+ * In Produktion nein. Eine Beispielantwort, die aussieht wie eine
+ * Antwort von Nina, ist eine Lüge über das, was das Produkt gerade
+ * kann — und die teuerste Sorte Lüge, weil die Person darauf
+ * Entscheidungen über ihre Bewerbung stützt.
+ *
+ * Statt einer erfundenen Antwort kommt dann ein ehrlicher Fehler.
+ */
+export function mockAllowed(cfg: RuntimeConfig = loadRuntimeConfig()): boolean {
+  return cfg.nodeEnv !== "production" && cfg.appEnv !== "production";
+}
+
+export class AiNotConfiguredError extends Error {
+  readonly missingVariable: string;
+
+  constructor(missingVariable: string) {
+    super(
+      `Die KI-Verbindung ist nicht eingerichtet: ${missingVariable} fehlt. ` +
+        "Es wird keine Beispielantwort ausgegeben — sie wäre von einer echten Antwort " +
+        "nicht zu unterscheiden.",
+    );
+    this.name = "AiNotConfiguredError";
+    this.missingVariable = missingVariable;
+  }
 }
 
 export async function selectProvider(

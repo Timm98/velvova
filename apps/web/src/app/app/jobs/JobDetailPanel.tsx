@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ExternalLink, HelpCircle, ShieldAlert } from "lucide-react";
 import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
+import { recommendationLabel, type DecisionBrief } from "@/lib/applications/decision-brief";
 import { Badge, Button, Separator } from "@/components/ui";
 import { SaveJobButton } from "./SaveJobButton";
 
@@ -39,12 +40,15 @@ export function JobDetailPanel({
   saved,
   assistantName,
   labels,
+  brief,
 }: {
   scored: ScoredJob;
   t: Translator["t"];
   saved: boolean;
   assistantName: string;
   labels: { save: string; saved: string };
+  /** Die Entscheidungsvorlage. Fehlt sie, bleibt der Rest wie er ist. */
+  brief?: DecisionBrief;
 }) {
   const { job, fit, confidence, jobQuality, listingConfidence, constraints } = scored;
   const musts = scored.requirements.filter((r) => r.kind === "must");
@@ -80,6 +84,86 @@ export function JobDetailPanel({
           )}
           {job.isDemo && <Badge tone="caution">Demo-Datensatz</Badge>}
         </div>
+
+        {/*
+          Die Entscheidungsvorlage.
+          
+          Sie steht vor allen Werten, weil sie die Frage beantwortet,
+          die die Person tatsächlich hat: soll ich mich hier bewerben?
+          Fünf getrennte Zahlen darunter sind vollständig und trotzdem
+          keine Hilfe.
+        */}
+        {brief && (
+          <div className="grid gap-3.5 rounded-[--radius-md] border border-line-2 bg-inset px-4 py-3.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Badge
+                tone={
+                  brief.recommendation === "apply_now"
+                    ? "positive"
+                    : brief.recommendation === "deprioritise"
+                      ? "critical"
+                      : "caution"
+                }
+              >
+                {recommendationLabel(brief.recommendation)}
+              </Badge>
+              {brief.effort.level !== "unbekannt" && (
+                <span className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+                  Aufwand {brief.effort.level} · {brief.effort.minutesMin}–{brief.effort.minutesMax} Min.
+                </span>
+              )}
+            </div>
+
+            <p className="max-w-[var(--measure)] text-sm font-medium leading-relaxed">
+              {brief.headline}
+            </p>
+
+            <dl className="grid gap-3 sm:grid-cols-3">
+              {[
+                ["Dafür spricht", brief.reasons, "positive"] as const,
+                ["Möglicher Haken", brief.catches, "caution"] as const,
+                ["Noch unklar", brief.unknowns, "neutral"] as const,
+              ].map(([titel, eintraege]) =>
+                eintraege.length === 0 ? null : (
+                  <div key={titel} className="grid gap-1.5">
+                    <dt className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+                      {titel}
+                    </dt>
+                    <dd>
+                      <ul className="grid gap-1.5">
+                        {eintraege.map((e) => (
+                          <li key={e} className="text-xs leading-relaxed text-ink-2">
+                            {e}
+                          </li>
+                        ))}
+                      </ul>
+                    </dd>
+                  </div>
+                ),
+              )}
+            </dl>
+
+            {brief.preflight.questions.length > 0 && (
+              <details className="group">
+                <summary className="inline-flex min-h-6 cursor-pointer items-center text-xs text-accent-text underline underline-offset-[3px]">
+                  {brief.preflight.questions.length} Fragen, die du vorher stellen kannst
+                </summary>
+                <ul className="mt-2.5 grid gap-1.5">
+                  {brief.preflight.questions.map((q) => (
+                    <li key={q} className="text-xs leading-relaxed text-ink-2">
+                      {q}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+
+            <p className="text-2xs leading-relaxed text-ink-3">
+              {brief.requirements.summary} Der Aufwand ist{" "}
+              {brief.effort.source === "provider_data" ? "vom Anbieter gemeldet" : "aus dem Bewerbungsweg geschätzt"}.
+            </p>
+          </div>
+        )}
 
         {/* Warnzeichen. Steht weit oben, weil ein Hinweis nach dem
             dritten Absatz keiner mehr ist — und weil es hier nicht um

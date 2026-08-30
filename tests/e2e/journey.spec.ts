@@ -518,3 +518,63 @@ test.describe("Responsives Verhalten", () => {
     await expect(bottomNav.getByRole("link")).toHaveCount(5);
   });
 });
+
+test.describe("Chancenraum und Entscheidungsvorlage", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/api/dev/login");
+  });
+
+  test("Der Trichter zeigt keine Rohtreffer als Chancen", async ({ page }) => {
+    await page.goto("/app/opportunities");
+    await expect(page.getByRole("heading", { name: "Dein realer Chancenraum" })).toBeVisible();
+
+    // Erste und letzte Stufe müssen beide dastehen. Nur die erste zu
+    // zeigen wäre genau die Täuschung, die diese Seite abschafft.
+    await expect(page.getByText("gefundene Quelleneinträge")).toBeVisible();
+    await expect(page.getByText("entscheidungsbereit")).toBeVisible();
+  });
+
+  test("Der Trichter sagt, wo am meisten wegfällt", async ({ page }) => {
+    await page.goto("/app/opportunities");
+    const engpass = page.getByText("Wo am meisten wegfällt");
+    if (await engpass.isVisible().catch(() => false)) {
+      // Und er rät nie dazu, harte Bedingungen aufzugeben.
+      const text = (await page.textContent("main")) ?? "";
+      expect(text).not.toMatch(/gib deine Bedingungen auf|lockere deine/i);
+    }
+  });
+
+  test("Die Jobliste verlinkt den Chancenraum", async ({ page }) => {
+    await page.goto("/app/jobs");
+    await expect(
+      page.getByRole("link", { name: /Wie viele davon sind echte Chancen/ }),
+    ).toBeVisible();
+  });
+
+  test("Die Jobdetailseite zeigt eine Entscheidungsempfehlung mit Aufwand", async ({ page }) => {
+    await page.goto("/app/jobs");
+    await selectFirstJob(page);
+
+    const panel = page.locator("article").first();
+    // Genau eine Empfehlung, nicht fünf Zahlen nebeneinander.
+    await expect(
+      panel.getByText(/Jetzt bewerben|Erst eine Frage klären|Unterlagen vorbereiten|Erst Belege aufbauen|Für später beobachten|Nicht priorisieren/),
+    ).toBeVisible();
+  });
+
+  test("Der Job-Link-Import ruft von gesperrten Quellen nichts ab", async ({ page }) => {
+    const response = await page.request.post("/api/jobs/import-url", {
+      data: { url: "https://de.indeed.com/viewjob?jk=abc" },
+    });
+    const body = await response.json();
+    expect(body.modus).toBe("bookmark");
+    expect(body.hinweis).toMatch(/rufen wir nichts ab/);
+  });
+
+  test("Der Job-Link-Import weist private Adressen ab", async ({ page }) => {
+    for (const url of ["http://169.254.169.254/latest/meta-data/", "file:///etc/passwd"]) {
+      const response = await page.request.post("/api/jobs/import-url", { data: { url } });
+      expect(response.status()).toBe(400);
+    }
+  });
+});

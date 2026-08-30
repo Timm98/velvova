@@ -57,7 +57,17 @@ DECLARE
     -- ai_runs erlaubt eine leere Nutzerkennung fuer Systemlaeufe. Solche
     -- Zeilen sind unter der Anwendungsrolle fuer niemanden sichtbar; die
     -- Betriebsansicht liest sie ueber die unbeschraenkte Verbindung.
-    'auth_accounts','memberships','ai_runs'
+    'auth_accounts','memberships','ai_runs',
+    -- Decision Intelligence (Addendum V5.1). Alles hier ist
+    -- nutzerbezogen: Chancenraum, Einstiegswege, Bewerbungspass,
+    -- Prozessbeobachtungen, Zielunternehmen, Kontakte, Suchplan.
+    'search_space_snapshots','market_reality_signals',
+    'experience_equivalencies','seniority_alignment_assessments',
+    'candidate_passport_fields','candidate_passport_uses',
+    'application_process_observations',
+    'target_companies','watchlist_job_events',
+    'search_channel_activities','networking_contacts','networking_messages',
+    'search_plans'
   ];
 BEGIN
   FOREACH t IN ARRAY user_tables LOOP
