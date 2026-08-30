@@ -1,3 +1,4 @@
+import type { ProviderCapabilities } from "../adapter.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -117,6 +118,24 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
    * gerade erreichbar ist, ist eine andere Frage, und die beantwortet
    * erst der Abruf; sie hier vorwegzunehmen hieße raten.
    */
+  /**
+   * Arbeitnow liefert eine einfache Liste ohne Suchparameter und ohne
+   * Datumsfilter: jeder Abruf holt die aktuelle Seite. Gehalt steht
+   * selten und nur im Fliesstext, ein Ablaufdatum gar nicht — deshalb
+   * bleiben tote Anzeigen bei dieser Quelle länger stehen als bei
+   * anderen, und die Linkprüfung ist hier wichtiger.
+   */
+  readonly capabilities: ProviderCapabilities = {
+    search: false,
+    details: false,
+    since: false,
+    maxPerRequest: 100,
+    rateLimitPerMinute: null,
+    salary: false,
+    expiry: false,
+    structuredRequirements: false,
+  };
+
   isConfigured(): boolean {
     return true;
   }

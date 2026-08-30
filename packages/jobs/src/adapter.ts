@@ -51,6 +51,45 @@ export interface FetchOptions {
   signal?: AbortSignal;
 }
 
+export interface ProviderCapabilities {
+  /** Freitextsuche über Stellen. */
+  search: boolean;
+  /** Einzelabruf einer Anzeige mit mehr Feldern. */
+  details: boolean;
+  /** Filter „nur seit Zeitpunkt X“. Fehlt er, wird jedes Mal alles geholt. */
+  since: boolean;
+  /** Höchstzahl Ergebnisse je Anfrage. */
+  maxPerRequest: number;
+  /** Anfragen je Minute, die der Anbieter zulässt. null heisst unbekannt. */
+  rateLimitPerMinute: number | null;
+  /** Liefert der Anbieter Gehaltsangaben? */
+  salary: boolean;
+  /** Liefert er ein Ablaufdatum? Ohne das bleiben tote Anzeigen länger stehen. */
+  expiry: boolean;
+  /** Liefert er strukturierte Anforderungen statt nur Fliesstext? */
+  structuredRequirements: boolean;
+}
+
+/**
+ * Die vorsichtige Annahme.
+ *
+ * Ein Anbieter, der nichts über sich sagt, kann suchen und sonst
+ * nichts. Nicht: „kann alles, bis das Gegenteil bewiesen ist“ — diese
+ * Richtung erzeugt stille Fehler, weil ein nicht unterstützter Filter
+ * meistens einfach ignoriert wird und ein plausibles, falsches Ergebnis
+ * liefert.
+ */
+export const DEFAULT_CAPABILITIES: ProviderCapabilities = {
+  search: true,
+  details: false,
+  since: false,
+  maxPerRequest: 100,
+  rateLimitPerMinute: null,
+  salary: false,
+  expiry: false,
+  structuredRequirements: false,
+};
+
 export interface JobSourceAdapter {
   readonly key: string;
   readonly displayName: string;
@@ -59,6 +98,10 @@ export interface JobSourceAdapter {
   readonly attributionRequired: boolean;
   readonly attributionText: string | null;
   readonly termsUrl: string | null;
+
+  /** Was dieser Anbieter kann. Fehlt die Angabe, gilt DEFAULT_CAPABILITIES —
+   *  also wenig. Die andere Richtung erzeugt stille Fehler. */
+  readonly capabilities?: ProviderCapabilities;
 
   /** Ist die Quelle einsatzbereit? Fehlt ein Schlüssel, ist sie es nicht. */
   isConfigured(): boolean;

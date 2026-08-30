@@ -1,3 +1,4 @@
+import type { ProviderCapabilities } from "../adapter.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -99,6 +100,22 @@ export class JoobleAdapter implements JobSourceAdapter {
     this.keywords = options.keywords ?? process.env.JOOBLE_KEYWORDS ?? "";
     this.location = options.location ?? process.env.JOOBLE_LOCATION ?? "Deutschland";
   }
+
+  /**
+   * Jooble sucht über Begriff und Ort und liefert ein Aktualisierungs-
+   * datum, aber keine strukturierten Anforderungen und kein
+   * Ablaufdatum.
+   */
+  readonly capabilities: ProviderCapabilities = {
+    search: true,
+    details: false,
+    since: true,
+    maxPerRequest: 100,
+    rateLimitPerMinute: null,
+    salary: true,
+    expiry: false,
+    structuredRequirements: false,
+  };
 
   isConfigured(): boolean {
     return Boolean(this.apiKey);

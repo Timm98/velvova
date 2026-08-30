@@ -16,8 +16,8 @@ import { execFileSync } from "node:child_process";
 // geladen. Ein zweiter Datenbestand in JSON wäre genau die Dopplung,
 // die dieses Skript verhindern soll.
 const script = `
-import { SOURCE_REGISTRY } from "./apps/web/src/lib/sources/source-registry.ts";
-import { decideForEntry } from "./apps/web/src/lib/sources/policy-engine.ts";
+import { SOURCE_REGISTRY } from "./packages/sources/src/source-registry.ts";
+import { decideForEntry } from "./packages/sources/src/policy-engine.ts";
 const now = new Date();
 console.log(JSON.stringify(
   SOURCE_REGISTRY.map((entry) => ({ entry, decision: decideForEntry(entry, now) })),
@@ -49,7 +49,7 @@ const DECISION_DE = {
 const header = `<!--
   ERZEUGT — nicht von Hand bearbeiten.
 
-  Quelle: apps/web/src/lib/sources/source-registry.ts
+  Quelle: packages/sources/src/source-registry.ts
   Neu erzeugen: node scripts/generate-source-docs.mjs
 
   Von Hand gepflegte Compliance-Tabellen laufen auseinander. Dieses
@@ -137,8 +137,8 @@ matrix += `
 - Eine **abgelaufene Prüfung** setzt die Quelle selbsttätig auf \`ungeprüft\`.
 - Der **Kill Switch** wirkt vor dem ersten Netzzugriff, nicht danach.
 
-Durchgesetzt in \`apps/web/src/lib/sources/policy-engine.ts\`, geprüft in
-\`apps/web/src/lib/sources/policy-engine.test.ts\`.
+Durchgesetzt in \`packages/sources/src/policy-engine.ts\`, geprüft in
+\`packages/sources/src/policy-engine.test.ts\`.
 `;
 
 writeFileSync("docs/SOURCE_COMPLIANCE_MATRIX.md", matrix);

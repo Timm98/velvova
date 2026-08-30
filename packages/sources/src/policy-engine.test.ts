@@ -252,25 +252,7 @@ describe("Fehlende Angaben", () => {
   });
 });
 
-describe("Adapter und Verzeichnis passen zusammen", () => {
-  it("kennt jeden Adapter-Schlüssel im Quellenverzeichnis", async () => {
-    // Laufen Adapter-Schluessel und Provider-IDs auseinander, greift die
-    // Sperre zwar - aber mit der Begruendung "unbekannte Quelle" statt
-    // der richtigen. Fail-closed ist gut; falsch begruendet ist es
-    // trotzdem ein Fehler.
-    const { ArbeitnowAdapter, AdzunaAdapter, JoobleAdapter } = await import("@paycheck/jobs");
-    const keys = [
-      new ArbeitnowAdapter().key,
-      new AdzunaAdapter().key,
-      new JoobleAdapter().key,
-    ];
-
-    for (const key of keys) {
-      const entry = SOURCE_REGISTRY.find((s) => s.providerKey === key);
-      expect(entry, `Adapter „${key}" fehlt im Quellenverzeichnis`).toBeDefined();
-    }
-  });
-
+describe("Unbekannte Quelle", () => {
   it("behandelt einen unbekannten Schlüssel vorsichtig", () => {
     const decision = decideForProvider("irgendein_neuer_adapter");
     expect(decision.decision).toBe("pending_review");

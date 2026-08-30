@@ -5,3 +5,5 @@ export * from "./sources/arbeitnow.ts";
 export * from "./sources/adzuna.ts";
 export * from "./sources/jooble.ts";
 export * from "./ingest.ts";
+export * from "./canonical.ts";
+export * from "./health.ts";

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { adapterByKey, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
 import { currentUser } from "@/lib/auth";
-import { decideForProvider } from "@/lib/sources/policy-engine";
+import { decideForProvider } from "@paycheck/sources";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;

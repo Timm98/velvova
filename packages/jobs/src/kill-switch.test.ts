@@ -87,6 +87,19 @@ describe("Anbieter-Not-Aus", () => {
     expect(result.errors).not.toHaveLength(0);
   });
 
+  it("greift auch dann, wenn der Aufrufer nichts mitgibt", async () => {
+    // Der wichtigste Fall. Die erste Fassung nahm die Entscheidung als
+    // optionalen Parameter entgegen: wer ihn vergass, rief ungeprüft
+    // ab — und nichts schlug fehl. Ein Riegel, den man durch Weglassen
+    // öffnet, ist keiner.
+    const { adapter, zugriffe } = zaehlenderAdapter();
+
+    const result = await ingestFromAdapter(adapter);
+
+    expect(zugriffe()).toBe(0);
+    expect(result.errors.join(" ")).toMatch(/nicht freigegeben/);
+  });
+
   it("lässt einen freigegebenen Anbieter arbeiten", async () => {
     const { adapter, zugriffe } = zaehlenderAdapter();
 

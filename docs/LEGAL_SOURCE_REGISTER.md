@@ -1,7 +1,7 @@
 <!--
   ERZEUGT — nicht von Hand bearbeiten.
 
-  Quelle: apps/web/src/lib/sources/source-registry.ts
+  Quelle: packages/sources/src/source-registry.ts
   Neu erzeugen: node scripts/generate-source-docs.mjs
 
   Von Hand gepflegte Compliance-Tabellen laufen auseinander. Dieses

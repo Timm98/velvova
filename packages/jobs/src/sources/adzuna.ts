@@ -1,3 +1,4 @@
+import type { ProviderCapabilities } from "../adapter.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -56,6 +57,22 @@ export class AdzunaAdapter implements JobSourceAdapter {
     this.country = (options.country ?? process.env.ADZUNA_COUNTRY ?? "de").toLowerCase();
     this.fetchImpl = options.fetchImpl ?? fetch;
   }
+
+  /**
+   * Adzuna kennt Suchbegriffe, Ort und Gehaltsfilter und liefert
+   * Gehaltsspannen mit. Ein Ablaufdatum gibt es nicht; die API begrenzt
+   * auf 50 Ergebnisse je Seite.
+   */
+  readonly capabilities: ProviderCapabilities = {
+    search: true,
+    details: true,
+    since: false,
+    maxPerRequest: 50,
+    rateLimitPerMinute: 25,
+    salary: true,
+    expiry: false,
+    structuredRequirements: false,
+  };
 
   isConfigured(): boolean {
     return Boolean(this.appId && this.appKey);

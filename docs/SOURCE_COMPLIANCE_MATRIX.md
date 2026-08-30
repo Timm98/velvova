@@ -1,7 +1,7 @@
 <!--
   ERZEUGT — nicht von Hand bearbeiten.
 
-  Quelle: apps/web/src/lib/sources/source-registry.ts
+  Quelle: packages/sources/src/source-registry.ts
   Neu erzeugen: node scripts/generate-source-docs.mjs
 
   Von Hand gepflegte Compliance-Tabellen laufen auseinander. Dieses
@@ -49,5 +49,5 @@ Stand: 2026-08-30
 - Eine **abgelaufene Prüfung** setzt die Quelle selbsttätig auf `ungeprüft`.
 - Der **Kill Switch** wirkt vor dem ersten Netzzugriff, nicht danach.
 
-Durchgesetzt in `apps/web/src/lib/sources/policy-engine.ts`, geprüft in
-`apps/web/src/lib/sources/policy-engine.test.ts`.
+Durchgesetzt in `packages/sources/src/policy-engine.ts`, geprüft in
+`packages/sources/src/policy-engine.test.ts`.

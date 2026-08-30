@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { AlertTriangle, Check, Link2, Lock, X } from "lucide-react";
-import { SOURCE_REGISTRY } from "@/lib/sources/source-registry";
-import { decideForEntry } from "@/lib/sources/policy-engine";
-import { ALL_OPERATIONS } from "@/lib/sources/decision-types";
+import { ALL_OPERATIONS, SOURCE_REGISTRY, decideForEntry } from "@paycheck/sources";
+import { adapterByKey, cachedHealthCheck, type HealthReport } from "@paycheck/jobs";
 import { Badge, Card } from "@/components/ui";
 import { PageHeader } from "@/components/ui/states";
 
@@ -27,7 +26,15 @@ const DECISION_LABEL = {
   blocked: { text: "gesperrt", tone: "critical" as const },
 };
 
-export default function AdminSourcesPage() {
+const HEALTH_LABEL: Record<HealthReport["state"], { text: string; tone: "positive" | "caution" | "critical" | "outline" }> = {
+  ok: { text: "antwortet", tone: "positive" },
+  degraded: { text: "eingeschränkt", tone: "caution" },
+  down: { text: "ausgefallen", tone: "critical" },
+  not_configured: { text: "keine Zugangsdaten", tone: "outline" },
+  not_allowed: { text: "nicht freigegeben", tone: "outline" },
+};
+
+export default async function AdminSourcesPage() {
   const now = new Date();
   const rows = SOURCE_REGISTRY.map((entry) => ({
     entry,
@@ -38,6 +45,26 @@ export default function AdminSourcesPage() {
   });
 
   const approved = rows.filter((r) => r.decision.decision === "approved").length;
+
+  /*
+   * Der tatsächliche Zustand, nicht der erwartete.
+   *
+   * Geprüft wird nur, was freigegeben ist — ein Health-Check ist ein
+   * Netzzugriff, und ihn vom rechtlichen Riegel auszunehmen wäre genau
+   * die Hintertür, die der Riegel schliesst. Deshalb prüft
+   * `healthCheck()` die Entscheidung selbst noch einmal. Das Ergebnis
+   * gilt eine Minute: ohne Zwischenspeicher wäre jeder Blick auf diese
+   * Seite ein Netzzugriff bei jedem Anbieter, und die Betriebsansicht
+   * wäre die Ursache des nächsten Ausfalls.
+   */
+  const health = new Map<string, HealthReport>();
+  await Promise.all(
+    rows.map(async (r) => {
+      const adapter = r.entry.providerKey ? adapterByKey(r.entry.providerKey) : null;
+      if (!adapter) return;
+      health.set(r.entry.providerKey, await cachedHealthCheck(adapter));
+    }),
+  );
 
   return (
     <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-5 py-10 md:px-8">
@@ -74,6 +101,7 @@ export default function AdminSourcesPage() {
                   "Grundlage",
                   "Zugang",
                   "Entscheidung",
+                  "Zustand",
                   "Erlaubte Vorgänge",
                   "Volltext",
                   "Cache",
@@ -112,6 +140,27 @@ export default function AdminSourcesPage() {
                           {entry.killSwitchReason}
                         </span>
                       )}
+                    </td>
+                    <td className="px-4 py-4">
+                      {/* Was die Quelle gerade TUT, nicht was sie tun dürfte.
+                          Eine Entscheidung "freigegeben" neben einem
+                          ausgefallenen Dienst ist die Kombination, die man
+                          sonst erst beim leeren Ergebnis bemerkt. */}
+                      {(() => {
+                        const report = health.get(entry.providerKey);
+                        if (!report) {
+                          return <span className="text-xs text-ink-3">kein Adapter</span>;
+                        }
+                        const h = HEALTH_LABEL[report.state];
+                        return (
+                          <>
+                            <Badge tone={h.tone}>{h.text}</Badge>
+                            <span className="mt-1.5 block max-w-[14rem] text-xs leading-relaxed text-ink-3">
+                              {report.detail}
+                            </span>
+                          </>
+                        );
+                      })()}
                     </td>
                     <td className="px-4 py-4">
                       {decision.allowedOperations.length === 0 ? (

@@ -1,7 +1,9 @@
 import { eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@paycheck/db";
 import { normalise, type JobSourceAdapter, type NormalisedListing } from "./adapter.ts";
+import { decideForProvider } from "@paycheck/sources";
 import { canonicalKey } from "./canonical.ts";
+import { breakerFor } from "./health.ts";
 
 /**
  * Echte Anzeigen in die Datenbank bringen.
@@ -291,13 +293,23 @@ export async function ingestFromAdapter(
   /*
    * Ohne Freigabe wird nichts abgerufen.
    *
-   * Die Prüfung steht VOR dem ersten Netzzugriff, nicht danach. Ein
-   * Abruf, der erst hinterher als unzulässig erkannt wird, hat bereits
-   * stattgefunden — und das ist genau der Fehler, den diese Zeile
-   * verhindert.
+   * Zwei Eigenschaften machen den Riegel wirksam, und beide sind hier
+   * bewusst gesetzt:
+   *
+   * **Er steht vor dem ersten Netzzugriff.** Ein Abruf, der erst
+   * hinterher als unzulässig erkannt wird, hat stattgefunden; die Daten
+   * liegen dann schon da, und die Rechtsfrage ist bereits beantwortet,
+   * falsch.
+   *
+   * **Er ist nicht optional.** Die erste Fassung nahm die Entscheidung
+   * als Parameter entgegen — wer ihn vergass, rief ungeprüft ab, ohne
+   * dass irgendetwas fehlschlug. Die Entscheidung wird jetzt hier
+   * geholt. `options.policy` bleibt nur, um sie im Test zu setzen, und
+   * kann den Riegel nicht abschalten: fehlt sie, wird gefragt.
    */
-  if (options.policy) {
-    const { decision, allowedOperations, reason } = options.policy;
+  {
+    const { decision, allowedOperations, reason } =
+      options.policy ?? decideForProvider(adapter.key);
     if (decision !== "approved" || !allowedOperations.includes("Search")) {
       return {
         sourceKey: adapter.key,
@@ -312,6 +324,29 @@ export async function ingestFromAdapter(
         finishedAt: new Date(),
       };
     }
+  }
+
+  /*
+   * Die Sicherung.
+   *
+   * Nach drei Fehlschlägen in Folge wird fünf Minuten lang nicht mehr
+   * gefragt. Das schützt nicht uns — ein fehlgeschlagener Abruf kostet
+   * uns nichts — sondern den anderen: einen überlasteten Dienst weiter
+   * im Minutentakt anzufragen, verlängert seinen Ausfall.
+   */
+  const breaker = breakerFor(adapter.key);
+  if (!breaker.allows()) {
+    const sekunden = Math.ceil(breaker.retryInMs() / 1000);
+    return {
+      sourceKey: adapter.key,
+      fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0,
+      errors: [
+        `Abruf ausgesetzt: die letzten Versuche sind fehlgeschlagen. ` +
+          `Nächster Versuch in ${sekunden} Sekunden.`,
+      ],
+      startedAt,
+      finishedAt: new Date(),
+    };
   }
 
   const db = await getDb();
@@ -334,6 +369,7 @@ export async function ingestFromAdapter(
   try {
     listings = await adapter.fetchListings({ limit: options.limit ?? 100, since: options.since });
   } catch (error) {
+    breaker.recordFailure();
     result.failed = 1;
     result.errors.push(error instanceof Error ? error.message : String(error));
     result.finishedAt = new Date();
@@ -344,6 +380,7 @@ export async function ingestFromAdapter(
     return result;
   }
 
+  breaker.recordSuccess();
   result.fetched = listings.length;
   const fetchedAt = new Date();
 
