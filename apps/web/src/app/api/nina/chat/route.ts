@@ -5,7 +5,6 @@ import {
   NINA_PROMPT_KEY,
   NINA_PROMPT_VERSION,
   TOOL_DESCRIPTIONS,
-  TOOL_NAMES,
   ToolSchemas,
   WRITING_TOOLS,
   aiUnavailableMessage,
@@ -62,6 +61,31 @@ const BodySchema = z.object({
   applicationId: z.string().uuid().nullish(),
   fromVoice: z.boolean().default(false),
 });
+
+/**
+ * Die Werkzeuge, die in `runTool` tatsächlich etwas tun.
+ *
+ * Diese Liste ist die Wahrheit, nicht `TOOL_NAMES`. Wächst `runTool`,
+ * wächst sie mit — und wer sie vergisst, merkt es daran, dass sein
+ * neues Werkzeug nie aufgerufen wird. Das ist die richtige Richtung
+ * zu scheitern: ein fehlendes Werkzeug fällt auf, ein Werkzeug, das
+ * „erledigt“ meldet ohne etwas zu tun, nicht.
+ */
+const IMPLEMENTED_TOOLS = [
+  /*
+   * `save_interview_answer` steht hier NICHT.
+   *
+   * Es gab nur vor, etwas zu tun: es meldete `{ saved: true }` und
+   * schrieb nichts. Gespeichert wird die Antwort ohnehin serverseitig,
+   * bevor das Modell überhaupt läuft — `recordInterviewAnswer` erledigt
+   * das. Das Werkzeug kostete also eine ganze Modellrunde, um eine
+   * Unwahrheit über eine Arbeit zu erzählen, die schon getan war.
+   */
+  "create_or_update_evidence",
+  "search_jobs",
+  "save_job",
+  "create_application",
+] as const satisfies readonly ToolName[];
 
 const RUNNING_LABEL: Record<ToolName, string> = {
   save_interview_answer: "Antwort wird gespeichert",
@@ -196,7 +220,19 @@ export async function POST(request: Request) {
       externalProviderActive: true,
     }) + (seite.briefing ? `\n\nSEITENKONTEXT\n${seite.briefing}` : "");
 
-  const tools = TOOL_NAMES.map((name) => ({
+  /*
+   * Nur die Werkzeuge anbieten, die es wirklich gibt.
+   *
+   * Vorher gingen alle zwölf Schemata mit — sieben davon antworten mit
+   * „ist noch nicht angeschlossen“. Das kostet zweimal: die Schemata
+   * blähen jede Anfrage auf (der gemessene Eingabeteil lag bei rund
+   * 10.000 Token), und wenn das Modell eines davon wählt, ist eine
+   * ganze Runde verbrannt, bevor überhaupt etwas passiert.
+   *
+   * Ein Werkzeug anzubieten, das nichts tut, ist dieselbe Sorte
+   * Unwahrheit wie eine erfundene Antwort — nur eine Ebene tiefer.
+   */
+  const tools = IMPLEMENTED_TOOLS.map((name) => ({
     name,
     description: TOOL_DESCRIPTIONS[name],
     parameters: zodToJsonSchema(ToolSchemas[name]),
@@ -258,7 +294,7 @@ export async function POST(request: Request) {
          * sondern weil ein Modell, das nach drei Runden immer noch nur
          * Werkzeuge aufruft, in einer Schleife hängt und nicht arbeitet.
          */
-        const MAX_RUNDEN = 3;
+        const MAX_RUNDEN = 2;
         let offeneErgebnisse: {
           id: string;
           name: string;
@@ -338,6 +374,42 @@ export async function POST(request: Request) {
           // Text da oder nichts mehr zu tun: fertig.
           if (textInDieserRunde || dieseRunde.length === 0) break;
           offeneErgebnisse = [...offeneErgebnisse, ...dieseRunde];
+        }
+
+        /*
+         * Wenn nach allen Runden kein Text kam: eine Schlussrunde OHNE
+         * Werkzeuge.
+         *
+         * Ein Modell, das nur Werkzeuge aufruft, hat gearbeitet und
+         * nichts gesagt. In der Oberfläche ist das nicht von „Nina
+         * antwortet nicht“ zu unterscheiden — und genau so war es zu
+         * beobachten: zwei von drei Zügen kamen mit null Zeichen an.
+         *
+         * Ohne Werkzeuge bleibt dem Modell nur das Sprechen. Die
+         * Antwort kommt weiterhin vom Modell; hier wird nichts
+         * erfunden, es wird nur die eine Möglichkeit weggenommen,
+         * wieder auszuweichen.
+         */
+        if (antwort.trim().length === 0) {
+          for await (const event of provider.streamConversation({
+            system: systemPrompt,
+            messages,
+            tier: routing.providerTier,
+            tools: [],
+            toolResults: offeneErgebnisse,
+          })) {
+            if (event.type === "text") {
+              antwort += event.delta;
+              send({ type: "text", delta: event.delta });
+              continue;
+            }
+            if (event.type === "done") {
+              modell = event.usage.model;
+              inputTokens = (inputTokens ?? 0) + (event.usage.inputTokens ?? 0);
+              outputTokens = (outputTokens ?? 0) + (event.usage.outputTokens ?? 0);
+              latenz = (latenz ?? 0) + (event.usage.latencyMs ?? 0);
+            }
+          }
         }
 
         // Nur Kennzahlen, kein Inhalt: Protokolle werden gelesen, und
@@ -438,11 +510,6 @@ async function runTool(
 
   try {
     switch (name) {
-      case "save_interview_answer": {
-        const data = input as z.infer<(typeof ToolSchemas)["save_interview_answer"]>;
-        return { ok: true, output: { saved: true, length: data.answer.length } };
-      }
-
       case "create_or_update_evidence": {
         const data = input as z.infer<(typeof ToolSchemas)["create_or_update_evidence"]>;
         // Was das Modell ableitet, ist unbestätigt. Auf "bestätigt"
