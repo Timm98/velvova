@@ -25,3 +25,10 @@ npm-debug.log*
 playwright-report/
 test-results/
 .expo/
+
+# Schlüsselmaterial. Nie versionieren, auch nicht "nur kurz zum Testen".
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
