@@ -333,9 +333,10 @@ export default async function LandingPage() {
           </span>
           <nav aria-label="Rechtliches" className="ml-auto flex flex-wrap gap-x-6 gap-y-2">
             {([
+              ["Über uns", "/about"],
+              ["Kontakt", "/contact"],
+              ["KI-Transparenz", "/ai-transparency"],
               [t("landing.footerPrivacy"), "/privacy"],
-              [t("landing.footerSecurity"), "/security"],
-              [t("landing.footerMethodology"), "/methodology"],
               [t("landing.footerImprint"), "/imprint"],
               [t("landing.footerTerms"), "/terms"],
             ] as const).map(([label, href]) => (

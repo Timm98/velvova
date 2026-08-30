@@ -19,7 +19,7 @@ Drei Dinge machen das wirksam, und alle drei sind leicht zu übersehen:
    dann NULL, und `user_id = NULL` ist niemals wahr. Ein vergessenes `withUser()` führt
    zu einer leeren Liste, nicht zu fremden Daten.
 
-Stand dieser Datei: **46 von 78 Tabellen** mit aktivem RLS, **46 Richtlinien**.
+Stand dieser Datei: **57 von 96 Tabellen** mit aktivem RLS, **62 Richtlinien**.
 
 ## Tabellen mit Row Level Security
 
@@ -27,25 +27,36 @@ Stand dieser Datei: **46 von 78 Tabellen** mit aktivem RLS, **46 Richtlinien**.
 | --- | --- | --- | --- |
 | `ai_runs` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `application_events` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `application_handoffs` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `application_package_documents` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `application_packages` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `application_process_observations` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `application_screening_answers` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `applications` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `auth_accounts` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `auth_identity_audit` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `candidate_passport_fields` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `candidate_passport_uses` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `career_profiles` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `check_ins` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `coaching_sessions` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `connected_identities` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `consents` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `deliveries` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `documents` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `email_consents` | ✓ | 2 | `(user_id = app_current_user_id())` |
+| `email_deliveries` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `email_preferences` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `evidence_edges` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `evidence_items` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `experience_equivalencies` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `experiences` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `feedback_items` | ✓ | 2 | `((user_id IS NULL) OR (user_id = app_current_user_id()))` |
 | `generated_artifacts` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `integrations` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `interview_sessions` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `interview_turns` | ✓ | 1 | `(user_id = app_current_user_id())` |
+| `job_briefs` | ✓ | 4 | `(user_id = app_current_user_id())` |
 | `job_matches` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `market_reality_signals` | ✓ | 1 | `(user_id = app_current_user_id())` |
 | `memberships` | ✓ | 1 | `(user_id = app_current_user_id())` |
@@ -78,7 +89,7 @@ Diese Tabellen enthalten keine personenbezogenen Zeilen: Stellenanzeigen, Untern
 Quellen, Nachschlagewerte. Sie sind für alle gleich, und eine Zeilenfilterung hätte
 nichts zu filtern.
 
-`_migrations`, `analytics_events`, `application_effort_profiles`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `employer_boards`, `employer_process_aggregates`, `feature_flag_overrides`, `hiring_process_templates`, `job_condition_facts`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_source_links`, `job_source_timing`, `job_sources`, `jobs`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `research_evidence_registry`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
+`_migrations`, `analytics_events`, `application_effort_profiles`, `apply_capabilities`, `asset_registry`, `audit_logs`, `claim_evidence_links`, `coaching_feedback`, `coaching_turns`, `companies`, `company_sources`, `email_suppression_list`, `employer_boards`, `employer_process_aggregates`, `external_form_profiles`, `feature_flag_overrides`, `hiring_process_templates`, `job_brief_facts`, `job_condition_facts`, `job_ingestion_runs`, `job_requirements`, `job_snapshots`, `job_source_links`, `job_source_timing`, `job_sources`, `jobs`, `knowledge_documents`, `legal_documents`, `magic_links`, `match_factors`, `micro_assessments`, `occupations`, `organizations`, `prompt_versions`, `research_evidence_registry`, `review_aggregates`, `review_themes`, `skills`, `source_citations`
 
 ## Prüfung auf Lücken
 

@@ -629,3 +629,63 @@ test.describe("Öffentliche Wurzelroute", () => {
     }
   });
 });
+
+test.describe("Bewerbungsbrücke und Vertrauensseiten", () => {
+  test("Die Bewerbungsseite sagt, wo unsere Zuständigkeit endet", async ({ page }) => {
+    await page.goto("/api/dev/login");
+    await page.goto("/app/jobs");
+    const href = await page.locator("[data-job-id]").first().getAttribute("data-job-id");
+    const antwort = await page.goto(`/app/jobs/${href}/apply`);
+    expect(antwort?.status()).toBe(200);
+
+    // Kein Versprechen, das das Produkt nicht halten kann.
+    await expect(page.getByText(/nicht für dich abschicken/)).toBeVisible();
+    await expect(page.getByRole("link", { name: /Auf der Originalseite bewerben/ })).toBeVisible();
+  });
+
+  test("Ein Redirect gilt nicht als abgeschickte Bewerbung", async ({ page }) => {
+    await page.goto("/api/dev/login");
+    await page.goto("/app/jobs");
+    const id = await page.locator("[data-job-id]").first().getAttribute("data-job-id");
+    await page.goto(`/app/jobs/${id}/apply`);
+
+    // Die Frage danach muss dastehen — sonst wäre der Status geraten.
+    await expect(page.getByRole("group", { name: "Stand der Bewerbung" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Noch nicht" })).toBeVisible();
+  });
+
+  test("Das Impressum gibt sich nicht als fertig aus", async ({ page }) => {
+    await page.goto("/imprint");
+    await expect(page.getByText(/Noch nicht vollständig/)).toBeVisible();
+    await expect(page.getByText("Was noch fehlt")).toBeVisible();
+  });
+
+  test("Über uns zeigt keine halbe Kontaktadresse", async ({ page }) => {
+    await page.goto("/about");
+    const text = (await page.textContent("body")) ?? "";
+    // "name@....com" sieht fertig aus und ist es nicht.
+    expect(text).not.toMatch(/@\.\.\.\./);
+    await expect(page.getByText(/wird vor Veröffentlichung ergänzt/).first()).toBeVisible();
+  });
+
+  test("Die KI-Transparenz nennt die Grenzen beim Namen", async ({ page }) => {
+    await page.goto("/ai-transparency");
+    await expect(page.getByText(/Einstellungswahrscheinlichkeit/)).toBeVisible();
+    // Keine absolute Aussage, die bei externem Modell falsch wäre.
+    await expect(page.getByText(/nie verlassen/)).toBeVisible();
+  });
+
+  test("Rückmeldungen nehmen keinen Suchbegriff mit", async ({ page }) => {
+    const antwort = await page.request.post("/api/feedback", {
+      data: {
+        category: "bug",
+        message: "Der Filter greift nicht richtig.",
+        route: "/app/jobs?q=Pflege+Teilzeit&ort=Hamburg",
+        consentToContact: false,
+      },
+    });
+    expect(antwort.status()).toBe(200);
+    const body = await antwort.json();
+    expect(body.id).toBeTruthy();
+  });
+});

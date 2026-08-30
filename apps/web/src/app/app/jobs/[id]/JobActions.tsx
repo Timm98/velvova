@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Bookmark, BookmarkCheck, FileText, MessageSquare } from "lucide-react";
+import { ArrowUpRight, Bookmark, BookmarkCheck, FileText, MessageSquare } from "lucide-react";
 import { startApplication, toggleSaveJob } from "@/lib/jobActions";
 import { Button } from "@/components/ui";
 
@@ -76,6 +76,22 @@ export function JobActions({
           </a>
         </Button>
       </div>
+
+      {/*
+        Der direkte Weg zur Übergabe.
+        
+        Das Studio schreibt die Unterlagen; diese Seite zeigt die
+        Checkliste und öffnet die Originalanzeige. Wer schon weiss, dass
+        er sich bewerben will, braucht den Umweg nicht — und wer aus dem
+        Studio kommt, landet ohnehin hier.
+      */}
+      <a
+        href={`/app/jobs/${jobId}/apply`}
+        className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+      >
+        <ArrowUpRight className="size-3.5" strokeWidth={1.9} />
+        Was für die Bewerbung gebraucht wird
+      </a>
 
       {blocked && (
         <p className="text-sm leading-relaxed text-ink-2">

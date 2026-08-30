@@ -67,7 +67,14 @@ DECLARE
     'application_process_observations',
     'target_companies','watchlist_job_events',
     'search_channel_activities','networking_contacts','networking_messages',
-    'search_plans'
+    'search_plans',
+    -- Application Bridge (Addendum V5.2). Alles hier gehört einer
+    -- Person: Bewerbungspaket, Antworten, Übergaben, Identitäten,
+    -- E-Mail-Einstellungen.
+    'application_packages','application_package_documents',
+    'application_screening_answers','application_handoffs',
+    'connected_identities','auth_identity_audit',
+    'email_preferences','email_deliveries'
   ];
 BEGIN
   FOREACH t IN ARRAY user_tables LOOP
@@ -88,3 +95,81 @@ DROP POLICY IF EXISTS users_self ON users
 --> statement-breakpoint
 CREATE POLICY users_self ON users
   USING (id = app_current_user_id()) WITH CHECK (id = app_current_user_id())
+--> statement-breakpoint
+/*
+ * Job Briefs.
+ *
+ * Ein Sonderfall: `user_id` ist optional. Ein öffentlicher Brief gehört
+ * niemandem und darf von allen gelesen werden; ein privater gehört
+ * genau einer Person, weil er aus einem Text entstanden ist, den sie
+ * selbst mitgebracht hat.
+ *
+ * Die Schleife oben kann das nicht — sie setzt `user_id = ...` und
+ * würde damit auch die öffentlichen Briefe verstecken.
+ */
+ALTER TABLE job_briefs ENABLE ROW LEVEL SECURITY
+--> statement-breakpoint
+ALTER TABLE job_briefs FORCE ROW LEVEL SECURITY
+--> statement-breakpoint
+DROP POLICY IF EXISTS job_briefs_read ON job_briefs
+--> statement-breakpoint
+CREATE POLICY job_briefs_read ON job_briefs FOR SELECT
+  USING (user_id IS NULL OR user_id = app_current_user_id())
+--> statement-breakpoint
+DROP POLICY IF EXISTS job_briefs_write ON job_briefs
+--> statement-breakpoint
+CREATE POLICY job_briefs_write ON job_briefs FOR INSERT
+  WITH CHECK (user_id IS NULL OR user_id = app_current_user_id())
+--> statement-breakpoint
+DROP POLICY IF EXISTS job_briefs_update ON job_briefs
+--> statement-breakpoint
+CREATE POLICY job_briefs_update ON job_briefs FOR UPDATE
+  USING (user_id = app_current_user_id()) WITH CHECK (user_id = app_current_user_id())
+--> statement-breakpoint
+DROP POLICY IF EXISTS job_briefs_delete ON job_briefs
+--> statement-breakpoint
+CREATE POLICY job_briefs_delete ON job_briefs FOR DELETE
+  USING (user_id = app_current_user_id())
+--> statement-breakpoint
+/*
+ * Rückmeldungen dürfen anonym sein. Eine Person sieht ihre eigenen;
+ * anonyme gehören niemandem und werden nur serverseitig ausgewertet.
+ */
+ALTER TABLE feedback_items ENABLE ROW LEVEL SECURITY
+--> statement-breakpoint
+ALTER TABLE feedback_items FORCE ROW LEVEL SECURITY
+--> statement-breakpoint
+DROP POLICY IF EXISTS feedback_own ON feedback_items
+--> statement-breakpoint
+CREATE POLICY feedback_own ON feedback_items FOR SELECT
+  USING (user_id = app_current_user_id())
+--> statement-breakpoint
+DROP POLICY IF EXISTS feedback_insert ON feedback_items
+--> statement-breakpoint
+CREATE POLICY feedback_insert ON feedback_items FOR INSERT
+  WITH CHECK (user_id IS NULL OR user_id = app_current_user_id())
+--> statement-breakpoint
+/*
+ * E-Mail-Einwilligungen.
+ *
+ * Wieder ein optionaler Eigentümer: wer den Newsletter abonniert, muss
+ * kein Konto haben. Solche Zeilen gehören niemandem und sind über die
+ * Anwendungsrolle unsichtbar — bearbeitet werden sie serverseitig über
+ * den Bestätigungstoken.
+ *
+ * Eine angemeldete Person sieht ihre eigenen Einwilligungen. Das ist
+ * die Voraussetzung dafür, dass sie sie widerrufen kann.
+ */
+ALTER TABLE email_consents ENABLE ROW LEVEL SECURITY
+--> statement-breakpoint
+ALTER TABLE email_consents FORCE ROW LEVEL SECURITY
+--> statement-breakpoint
+DROP POLICY IF EXISTS email_consents_own ON email_consents
+--> statement-breakpoint
+CREATE POLICY email_consents_own ON email_consents FOR SELECT
+  USING (user_id = app_current_user_id())
+--> statement-breakpoint
+DROP POLICY IF EXISTS email_consents_update ON email_consents
+--> statement-breakpoint
+CREATE POLICY email_consents_update ON email_consents FOR UPDATE
+  USING (user_id = app_current_user_id()) WITH CHECK (user_id = app_current_user_id())
