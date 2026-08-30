@@ -4,24 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Maximize2, MessageSquarePlus, Minus, ScrollText, X } from "lucide-react";
 import { cn } from "@/lib/cn";
-import type { NinaVisualState } from "@/components/nina/NinaProvider";
-
-/**
- * Vom Produktzustand zum Bild.
- *
- * Das Signal kennt vier Zustände, der Provider sechs. `success` und
- * `error` sind beruhigt — ein Signal, das bei einem Fehler zappelt,
- * macht aus einer Panne ein Ereignis.
- */
-const SIGNAL_ZUSTAND: Record<NinaVisualState, "idle" | "active" | "thinking" | "speaking"> = {
-  idle: "active",
-  thinking: "thinking",
-  talking: "speaking",
-  listening: "active",
-  success: "active",
-  error: "idle",
-};
-import { NinaSignal } from "./NinaSignal";
+import { NinaVisual } from "./NinaVisual";
 import { Composer } from "./Composer";
 import { JobSuggestions } from "./JobSuggestions";
 import { SpeakButton } from "./SpeakButton";
@@ -113,7 +96,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
       >
         {/* ── Kopf ────────────────────────────────────────────── */}
         <div className="flex items-center gap-3 px-5 pb-3 pt-4">
-          <NinaSignal size="sm" state={SIGNAL_ZUSTAND[nina.visualState]} />
+          <NinaVisual size="sm" className="-my-2 -ml-1" />
           <div className="grid min-w-0 flex-1">
             <span className="font-display text-[15px] font-semibold tracking-[-0.01em]">
               {assistantName}
@@ -272,7 +255,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
                         />
                       )}
                     </p>
-                    {!m.streaming && <SpeakButton messageId={m.id} className="-ml-3" />}
+                    {!m.streaming && <SpeakButton messageId={m.id} className="-ml-3 self-start" />}
                   </div>
                 )}
               </li>

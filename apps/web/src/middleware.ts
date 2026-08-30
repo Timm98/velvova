@@ -28,7 +28,19 @@ export function middleware(request: NextRequest): NextResponse {
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: blob:`,
     `font-src 'self'`,
-    `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+    /*
+     * `blob:` auch hier, für das 3D-Modell.
+     *
+     * Three.js lädt die GLB-Datei nicht direkt: es holt sie, legt sie
+     * als Blob ab und liest sie von dort. Ohne `blob:` in `connect-src`
+     * bricht genau dieser zweite Schritt ab — die Datei kommt mit HTTP
+     * 200 an, und das Modell erscheint trotzdem nie.
+     */
+    `connect-src 'self' blob:${isDev ? " ws: wss:" : ""}`,
+    /* Draco- und KTX-Dekoder laufen in Workern, die aus Blobs
+       entstehen. Ohne diese Zeile bleibt ein komprimiertes Modell
+       schwarz. */
+    `worker-src 'self' blob:`,
     /*
      * `blob:` ist für Ninas Stimme nötig.
      *

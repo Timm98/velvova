@@ -91,6 +91,19 @@ const config: NextConfig = {
           // je Anfrage eine Nonce braucht. Siehe src/middleware.ts.
         ],
       },
+      {
+        /*
+         * Das 3D-Modell ist 12,4 MB und ändert sich nie ohne neuen
+         * Dateinamen.
+         *
+         * Ohne diesen Kopf fragt der Browser bei jeder Vollnavigation
+         * neu an — bestenfalls mit 304, schlechtestenfalls mit dem
+         * ganzen Download. Ein Jahr `immutable` ist hier richtig: soll
+         * eine neue Nina kommen, bekommt sie einen neuen Namen.
+         */
+        source: "/models/:datei*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
     ];
   },
 };
