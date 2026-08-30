@@ -80,7 +80,8 @@ export default async function AccountSettingsPage() {
           </p>
         </div>
         <DeviceList
-          sessions={sessions.map((s) => ({ ...s, lastSeenAt: s.lastSeenAt.toISOString() }))}
+          sessions={sessions.sessions.map((s) => ({ ...s, lastSeenAt: s.lastSeenAt.toISOString() }))}
+          total={sessions.total}
         />
       </Card>
 

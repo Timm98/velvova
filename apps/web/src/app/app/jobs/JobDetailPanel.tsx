@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ExternalLink, HelpCircle } from "lucide-react";
+import { ExternalLink, HelpCircle, ShieldAlert } from "lucide-react";
 import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
 import { Badge, Button, Separator } from "@/components/ui";
@@ -80,6 +80,42 @@ export function JobDetailPanel({
           )}
           {job.isDemo && <Badge tone="caution">Demo-Datensatz</Badge>}
         </div>
+
+        {/* Warnzeichen. Steht weit oben, weil ein Hinweis nach dem
+            dritten Absatz keiner mehr ist — und weil es hier nicht um
+            Passung geht, sondern um Schaden. */}
+        {scored.scam.level === "additional_verification_recommended" && (
+          <div
+            role="note"
+            className="grid gap-3 rounded-[--radius-md] border border-caution/30 bg-caution-soft px-4 py-3.5"
+          >
+            <p className="flex items-start gap-2 text-sm font-medium text-caution">
+              <ShieldAlert aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2} />
+              {scored.scam.summary}
+            </p>
+            <ul className="grid gap-3">
+              {scored.scam.signals
+                .filter((signal) => signal.severity !== "hinweis")
+                .map((signal) => (
+                  <li key={signal.key} className="grid gap-1">
+                    <span className="text-sm text-ink">{signal.label}</span>
+                    {/* Das Zitat aus der Anzeige. Ohne Fundstelle kann
+                        die Person den Hinweis nicht prüfen — und ein
+                        Hinweis, den man nicht prüfen kann, ist eine
+                        Behauptung. */}
+                    <span className="border-l-2 border-line-2 pl-2.5 text-xs italic leading-relaxed text-ink-3">
+                      {signal.evidence}
+                    </span>
+                    <span className="text-xs leading-relaxed text-ink-2">{signal.advice}</span>
+                  </li>
+                ))}
+            </ul>
+            <p className="text-2xs leading-relaxed text-ink-3">
+              Das ist kein Urteil über diesen Arbeitgeber. Es steht hier, was in der Anzeige
+              steht — prüfen musst du selbst.
+            </p>
+          </div>
+        )}
 
         {/* Dieselbe Stelle auf mehreren Portalen ist eine Stelle, nicht
             drei. Wo sie sonst noch steht, gehört trotzdem dazu: manchmal

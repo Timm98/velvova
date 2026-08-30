@@ -64,8 +64,11 @@ export function ConsentToggles({
 /** Angemeldete Geräte. Jede Sitzung einzeln beendbar. */
 export function DeviceList({
   sessions,
+  total,
 }: {
   sessions: { id: string; deviceLabel: string; lastSeenAt: string; isCurrent: boolean }[];
+  /** Insgesamt, auch wenn nicht alle gezeigt werden. */
+  total?: number;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -106,6 +109,14 @@ export function DeviceList({
           )}
         </li>
       ))}
+      {typeof total === "number" && total > sessions.length && (
+        <li style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
+          {/* Ehrlich sagen, dass die Liste gekürzt ist. Eine stillschweigend
+              gekürzte Liste behauptet, es gäbe nicht mehr. */}
+          {total - sessions.length} weitere Sitzungen sind aktiv und hier nicht aufgeführt. Die
+          zuletzt benutzten stehen oben.
+        </li>
+      )}
     </ul>
   );
 }

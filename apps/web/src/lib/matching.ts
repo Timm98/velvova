@@ -21,6 +21,8 @@ import {
   type CommuteEstimator,
   type RankableJob,
   type SortKey,
+  assessScamSignals,
+  type ScamAssessment,
 } from "@paycheck/matching";
 import { and, eq, isNull, sql } from "drizzle-orm";
 
@@ -208,6 +210,15 @@ export interface ScoredJob extends RankableJob {
   job: Job;
   requirements: JobRequirement[];
   source: JobSource | null;
+  /**
+   * Warnzeichen in der Anzeige selbst.
+   *
+   * Steht getrennt von allen anderen Werten, weil es um etwas anderes
+   * geht: nicht um Passung, sondern um Schaden. Ein Vorschussbetrug
+   * kostet mehrere hundert Euro, die eine arbeitssuchende Person
+   * gerade nicht hat.
+   */
+  scam: ScamAssessment;
   /** Wo dieselbe Stelle sonst noch steht. Leer, solange nur eine Quelle
    *  sie kennt — dann ist es keine Metasuche, sondern eine Liste, und
    *  das soll die Oberfläche nicht anders aussehen lassen. */
@@ -352,6 +363,17 @@ export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Pro
       job,
       requirements,
       source: source as JobSource | null,
+      scam: assessScamSignals({
+        title: job.title,
+        description: job.description,
+        companyName: job.companyName,
+        originalUrl: job.originalUrl,
+        fromEmployerFeed: source?.kind === "employer_feed",
+        // Verifiziert ist eine Domäne erst, wenn sie in employer_boards
+        // steht. Solange es dort keinen Eintrag gibt, ist "geprüfte
+        // Quelle" eine Auszeichnung, die niemand verdient hat.
+        employerDomainVerified: false,
+      }),
       alsoListedOn,
       reviews,
       themes,

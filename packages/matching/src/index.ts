@@ -6,3 +6,4 @@ export * from "./jobQuality.ts";
 export * from "./aiTransition.ts";
 export * from "./listingConfidence.ts";
 export * from "./ranking.ts";
+export * from "./scamSignals.ts";

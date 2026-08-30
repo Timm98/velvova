@@ -297,7 +297,37 @@ export async function authenticate(email: string, password: string): Promise<str
 }
 
 /** Aktive Sitzungen des Menschen, für die Geräteverwaltung. */
-export async function listSessions(userId: string) {
+/** Mehr als das braucht niemand auf einen Blick. */
+const SESSION_ANZEIGE_LIMIT = 20;
+
+export interface SessionListe {
+  sessions: {
+    id: string;
+    deviceLabel: string;
+    lastSeenAt: Date;
+    isCurrent: boolean;
+  }[];
+  /** Wie viele es insgesamt sind. Für einen ehrlichen Hinweis. */
+  total: number;
+}
+
+/**
+ * Die aktiven Sitzungen dieser Person.
+ *
+ * Zwei Dinge, die die erste Fassung falsch gemacht hat, und beide
+ * waren in der Entwicklungsdatenbank sichtbar: die Einstellungsseite
+ * war **160.000 Pixel hoch** und listete **2.071 Geräte**.
+ *
+ * **Abgelaufene Sitzungen wurden mitgezählt.** Geprüft wurde nur
+ * `revokedAt`. Eine Sitzung, die vor Monaten abgelaufen ist, stand
+ * weiter unter „aktive Geräte" — das ist nicht bloss eine zu lange
+ * Liste, das ist eine falsche Aussage über die Sicherheit des Kontos.
+ *
+ * **Es gab keine Obergrenze.** Jede Anmeldung auf jedem Gerät legt eine
+ * Zeile an. Ohne Grenze wächst die Seite mit der Nutzungsdauer, und die
+ * Person, die dort tatsächlich etwas abmelden will, findet es nicht.
+ */
+export async function listSessions(userId: string): Promise<SessionListe> {
   const cfg = loadRuntimeConfig();
   const store = await cookies();
   const currentHash = store.get(cfg.auth.cookieName)?.value
@@ -305,18 +335,37 @@ export async function listSessions(userId: string) {
     : null;
 
   const db = await getDb();
+  const now = new Date();
+
   const rows = await withUser(db, userId, (tx) =>
     tx
       .select()
       .from(schema.sessions)
-      .where(and(eq(schema.sessions.userId, userId), isNull(schema.sessions.revokedAt)))
+      .where(
+        and(
+          eq(schema.sessions.userId, userId),
+          isNull(schema.sessions.revokedAt),
+          gt(schema.sessions.expiresAt, now),
+        ),
+      )
       .orderBy(sql`${schema.sessions.lastSeenAt} DESC`),
   );
 
-  return rows.map((r) => ({
+  const alle = rows.map((r) => ({
     id: r.id,
     deviceLabel: r.deviceLabel ?? "Unbekanntes Gerät",
     lastSeenAt: r.lastSeenAt,
     isCurrent: r.tokenHash === currentHash,
   }));
+
+  // Die aktuelle Sitzung steht immer dabei, auch wenn sie nach
+  // Zeitstempel hinten läge. Sonst kann jemand seine eigene Sitzung
+  // nicht wiedererkennen.
+  const sichtbar = alle.slice(0, SESSION_ANZEIGE_LIMIT);
+  const aktuelle = alle.find((s) => s.isCurrent);
+  if (aktuelle && !sichtbar.some((s) => s.isCurrent)) {
+    sichtbar[sichtbar.length - 1] = aktuelle;
+  }
+
+  return { sessions: sichtbar, total: alle.length };
 }
