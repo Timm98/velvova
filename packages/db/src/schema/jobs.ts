@@ -161,6 +161,43 @@ export const sourceCitations = pgTable("source_citations", {
   licenseNote: text("license_note"),
 }, (t) => [index("source_citations_subject_idx").on(t.subjectType, t.subjectId)]);
 
+/**
+ * Wo dieselbe Stelle sonst noch steht.
+ *
+ * Eine offene Stelle, mehrere Portale. Für die Person ist es eine
+ * Stelle — sie soll sie einmal sehen und dabei wissen, wo sie sich
+ * bewerben kann. Für uns ist es ein kanonischer Datensatz in `jobs` und
+ * je Fundstelle eine Zeile hier.
+ *
+ * `canonicalKey` ist der Schlüssel, unter dem zusammengeführt wurde. Er
+ * steht mit in der Zeile, damit später nachvollziehbar ist, WARUM zwei
+ * Anzeigen als dieselbe gelten — und damit eine falsche Zusammenführung
+ * gefunden werden kann, statt nur vermutet zu werden.
+ *
+ * `rank` entscheidet, welcher Link die Bewerbung trägt: die Quelle mit
+ * der niedrigsten Zahl. Eine direkte Karriereseite steht vor einem
+ * Portal, weil dort weniger zwischen Person und Unternehmen steht.
+ */
+export const jobSourceLinks = pgTable("job_source_links", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+  sourceId: uuid("source_id").notNull().references(() => jobSources.id, { onDelete: "cascade" }),
+  /** Die Kennung der Anzeige beim jeweiligen Anbieter. */
+  externalId: text("external_id").notNull(),
+  url: text("url").notNull(),
+  /** Der Schlüssel, unter dem zusammengeführt wurde. Belegt die Entscheidung. */
+  canonicalKey: text("canonical_key"),
+  rank: integer("rank").notNull().default(100),
+  firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  /** Letzte Linkprüfung dieser einen Fundstelle. */
+  lastCheckOk: boolean("last_check_ok"),
+}, (t) => [
+  uniqueIndex("job_source_links_unique").on(t.sourceId, t.externalId),
+  index("job_source_links_job_idx").on(t.jobId),
+  index("job_source_links_key_idx").on(t.canonicalKey),
+]);
+
 export const savedJobs = pgTable("saved_jobs", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

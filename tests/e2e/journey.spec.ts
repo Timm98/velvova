@@ -328,6 +328,11 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Eine Antwort landet als unbestätigte Angabe im Profil", async ({ page }) => {
+    // Eigener Ausgangszustand. Ohne das schreibt jeder Lauf eine
+    // weitere Antwort in dieselbe Entwicklungsdatenbank, und irgendwann
+    // ist das Gespräch am Ende: kein Eingabefeld mehr, Test rot, ohne
+    // dass sich am Produkt etwas geändert hätte.
+    await page.request.post("/api/dev/reset-interview");
     await page.goto("/app/nina");
     const answer = `Testantwort ${Date.now()}: Ich habe zwei Jahre lang Kundenanfragen bearbeitet und dabei monatlich ausgewertet, woran es lag.`;
     await page.getByRole("textbox").first().fill(answer);

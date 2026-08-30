@@ -102,9 +102,10 @@ export async function POST(request: Request) {
       inserted: acc.inserted + r.inserted,
       updated: acc.updated + r.updated,
       unchanged: acc.unchanged + r.unchanged,
+      merged: acc.merged + r.merged,
       failed: acc.failed + r.failed,
     }),
-    { fetched: 0, inserted: 0, updated: 0, unchanged: 0, failed: 0 },
+    { fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0 },
   );
 
   return NextResponse.json({
@@ -118,6 +119,8 @@ export async function POST(request: Request) {
       inserted: r.inserted,
       updated: r.updated,
       unchanged: r.unchanged,
+      // Anzeigen, die zu einer bereits bekannten Stelle gehörten.
+      merged: r.merged,
       failed: r.failed,
       // Nur die erste Meldung, und ohne Anzeigentext: Fehlermeldungen
       // landen in Protokollen, und dort gehören keine Volltexte hin.

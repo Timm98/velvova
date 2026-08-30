@@ -1,6 +1,7 @@
 import { eq, sql } from "drizzle-orm";
 import { getDb, schema } from "@paycheck/db";
 import { normalise, type JobSourceAdapter, type NormalisedListing } from "./adapter.ts";
+import { canonicalKey } from "./canonical.ts";
 
 /**
  * Echte Anzeigen in die Datenbank bringen.
@@ -25,6 +26,10 @@ export interface IngestResult {
   inserted: number;
   updated: number;
   unchanged: number;
+  /** Anzeigen, die zu einer bereits bekannten Stelle gehörten und
+   *  deshalb als weitere Fundstelle angehängt wurden statt als Dublette
+   *  in der Liste zu landen. */
+  merged: number;
   failed: number;
   errors: string[];
   startedAt: Date;
@@ -103,19 +108,86 @@ async function findOrCreateCompany(
   return created!.id;
 }
 
+/**
+ * Eine Fundstelle festhalten.
+ *
+ * Idempotent: derselbe Abruf zweimal erzeugt eine Zeile, nicht zwei.
+ * Der Schlüssel dafür ist (Quelle, externe Kennung) — dieselbe Anzeige
+ * beim selben Anbieter ist dieselbe Fundstelle, auch wenn sich die
+ * Adresse ändert.
+ */
+async function verknuepfe(
+  db: Awaited<ReturnType<typeof getDb>>,
+  jobId: string,
+  sourceId: string,
+  n: NormalisedListing,
+  canonical: string | null,
+): Promise<void> {
+  await db
+    .insert(schema.jobSourceLinks)
+    .values({
+      jobId,
+      sourceId,
+      externalId: n.externalId,
+      url: n.job.originalUrl ?? "",
+      canonicalKey: canonical,
+      lastSeenAt: n.job.fetchedAt,
+    })
+    .onConflictDoUpdate({
+      target: [schema.jobSourceLinks.sourceId, schema.jobSourceLinks.externalId],
+      set: {
+        jobId,
+        url: n.job.originalUrl ?? "",
+        canonicalKey: canonical,
+        lastSeenAt: n.job.fetchedAt,
+      },
+    });
+}
+
 async function writeListing(
   db: Awaited<ReturnType<typeof getDb>>,
   sourceId: string,
   n: NormalisedListing,
-): Promise<"inserted" | "updated" | "unchanged"> {
+): Promise<"inserted" | "updated" | "unchanged" | "merged"> {
   const companyId = await findOrCreateCompany(db, n.companyName);
   const j = n.job;
 
+  /*
+   * Zwei Fragen, in dieser Reihenfolge:
+   *
+   *   1. Kennen wir GENAU DIESE Anzeige schon? (gleiche Quelle, gleiche
+   *      Adresse) — dann wird sie fortgeschrieben.
+   *   2. Kennen wir DIESE STELLE schon, von woanders? — dann bekommt der
+   *      vorhandene Datensatz eine weitere Fundstelle statt einer
+   *      Dublette.
+   *
+   * Die zweite Frage ist der eigentliche Unterschied zwischen einer
+   * Metasuche und drei nebeneinanderlaufenden Listen.
+   */
   const existing = await db
     .select({ id: schema.jobs.id, contentHash: schema.jobs.contentHash })
     .from(schema.jobs)
     .where(sql`${schema.jobs.originalUrl} = ${j.originalUrl} and ${schema.jobs.sourceId} = ${sourceId}`)
     .limit(1);
+
+  const schluessel = canonicalKey({
+    title: j.title,
+    companyName: n.companyName,
+    location: j.location,
+  });
+
+  if (!existing[0] && schluessel) {
+    const [anderswo] = await db
+      .select({ jobId: schema.jobSourceLinks.jobId })
+      .from(schema.jobSourceLinks)
+      .where(eq(schema.jobSourceLinks.canonicalKey, schluessel))
+      .limit(1);
+
+    if (anderswo) {
+      await verknuepfe(db, anderswo.jobId, sourceId, n, schluessel);
+      return "merged";
+    }
+  }
 
   const values = {
     title: j.title,
@@ -159,10 +231,12 @@ async function writeListing(
         .update(schema.jobs)
         .set({ fetchedAt: j.fetchedAt })
         .where(eq(schema.jobs.id, existing[0].id));
+      await verknuepfe(db, existing[0].id, sourceId, n, schluessel);
       return "unchanged";
     }
 
     await db.update(schema.jobs).set(values).where(eq(schema.jobs.id, existing[0].id));
+    await verknuepfe(db, existing[0].id, sourceId, n, schluessel);
     await db.delete(schema.jobRequirements).where(eq(schema.jobRequirements.jobId, existing[0].id));
     if (n.requirements.length > 0) {
       await db
@@ -231,6 +305,7 @@ export async function ingestFromAdapter(
         inserted: 0,
         updated: 0,
         unchanged: 0,
+        merged: 0,
         failed: 0,
         errors: [`Abruf nicht freigegeben (${decision}): ${reason}`],
         startedAt,
@@ -248,6 +323,7 @@ export async function ingestFromAdapter(
     inserted: 0,
     updated: 0,
     unchanged: 0,
+    merged: 0,
     failed: 0,
     errors: [],
     startedAt,

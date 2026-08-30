@@ -81,6 +81,30 @@ export function JobDetailPanel({
           {job.isDemo && <Badge tone="caution">Demo-Datensatz</Badge>}
         </div>
 
+        {/* Dieselbe Stelle auf mehreren Portalen ist eine Stelle, nicht
+            drei. Wo sie sonst noch steht, gehört trotzdem dazu: manchmal
+            ist der Bewerbungsweg beim einen Portal kürzer als beim
+            anderen. */}
+        {scored.alsoListedOn.length > 0 && (
+          <p className="text-xs leading-relaxed text-ink-3">
+            Diese Stelle steht auch bei{" "}
+            {scored.alsoListedOn.map((eintrag, i) => (
+              <span key={eintrag.url}>
+                {i > 0 && (i === scored.alsoListedOn.length - 1 ? " und " : ", ")}
+                <a
+                  href={eintrag.url}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
+                >
+                  {eintrag.sourceName}
+                </a>
+              </span>
+            ))}
+            . Zusammengefasst über Titel, Unternehmen und Ort.
+          </p>
+        )}
+
         <h2 className="font-display text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.025em]">
           {job.title}
         </h2>

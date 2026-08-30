@@ -208,6 +208,10 @@ export interface ScoredJob extends RankableJob {
   job: Job;
   requirements: JobRequirement[];
   source: JobSource | null;
+  /** Wo dieselbe Stelle sonst noch steht. Leer, solange nur eine Quelle
+   *  sie kennt — dann ist es keine Metasuche, sondern eine Liste, und
+   *  das soll die Oberfläche nicht anders aussehen lassen. */
+  alsoListedOn: { sourceName: string; url: string }[];
   reviews: ReviewAggregate[];
   themes: ReviewTheme[];
   confidence: ReturnType<typeof computeConfidence>;
@@ -240,6 +244,10 @@ export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Pro
 
   const requirementRows = await db.select().from(schema.jobRequirements);
   const sourceRows = await db.select().from(schema.jobSources);
+  // Die weiteren Fundstellen derselben Stelle. Ein Abruf für alle
+  // Stellen; pro Stelle einzeln nachzufragen wäre bei 150 Anzeigen
+  // genau die Art von Abfrage, die eine Liste langsam macht.
+  const linkRows = await db.select().from(schema.jobSourceLinks);
   const reviewRows = await db.select().from(schema.reviewAggregates);
   const themeRows = await db.select().from(schema.reviewThemes);
 
@@ -330,11 +338,21 @@ export async function scoreAllJobs(userId: string, ctx: UserProfileContext): Pro
           ? commuteEstimator.estimateMinutes(ctx.constraints.baseLocation, job.location, ctx.constraints.commuteMode)
           : null;
 
+    // Nur ANDERE Quellen. Die eigene noch einmal als "auch gelistet bei"
+    // zu zeigen, wäre eine Behauptung über Reichweite, die nicht stimmt.
+    const alsoListedOn = linkRows
+      .filter((l) => l.jobId === job.id && l.sourceId !== job.sourceId && l.url)
+      .map((l) => ({
+        sourceName: sourceRows.find((s) => s.id === l.sourceId)?.displayName ?? "unbekannt",
+        url: l.url,
+      }));
+
     return {
       jobId: job.id,
       job,
       requirements,
       source: source as JobSource | null,
+      alsoListedOn,
       reviews,
       themes,
       overall,
