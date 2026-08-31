@@ -37,6 +37,21 @@ export const FeedbackInput = z.object({
   jobId: z.string().uuid().optional(),
   applicationId: z.string().uuid().optional(),
   consentToContact: z.boolean().default(false),
+  /*
+   * Eine Vorgangsnummer aus einer früheren Antwort (§25).
+   *
+   * Als freier Text und nicht als UUID geprüft: Menschen tippen sie aus
+   * einer E-Mail ab, mit Bindestrichen, Leerzeichen oder halb. Eine
+   * strenge Prüfung würde hier die Nachricht ablehnen, statt einen
+   * Hinweis mitzunehmen, der ohnehin nur beim Zuordnen hilft.
+   */
+  ticketId: z.string().max(100).optional(),
+  /*
+   * Der Honigtopf. Der Endpunkt wertet ihn vor dieser Prüfung aus; hier
+   * steht er nur, damit ein ausgefülltes Feld nicht als unbekannter
+   * Schlüssel die ganze Nachricht scheitern lässt.
+   */
+  website: z.string().max(200).optional(),
 });
 
 export type FeedbackInput = z.infer<typeof FeedbackInput>;

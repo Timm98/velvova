@@ -38,6 +38,9 @@ export function ContactForm() {
           message: `${formData.get("message")}\n\n— ${formData.get("name")} (${formData.get("email")})`,
           route: "/contact",
           consentToContact: formData.get("consent") === "on",
+          // Unsichtbares Feld. Menschen lassen es leer, Automaten nicht.
+          website: formData.get("website") ?? "",
+          ticketId: (formData.get("ticketId") as string | null)?.trim() || undefined,
         }),
       });
       const daten = (await response.json()) as { id?: string; fehler?: string };
@@ -98,6 +101,37 @@ export function ContactForm() {
 
       <Field label="Nachricht" htmlFor="message">
         <Textarea id="message" name="message" rows={6} required minLength={10} />
+
+        {/*
+          Die Ticketnummer, falls es schon eine gibt (§25).
+          Optional und ganz unten: die meisten schreiben zum ersten Mal,
+          und ein Pflichtfeld für eine Nummer, die man nicht hat, ist
+          eine Hürde für den Normalfall.
+        */}
+        <div className="grid gap-1.5">
+          <label htmlFor="ticketId" className="text-sm font-medium">
+            Vorgangsnummer <span className="font-normal text-ink-3">— falls vorhanden</span>
+          </label>
+          <input
+            id="ticketId"
+            name="ticketId"
+            placeholder="z. B. aus einer früheren Antwort"
+            className="h-11 w-full rounded-(--radius-input) bg-soft px-4 text-base text-ink outline-none placeholder:text-ink-3 focus-visible:bg-raised focus-visible:shadow-[0_0_0_2px_var(--primary)]"
+          />
+        </div>
+
+        {/*
+          Der Honigtopf.
+
+          `aria-hidden` und `tabIndex={-1}` halten ihn von
+          Vorlesegeräten und der Tabulatortaste fern; `hidden` wäre
+          zwar kürzer, wird aber von manchen Automaten erkannt und
+          übersprungen. Wer ihn ausfüllt, ist kein Mensch.
+        */}
+        <div aria-hidden className="absolute left-[-9999px] h-px w-px overflow-hidden">
+          <label htmlFor="website">Website (bitte leer lassen)</label>
+          <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" />
+        </div>
       </Field>
 
       <label className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-2">

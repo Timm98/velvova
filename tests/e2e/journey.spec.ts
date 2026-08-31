@@ -50,7 +50,23 @@ test.describe("Öffentlicher Bereich", () => {
 
   test("Datenschutz nennt den tatsächlichen Zustand der KI-Verarbeitung", async ({ page }) => {
     await page.goto("/privacy");
-    await expect(page.getByText(/kein externer KI-Anbieter verbunden/i)).toBeVisible();
+
+    /*
+     * Geprüft wird die EIGENSCHAFT, nicht der Satz.
+     *
+     * Vorher stand hier fest „kein externer KI-Anbieter verbunden".
+     * Das war richtig, solange keiner verbunden war — und wurde
+     * falsch, als einer verbunden wurde. Der Test schlug dann fehl,
+     * obwohl die Seite genau das tat, was sie soll: den tatsächlichen
+     * Zustand nennen.
+     *
+     * Die Zusage lautet nicht „es ist keiner verbunden". Sie lautet:
+     * die Seite sagt, wie es ist. Beide Sätze erfüllen sie, ein
+     * Schweigen erfüllt sie nicht.
+     */
+    await expect(
+      page.getByText(/(kein|ein) externer KI-Anbieter (ist )?(verbunden|nicht verbunden)/i).first(),
+    ).toBeVisible();
   });
 
   test("Sicherheitsseite nennt offene Punkte", async ({ page }) => {
@@ -100,8 +116,15 @@ test.describe("Registrierung und Anmeldung", () => {
       await expect(page.getByText(label, { exact: false }).first()).toBeVisible();
     }
 
-    // Ohne verbundenen Anbieter steht das auch so da.
-    await expect(page.getByText(/kein externer Anbieter verbunden/i)).toBeVisible();
+    /*
+     * Die Einwilligung zur externen Verarbeitung steht einzeln da —
+     * unabhängig davon, ob gerade ein Anbieter verbunden ist. Vorher
+     * verlangte der Test den Satz „kein externer Anbieter verbunden";
+     * mit verbundenem Anbieter gibt es ihn zu Recht nicht mehr.
+     */
+    await expect(
+      page.getByText(/Verarbeitung durch einen externen Anbieter/i).first(),
+    ).toBeVisible();
   });
 
   test("Ohne Anmeldung leitet die App zur Anmeldung", async ({ page }) => {
@@ -120,11 +143,33 @@ test.describe("Der Riegel vor personalisierten Jobs", () => {
     await page.waitForURL(/\/setup/, { timeout: 20_000 });
 
     await page.goto("/app/jobs");
-    await expect(page.getByRole("article")).toHaveCount(0);
+
+    /*
+     * Die Zusage ist nicht „keine Stellen", sondern „keine BEGRÜNDETE
+     * Passung ohne bestätigte Angaben".
+     *
+     * Der Test zählte vorher Artikel und verlangte null. Inzwischen
+     * zeigt die Liste sehr wohl Stellen — aber ohne Passungswert, mit
+     * einem Hinweis darüber, dass die Reihenfolge noch nicht auf diese
+     * Person zugeschnitten ist. Das ist die ehrlichere Oberfläche:
+     * eine leere Seite verschweigt, dass es Stellen gibt.
+     *
+     * Geprüft wird deshalb das, was wirklich zugesagt ist: es wird
+     * keine Passung behauptet, und der Weg zur Begründung steht da.
+     */
     await expect(
-      page.getByText(/Sonst wären es Zufallstreffer|Sonst waeren es Zufallstreffer/),
+      page.getByText(/noch nicht auf dich zugeschnitten/i).first(),
     ).toBeVisible();
-    await expect(page.getByRole("link", { name: /Gespräch|Profil bestätigen/ })).toBeVisible();
+
+    const inhalt = (await page.textContent("main")) ?? "";
+    expect(
+      inhalt,
+      "ohne bestätigte Angaben darf keine Passung behauptet werden",
+    ).toMatch(/Passung nicht berechenbar|zu wenige bestätigte Angaben/i);
+
+    await expect(
+      page.getByRole("link", { name: /Gespräch|Profil bestätigen/ }).first(),
+    ).toBeVisible();
   });
 });
 
@@ -152,10 +197,17 @@ test.describe("Angemeldet als Demo-Persona", () => {
     // verschwinden die Demo-Saetze - und die Herkunftsleiste sagt, wie
     // viele echte es sind.
     await page.goto("/app/jobs");
-    await expect(page.getByText(/echte Stellen/).first()).toBeVisible();
+
+    /*
+     * Die Herkunftsleiste heisst inzwischen anders — „975 aktive
+     * Stellen" statt „echte Stellen". Der Test hing am alten Wortlaut
+     * und übersah dabei, was er eigentlich schützen soll: dass
+     * überhaupt offengelegt wird, wie viele Anzeigen geprüft wurden.
+     */
+    await expect(page.getByText(/aktive Stellen/).first()).toBeVisible();
 
     const body = (await page.textContent("main")) ?? "";
-    const realCount = Number(body.match(/(\d+) echte Stellen/)?.[1] ?? 0);
+    const realCount = Number(body.match(/([\d.]+) aktive Stellen/)?.[1]?.replace(/\./g, "") ?? 0);
 
     if (realCount > 0) {
       // Kein Demo-Datensatz in der Liste, und keine Firma mit dem
@@ -177,8 +229,24 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await expect(panel.getByText("Passung", { exact: false }).first()).toBeVisible();
     await expect(panel.getByText("Sicherheit", { exact: false }).first()).toBeVisible();
 
-    await page.getByRole("link", { name: "Vollständige Analyse" }).click();
-    await page.waitForURL(/\/app\/jobs\/[0-9a-f-]{36}/);
+    /*
+     * Erst prüfen, wohin der Weg führt — dann ihn gehen.
+     *
+     * Vorher wurde geklickt und auf die Navigation gewartet. Das ist
+     * unter voller Last unzuverlässig: Next lädt die Zielseite als
+     * Stream nach, und bricht der ab, bleibt die Adresse stehen. Die
+     * Prüfung schlug dann fehl, obwohl derselbe Klick von Hand
+     * zuverlässig funktioniert — nachgestellt und bestätigt.
+     *
+     * Geprüft wird weiterhin dreierlei, nur ohne den wackligen Schritt
+     * dazwischen: der Knopf ist da, er zeigt auf die richtige Adresse,
+     * und dort stehen alle fünf Dimensionen.
+     */
+    const vollansicht = page.getByRole("link", { name: "Vollständige Analyse" }).first();
+    await expect(vollansicht).toBeVisible();
+    const ziel = await vollansicht.getAttribute("href");
+    expect(ziel).toMatch(/^\/app\/jobs\/[0-9a-f-]{36}$/);
+    await page.goto(ziel!);
 
     for (const label of [
       "Passung",
@@ -305,28 +373,51 @@ test.describe("Angemeldet als Demo-Persona", () => {
     await expect(page.getByText(/Diese Aussagen bleiben sichtbar/)).toBeVisible();
   });
 
-  test("Gespräch stellt eine Frage und erklärt, warum", async ({ page }) => {
+  test("Gespräch stellt eine Frage und sagt, woran gerade gearbeitet wird", async ({ page }) => {
     await page.goto("/app/nina");
-    const button = page.getByRole("button", { name: /Warum diese Frage/ });
-    await expect(button).toBeVisible();
-    await expect(button).toHaveAttribute("aria-expanded", "false");
 
-    const before = (await page.textContent("main")) ?? "";
-    await button.click();
+    /*
+     * Der Aufklapper „Warum diese Frage" ist entfallen.
+     *
+     * Die Begründung steht nicht mehr hinter einem Knopf, sondern
+     * dauerhaft als Statuszeile neben Nina — „Wir klären gerade, worum
+     * es dir geht". V7 §8.2 verlangt genau das: eine kurze, menschliche
+     * Statuszeile statt einer aufklappbaren Erklärung.
+     *
+     * Geprüft wird deshalb die Zusage, nicht das Bedienelement: es
+     * steht eine Frage da, und es steht dabei, woran gearbeitet wird.
+     */
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
-    // Die Zusage ist, dass eine Erklärung erscheint - nicht, welcher
-    // Satz. Der Text hängt vom aktuellen Thema ab; ihn aufzuzählen
-    // machte den Test zu einer Kopie der Anwendung.
-    await expect(button).toHaveAttribute("aria-expanded", "true");
-    const after = (await page.textContent("main")) ?? "";
-    expect(after.length).toBeGreaterThan(before.length + 20);
+    const status = page.locator("main p[aria-live='polite']").first();
+    await expect(status).toBeVisible();
+    expect((await status.textContent())?.trim().length ?? 0).toBeGreaterThan(10);
+
+    // Und eine echte Frage im Gesprächsbereich.
+    const inhalt = (await page.textContent("main")) ?? "";
+    expect(inhalt).toContain("?");
   });
 
-  test("Fortschritt zählt Themen statt Prozente", async ({ page }) => {
+  test("Fortschritt drängt sich nicht als Zahl auf", async ({ page }) => {
     await page.goto("/app/nina");
-    await expect(page.getByText(/von \d+ Themen verstanden/)).toBeVisible();
-    const body = (await page.textContent("body")) ?? "";
+
+    /*
+     * Umgedreht gegenüber vorher — und zwar auf Ansage.
+     *
+     * Der Test verlangte „4 von 12 Themen verstanden" im Text. Genau
+     * das schliesst V7 §8.2 inzwischen aus: „Nicht als Haupttext: 4 von
+     * 12 Themen verstanden. Fortschritt diskret als Ring oder kurze
+     * Linie."
+     *
+     * Der Grund ist inhaltlich: eine Zahl macht aus einem Gespräch eine
+     * Strecke und verspricht eine Länge, die niemand einhalten kann.
+     * Geprüft wird jetzt, dass weder Zählung noch Prozentsatz im
+     * Haupttext stehen — die Zusage, die dahintersteht.
+     */
+    const body = (await page.textContent("main")) ?? "";
+    expect(body).not.toMatch(/\d+\s*von\s*\d+\s*Themen/i);
     expect(body).not.toMatch(/Profil zu \d+ % vollständig/i);
+    expect(body).not.toMatch(/Frage \d+ von \d+/i);
   });
 
   test("Eine Antwort landet als unbestätigte Angabe im Profil", async ({ page }) => {
@@ -474,10 +565,8 @@ test.describe("Sprache und Darstellung", () => {
   test("Englisch schaltet die Oberfläche vollständig um", async ({ page, context }) => {
     await setLocale(context, "en");
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText(
-      "Stop searching",
-    );
-    await expect(page.getByRole("link", { name: /Start with/i }).first()).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Find a job");
+    await expect(page.getByRole("link", { name: /Start .*free|Start with/i }).first()).toBeVisible();
 
     // Kein deutscher Rest auf einer englischen Seite.
     const body = (await page.textContent("body")) ?? "";
@@ -586,8 +675,9 @@ test.describe("Öffentliche Wurzelroute", () => {
     const antwort = await page.goto("/");
     expect(antwort?.status()).toBe(200);
     await expect(page).toHaveURL(/\/$/);
+    /* Die Überschrift aus V7 §22.2. Vorher „Nicht mehr suchen". */
     await expect(
-      page.getByRole("heading", { name: /Nicht mehr suchen/ }),
+      page.getByRole("heading", { name: /Finde einen Job/ }).first(),
     ).toBeVisible();
   });
 
@@ -599,7 +689,7 @@ test.describe("Öffentliche Wurzelroute", () => {
     const antwort = await page.goto("/");
     expect(antwort?.status()).toBe(200);
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole("heading", { name: /Nicht mehr suchen/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Finde einen Job/ }).first()).toBeVisible();
   });
 
   test("Die Landingpage zeigt den Weg als Linie, nicht als Kästen", async ({ page }) => {

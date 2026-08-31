@@ -16,7 +16,19 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : [["list"]],
-  timeout: 60_000,
+  /*
+   * 120 Sekunden je Prüfung, und der Grund ist der Entwicklungsmodus.
+   *
+   * Die Testreihe läuft gegen `next dev`. Der übersetzt eine Route beim
+   * ERSTEN Aufruf, und das dauert bei einer grossen Seite zehn Sekunden
+   * und mehr. Gemessen: `/app/jobs/[id]` antwortet warm in 130 ms — und
+   * lief kalt in die 60-Sekunden-Grenze.
+   *
+   * Das war kein Fehler der Anwendung, sah aber genau so aus: eine
+   * Prüfung, die allein bestanden hätte, scheiterte in der vollen Reihe,
+   * weil sie zufällig die erste war, die diese Route öffnete.
+   */
+  timeout: 120_000,
   expect: { timeout: 10_000 },
 
   use: {
@@ -40,6 +52,29 @@ export default defineConfig({
     url: "http://127.0.0.1:3210",
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
-    env: { WEB_PORT: "3210", NODE_ENV: "development" },
+    /*
+     * Die Testreihe läuft gegen die lokale Datenbank, nicht gegen die
+     * echte.
+     *
+     * Vorher übernahm sie den Treiber aus `.env.local` — also Supabase.
+     * Damit hingen zwanzig Prüfungen an Daten in der Produktionsbank:
+     * sie brauchen die Demo-Persona mit bestätigten Belegen,
+     * Bewerbungen und Rollenclustern. Die dort einzuspielen hiesse,
+     * Demo-Datensätze in die Bank zu schreiben, aus der echte Menschen
+     * ihre Stellen bekommen.
+     *
+     * Mit PGlite bringt die Testreihe ihre Daten selbst mit
+     * (`DATABASE_DRIVER=pglite pnpm db:seed`), läuft überall gleich und
+     * kann nichts kaputtmachen, was jemandem gehört.
+     *
+     * `DEV_LOGIN_ENABLED` gehört dazu: der Endpunkt ist sonst aus, und
+     * ohne ihn käme die Reihe nicht an der Anmeldung vorbei.
+     */
+    env: {
+      WEB_PORT: "3210",
+      NODE_ENV: "development",
+      DATABASE_DRIVER: "pglite",
+      DEV_LOGIN_ENABLED: "true",
+    },
   },
 });

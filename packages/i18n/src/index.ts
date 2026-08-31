@@ -78,3 +78,36 @@ export function formatters(locale: Locale, currency = "EUR") {
 }
 
 export { de, en };
+
+/*
+ * Das Sprach- und Regionsregister (V7 §20).
+ *
+ * Bewusst hier und nicht in der App: der Zustand einer Sprache wird an
+ * ihrem Katalog gemessen, und die Kataloge liegen in diesem Paket. Eine
+ * Registry, die anderswo läge, müsste den Zustand behaupten.
+ */
+export {
+  LOCALES as SUPPORTED_LOCALES,
+  DEFAULT_LOCALE as REGISTRY_DEFAULT_LOCALE,
+  FALLBACK_LOCALE,
+  alleSprachstände,
+  istLocaleCode,
+  localeEintrag,
+  ninaSprachen,
+  nutzbareUiSprachen,
+  sprachstand,
+  type LocaleCode,
+  type LocaleEintrag,
+  type Sprachstand,
+  type Sprachzustand,
+} from "./supported-locales.ts";
+
+export {
+  landName,
+  länder,
+  währungName,
+  währungen,
+  zeitzoneMitVersatz,
+  zeitzonen,
+  type Land,
+} from "./regionen.ts";

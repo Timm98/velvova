@@ -155,7 +155,10 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {constraints.overall === "blocked" && <Badge tone="critical">Ausschlusskriterium</Badge>}
         </div>
 
-        <h1 className="max-w-[24ch] font-display text-[2.1rem] font-medium leading-[1.1] tracking-[-0.02em] lg:text-[2.6rem]">
+        {/* Aus der Skala statt aus freien Pixelwerten: 36 und 42px, beide
+            in der Spanne 34–44 für Jobtitel im Detail. Der alte Wert
+            2.1rem lag mit 33,6px knapp darunter. */}
+        <h1 className="max-w-[24ch] font-display text-3xl font-medium leading-[1.1] tracking-[-0.02em] lg:text-4xl">
           {job.title}
         </h1>
 

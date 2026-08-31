@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getPageContext } from "@/lib/locale";
+import { currentUser } from "@/lib/auth";
 
 /**
  * Rahmen der öffentlichen Seiten.
@@ -11,6 +12,22 @@ import { getPageContext } from "@/lib/locale";
  */
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const { t, brand } = await getPageContext();
+
+  /*
+   * Wer angemeldet ist, sieht hier kein „Anmelden" mehr.
+   *
+   * Das war ein gemeldeter Fehler — und ein hartnäckiger, weil er wie
+   * etwas ganz anderes aussah: „Die Hilfe loggt mich aus." Tat sie
+   * nicht. Die Sitzung blieb die ganze Zeit gültig, das Cookie
+   * unberührt. Aber „Hilfe" führt nach /how-it-works, das liegt in
+   * diesem öffentlichen Rahmen, und der bot jedem unbesehen
+   * „Anmelden / Konto anlegen" an. Man klickt auf Hilfe, sieht den
+   * Anmeldeknopf und zieht den einzig naheliegenden Schluss.
+   *
+   * Ein Login-Knopf ist eine Aussage über den eigenen Zustand. Wird sie
+   * ungeprüft getroffen, ist sie in der Hälfte der Fälle falsch.
+   */
+  const user = await currentUser();
 
   const legal = [
     { href: "/how-it-works", label: "So funktioniert es" },
@@ -47,18 +64,31 @@ export default async function PublicLayout({ children }: { children: React.React
             {brand.name}
           </Link>
           <nav aria-label="Seiten" className="flex items-center gap-1">
-            <Link
-              href="/login"
-              className="rounded-(--radius-md) px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
-            >
-              {t("auth.login")}
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
-            >
-              {t("auth.register")}
-            </Link>
+            {user ? (
+              /* Ein Weg zurück, kein Ausloggen. Wer die Hilfe liest,
+                 will danach weitermachen, wo er war. */
+              <Link
+                href="/app"
+                className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+              >
+                {t("nav.backToApp")}
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="rounded-(--radius-md) px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
+                >
+                  {t("auth.login")}
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
+                >
+                  {t("auth.register")}
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { getDb, schema } from "@paycheck/db";
 import { and, eq, isNull } from "drizzle-orm";
@@ -12,22 +13,48 @@ import { issueSessionToken } from "@/lib/auth";
  * anlegt, schreibt in eine andere Instanz als der laufende Server - die
  * Sitzung wäre unsichtbar. Deshalb muss sie im Serverprozess entstehen.
  *
- * Zwei Riegel, beide notwendig:
+ * Drei Riegel, alle notwendig:
  *  - nur ausserhalb von Produktion
- *  - nur mit dem lokalen PGlite-Treiber
+ *  - nur mit ausdrücklich gesetztem DEV_LOGIN_ENABLED=true
+ *  - nur über einen Loopback-Host
  *
- * Gegen einen echten Postgres-Server oder in Produktion antwortet der
- * Endpunkt mit 404, als gäbe es ihn nicht.
+ * Vorher war der zweite Riegel „nur PGlite". Der Gedanke dahinter war
+ * richtig — ein passwortloser Anmeldeendpunkt darf keinesfalls gegen
+ * eine echte Datenbank laufen. Nur ist die lokale Entwicklung seit dem
+ * Umzug auf Supabase selbst Postgres. Der Riegel traf damit nicht mehr
+ * die Gefahr, sondern den Normalfall: sämtliche E2E-Tests mit
+ * Anmeldung liefen ins 404 und konnten nichts mehr prüfen.
+ *
+ * Der Ersatz ist enger, nicht weiter. „PGlite" war eine Vermutung über
+ * die Absicht; ein Schalter, der nirgends gesetzt ist, ausser jemand
+ * setzt ihn selbst, ist die Absicht. Auf einer gehosteten Umgebung mit
+ * NODE_ENV != production bleibt der Endpunkt unsichtbar, solange
+ * niemand die Variable setzt — und selbst dann antwortet er nur, wenn
+ * die Anfrage von diesem Rechner kommt.
+ *
+ * In allen anderen Fällen antwortet er mit 404, als gäbe es ihn nicht.
  */
 
 type SessionResult =
   | { ok: true; token: string; cookieName: string; ttlDays: number }
   | { ok: false; status: number; message: string };
 
-async function createDemoSession(): Promise<SessionResult> {
+/** Kommt die Anfrage von diesem Rechner? */
+function vonLoopback(host: string | null): boolean {
+  if (!host) return false;
+  const name = host.replace(/:\d+$/, "").toLowerCase();
+  return name === "localhost" || name === "127.0.0.1" || name === "[::1]" || name === "::1";
+}
+
+async function createDemoSession(host: string | null): Promise<SessionResult> {
   const cfg = loadRuntimeConfig();
 
-  if (cfg.nodeEnv === "production" || cfg.db.driver !== "pglite") {
+  const erlaubt =
+    cfg.nodeEnv !== "production" &&
+    process.env.DEV_LOGIN_ENABLED === "true" &&
+    vonLoopback(host);
+
+  if (!erlaubt) {
     return { ok: false, status: 404, message: "Nicht gefunden" };
   }
 
@@ -68,7 +95,7 @@ function attachCookie(response: NextResponse, name: string, token: string, ttlDa
 }
 
 export async function POST(): Promise<NextResponse> {
-  const result = await createDemoSession();
+  const result = await createDemoSession((await headers()).get("host"));
   if (!result.ok) return NextResponse.json({ fehler: result.message }, { status: result.status });
 
   return attachCookie(
@@ -81,7 +108,7 @@ export async function POST(): Promise<NextResponse> {
 
 /** Bequemer Einstieg im Browser: /api/dev/login öffnen und in der App landen. */
 export async function GET(): Promise<NextResponse> {
-  const result = await createDemoSession();
+  const result = await createDemoSession((await headers()).get("host"));
   if (!result.ok) return NextResponse.json({ fehler: result.message }, { status: result.status });
 
   // Relative Weiterleitung statt absoluter URL. Next meldet in

@@ -1,25 +1,68 @@
 import type { BrowserContext, Page } from "@playwright/test";
 
 /**
- * Meldet die Demo-Persona an.
+ * Meldet einen Menschen an, damit die Tests hinter die Anmeldung kommen.
  *
- * Der Weg fuehrt bewusst ueber einen Endpunkt IM Serverprozess. PGlite
- * ist eine eingebettete Einzelprozess-Datenbank: eine Sitzung, die ein
- * externes Skript anlegt, waere fuer den laufenden Server unsichtbar.
- * Der Endpunkt antwortet ausserhalb der lokalen Entwicklung mit 404.
+ * Zwei Wege, in dieser Reihenfolge:
+ *
+ * 1. **Die Demo-Persona über `/api/dev/login`.** Der bequeme Weg, wenn
+ *    der Seed geladen ist. Er führt bewusst über einen Endpunkt IM
+ *    Serverprozess: bei PGlite, einer eingebetteten
+ *    Einzelprozess-Datenbank, wäre eine von aussen angelegte Sitzung
+ *    für den laufenden Server unsichtbar.
+ *
+ * 2. **Ein frisches Konto über das echte Formular.** Wenn der Endpunkt
+ *    nicht antwortet — abgeschaltet, oder der Seed fehlt in dieser
+ *    Datenbank.
+ *
+ * Der zweite Weg ist der Grund, warum es diese Funktion in dieser Form
+ * gibt. Vorher hing die gesamte Testreihe hinter der Anmeldung an
+ * einem einzigen Datensatz in einer einzigen Datenbank. Als das Projekt
+ * von PGlite auf Supabase umzog, fiel dieser Datensatz weg — und
+ * zehn Prüfungen meldeten „HTTP 404", also gar nichts. Sie liefen
+ * monatelang nicht mehr, ohne dass es aussah wie ein Ausfall.
+ *
+ * Ein Test, der eine bestimmte Person BRAUCHT, muss das selbst
+ * sicherstellen. Für alles andere — Kontraste, Fokus, Überschriften,
+ * Berührungsziele — reicht irgendein angemeldeter Mensch, und ein
+ * frisch angelegter ist der verlässlichste, den es gibt.
  */
+export async function demoPersonaVerfuegbar(page: Page): Promise<boolean> {
+  const antwort = await page.request.get("/api/dev/login");
+  return antwort.status() < 400;
+}
+
 export async function loginAsDemo(page: Page): Promise<void> {
   // Echte Navigation statt API-Aufruf: nur so landet das Cookie
-  // zuverlaessig im Browser-Kontext, und der Weg entspricht dem, den
-  // ein Entwickler im Browser geht.
+  // zuverlaessig im Browser-Kontext.
   const response = await page.goto("/api/dev/login");
-  if (!response || response.status() >= 400) {
-    throw new Error(
-      `Demo-Anmeldung fehlgeschlagen (HTTP ${response?.status()}). ` +
-        `Wurde der Seed geladen? "pnpm db:seed" im Repo-Wurzelverzeichnis.`,
-    );
+
+  if (response && response.status() < 400) {
+    await page.waitForURL(/\/app/);
+    return;
   }
-  await page.waitForURL(/\/app/);
+
+  await registerFreshUser(page);
+}
+
+/**
+ * Legt ein Konto über das echte Formular an.
+ *
+ * Der Zeitstempel im Namen hält die Läufe auseinander; `.invalid` ist
+ * die dafür reservierte Domain (RFC 2606) und kann niemandem gehören.
+ */
+export async function registerFreshUser(page: Page): Promise<string> {
+  const email = `e2e-${Date.now()}-${Math.floor(Math.random() * 100000)}@example.invalid`;
+
+  await page.goto("/register");
+  await page.getByLabel("E-Mail-Adresse").fill(email);
+  await page.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!");
+  await page.getByRole("button", { name: /Konto anlegen/i }).click();
+
+  // Nach der Registrierung geht es in die Einrichtung oder direkt in
+  // die Anwendung — beides ist angemeldet.
+  await page.waitForURL(/\/(app|setup)/, { timeout: 30_000 });
+  return email;
 }
 
 /** Setzt die Darstellung, ohne den Umschalter zu bedienen. */

@@ -158,12 +158,50 @@ export function PageHeader({
   className?: string;
 }) {
   return (
-    <header className={cn("flex flex-wrap items-end justify-between gap-x-6 gap-y-4", className)}>
-      <div className="grid gap-2">
+    /*
+      `min-w-0` gehört an DIESES Element, nicht nur an die Spalte darin.
+      
+      Der Kopf ist selbst ein Raster-Kind der Seite. Ein Raster-Kind mit
+      `min-width: auto` lässt seine Spur mitwachsen — die Spur wurde 351
+      Pixel breit in einem 328 Pixel breiten Raster, und alle Geschwister
+      wurden mitgezogen. Sichtbar war das als sieben Pixel Überlauf auf
+      einem 360-Pixel-Gerät, verursacht von einer Überschrift, die zwei
+      Abschnitte weiter oben steht.
+    */
+    <header className={cn("flex min-w-0 flex-wrap items-end justify-between gap-x-6 gap-y-4", className)}>
+      {/*
+        `min-w-0` — dieselbe Falle wie in der Jobliste, an einer neuen
+        Stelle.
+
+        Ein Flex-Kind hat `min-width: auto` und weigert sich, schmaler
+        zu werden als sein Inhalt. Die Überschrift schob diese Spalte
+        auf 351 Pixel in einem 328 Pixel breiten Elternteil — und damit
+        die ganze Seite sieben Pixel nach rechts. `break-words` allein
+        genügt nicht: es erlaubt den Umbruch, senkt aber die
+        Mindestbreite nicht.
+      */}
+      <div className="grid min-w-0 gap-2">
         {eyebrow && (
           <p className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">{eyebrow}</p>
         )}
-        <h1 className="font-display text-3xl font-semibold tracking-[-0.03em]">{title}</h1>
+        {/*
+          42px ab `sm`, darunter 36.
+
+          Die Spanne 38–48 aus V7 §4.1 steht unter der Überschrift
+          „Mindestgrößen Desktop" — sie gilt für den Desktop und wurde
+          hier zunächst auf jede Breite angewandt. Auf einem 360-Pixel-
+          Gerät passte „Möglichkeiten" dann nicht mehr in eine Zeile und
+          schob die ganze Seite sieben Pixel nach rechts. Ein
+          waagerechter Scrollbalken auf dem Telefon ist ein deutlicherer
+          Mangel als eine um sechs Pixel kleinere Überschrift.
+
+          `break-words` als zweiter Riegel: ein einzelnes langes Wort —
+          und die deutsche Sprache hat viele — kann sonst jede
+          Spaltenbreite sprengen, egal wie klein die Schrift ist.
+        */}
+        <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] break-words sm:text-4xl">
+          {title}
+        </h1>
         {lead && <p className="max-w-[var(--measure)] text-base text-ink-2">{lead}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2.5">{actions}</div>}

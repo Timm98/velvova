@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { brand } from "@paycheck/config";
 import { getPageContext } from "@/lib/locale";
+import { NinaVisual } from "@/components/nina/NinaVisual";
 import { CareerSignal } from "@/components/marketing/CareerSignal";
 import {
   ApplyVisual,
@@ -79,11 +80,27 @@ export default async function LandingPage() {
             </span>
           </Link>
 
-          <nav aria-label="Hauptnavigation" className="ml-auto hidden items-center gap-7 md:flex">
+          {/*
+            Die Navigation erscheint erst ab `lg`, nicht ab `md`.
+
+            Bei genau 768 Pixeln — der `md`-Grenze und der Breite jedes
+            Tablets im Hochformat — standen fünf Punkte, „Anmelden" und
+            der Startknopf nebeneinander und brauchten 809 Pixel. Die
+            Seite lief 41 Pixel über, und zwar auf einem sehr
+            gewöhnlichen Gerät.
+
+            Ab `lg` ist Platz für alles. Darunter tragen Wortmarke und
+            Startknopf die Kopfzeile; die Punkte stehen ohnehin im Fuss.
+          */}
+          <nav aria-label="Hauptnavigation" className="ml-auto hidden items-center gap-7 lg:flex">
             {([
+              /* Die fünf aus §22.1. Kurze Wörter, weil die Kopfzeile
+                 eine Orientierung ist und kein Inhaltsverzeichnis —
+                 „So funktioniert Nina" stand hier vorher und war das
+                 längste Element in einer Reihe aus Einwortpunkten. */
               [t("landing.navProduct"), "/product"],
-              [`So funktioniert ${brand.assistantName}`, "/how-it-works"],
-              ["Jobs", "/pricing"],
+              [brand.assistantName, "/how-it-works"],
+              ["Jobs", "/product#jobs"],
               [t("landing.navSecurity"), "/security"],
               ["Über uns", "/about"],
             ] as const).map(([label, href]) => (
@@ -100,7 +117,7 @@ export default async function LandingPage() {
             ))}
           </nav>
 
-          <div className="ml-auto flex items-center gap-4 md:ml-0">
+          <div className="ml-auto flex items-center gap-4 lg:ml-0">
             <Link href="/login" className="text-sm" style={{ color: "var(--ed-ink-2)" }}>
               {t("landing.navSignIn")}
             </Link>
@@ -187,9 +204,26 @@ export default async function LandingPage() {
             </p>
             </div>
 
-            {/* Rechts die Produktansicht. Überlappende weiche Flächen
-                statt vier Screens nebeneinander. */}
-            <div className="lg:pl-4">
+            {/* Rechts die Produktansicht: die echte Nina über den
+                überlappenden Produktmomenten (§22.2). */}
+            <div className="grid gap-6 lg:pl-4">
+              {/*
+                Nina selbst, nicht ein Symbol für sie.
+
+                Sie steht hier erst, seit sie überhaupt sichtbar ist:
+                die Leinwand lag zuvor unter ihrem eigenen Lichtverlauf,
+                weil ein absolut positioniertes Element über
+                nicht positioniertem Inhalt malt. Auf einer Startseite
+                wäre ein leerer violetter Kreis besonders bitter
+                gewesen.
+
+                Das Modell kommt lazy und mit `ssr: false`; bis dahin
+                steht das Signal in derselben Grösse, also springt
+                nichts. Wer kein WebGL hat, behält das Signal.
+              */}
+              <div className="flex justify-center lg:justify-start">
+                <NinaVisual size="lg" state="idle" strategie="beiInteresse" />
+              </div>
               <HeroVisual assistantName={brand.assistantName} />
             </div>
           </div>

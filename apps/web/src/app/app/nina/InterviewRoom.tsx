@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, PauseCircle, Sparkle, X } from "lucide-react";
+import { ArrowDown, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
 import { confirmEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
@@ -11,6 +11,8 @@ import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { useNina } from "@/components/nina/NinaProvider";
+import { useLiveVoice } from "@/components/nina/useLiveVoice";
+import { LIVE_TEXT } from "@/lib/nina/live-voice";
 import { cn } from "@/lib/cn";
 
 /**
@@ -35,6 +37,12 @@ import { cn } from "@/lib/cn";
  *   weiches violettes Licht, unter dem Composer stehen Antwortimpulse.
  *   Eine große weiße Fläche mit einer kleinen Frage darin wirkt
  *   unfertig, egal wie gut die Frage ist.
+ *
+ *   **Nur der Nachrichtenstrom scrollt.** Kopf und Eingabefeld stehen
+ *   fest. Vorher scrollte die ganze Seite: nach zwanzig Nachrichten war
+ *   Nina aus dem Bild, und wer etwas schreiben wollte, musste erst
+ *   wieder nach unten. Auf dem Telefon kam die Tastatur dazu und schob
+ *   das Feld vollends weg.
  */
 
 interface Hypothese {
@@ -99,6 +107,9 @@ export function InterviewRoom({
   const [erledigt, setErledigt] = useState<Set<string>>(new Set());
   const [fortschrittOffen, setFortschrittOffen] = useState(false);
   const ende = useRef<HTMLDivElement>(null);
+  const strom = useRef<HTMLDivElement>(null);
+  const [neueAntwort, setNeueAntwort] = useState(false);
+  const [gescrollt, setGescrollt] = useState(false);
 
   const geladen = useRef(false);
   useEffect(() => {
@@ -107,10 +118,76 @@ export function InterviewRoom({
     if (initialMessages.length > 0) nina.hydrate(conversationId, initialMessages);
   }, [initialMessages, conversationId, nina]);
 
-  useEffect(() => {
+  /*
+   * Wie nah am unteren Rand ist nah genug?
+   *
+   * 120 Pixel — etwa zwei Zeilen. Kleiner, und schon das Nachrücken
+   * einer Zeile während des Streamings gilt als „weggescrollt";
+   * grösser, und die Ansicht springt jemandem hinterher, der gerade
+   * eine ältere Antwort liest.
+   */
+  const NAH_GENUG = 120;
+
+  const amEnde = useCallback(() => {
+    const el = strom.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < NAH_GENUG;
+  }, []);
+
+  const nachUnten = useCallback((sofort = false) => {
     const ruhig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    ende.current?.scrollIntoView({ behavior: ruhig ? "auto" : "smooth", block: "end" });
-  }, [nina.messages]);
+    ende.current?.scrollIntoView({
+      behavior: sofort || ruhig ? "auto" : "smooth",
+      block: "end",
+    });
+    setNeueAntwort(false);
+  }, []);
+
+  /*
+   * Mitlaufen — aber nur, wenn die Person unten steht.
+   *
+   * Wer nach oben gescrollt hat, liest etwas. Ihn beim nächsten Token
+   * nach unten zu reissen ist die unhöflichste Bewegung, die eine
+   * Oberfläche machen kann: der Satz, den er gerade las, ist weg, und
+   * er weiss nicht wohin. Stattdessen erscheint unten eine Pille.
+   *
+   * Die Prüfung läuft in `requestAnimationFrame`, weil `scrollHeight`
+   * den Browser zum Neuberechnen des Layouts zwingt. Bei jedem
+   * gestreamten Token direkt gemessen, wäre das ein Layout-Durchlauf
+   * pro Zeichen.
+   */
+  useEffect(() => {
+    if (nina.messages.length === 0) return;
+    const bild = requestAnimationFrame(() => {
+      if (amEnde()) nachUnten();
+      else setNeueAntwort(true);
+    });
+    return () => cancelAnimationFrame(bild);
+  }, [nina.messages, amEnde, nachUnten]);
+
+  /*
+   * Zwei Dinge am Scrollzustand: ob die Pille weg darf, und ob Nina
+   * klein werden soll. Beides aus derselben Messung, damit nicht zwei
+   * Zuhörer dasselbe Layout zweimal berechnen.
+   */
+  useEffect(() => {
+    const el = strom.current;
+    if (!el) return;
+    let angefordert = false;
+
+    const beiScroll = () => {
+      if (angefordert) return;
+      angefordert = true;
+      requestAnimationFrame(() => {
+        angefordert = false;
+        setGescrollt(el.scrollTop > 24);
+        if (amEnde()) setNeueAntwort(false);
+      });
+    };
+
+    el.addEventListener("scroll", beiScroll, { passive: true });
+    return () => el.removeEventListener("scroll", beiScroll);
+  }, [amEnde]);
 
   function bewerten(id: string, stimmt: boolean) {
     startTransition(async () => {
@@ -127,6 +204,34 @@ export function InterviewRoom({
     });
   }
 
+  /*
+   * Die zuletzt fertig gestreamte Antwort.
+   *
+   * Sie ist das Signal zum Vorlesen. Bewusst erst, wenn `streaming`
+   * vorbei ist: eine halb fertige Antwort vorzulesen hiesse, Nina beim
+   * Nachdenken zuzuhören.
+   */
+  const letzteAntwort = (() => {
+    for (let i = nina.messages.length - 1; i >= 0; i--) {
+      const m = nina.messages[i]!;
+      if (m.role !== "assistant") continue;
+      return m.streaming ? null : { id: m.id };
+    }
+    return null;
+  })();
+
+  const live = useLiveVoice({
+    send: async (text) => {
+      await nina.send(text, { fromVoice: true });
+    },
+    fertigeAntwort: letzteAntwort,
+  });
+
+  // Das Mikrofon soll Ninas Bild bewegen: zuhören, denken, sprechen.
+  useEffect(() => {
+    nina.setListening(live.stand.zustand === "hört");
+  }, [live.stand.zustand, nina]);
+
   const offen = hypotheses.filter((h) => !erledigt.has(h.id));
   const stufe = nina.stage ?? initialStage;
   const status = nina.stageStatus ?? initialStatus;
@@ -134,7 +239,17 @@ export function InterviewRoom({
   const nochNichtsGesagt = nina.messages.length === 0;
 
   return (
-    <div className="relative">
+    /*
+     * `h-full` bis ganz nach unten durchreichen.
+     *
+     * Eine Höhe in Prozent misst sich am Elternteil. Fehlt sie einem
+     * einzigen Element in der Kette, wird daraus `auto`, und alles
+     * darunter wächst wieder mit dem Inhalt — ohne dass etwas bricht,
+     * das man sehen würde. Genau hier war die Lücke: `main` hatte seine
+     * feste Höhe, die Spalte darin `h-full`, und diese Hülle dazwischen
+     * nichts.
+     */
+    <div className="relative h-full">
       {/*
        * Das Licht hinter dem Gespräch.
        *
@@ -148,45 +263,155 @@ export function InterviewRoom({
         style={{ background: "var(--glow-nina)" }}
       />
 
-      <div className="relative mx-auto flex min-h-[calc(100dvh-9rem)] w-full max-w-[820px] flex-col">
+      <div className="relative mx-auto flex h-full w-full max-w-[820px] flex-col">
         {/* ── Kopf ────────────────────────────────────────────── */}
-        <header className="flex flex-wrap items-center gap-x-4 gap-y-3 pb-10">
-          {/* Nina selbst, nicht ein Symbol für sie. Das Bild folgt dem
-              echten Zustand: zuhören, denken, sprechen, still. */}
-          <NinaVisual size="md" className="-my-4 -ml-3" />
+        {/* `gap-x-6`, nicht 4: das Licht hinter Nina reicht bewusst 18%
+            über ihre Fläche hinaus (`inset-[-18%]`), bei 120px also gut
+            20 Pixel. Mit dem kleineren Abstand lag der Schein auf dem
+            Wort „Nina". */}
+        <header className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 pt-6 pb-5">
+          {/*
+           * Nina schrumpft, sobald das Gespräch läuft.
+           *
+           * Gross am Anfang: da ist sie das Einzige auf der Fläche und
+           * soll es sein. Klein, sobald jemand scrollt — dann gehört
+           * der Platz den Nachrichten.
+           *
+           * Umgeschaltet wird `size`, nicht eine Hülle drumherum.
+           *
+           * Der erste Versuch war eine Box mit `overflow-hidden`, die
+           * ihre Grösse animiert. Das Ergebnis war ein dunkelvioletter
+           * Kasten: das weiche Licht hinter Nina liegt bewusst
+           * ausserhalb ihrer Fläche (`inset-[-18%]`), und die Hülle hat
+           * es an vier geraden Kanten abgeschnitten.
+           *
+           * Der Wechsel des `size`-Werts tauscht nur zwei Klassen am
+           * selben Element. React baut nichts neu auf, die Szene lebt
+           * weiter — die 12 MB werden nicht noch einmal geladen — und
+           * der ResizeObserver in NinaScene passt die Leinwand
+           * währenddessen mit an.
+           */}
+          <NinaVisual
+            size={gescrollt ? "sm" : "md"}
+            className={cn(
+              "-ml-3 transition-[width,height] duration-(--duration-slow) ease-(--ease-out)",
+              "motion-reduce:transition-none",
+            )}
+          />
 
           <div className="grid min-w-0 flex-1 gap-0.5">
             <h1 className="font-display text-xl font-semibold tracking-[-0.02em]">
               {assistantName}
             </h1>
             {/* Eine menschliche Statuszeile. Keine Zahl, keine Strecke. */}
-            <p aria-live="polite" className="truncate text-sm text-ink-2">
+            {/* Zwei Zeilen statt einer abgeschnittenen. Die Statuszeile
+                ist ein ganzer Satz („Wir klären gerade, worum es dir
+                geht") — mitten im Wort abgeschnitten liest sie sich wie
+                ein Fehler, nicht wie eine Auskunft. */}
+            <p aria-live="polite" className="line-clamp-2 text-sm text-ink-2">
               {status}
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setFortschrittOffen(true)}
-            className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) bg-soft px-4 text-sm text-ink-2 transition-colors hover:bg-soft-hover hover:text-ink"
-          >
-            <Sparkle className="size-4" strokeWidth={1.8} />
-            Was ich über dich weiß
-          </button>
+          <div className="flex shrink-0 flex-wrap items-center gap-1">
+  <button
+              type="button"
+              onClick={() => setFortschrittOffen(true)}
+              className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) bg-soft px-4 text-sm text-ink-2 transition-colors hover:bg-soft-hover hover:text-ink"
+            >
+              <Sparkle className="size-4" strokeWidth={1.8} />
+              Was ich über dich weiß
+            </button>
 
-          <button
-            type="button"
-            onClick={pausieren}
-            disabled={pending}
-            className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm text-ink-2 transition-colors hover:bg-soft hover:text-ink"
-          >
-            <PauseCircle className="size-4" strokeWidth={1.8} />
-            {labels.pauseSession}
-          </button>
+            {/*
+             * Die drei Aktionen als EINE Gruppe.
+             *
+             * Vorher waren es drei gleichrangige Flex-Kinder neben Nina
+             * und der Statuszeile. In einer 820 Pixel breiten Spalte
+             * passte das nicht: jeder Knopf brach einzeln um, die
+             * Kopfzeile wuchs auf vier Reihen und 220 Pixel — ein
+             * Drittel der Gesprächsfläche, für drei Knöpfe.
+             *
+             * Als Gruppe brechen sie gemeinsam in eine zweite Reihe statt
+             * einzeln in drei.
+             */}
+          {/*
+             * Der eigene Knopf für das Live-Gespräch (§14.2).
+             *
+             * Getrennt vom Mikrofon im Composer, und das ist kein Zufall:
+             * das eine ist Diktat — sprechen statt tippen, danach lesen
+             * und absenden. Das hier ist ein Gespräch, das von selbst
+             * weiterläuft. Ein Knopf für beides würde niemandem sagen,
+             * was gleich passiert.
+             */}
+            {/*
+              Der Knopf steht IMMER da — auch bevor der Browser
+              geantwortet hat, ob er ein Mikrofon hat.
+              
+              Vorher erschien er erst nach der Hydration. Damit brach
+              die Kopfzeile nachträglich in eine zweite Reihe um und
+              schob alles darunter 94 Pixel nach unten: gemessene 0,095
+              Layoutverschiebung, und für den Menschen ein Satz, der
+              beim Lesen wegrutscht.
+              
+              Ohne Mikrofon ist er abgeschaltet und sagt, warum. Ein
+              deaktivierter Knopf ist ehrlicher als einer, der aus dem
+              Nichts auftaucht.
+            */}
+            {(
+              <button
+                type="button"
+                onClick={live.stand.zustand === "aus" ? live.starten : live.beenden}
+                disabled={!live.möglich}
+                title={live.möglich ? undefined : "Dieser Browser stellt kein Mikrofon bereit."}
+                aria-pressed={live.stand.zustand !== "aus"}
+                className={cn(
+                  "inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm transition-colors",
+                  live.stand.zustand === "aus"
+                    ? "text-ink-2 hover:bg-soft hover:text-ink"
+                    : "bg-accent text-accent-on hover:bg-accent-hover",
+                  !live.möglich && "cursor-not-allowed opacity-45 hover:bg-transparent",
+                )}
+              >
+                {live.stand.zustand === "aus" ? (
+                  <Mic className="size-4" strokeWidth={1.8} />
+                ) : (
+                  <Square className="size-3.5 fill-current" strokeWidth={0} />
+                )}
+                {live.stand.zustand === "aus"
+                  ? `Live mit ${assistantName} sprechen`
+                  : "Beenden"}
+              </button>
+            )}
+
+            <button
+              type="button"
+              onClick={pausieren}
+              disabled={pending}
+              className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm text-ink-2 transition-colors hover:bg-soft hover:text-ink"
+            >
+              <PauseCircle className="size-4" strokeWidth={1.8} />
+              {labels.pauseSession}
+            </button>
+
+          </div>
+
         </header>
 
         {/* ── Gespräch ────────────────────────────────────────── */}
-        <div className="min-h-0 flex-1">
+        {/*
+         * `min-h-0` ist hier keine Feinheit, sondern die Bedingung.
+         *
+         * Ein Flex-Kind hat `min-height: auto` und weigert sich, kleiner
+         * zu werden als sein Inhalt. Ohne diese Zeile wächst der
+         * Strom mit jeder Nachricht, drückt den Composer aus dem Bild
+         * und scrollt nie — `overflow-y-auto` bliebe wirkungslos, ohne
+         * dass irgendetwas darauf hinweist.
+         */}
+        <div
+          ref={strom}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pb-6"
+        >
           {nochNichtsGesagt && (
             /* Die erste Frage bekommt den Raum, den eine erste Frage
                verdient: groß, frei, ohne Kasten. */
@@ -212,7 +437,11 @@ export function InterviewRoom({
                   {m.role === "user" ? (
                     /* Nutzerantworten als weiche Bubble — sie sind kurz
                        und gehören sichtbar der Person. */
-                    <p className="max-w-[80%] whitespace-pre-wrap rounded-(--radius-textarea) rounded-br-lg bg-soft px-5 py-3.5 leading-relaxed">
+                    /* Lavendel statt Grau (§8.3): die Bubble gehört
+                       sichtbar der Person, und Grau liest sich als
+                       „deaktiviert". Die eine eckigere Ecke unten rechts
+                       zeigt, von wem sie kommt, ohne einen Pfeil. */
+                    <p className="max-w-[80%] whitespace-pre-wrap rounded-(--radius-lg) rounded-br-md bg-lavender px-5 py-3.5 text-base leading-relaxed">
                       {m.content}
                     </p>
                   ) : (
@@ -224,7 +453,7 @@ export function InterviewRoom({
                         "max-w-[var(--measure)] whitespace-pre-wrap text-ink",
                         istLetzte
                           ? "font-display text-[21px] leading-[1.45] tracking-[-0.01em] sm:text-[23px]"
-                          : "text-[17px] leading-relaxed",
+                          : "text-base leading-relaxed",
                       )}
                     >
                       {m.content}
@@ -340,7 +569,51 @@ export function InterviewRoom({
         </div>
 
         {/* ── Composer ────────────────────────────────────────── */}
-        <div className="sticky bottom-0 -mx-2 bg-gradient-to-t from-page via-page to-transparent px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-8">
+        <div className="relative shrink-0 -mx-2 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
+          {/*
+           * „Neue Antwort" statt eines Sprungs.
+           *
+           * Sie erscheint nur, wenn Nina etwas geschrieben hat, während
+           * die Person weiter oben las. Ein Klick bringt sie nach
+           * unten — freiwillig.
+           */}
+          {/*
+           * Was gerade gehört wird — und was das Gespräch gerade tut.
+           *
+           * Das Teiltranskript steht über dem Eingabefeld, nicht im
+           * Nachrichtenstrom: es ist noch nichts Gesagtes, sondern eine
+           * Vermutung, die sich beim Weitersprechen noch ändert.
+           */}
+          {live.stand.zustand !== "aus" && (
+            <div className="mb-2 flex items-center gap-2.5 rounded-(--radius-lg) bg-lavender px-4 py-2.5">
+              <span
+                aria-hidden
+                className={cn(
+                  "size-2 shrink-0 rounded-full",
+                  live.stand.zustand === "hört" ? "bg-accent motion-safe:animate-pulse" : "bg-ink-3",
+                )}
+              />
+              <p aria-live="polite" className="min-w-0 flex-1 truncate text-sm text-ink-2">
+                {live.stand.teiltranskript || live.stand.fehler || LIVE_TEXT[live.stand.zustand]}
+              </p>
+            </div>
+          )}
+
+          {neueAntwort && (
+            <button
+              type="button"
+              onClick={() => nachUnten()}
+              className={cn(
+                "absolute -top-7 left-1/2 z-10 -translate-x-1/2",
+                "inline-flex h-10 items-center gap-2 rounded-(--radius-pill) bg-ink px-4",
+                "text-sm font-medium text-ink-inv shadow-lg",
+                "motion-safe:animate-[fade-up_var(--duration-base)_var(--ease-out)]",
+              )}
+            >
+              <ArrowDown className="size-4" strokeWidth={2} />
+              Neue Antwort
+            </button>
+          )}
           <Composer
             onSend={(text, options) => void nina.send(text, options)}
             busy={nina.busy}

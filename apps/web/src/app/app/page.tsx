@@ -13,6 +13,8 @@ import { diagnoseFunnel } from "@/lib/funnel";
 import { Badge, Button, Card, Separator } from "@/components/ui";
 import { ConfidenceMeter, ScoreRing, StatTile } from "@/components/ui/score";
 import { EmptyState, Section } from "@/components/ui/states";
+import { Suspense } from "react";
+import { RadarBereich, RadarPlatzhalter } from "@/components/heute/RadarBereich";
 
 export const metadata: Metadata = { title: "Start" };
 export const dynamic = "force-dynamic";
@@ -114,8 +116,10 @@ export default async function DashboardPage() {
           : t("jobs.fitInsufficient");
 
   return (
-    <div className="grid gap-12">
-      <div className="grid gap-1.5">
+    /* `minmax(0,1fr)`: sonst wächst die Rasterspur auf die Mindestbreite
+       ihres breitesten Kindes und zieht die ganze Seite mit. */
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-12">
+      <div className="grid min-w-0 gap-1.5">
         <p className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">
           {new Intl.DateTimeFormat("de-DE", {
             weekday: "long",
@@ -123,7 +127,7 @@ export default async function DashboardPage() {
             month: "long",
           }).format(new Date())}
         </p>
-        <h1 className="text-3xl font-semibold">
+        <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] break-words sm:text-4xl">
           {user.displayName ? `Hallo ${user.displayName.split(" ")[0]}` : "Willkommen zurück"}
         </h1>
       </div>
@@ -200,7 +204,10 @@ export default async function DashboardPage() {
             body={t("jobs.emptyAll")}
           />
         ) : (
-          <ul className="grid gap-4 md:grid-cols-3">
+          /* `minmax(0,...)` in beiden Rasterformen: ohne das wächst
+             jede Spur auf die Mindestbreite ihres breitesten Kindes,
+             und ein langer Jobtitel schiebt die Seite seitlich auf. */
+          <ul className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-[repeat(3,minmax(0,1fr))]">
             {topJobs.map((j) => (
               <Card as="li" key={j.jobId} interactive padded={false} className="flex flex-col p-5">
                 <Link href={`/app/jobs/${j.jobId}`} className="min-w-0">
@@ -295,6 +302,11 @@ export default async function DashboardPage() {
           </Card>
         )}
       </Section>
+
+      {/* ── Arbeitswelt-Radar ────────────────────────────────────── */}
+      <Suspense fallback={<RadarPlatzhalter />}>
+        <RadarBereich assistantName={brand.assistantName} locale={user.locale} />
+      </Suspense>
 
       {/* ── Weiteres ─────────────────────────────────────────────── */}
       <section aria-label="Weitere Informationen" className="grid gap-4 md:grid-cols-2">

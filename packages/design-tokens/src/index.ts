@@ -49,4 +49,10 @@ export const darkTokens: Tokens = {
 };
 
 export const space = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 24, 6: 32, 7: 48, 8: 64, 9: 96 } as const;
-export const radius = { sm: 6, md: 10, lg: 16, full: 999 } as const;
+/*
+ * Dieselbe Skala wie in tokens.css, nur für React Native — dort gibt es
+ * keine Custom Properties. Die alten Werte (6/10/16) stammten aus der
+ * Zeit vor dem Redesign und liessen die App eckig aussehen, während das
+ * Web längst rund war.
+ */
+export const radius = { xs: 12, sm: 16, md: 22, lg: 30, xl: 40, full: 999 } as const;

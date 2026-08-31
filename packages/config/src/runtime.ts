@@ -106,6 +106,23 @@ const RuntimeSchema = z.object({
       voiceId: z.string().optional(),
       modelId: z.string().default("eleven_turbo_v2_5"),
     }),
+    /*
+     * Wie zugehört wird.
+     *
+     * Getrennt von `tts`, weil es ein anderer Anbieter ist und getrennt
+     * ausfallen darf: ohne Spracherkennung bleibt Ninas Stimme, ohne
+     * Stimme bleibt die Spracherkennung, und ohne beides bleibt der
+     * Text. Ein gemeinsamer Schalter würde aus einem halben Ausfall
+     * einen ganzen machen.
+     */
+    stt: z.object({
+      /* Das Transkriptionsmodell innerhalb der Realtime-Sitzung. */
+      modelId: z.string().default("gpt-4o-transcribe"),
+      /* Ab wann gilt Stille als Ende eines Redebeitrags. 600 ms ist
+         kurz genug, dass niemand auf Nina wartet, und lang genug, dass
+         eine Denkpause mitten im Satz nicht als Ende zählt. */
+      silenceMs: z.coerce.number().default(600),
+    }),
   }),
 
   mail: z.object({
@@ -127,7 +144,18 @@ const RuntimeSchema = z.object({
       .optional(),
   }),
 
-  jobs: z.object({ sources: z.array(z.string()).default(["seed"]) }),
+  jobs: z.object({
+    sources: z.array(z.string()).default(["seed"]),
+    /*
+     * Bilderzeugung für die Jobvisual-Bibliothek (V7 §21.5).
+     *
+     * Standardmässig aus, und zwar aus einem handfesten Grund: bei 975
+     * Stellen wäre eine Erzeugung je Seitenaufruf eine Rechnung pro
+     * Besucher. Bilder entstehen ausschliesslich in einem
+     * Admin-Durchlauf; die Anwendung selbst greift nie darauf zu.
+     */
+    imageGeneration: z.coerce.boolean().default(false),
+  }),
   reviews: z.object({ sources: z.array(z.string()).default(["seed"]) }),
 });
 
@@ -195,7 +223,11 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       tts: {
         apiKey: env.ELEVENLABS_API_KEY,
         voiceId: env.ELEVENLABS_VOICE_ID,
-        modelId: env.ELEVENLABS_MODEL_ID ?? "eleven_turbo_v2_5",
+        modelId: env.ELEVENLABS_TTS_MODEL ?? env.ELEVENLABS_MODEL_ID ?? "eleven_turbo_v2_5",
+      },
+      stt: {
+        modelId: env.OPENAI_TRANSCRIBE_MODEL ?? env.ELEVENLABS_STT_MODEL ?? "gpt-4o-transcribe",
+        silenceMs: Number(env.VOICE_SILENCE_MS ?? 600),
       },
     },
     mail: { provider: env.MAIL_PROVIDER ?? "draft", smtpUrl: env.SMTP_URL, from: env.MAIL_FROM },
@@ -205,7 +237,10 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       encryptionKey: env.STORAGE_ENCRYPTION_KEY,
       s3: { endpoint: env.S3_ENDPOINT, bucket: env.S3_BUCKET, region: env.S3_REGION ?? "eu-central-1" },
     },
-    jobs: { sources: list(env.JOB_SOURCES, ["seed"]) },
+    jobs: {
+      sources: list(env.JOB_SOURCES, ["seed"]),
+      imageGeneration: env.IMAGE_GENERATION_ENABLED === "true",
+    },
     reviews: { sources: list(env.REVIEW_SOURCES, ["seed"]) },
   });
 }

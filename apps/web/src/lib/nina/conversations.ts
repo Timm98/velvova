@@ -19,7 +19,14 @@ import { getDb, schema, withUser } from "@paycheck/db";
  *    wird mit jeder Runde teurer und ungenauer.
  */
 
-export type ConversationKind = "career_interview" | "assistant" | "job_search";
+export type ConversationKind =
+  | "career_interview"
+  | "assistant"
+  | "job_search"
+  /** Hilfe und FAQ. Sieht die Produktdokumentation, nicht das Karriereprofil (§24.3). */
+  | "support"
+  /** Kurzfrage zu genau einer Stellenanzeige. */
+  | "job_context";
 
 export interface ConversationSummary {
   id: string;

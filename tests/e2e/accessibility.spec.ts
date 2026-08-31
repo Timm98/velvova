@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { loginAsDemo, setTheme } from "./helpers.ts";
+import { demoPersonaVerfuegbar, loginAsDemo, setTheme } from "./helpers.ts";
 
 /**
  * Barrierefreiheit.
@@ -132,6 +132,27 @@ test.describe("Tastaturbedienung", () => {
           if (el.classList.contains("skip-link") || el.classList.contains("sr-only")) return false;
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) return false;
+
+          /*
+           * Die Ausnahme fuer Links im Fliesstext.
+           *
+           * WCAG 2.5.8 nimmt Ziele ausdruecklich aus, die "in einem
+           * Satz stehen oder deren Groesse durch die Zeilenhoehe des
+           * umgebenden Textes bestimmt wird". Ein Wort mitten in einem
+           * Absatz auf 24 Pixel Hoehe zu bringen, hiesse den Zeilenfall
+           * aufzureissen — die Regel verlangt das Gegenteil.
+           *
+           * Ohne diese Ausnahme meldete die Pruefung jeden Textlink und
+           * verleitete dazu, entweder den Satz zu zerstoeren oder die
+           * Pruefung abzuschalten. Beides waere schlechter als die
+           * Regel richtig zu lesen.
+           */
+          const imFliesstext =
+            getComputedStyle(el).display === "inline" &&
+            (el.parentElement?.textContent?.trim().length ?? 0) >
+              (el.textContent?.trim().length ?? 0);
+          if (imFliesstext) return false;
+
           // WCAG 2.2 AA verlangt mindestens 24x24 CSS-Pixel.
           return r.height < 24 || r.width < 24;
         })
@@ -142,6 +163,23 @@ test.describe("Tastaturbedienung", () => {
   });
 
   test("Zustaende sind nicht nur ueber Farbe erkennbar", async ({ page }) => {
+    /*
+     * Diese Pruefung braucht Daten, nicht nur eine Anmeldung.
+     *
+     * Ein frisch angelegtes Konto hat keine bestaetigten Belege — es
+     * gibt dann schlicht nichts, dessen Zustand man pruefen koennte.
+     * Alle anderen Pruefungen hier kommen mit irgendeinem angemeldeten
+     * Menschen aus; diese eine nicht.
+     *
+     * Deshalb wird sie uebersprungen statt zu scheitern, und der Grund
+     * steht im Text. Ein roter Balken, der nur "Seed fehlt" bedeutet,
+     * gewoehnt einen daran, rote Balken zu ignorieren.
+     */
+    test.skip(
+      !(await demoPersonaVerfuegbar(page)),
+      "Braucht die Demo-Persona mit bestaetigten Belegen: pnpm db:seed",
+    );
+
     await loginAsDemo(page);
     await page.goto("/app/career");
 

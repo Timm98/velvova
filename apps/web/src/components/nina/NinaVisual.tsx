@@ -1,9 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
-import { NinaSignal } from "./NinaSignal";
-import { useNina, type NinaVisualState } from "./NinaProvider";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { NinaVisualFallback } from "./NinaVisualFallback";
+import { useNinaFallsVorhanden, type NinaVisualState } from "./NinaProvider";
 import { cn } from "@/lib/cn";
 
 /**
@@ -45,7 +45,7 @@ const GRÖSSE = {
 const ZUSTAND_TEXT: Record<NinaVisualState, string> = {
   idle: "bereit",
   thinking: "denkt nach",
-  talking: "spricht",
+  speaking: "spricht",
   listening: "hört zu",
   success: "bereit",
   error: "nicht erreichbar",
@@ -76,17 +76,145 @@ export function NinaVisual({
   size = "md",
   state,
   className,
+  strategie = "sichtbar",
 }: {
   size?: keyof typeof GRÖSSE;
   /** Ohne Angabe kommt der Zustand aus dem Provider. */
   state?: NinaVisualState;
   className?: string;
+  /**
+   * Wann das Modell geholt wird.
+   *
+   *   `sichtbar`     sobald die Fläche ins Blickfeld kommt und der
+   *                  Browser Luft hat. Für die Anwendung: dort ist Nina
+   *                  der Grund, warum jemand die Seite geöffnet hat.
+   *
+   *   `beiInteresse` zusätzlich erst, wenn der Mensch bleibt — scrollt,
+   *                  die Maus bewegt, etwas anfasst. Für die
+   *                  Startseite: 9,7 MB sind viel für jemanden, der
+   *                  nach zwei Sekunden wieder weg ist. Wer bleibt,
+   *                  bekommt Nina; wer nur vorbeischaut, bekommt das
+   *                  Signal und keine Rechnung.
+   */
+  strategie?: "sichtbar" | "beiInteresse";
 }) {
-  const nina = useNina();
-  const zustand = state ?? nina.visualState;
+  /*
+   * Nina zeigt sich auch dort, wo kein Gespräch läuft.
+   *
+   * Auf der Startseite gibt es keinen NinaProvider — es gibt ja nichts
+   * zu besprechen. Mit `useNina()` hätte diese Komponente die Seite
+   * beim Rendern zum Absturz gebracht; mit dem nachsichtigen Haken
+   * genügt ein mitgegebener Zustand.
+   */
+  const nina = useNinaFallsVorhanden();
+  const zustand = state ?? nina?.visualState ?? "idle";
 
+  const behälter = useRef<HTMLDivElement>(null);
   const [bereit, setBereit] = useState(false);
   const [ruhig, setRuhig] = useState(false);
+  /* Einmal gescheitert, nicht wieder versuchen: der Loader hat es
+     bereits mit derselben URL probiert, und ein zweiter Anlauf würde
+     nur dieselben 12 MB erneut anfordern. */
+  const [gescheitert, setGescheitert] = useState(false);
+
+  const beiFehler = useCallback((fehler: unknown) => {
+    // Der Grund gehört in die Konsole der Entwicklung, nicht auf den
+    // Bildschirm der Person. Sie sieht Nina — nur flach.
+    console.warn("Nina 3D nicht verfügbar:", fehler);
+    setGescheitert(true);
+  }, []);
+
+  /*
+   * Nina wird geladen, wenn sie zu sehen ist — nicht beim Seitenaufbau.
+   *
+   * Die Datei ist 9,7 MB über die Leitung. Auf der Startseite steht
+   * Nina weit rechts im Blickfeld und ist für den ersten Eindruck
+   * unwichtig; sie trotzdem sofort zu holen hiess, jedem Besucher
+   * 9,7 MB aufzuerlegen, bevor er einen Satz gelesen hat.
+   *
+   * Zwei Bedingungen, beide nötig:
+   *
+   *   **Im Blickfeld.** Ein IntersectionObserver wartet, bis die
+   *   Fläche tatsächlich in die Nähe des Fensters kommt. `rootMargin`
+   *   gibt 400 Pixel Vorlauf, damit sie beim Hinscrollen schon da ist.
+   *
+   *   **Browser hat Luft.** `requestIdleCallback` schiebt den Start
+   *   hinter alles, was für die Bedienbarkeit zählt. Ohne das
+   *   konkurriert der Download mit dem Javascript, das die Seite
+   *   klickbar macht.
+   *
+   * Wer nicht wartet, sieht das Signal — dieselbe Formsprache, dieselben
+   * Zustände. Es ist kein Platzhalter, sondern eine gültige Darstellung.
+   */
+  const [imBlick, setImBlick] = useState(false);
+  useEffect(() => {
+    const el = behälter.current;
+    if (!el) return;
+
+    /*
+     * Bei gedrosselter Verbindung gar nicht.
+     *
+     * `saveData` setzt der Mensch selbst — es heisst „ich zahle für
+     * jedes Megabyte" oder „ich habe kaum Empfang". Ein 3D-Modell
+     * gegen diesen ausdrücklichen Wunsch zu laden wäre respektlos, und
+     * das Signal sagt dasselbe aus.
+     */
+    const verbindung = (navigator as { connection?: { saveData?: boolean; effectiveType?: string } })
+      .connection;
+    if (verbindung?.saveData === true) return;
+    if (verbindung?.effectiveType && /^(slow-)?2g$/.test(verbindung.effectiveType)) return;
+
+    let idle = 0;
+    let interesse = strategie === "sichtbar";
+    let sichtbar = false;
+
+    /*
+     * Beide Bedingungen können in beliebiger Reihenfolge eintreten.
+     *
+     * Der erste Versuch prüfte nur im Beobachter — und der meldet sich
+     * kein zweites Mal, solange das Element im Blickfeld BLEIBT. Wer
+     * die Seite öffnete und danach die Maus bewegte, löste also nichts
+     * aus: das Interesse kam an, aber niemand fragte mehr nach.
+     * Ergebnis: Nina erschien auf der Startseite nie.
+     */
+    const vielleichtStarten = () => {
+      if (!interesse || !sichtbar) return;
+      beobachter.disconnect();
+      const start = () => setImBlick(true);
+      idle =
+        typeof requestIdleCallback === "function"
+          ? requestIdleCallback(start, { timeout: 2000 })
+          : (setTimeout(start, 200) as unknown as number);
+    };
+
+    const aufwecken = () => {
+      interesse = true;
+      vielleichtStarten();
+    };
+    if (!interesse) {
+      for (const art of ["scroll", "pointermove", "pointerdown", "keydown"]) {
+        window.addEventListener(art, aufwecken, { once: true, passive: true });
+      }
+    }
+
+    const beobachter = new IntersectionObserver(
+      (einträge) => {
+        if (!einträge.some((e) => e.isIntersecting)) return;
+        sichtbar = true;
+        vielleichtStarten();
+      },
+      { rootMargin: "400px" },
+    );
+    beobachter.observe(el);
+
+    return () => {
+      beobachter.disconnect();
+      for (const art of ["scroll", "pointermove", "pointerdown", "keydown"]) {
+        window.removeEventListener(art, aufwecken);
+      }
+      if (typeof cancelIdleCallback === "function") cancelIdleCallback(idle);
+    };
+  }, [strategie]);
 
   useEffect(() => {
     // Erst im Browser entscheiden. Auf dem Server gibt es kein WebGL
@@ -101,6 +229,7 @@ export function NinaVisual({
 
   return (
     <div
+      ref={behälter}
       className={cn("relative shrink-0", GRÖSSE[size], className)}
       /* Das Bild ist Dekoration. Die Bedeutung steht daneben im Text —
          ein Vorlesegerät soll keine Animation beschreiben. */
@@ -140,24 +269,10 @@ export function NinaVisual({
         }}
       />
 
-      {bereit ? (
-        <NinaScene state={zustand} reducedMotion={ruhig} />
+      {bereit && imBlick && !gescheitert ? (
+        <NinaScene state={zustand} reducedMotion={ruhig} onError={beiFehler} />
       ) : (
-        /* Der Ausweg: dasselbe Signal, dieselben Zustände. */
-        <div className="grid h-full w-full place-items-center">
-          <NinaSignal
-            size={size === "sm" ? "lg" : "xl"}
-            state={
-              zustand === "thinking"
-                ? "thinking"
-                : zustand === "talking"
-                  ? "speaking"
-                  : zustand === "error"
-                    ? "idle"
-                    : "active"
-            }
-          />
-        </div>
+        <NinaVisualFallback state={zustand} size={size === "sm" ? "lg" : "xl"} />
       )}
 
       <span className="sr-only">Nina: {ZUSTAND_TEXT[zustand]}</span>

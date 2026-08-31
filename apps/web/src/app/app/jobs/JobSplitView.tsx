@@ -87,7 +87,7 @@ export function JobSplitView({
      * 40/60 statt 26rem fest: die Vorgabe verlangt, dass das Detail
      * mehr Raum bekommt als die Liste.
      */
-    <div className="grid gap-4 lg:h-[calc(100dvh-12rem)] lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)]">
+    <div className="grid gap-4 lg:h-[calc(100dvh_-_12rem)] lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)]">
       {/* ── Liste ──────────────────────────────────────────── */}
       <div
         ref={listRef}

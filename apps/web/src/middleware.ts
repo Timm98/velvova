@@ -14,6 +14,13 @@ import { NextResponse, type NextRequest } from "next/server";
  * Nonce je Anfrage: Next erkennt sie in der CSP und setzt sie an seine
  * eigenen Skripte. Fremde Inline-Skripte bleiben blockiert.
  */
+/** Läuft die Anfrage gegen einen lokalen Host ohne TLS? */
+function istLokal(request: NextRequest): boolean {
+  if (request.nextUrl.protocol === "https:") return false;
+  const host = request.nextUrl.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+}
+
 export function middleware(request: NextRequest): NextResponse {
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV !== "production";
@@ -36,7 +43,20 @@ export function middleware(request: NextRequest): NextResponse {
      * bricht genau dieser zweite Schritt ab — die Datei kommt mit HTTP
      * 200 an, und das Modell erscheint trotzdem nie.
      */
-    `connect-src 'self' blob:${isDev ? " ws: wss:" : ""}`,
+    /*
+     * `api.openai.com` für das Live-Gespräch.
+     *
+     * Der Browser baut die Sprachverbindung direkt zum Anbieter auf —
+     * mit einem kurzlebigen Sitzungsgeheimnis, das der Server geholt
+     * hat. Den Ton über uns umzuleiten würde eine halbe Sekunde
+     * kosten und nichts sicherer machen: das Geheimnis ist ohnehin
+     * schon im Browser, der Projektschlüssel bleibt ohnehin hier.
+     *
+     * Ohne diesen Eintrag scheitert der Verbindungsaufbau — und zwar
+     * so, wie CSP-Verstösse immer scheitern: die Anfrage geht raus,
+     * die Antwort kommt an, der Browser wirft sie weg.
+     */
+    `connect-src 'self' blob: https://api.openai.com${isDev ? " ws: wss:" : ""}`,
     /* Draco- und KTX-Dekoder laufen in Workern, die aus Blobs
        entstehen. Ohne diese Zeile bleibt ein komprimiertes Modell
        schwarz. */
@@ -59,7 +79,17 @@ export function middleware(request: NextRequest): NextResponse {
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `form-action 'self'`,
-    ...(isDev ? [] : ["upgrade-insecure-requests"]),
+    /*
+     * Nur, wenn die Seite tatsächlich über TLS läuft.
+     *
+     * `upgrade-insecure-requests` schreibt jede Anfrage auf https um.
+     * Auf einem Produktionsserver hinter TLS ist das richtig; auf
+     * `http://localhost` macht es die Anwendung unbenutzbar — jeder
+     * Chunk scheitert mit einem TLS-Fehler. Genau das passiert beim
+     * lokalen Test eines Production Builds, und ohne diese Bedingung
+     * lässt sich der Build lokal gar nicht prüfen.
+     */
+    ...(isDev || istLokal(request) ? [] : ["upgrade-insecure-requests"]),
   ].join("; ");
 
   // Die Nonce wandert als Anfrage-Header weiter; Next liest sie dort aus.

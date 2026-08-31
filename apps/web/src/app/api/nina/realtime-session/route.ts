@@ -21,6 +21,15 @@ export const dynamic = "force-dynamic";
  * dann im Klartext. Das ist kein theoretisches Risiko, es ist der
  * häufigste Weg, auf dem solche Schlüssel abfliessen.
  *
+ * Was hier NICHT angefordert wird: eine sprechende Sitzung.
+ *
+ * Die Sitzung ist reine Transkription — OpenAI hört zu und gibt Text
+ * zurück, mehr nicht. Ninas Stimme kommt aus ElevenLabs, wie überall
+ * sonst. Eine Realtime-Sitzung mit `modalities: ["audio"]` wäre der
+ * bequemere Weg gewesen, hätte Nina aber im Sprachmodus eine andere
+ * Stimme gegeben als im Textmodus. Zwei Stimmen für dieselbe Figur
+ * sind schlimmer als eine Umleitung mehr.
+ *
  * Drei Riegel, in dieser Reihenfolge:
  *
  *   1. Angemeldet?           — sonst gibt es keine Sitzung.
@@ -84,24 +93,53 @@ export async function POST(): Promise<NextResponse> {
      * Das kurzlebige Geheimnis wird beim Anbieter angefordert, nicht
      * bei uns erzeugt. Der Projektschlüssel steht ausschliesslich in
      * diesem Aufruf — er geht nie in die Antwort.
+     *
+     * Die Adresse ist `/v1/realtime/client_secrets`. Die vorige Fassung
+     * rief `/v1/realtime/sessions` — die gibt es nicht mehr, sie
+     * antwortet mit „404 Invalid URL". Der Sprachmodus war damit
+     * vollständig tot, und weil der Endpunkt seinen Fehler brav in
+     * „Der Sprachanbieter ist nicht erreichbar" übersetzte, sah es nach
+     * einer Störung beim Anbieter aus statt nach einer veralteten
+     * Adresse bei uns.
      */
-    const response = await fetch("https://api.openai.com/v1/realtime/sessions", {
+    const response = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
       method: "POST",
       headers: {
         authorization: `Bearer ${cfg.ai.apiKey}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: cfg.ai.modelRealtime,
-        voice: "alloy",
-        // Kein dauerhaftes Audio. Was gesprochen wurde, wird als Text
-        // verarbeitet und dann verworfen; die Aufnahme selbst bleibt
-        // nirgends liegen.
-        modalities: ["audio", "text"],
-        instructions:
-          "Du führst ein Karrieregespräch auf Deutsch. Frage nach konkreten Situationen, " +
-          "nicht nach Selbsteinschätzungen. Erfinde nichts. Analysiere weder Stimme noch " +
-          "Akzent noch Gefühlslage — nur den Wortlaut.",
+        /* Kurz gültig. Läuft das Gespräch länger, wird neu geholt —
+           ein Geheimnis, das den ganzen Tag gilt, ist keins. */
+        expires_after: { anchor: "created_at", seconds: 600 },
+        session: {
+          type: "transcription",
+          audio: {
+            input: {
+              format: { type: "audio/pcm", rate: 24_000 },
+              transcription: {
+                model: cfg.voice.stt.modelId,
+                language: user.locale,
+              },
+              /*
+               * Die Sprecherkennung läuft beim Anbieter, nicht im
+               * Browser. Sie liefert die beiden Ereignisse, an denen
+               * das ganze Gespräch hängt: „jemand fängt an zu reden"
+               * und „jemand ist fertig". Das erste ist zugleich das
+               * Signal zum Unterbrechen (§14.6) — im Browser mit einem
+               * Lautstärkeschwellwert nachgebaut, wäre es entweder zu
+               * empfindlich für ein Räuspern oder zu träge für eine
+               * Unterbrechung.
+               */
+              turn_detection: {
+                type: "server_vad",
+                threshold: 0.5,
+                prefix_padding_ms: 300,
+                silence_duration_ms: cfg.voice.stt.silenceMs,
+              },
+            },
+          },
+        },
       }),
       signal: AbortSignal.timeout(routing.timeoutMs),
     });
@@ -119,12 +157,12 @@ export async function POST(): Promise<NextResponse> {
     }
 
     const sitzung = (await response.json()) as {
-      id?: string;
-      client_secret?: { value?: string; expires_at?: number };
+      value?: string;
+      expires_at?: number;
+      session?: { id?: string };
     };
 
-    const geheimnis = sitzung.client_secret?.value;
-    if (!geheimnis) {
+    if (!sitzung.value) {
       return NextResponse.json(
         { fehler: "provider_error", hinweis: "Der Anbieter hat kein Sitzungsgeheimnis geliefert." },
         { status: 502 },
@@ -132,11 +170,11 @@ export async function POST(): Promise<NextResponse> {
     }
 
     return NextResponse.json({
-      sessionId: sitzung.id ?? null,
+      sessionId: sitzung.session?.id ?? null,
       // Kurzlebig und nur für diese Sitzung. Kein Projektschlüssel.
-      clientSecret: geheimnis,
-      expiresAt: sitzung.client_secret?.expires_at ?? null,
-      model: cfg.ai.modelRealtime,
+      clientSecret: sitzung.value,
+      expiresAt: sitzung.expires_at ?? null,
+      transcribeModel: cfg.voice.stt.modelId,
       hinweis:
         "Die Aufnahme wird nicht dauerhaft gespeichert. Was du sagst, wird als Text " +
         "verarbeitet und wie jede andere Angabe erst nach deiner Bestätigung übernommen.",

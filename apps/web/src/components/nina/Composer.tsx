@@ -182,7 +182,16 @@ export function Composer({
   return (
     <div
       className={cn(
-        "rounded-(--radius-sheet) bg-raised p-2 shadow-lg transition-[box-shadow] duration-(--duration-base)",
+        /*
+         * Pille, nicht abgerundetes Rechteck (V7 §3.2, §8.4).
+         *
+         * Der grosse Radius trägt sich auch beim Wachsen: sobald der
+         * Text mehrfach umbricht, wird aus der Pille von selbst eine
+         * stark gerundete Fläche — CSS klemmt den Radius auf die halbe
+         * Höhe. Es braucht also keine Umschaltung, die man vergessen
+         * könnte.
+         */
+        "rounded-(--radius-pill) bg-raised p-2.5 shadow-lg transition-[box-shadow] duration-(--duration-base)",
         "focus-within:shadow-[0_0_0_2px_var(--primary),0_12px_40px_rgba(98,92,255,0.14)]",
         className,
       )}
@@ -249,7 +258,10 @@ export function Composer({
           placeholder={placeholder}
           disabled={busy}
           aria-label={placeholder}
-          className="max-h-[200px] min-h-11 flex-1 resize-none bg-transparent px-3.5 py-3 text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink-3 disabled:opacity-60"
+          /* min-h-12 plus p-2.5 der Hülle ergibt 68px Ruhehöhe — in der
+             Spanne 64–76 aus §8.4. Die Schrift folgt der Skala statt
+             einem festen Pixelwert. */
+          className="max-h-[200px] min-h-12 flex-1 resize-none bg-transparent px-4 py-3 text-base leading-relaxed text-ink outline-none placeholder:text-ink-3 disabled:opacity-60"
         />
 
         {onSkip && skipLabel && (

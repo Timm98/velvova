@@ -61,6 +61,7 @@ export const de = {
     expand: "Ausklappen",
     collapse: "Einklappen",
     skipToContent: "Zum Inhalt springen",
+    backToApp: "Zurück zu {assistant}",
   },
 
   landing: {
@@ -72,7 +73,7 @@ export const de = {
       "{assistant} lernt deine Erfahrungen, Stärken und Wünsche kennen, entdeckt auch " +
       "unerwartete berufliche Möglichkeiten und begleitet dich bis zur Bewerbung.",
     ctaPrimary: "Kostenlos mit {assistant} starten",
-    ctaSecondary: "So funktioniert {assistant}",
+    ctaSecondary: "So funktioniert es",
 
     coreLine1: "Jobbörsen beginnen mit einem Suchbegriff.",
     coreLine2: "{assistant} beginnt mit dir.",
@@ -206,7 +207,7 @@ export const de = {
       "gibt und welche Bedingungen du brauchst. Du kannst jederzeit etwas korrigieren oder " +
       "überspringen.",
     progress: "{done} von {total} Themen verstanden",
-    yourAnswer: "Deine Antwort",
+    yourAnswer: "Schreib {assistant} oder sprich mit ihr …",
     send: "Senden",
     voiceMode: "Sprechen",
     textMode: "Schreiben",

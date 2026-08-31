@@ -18,8 +18,30 @@ export async function withUser<T>(
   fn: (tx: Database) => Promise<T>,
 ): Promise<T> {
   return db.transaction(async (tx) => {
-    await tx.execute(sql`SET LOCAL ROLE paycheck_app`);
-    await tx.execute(sql`SELECT set_config('app.user_id', ${userId}, true)`);
+    /*
+     * Beides in EINEM Netzweg.
+     *
+     * Vorher waren es zwei `await` hintereinander — erst die Rolle,
+     * dann die Kennung. Gegen eine Datenbank auf demselben Rechner ist
+     * das nicht messbar; gegen Supabase kostet jede Runde 44
+     * Millisekunden. Eine Transaktion brauchte damit fünf Runden
+     * (BEGIN, Rolle, Kennung, Abfrage, COMMIT) und lag bei 218 ms —
+     * bei vier solchen Aufrufen je Seite fast eine Sekunde, bevor
+     * überhaupt Daten geholt wurden.
+     *
+     * `set_config('role', …)` setzt dieselbe Rolle wie `SET LOCAL
+     * ROLE`: die Rolle ist ein gewöhnlicher Konfigurationsparameter.
+     * Mit `true` als drittem Argument gilt beides nur bis zum Ende
+     * dieser Transaktion — genau wie vorher, damit kein Zustand in die
+     * nächste Anfrage sickert.
+     *
+     * Dass die Zugriffstrennung dabei wirklich erhalten bleibt, prüft
+     * `rls.test.ts` gegen die echte Datenbank: ein Konto darf die Daten
+     * eines anderen weder sehen noch ändern.
+     */
+    await tx.execute(
+      sql`SELECT set_config('role', 'paycheck_app', true), set_config('app.user_id', ${userId}, true)`,
+    );
     return fn(tx as unknown as Database);
   });
 }

@@ -73,7 +73,7 @@ export function AccountMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%+8px)] z-50 w-64 animate-fade-in rounded-(--radius-lg) border border-line-2 bg-overlay p-1.5 shadow-xl"
+          className="absolute right-0 top-[calc(100%_+_8px)] z-50 w-64 animate-fade-in rounded-(--radius-lg) border border-line-2 bg-overlay p-1.5 shadow-xl"
         >
           <div className="border-b border-line px-3 py-2.5">
             <p className="truncate text-sm font-medium">{userName ?? "Konto"}</p>

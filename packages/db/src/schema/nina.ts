@@ -33,6 +33,18 @@ export const ninaConversationKindEnum = pgEnum("nina_conversation_kind", [
   "assistant",
   /** Eine Suchanfrage in natürlicher Sprache auf der Jobs-Seite. */
   "job_search",
+  /**
+   * Hilfe und FAQ.
+   *
+   * Bewusst eine eigene Art und kein Merkmal am Gespräch: nur so lässt
+   * sich die Trennung aus §29 überhaupt durchsetzen. Eine Supportfrage
+   * darf den Karrierekontext nicht sehen, und eine Karrierefrage nicht
+   * die Produktdokumentation — das ist eine Zugriffsentscheidung, keine
+   * Formulierungsfrage.
+   */
+  "support",
+  /** Eine Kurzfrage zu genau einer Stellenanzeige. */
+  "job_context",
 ]);
 
 export const ninaMessageRoleEnum = pgEnum("nina_message_role", [

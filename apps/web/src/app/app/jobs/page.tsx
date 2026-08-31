@@ -15,6 +15,8 @@ import { Badge, Button, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 import type { JobRowData } from "@/components/jobs/JobRow";
 import { JobFilters } from "./JobFilters";
+import { blätterstand } from "@/lib/jobs/blaettern";
+import { JobPagination } from "./JobPagination";
 import { JobSplitView } from "./JobSplitView";
 import { JobDetailPanel } from "./JobDetailPanel";
 import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
@@ -134,9 +136,9 @@ export default async function JobsPage({
    * teurer zu benutzen.
    */
   const PRO_SEITE = 25;
-  const seite = Math.max(1, Number(params.seite ?? 1) || 1);
-  const seitenGesamt = Math.max(1, Math.ceil(filtered.length / PRO_SEITE));
-  const sichtbar = filtered.slice((seite - 1) * PRO_SEITE, seite * PRO_SEITE);
+  // Die Klammer steht in `blaettern.ts` und ist dort geprüft.
+  const { seite, seitenGesamt, von, bis } = blätterstand(filtered.length, params.seite, PRO_SEITE);
+  const sichtbar = filtered.slice(von, bis);
 
   // Die Auswahl steht im Suchparameter, damit sie verlinkbar ist und der
   // Zurück-Knopf das Erwartete tut.
@@ -176,7 +178,21 @@ export default async function JobsPage({
   }));
 
   return (
-    <div className="grid gap-6">
+    /*
+     * `grid-cols-[minmax(0,1fr)]` statt der Vorgabe.
+     *
+     * Eine Rasterspalte ist standardmässig `auto` und wächst auf die
+     * grösste Mindestbreite ihrer Kinder — hier auf 351 Pixel in einem
+     * 328 Pixel breiten Behälter. Alle neun Abschnitte wurden dadurch
+     * mitgezogen, und die Seite lief auf einem 360-Pixel-Gerät sieben
+     * Pixel über.
+     *
+     * `minmax(0, 1fr)` erlaubt der Spur, kleiner zu werden als ihr
+     * Inhalt. Das ist dieselbe Lehre, die weiter unten schon für die
+     * Jobliste steht — sie gilt für jedes Raster, nicht nur für das
+     * mit den langen Titeln.
+     */
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
       <PageHeader
         eyebrow="Entdecken"
         title="Deine besten Möglichkeiten"
@@ -264,7 +280,10 @@ export default async function JobsPage({
         )}
         <Link
           href="/app/settings/integrations"
-          className="ml-auto text-accent-text underline underline-offset-[3px]"
+          /* `inline-flex` mit Mindesthöhe: als reiner Textlink war das
+             Ziel 23 Pixel hoch und damit einen Pixel unter dem
+             Mindestmass aus WCAG 2.5.8. */
+          className="ml-auto inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
         >
           Quellen ansehen
         </Link>
@@ -275,14 +294,43 @@ export default async function JobsPage({
         selectedId={selected?.jobId ?? null}
         explicitSelection={Boolean(requested)}
         emptyState={
+          /*
+           * Die leere Liste erklärt sich (§16.4).
+           *
+           * Zwei Dinge stehen hier bewusst NICHT: keine ähnlichen
+           * Stellen „die auch interessant sein könnten", und keine
+           * automatisch gelockerte Bedingung. Eine Suche, die von
+           * selbst weiter wird, wenn sie nichts findet, ist keine
+           * Suche mehr — sie liefert dann Ergebnisse, die niemand
+           * verlangt hat, und der Mensch hält sie für Treffer.
+           *
+           * Stattdessen: welche Bedingungen gerade gelten, und je ein
+           * Angebot, genau eine davon fallen zu lassen. Erweitert wird
+           * erst nach einem Klick.
+           */
           <EmptyState
             icon={<Compass className="size-5" strokeWidth={1.7} />}
-            title="Zu diesen Filtern gibt es nichts"
-            body="Nimm einen Filter weg oder formuliere die Suche anders. Es wird nichts ausgedacht, um die Liste zu füllen."
+            title="Mit diesen Bedingungen finde ich aktuell keine bestätigte Stelle"
+            body={
+              aktiveBedingungen(params).length > 0
+                ? `Es gilt gerade: ${aktiveBedingungen(params)
+                    .map((b) => b.label)
+                    .join(", ")}. Soll ich eine davon einmalig weglassen? Es wird nichts ausgedacht, um die Liste zu füllen.`
+                : "Es wird nichts ausgedacht, um die Liste zu füllen."
+            }
             action={
-              <Button asChild variant="secondary">
-                <Link href="/app/jobs">Filter zurücksetzen</Link>
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                {aktiveBedingungen(params).map((b) => (
+                  <Button key={b.key} asChild variant="secondary">
+                    <Link href={`/app/jobs?${ohneBedingung(params, b.key)}`}>
+                      Ohne „{b.label}“
+                    </Link>
+                  </Button>
+                ))}
+                <Button asChild variant="secondary">
+                  <Link href="/app/jobs">Alle Filter zurücksetzen</Link>
+                </Button>
+              </div>
             }
           />
         }
@@ -321,33 +369,15 @@ export default async function JobsPage({
        * und ein geteilter Link führt dorthin, wo der Absender war.
        */}
       {seitenGesamt > 1 && (
-        <nav
-          aria-label="Seiten"
-          className="flex flex-wrap items-center justify-between gap-3 pt-2"
-        >
-          <p className="text-sm text-ink-2">
-            Seite {seite} von {seitenGesamt} · {sichtbar.length} von{" "}
-            {filtered.length.toLocaleString("de-DE")} Stellen
-          </p>
-          <div className="flex gap-2">
-            {seite > 1 && (
-              <Link
-                href={`/app/jobs?${blätterParams(params, seite - 1)}`}
-                className="inline-flex h-11 items-center rounded-(--radius-pill) bg-soft px-5 text-sm transition-colors hover:bg-soft-hover"
-              >
-                Zurück
-              </Link>
-            )}
-            {seite < seitenGesamt && (
-              <Link
-                href={`/app/jobs?${blätterParams(params, seite + 1)}`}
-                className="inline-flex h-11 items-center rounded-(--radius-pill) bg-accent px-5 text-sm font-medium text-accent-on transition-colors hover:bg-accent-hover"
-              >
-                Weitere {Math.min(PRO_SEITE, filtered.length - seite * PRO_SEITE)} Stellen
-              </Link>
-            )}
-          </div>
-        </nav>
+        <JobPagination
+          seite={seite}
+          seitenGesamt={seitenGesamt}
+          sichtbar={sichtbar.length}
+          gesamt={filtered.length}
+          zurückHref={seite > 1 ? `/app/jobs?${blätterParams(params, seite - 1)}` : null}
+          weiterHref={seite < seitenGesamt ? `/app/jobs?${blätterParams(params, seite + 1)}` : null}
+          weitereAnzahl={Math.min(PRO_SEITE, filtered.length - seite * PRO_SEITE)}
+        />
       )}
 
       {staleCount > 0 && (
@@ -424,9 +454,70 @@ function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefin
     });
   }
 
+  /*
+   * Ausschlüsse.
+   *
+   * Ein Wort aus dieser Liste im Titel, in den Aufgaben oder in der
+   * Branche schliesst die Stelle aus. Bewusst dieselbe Textbasis wie
+   * die Suche — sonst hiesse „ohne Kaltakquise" etwas anderes als
+   * „Kaltakquise".
+   */
+  const nicht = params.nicht?.trim().toLowerCase();
+  if (nicht) {
+    const verboten = nicht.split(/\s+/).filter((w) => w.length > 2);
+    result = result.filter((j) => {
+      const haystack = [j.job.title, j.job.industry ?? "", ...j.job.coreTasks]
+        .join(" ")
+        .toLowerCase();
+      return !verboten.some((w) => haystack.includes(w));
+    });
+  }
+
+  /*
+   * Der Ort als eigener Filter.
+   *
+   * Vorher landete er im Volltext und traf damit auch Firmen, die eine
+   * Stadt im Namen tragen — „Berlin" fand die „Berlin Brands Group" in
+   * Hamburg. Auf das Ortsfeld angewandt trifft er das, was gemeint ist.
+   */
+  const ort = params.ort?.trim().toLowerCase();
+  if (ort) result = result.filter((j) => j.job.location.toLowerCase().includes(ort));
+
   if (params.remote) result = result.filter((j) => j.job.workModel === params.remote);
   if (params.contract) result = result.filter((j) => j.job.contractType === params.contract);
   if (params.salary === "disclosed") result = result.filter((j) => j.job.salary.disclosed);
+
+  /*
+   * Mindestgehalt.
+   *
+   * Geprüft wird die Untergrenze der Spanne: eine Stelle mit
+   * 42.000–55.000 erfüllt „ab 45.000" nicht sicher, und eine Suche
+   * darf nicht optimistisch runden. Stellen ohne Angabe fallen hier
+   * nicht heimlich durch — dafür sorgt `salary=disclosed`, das die
+   * Sucherkennung zusammen mit dem Betrag setzt.
+   */
+  const gehaltAb = Number(params.gehaltAb);
+  if (Number.isFinite(gehaltAb) && gehaltAb > 0) {
+    result = result.filter((j) => {
+      const von = j.job.salary.min ?? j.job.salary.max;
+      if (typeof von !== "number") return false;
+      /*
+       * Auf ein Jahr umrechnen, bevor verglichen wird.
+       *
+       * Anzeigen nennen Monats-, Stunden- und Jahresbeträge bunt
+       * gemischt. Ein Vergleich der rohen Zahl gegen 45.000 wirft jede
+       * Stelle raus, die „4.000 € im Monat" schreibt — also 48.000 im
+       * Jahr und damit genau das, was gesucht war.
+       */
+      const proJahr =
+        j.job.salary.period === "month"
+          ? von * 12
+          : j.job.salary.period === "hour"
+            ? von * 40 * 52
+            : von;
+      return proJahr >= gehaltAb;
+    });
+  }
 
   const sinceDays = Number(params.since);
   if (Number.isFinite(sinceDays) && sinceDays > 0) {
@@ -435,4 +526,63 @@ function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefin
   }
 
   return result;
+}
+
+/**
+ * Welche Bedingungen gerade gelten — in Worten, nicht als Feldnamen.
+ *
+ * Sie stehen in der leeren Liste, damit niemand raten muss, warum sie
+ * leer ist. Der häufigste Grund für „die Suche ist kaputt" ist ein
+ * Filter, den man vor zwei Minuten gesetzt und längst vergessen hat.
+ */
+function aktiveBedingungen(
+  params: Record<string, string | undefined>,
+): { key: string; label: string }[] {
+  const raus: { key: string; label: string }[] = [];
+  const arbeitsmodell: Record<string, string> = {
+    remote: "nur remote",
+    hybrid: "höchstens zwei Bürotage",
+    onsite: "vor Ort",
+  };
+  const vertrag: Record<string, string> = {
+    permanent: "unbefristet",
+    temporary: "befristet",
+    freelance: "freiberuflich",
+    internship: "Praktikum oder Werkstudium",
+  };
+
+  if (params.q) raus.push({ key: "q", label: params.q });
+  if (params.nicht) raus.push({ key: "nicht", label: `ohne ${params.nicht}` });
+  if (params.ort) raus.push({ key: "ort", label: `rund um ${params.ort}` });
+  if (params.remote && arbeitsmodell[params.remote]) {
+    raus.push({ key: "remote", label: arbeitsmodell[params.remote]! });
+  }
+  if (params.contract && vertrag[params.contract]) {
+    raus.push({ key: "contract", label: vertrag[params.contract]! });
+  }
+  if (params.gehaltAb) {
+    raus.push({
+      key: "gehaltAb",
+      label: `ab ${Number(params.gehaltAb).toLocaleString("de-DE")} €`,
+    });
+  }
+  if (params.since) raus.push({ key: "since", label: `aus den letzten ${params.since} Tagen` });
+  return raus;
+}
+
+/** Dieselbe Adresse ohne genau eine Bedingung. */
+function ohneBedingung(params: Record<string, string | undefined>, key: string): string {
+  const next = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || k === key) continue;
+    /*
+     * Ein Mindestgehalt bringt „nur mit Gehaltsangabe" mit. Fällt der
+     * Betrag weg, muss die Angabe mitfallen — sonst bleibt eine
+     * Bedingung stehen, die niemand gesetzt hat und die in der Liste
+     * der aktiven Bedingungen gar nicht auftaucht.
+     */
+    if (key === "gehaltAb" && k === "salary") continue;
+    next.set(k, v);
+  }
+  return next.toString();
 }

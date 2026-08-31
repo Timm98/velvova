@@ -106,6 +106,7 @@
   --radius-sheet: var(--radius-sheet);
   --radius-modal: var(--radius-modal);
   --radius-canvas: var(--radius-canvas);
+  --radius-image: var(--radius-image);
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -129,27 +130,78 @@
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
   /*
-   * Größenskala. Body 15–17 px, App-H1 32–44 px, Hero bis 84 px.
+   * Größenskala.
+   *
+   * Jede Stufe hat eine Aufgabe, und jede Aufgabe hat in V7 §4.1 eine
+   * Spanne. Die Werte sind nicht gerundet, sondern in diese Spannen
+   * gelegt — deshalb stehen hier krumme Zahlen wie 17 und 19 px.
+   *
+   * Warum die alte Skala klein wirkte, obwohl sie „Body 15–17" im
+   * Kommentar stehen hatte: der Fließtext lief gar nicht auf
+   * `--text-base`. Er lief auf `--text-sm`, 373 Mal, mit 14 px. Die
+   * Skala war nicht zu klein — sie wurde eine Stufe zu tief benutzt.
+   * Ein Anheben von `--text-base` allein hätte daran nichts geändert.
+   *
+   * Untergrenze ist 14 px: darunter darf nichts stehen, was eine
+   * Information trägt. Das betrifft vor allem die Eyebrow-Labels, die
+   * fast immer `uppercase tracking-wider` sind.
+   *
    * Große Schrift bekommt negativen Laufweitenausgleich, sonst fällt
    * sie auseinander.
    */
-  --text-2xs: 0.75rem;
-  --text-xs: 0.8125rem;
-  --text-sm: 0.875rem;
-  --text-base: 0.9375rem;
-  --text-lg: 1.0625rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
-  --text-5xl: 2.75rem;
-  --text-6xl: 4rem;
-  --text-7xl: 5.25rem;
+  --text-2xs: 0.875rem; /* 14px — Eyebrow, Label. Die Untergrenze. */
+  --text-xs: 0.9375rem; /* 15px — Metadaten in dichten Listen */
+  --text-sm: 1rem; /* 16px — UI-Standard, Buttons */
+  --text-base: 1.0625rem; /* 17px — Fließtext */
+  --text-lg: 1.1875rem; /* 19px — Jobtitel in der Liste */
+  --text-xl: 1.375rem; /* 22px — Abschnittsüberschrift */
+  --text-2xl: 1.75rem; /* 28px — Abschnittsüberschrift groß */
+  --text-3xl: 2.25rem; /* 36px — Jobtitel im Detail */
+  --text-4xl: 2.625rem; /* 42px — Seitentitel */
+  --text-5xl: 3rem; /* 48px — Seitentitel groß */
+  --text-6xl: 4.5rem; /* 72px — Headline Landingpage */
+  --text-7xl: 5.5rem; /* 88px */
+
+  /* Höhe der festen unteren Leiste auf schmalen Geräten. Sie steht
+     hier und nicht in der Komponente, weil zwei Stellen sie brauchen:
+     die Leiste selbst und der Freiraum darunter im Inhalt. */
+  --nav-bottom-h: 64px;
+
+  /* Höhe des globalen Headers. V7 §8.1 rechnet ausdrücklich damit:
+     `height: calc(100dvh - var(--app-header-height))`. Sie steht
+     deshalb als Token da und nicht als 76 in drei Dateien. */
+  --app-header-height: 76px;
 }
 
 @layer base {
   * {
     border-color: var(--border-subtle);
+  }
+
+  /*
+   * Kinder von Rastern und Flexboxen dürfen schmaler werden als ihr
+   * Inhalt.
+   *
+   * CSS setzt sie standardmässig auf `min-width: auto`. Das klingt
+   * harmlos und ist der häufigste Grund für seitlich überlaufende
+   * Seiten: ein langer Jobtitel, eine Überschrift, eine E-Mail-Adresse
+   * — irgendein Kind hat eine grosse Mindestbreite, die Spur wächst
+   * mit, und die ganze Seite wird breiter als das Fenster. Auf einem
+   * Telefon sieht man dann einen waagerechten Scrollbalken und weiss
+   * nicht, warum.
+   *
+   * Dieses Projekt hat die Regel bisher an einzelnen Stellen von Hand
+   * nachgetragen — in der Jobliste, im Seitenkopf, im Suchfeld, in den
+   * Vorschlägen. Jede dieser Stellen war ein eigener Fehlerbericht, und
+   * die nächste wäre wieder einer gewesen. Einmal zentral ist ehrlicher
+   * als fünfmal verstreut.
+   *
+   * `:where()` hält die Spezifität bei null: jede Komponente kann das
+   * mit einer einzigen Klasse aufheben, wenn sie wirklich ihre
+   * Inhaltsbreite braucht — `min-w-fit` genügt.
+   */
+  :where(.grid, [class*="grid-cols"], .flex) > * {
+    min-width: 0;
   }
 
   html {

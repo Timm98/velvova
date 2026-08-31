@@ -78,6 +78,30 @@ const config: NextConfig = {
    */
   allowedDevOrigins: ["127.0.0.1", "localhost"],
   typedRoutes: false,
+
+  /**
+   * Kurzadressen, die Menschen tatsächlich eintippen.
+   *
+   * Die Einstellungen liegen unter `/app/settings`, weil sie zur
+   * angemeldeten Anwendung gehören. Getippt wird aber `/settings` — das
+   * ist die Adresse, die man erwartet, und sie lieferte eine 404.
+   *
+   * Eine 404 auf eine naheliegende Adresse ist kein Grenzfall: sie
+   * sieht aus, als sei die Seite kaputt, und niemand probiert danach
+   * den längeren Pfad. Die Weiterleitung ist dauerhaft (308), damit
+   * Lesezeichen und Browserverlauf sie übernehmen.
+   */
+  async redirects() {
+    return [
+      { source: "/settings", destination: "/app/settings", permanent: true },
+      { source: "/settings/:pfad*", destination: "/app/settings/:pfad*", permanent: true },
+      { source: "/jobs", destination: "/app/jobs", permanent: true },
+      { source: "/nina", destination: "/app/nina", permanent: true },
+      { source: "/profile", destination: "/app/profile", permanent: true },
+      { source: "/applications", destination: "/app/applications", permanent: true },
+    ];
+  },
+
   async headers() {
     return [
       {

@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ExternalLink, HelpCircle, ShieldAlert } from "lucide-react";
+import { ExternalLink, ShieldAlert } from "lucide-react";
 import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
 import { recommendationLabel, type DecisionBrief } from "@/lib/applications/decision-brief";
 import { Badge, Button, Separator } from "@/components/ui";
+import { JobKurzfragen } from "@/components/jobs/JobKurzfragen";
 import { SaveJobButton } from "./SaveJobButton";
 
 /**
@@ -449,29 +450,9 @@ export function JobDetailPanel({
       <Separator soft />
 
       {/* ── Nina ─────────────────────────────────────────── */}
-      <section aria-labelledby="nina-fragen" className="grid gap-2.5">
-        <h3 id="nina-fragen" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
-          {assistantName} zu dieser Stelle
-        </h3>
-        <ul className="grid gap-1.5">
-          {[
-            { key: "day", label: "Erklär mir den echten Arbeitsalltag" },
-            { key: "gap", label: "Welche Anforderungen fehlen mir?" },
-            { key: "flags", label: "Welche Warnsignale siehst du?" },
-            { key: "questions", label: "Welche Fragen soll ich im Gespräch stellen?" },
-          ].map((prompt) => (
-            <li key={prompt.key}>
-              <Link
-                href={`/app/nina?job=${job.id}&ask=${prompt.key}`}
-                className="flex items-center gap-2.5 rounded-(--radius-md) border border-line-2 px-3.5 py-2.5 text-sm transition-colors hover:border-line-3 hover:bg-inset/60"
-              >
-                <HelpCircle className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.8} />
-                {prompt.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Die Antwort erscheint hier, nicht auf einer anderen Seite.
+          Die Stelle bleibt sichtbar (§13.3). */}
+      <JobKurzfragen jobId={job.id} assistantName={assistantName} />
     </article>
   );
 }

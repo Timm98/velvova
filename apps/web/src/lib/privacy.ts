@@ -1,6 +1,7 @@
 "use server";
 
 import { getDb, schema, withUser } from "@paycheck/db";
+import { istLocaleCode, nutzbareUiSprachen } from "@paycheck/i18n";
 import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -88,10 +89,28 @@ export async function updateSettings(formData: FormData): Promise<void> {
     patch[target] = values.includes("on") || values.includes("1");
   }
 
-  const locales = new Set(["de", "en"]);
-  ifPresent("locale", (v) => { if (locales.has(v)) patch.locale = v; });
-  ifPresent("assistantLocale", (v) => { if (locales.has(v)) patch.assistantLocale = v; });
-  ifPresent("documentLocale", (v) => { if (locales.has(v)) patch.documentLocale = v; });
+  /*
+   * Zwei verschiedene Prüfungen, weil es zwei verschiedene Fragen sind.
+   *
+   * Die OBERFLÄCHE darf nur eine Sprache annehmen, für die es Texte
+   * gibt — sonst entsteht die gemischte Oberfläche aus §20.3. Das
+   * Register misst das an den Katalogen.
+   *
+   * GESPRÄCH und UNTERLAGEN dürfen jede eingetragene Sprache annehmen
+   * (§20.2): Ninas Antworten entstehen im Modell und brauchen keinen
+   * Katalog.
+   *
+   * Vorher stand hier zum dritten Mal `["de", "en"]` fest verdrahtet —
+   * neben der Auswahlliste und dem Datenbanktyp. Der Effekt war
+   * lautlos: die Seite bot Türkisch an, die Datenbank hätte es
+   * gespeichert, und diese Zeile hat es kommentarlos verworfen. Das
+   * Formular meldete Erfolg, und nach dem Neuladen stand wieder
+   * Deutsch da.
+   */
+  const uiSprachen = new Set(nutzbareUiSprachen().map((l) => l.code));
+  ifPresent("locale", (v) => { if (uiSprachen.has(v as never)) patch.locale = v; });
+  ifPresent("assistantLocale", (v) => { if (istLocaleCode(v)) patch.assistantLocale = v; });
+  ifPresent("documentLocale", (v) => { if (istLocaleCode(v)) patch.documentLocale = v; });
 
   ifPresent("country", (v) => { patch.country = v.slice(0, 2).toUpperCase() || "DE"; });
   ifPresent("jobMarketCountry", (v) => { patch.jobMarketCountry = v.slice(0, 2).toUpperCase() || "DE"; });

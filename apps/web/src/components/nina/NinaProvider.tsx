@@ -56,7 +56,7 @@ export interface NinaReadiness {
 export type NinaVisualState =
   | "idle"
   | "thinking"
-  | "talking"
+  | "speaking"
   | "listening"
   | "success"
   | "error";
@@ -164,6 +164,25 @@ function fehlenderProvider(): never {
  */
 export function useNinaActions(): NinaActions {
   return useContext(NinaActionsContext) ?? fehlenderProvider();
+}
+
+/**
+ * Der Zustand, falls es einen gibt.
+ *
+ * Für Stellen, an denen Nina AUSSERHALB der Anwendung erscheint — auf
+ * der Startseite etwa. Dort gibt es keinen Provider, weil es kein
+ * Gespräch gibt, und `useNina()` würde zu Recht werfen.
+ *
+ * Gibt `null` zurück statt zu werfen. Wer diesen Haken benutzt, muss
+ * einen eigenen Zustand mitbringen; wer den Zustand aus dem Gespräch
+ * braucht, nimmt weiterhin `useNina()` und bekommt bei fehlendem
+ * Provider einen klaren Fehler statt einer stillen Voreinstellung.
+ */
+export function useNinaFallsVorhanden(): NinaContextValue | null {
+  const actions = useContext(NinaActionsContext);
+  const state = useContext(NinaStateContext);
+  if (!actions || !state) return null;
+  return { ...state, ...actions };
 }
 
 /** Zustand und Handlungen. Für den Drawer und die Gesprächsseite. */
@@ -655,7 +674,7 @@ export function NinaProvider({
       visualState: (isListening
         ? "listening"
         : stimme.zustand === "spricht"
-          ? "talking"
+          ? "speaking"
           : busy
             ? "thinking"
             : "idle") as NinaVisualState,

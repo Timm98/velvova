@@ -61,6 +61,16 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
   useEffect(() => setQuery(params.get("q") ?? ""), [params]);
 
   function apply(next: URLSearchParams) {
+    /*
+     * Jede Änderung an Filter oder Sortierung beginnt wieder auf Seite 1.
+     *
+     * Bei Filtern ist der Grund offensichtlich: die Liste wird kürzer,
+     * Seite 4 gibt es vielleicht nicht mehr. Bei der Sortierung ist er
+     * es weniger — die Länge bleibt gleich. Aber auf Seite 4 stehen
+     * danach völlig andere Stellen, ohne dass jemand geblättert hätte.
+     * Wer neu sortiert, will oben anfangen.
+     */
+    next.delete("seite");
     startTransition(() => {
       const search = next.toString();
       router.push(search ? `/app/jobs?${search}` : "/app/jobs");

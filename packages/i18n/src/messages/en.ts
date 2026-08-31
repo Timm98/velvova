@@ -61,6 +61,7 @@ export const en: Messages = {
     expand: "Expand",
     collapse: "Collapse",
     skipToContent: "Skip to content",
+    backToApp: "Back to {assistant}",
   },
 
   landing: {
@@ -72,7 +73,7 @@ export const en: Messages = {
       "{assistant} understands your experience, finds fresh roles from verified sources and " +
       "stays with you from orientation to application.",
     ctaPrimary: "Start free with {assistant}",
-    ctaSecondary: "How {assistant} works",
+    ctaSecondary: "How it works",
 
     coreLine1: "We do not show you more jobs.",
     coreLine2: "We show you the right ones.",
@@ -199,7 +200,7 @@ export const en: Messages = {
       "Before I show you any jobs, I want to understand what you can really do, what gives you " +
       "energy and what conditions you need. You can correct or skip anything at any time.",
     progress: "{done} of {total} topics understood",
-    yourAnswer: "Your answer",
+    yourAnswer: "Write to {assistant} or speak with her …",
     send: "Send",
     voiceMode: "Speak",
     textMode: "Type",

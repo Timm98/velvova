@@ -1,5 +1,6 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { cookies } from "next/headers";
+import { cache } from "react";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { getDb, schema, withUser } from "@paycheck/db";
@@ -76,6 +77,38 @@ function tokenHash(token: string): string {
  * ausdrücklich auf ihre eigene Antwort setzen müssen - über cookies()
  * gesetzte Werte landen nicht auf einer selbst gebauten NextResponse.
  */
+/**
+ * Darf das Sitzungscookie `Secure` tragen?
+ *
+ * `Secure` heißt: der Browser sendet das Cookie ausschließlich über
+ * TLS. In Produktion ist das Pflicht — ohne es liegt das Sitzungstoken
+ * bei jedem Aufruf im Klartext auf der Leitung.
+ *
+ * Der Haken zeigte sich beim ersten lokalen Test eines Production
+ * Builds: Anmelden schien zu funktionieren, die Antwort kam mit 200,
+ * das Set-Cookie stand im Kopf — und die nächste Seite war wieder das
+ * Anmeldeformular. Der Browser hatte das Cookie stillschweigend
+ * verworfen, weil `http://localhost` kein TLS ist. Keine Meldung,
+ * keine Konsolenwarnung, nur eine Anwendung, in die man sich nicht
+ * einloggen kann.
+ *
+ * Die Ausnahme ist eng und nicht missbrauchbar: sie greift nur, wenn
+ * der Host wörtlich localhost oder eine Loopback-Adresse ist. Ein
+ * Angreifer kann den Host-Header eines fremden Browsers nicht auf
+ * `localhost` setzen — dorthin zeigt der Browser des Opfers auf dessen
+ * eigenen Rechner, nicht auf unseren Server. Für jede echte Domain,
+ * mit und ohne TLS, bleibt es bei `Secure`.
+ */
+async function cookieSicher(): Promise<boolean> {
+  if (loadRuntimeConfig().nodeEnv !== "production") return false;
+
+  const host = (await headers()).get("host") ?? "";
+  // Port abschneiden: "localhost:3100" ist derselbe Fall wie "localhost".
+  const name = host.replace(/:\d+$/, "").toLowerCase();
+  const lokal = name === "localhost" || name === "127.0.0.1" || name === "[::1]" || name === "::1";
+  return !lokal;
+}
+
 export async function issueSessionToken(userId: string, userAgent?: string): Promise<string> {
   const db = await getDb();
   const token = randomBytes(32).toString("base64url");
@@ -100,7 +133,7 @@ export async function createSession(userId: string, userAgent?: string): Promise
   store.set(cfg.auth.cookieName, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: cfg.nodeEnv === "production",
+    secure: await cookieSicher(),
     path: "/",
     expires: expiresAt,
   });
@@ -120,7 +153,20 @@ function describeDevice(userAgent?: string): string {
  * Die aktuelle Sitzung. Gibt null zurück, statt zu werfen - Aufrufer
  * entscheiden selbst, ob Anmeldung nötig ist.
  */
-export async function currentUser(): Promise<SessionUser | null> {
+/*
+ * Einmal je Anfrage, nicht einmal je Aufrufstelle.
+ *
+ * `currentUser()` steht im Layout UND in fast jeder Seite. Ohne
+ * Bündelung sind das zwei Sitzungsabfragen für dieselbe Auskunft — und
+ * gegen Supabase je 44 Millisekunden plus Transaktionsaufwand.
+ *
+ * `cache()` von React gilt genau für einen Renderdurchlauf: zwei
+ * Aufrufe innerhalb derselben Anfrage teilen sich das Ergebnis, zwei
+ * Anfragen teilen sich nichts. Ein prozessweiter Zwischenspeicher wäre
+ * hier ein Sicherheitsproblem — er könnte die Sitzung eines Menschen an
+ * den nächsten geben.
+ */
+export const currentUser = cache(async function currentUser(): Promise<SessionUser | null> {
   const cfg = loadRuntimeConfig();
   const store = await cookies();
   const token = store.get(cfg.auth.cookieName)?.value;
@@ -165,7 +211,7 @@ export async function currentUser(): Promise<SessionUser | null> {
     role: row.role,
     locale: row.locale ?? "de",
   };
-}
+});
 
 /** Für Seiten, die ohne Anmeldung keinen Sinn ergeben. */
 export async function requireUser(): Promise<SessionUser> {

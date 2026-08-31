@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Bell, Briefcase, FileText, Home, Search, User } from "lucide-react";
+import { Bell, Briefcase, FileText, Home, MessagesSquare, Search, User } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { NinaSignal } from "@/components/nina/NinaSignal";
 import { useNinaActions } from "@/components/nina/NinaProvider";
 
 /**
@@ -20,14 +19,32 @@ import { useNinaActions } from "@/components/nina/NinaProvider";
  * Fünf Bereiche mit Namen, mittig. Aktiv ist eine weiche Kapsel, keine
  * Unterstreichung und kein Rechteck.
  *
- * Der Nina-Knopf steht rechts als Pille mit Signal. Er öffnet den
- * Drawer, ohne die Seite neu zu laden — der Zustand liegt im Provider,
- * der über der Route sitzt.
+ * Der Nina-Knopf steht rechts als Pille. Er öffnet den Drawer, ohne die
+ * Seite neu zu laden — der Zustand liegt im Provider, der über der
+ * Route sitzt.
+ *
+ * Hier steht bewusst KEINE Nina.
+ *
+ * Vorher trug der Header an drei Stellen den Signalring: als Marke, im
+ * Bereich „Nina" und auf der Pille. Daneben stand auf der Gesprächs-
+ * seite die echte Nina aus nina.glb — und damit sahen Menschen zwei
+ * verschiedene Ninas gleichzeitig. Genau das verbietet die Vorgabe.
+ *
+ * Der naheliegende Ausweg wäre gewesen, auch in den Header das Modell
+ * zu setzen. Er ist falsch, und zwar aus derselben Vorgabe: „Das Modell
+ * darf nicht als unlesbare kleine Kugel erscheinen." Bei 28 Pixeln wäre
+ * es genau das — dazu ein zweiter WebGL-Kontext und 12 MB auf jeder
+ * Seite, auf der niemand Nina sehen will.
+ *
+ * Also die Trennung: die GLB-Nina zeigt Nina als Gegenüber. Der Header
+ * zeigt WEGE — und ein Weg zu einem Gespräch wird durch ein
+ * Gesprächssymbol beschrieben, nicht durch ein Gesicht. Links steht die
+ * Marke Paycheck, nicht Nina.
  */
 
 const BEREICHE = [
   { href: "/app", label: "Heute", icon: Home, exact: true },
-  { href: "/app/nina", label: "Nina", icon: NinaSignal },
+  { href: "/app/nina", label: "Nina", icon: MessagesSquare },
   { href: "/app/jobs", label: "Jobs", icon: Briefcase },
   { href: "/app/applications", label: "Bewerbungen", icon: FileText },
   { href: "/app/profile", label: "Profil", icon: User },
@@ -102,8 +119,13 @@ export function TopNav({
           className="flex min-h-11 min-w-11 shrink-0 items-center gap-2.5 rounded-(--radius-pill) px-2"
           aria-label={brandName}
         >
-          <NinaSignal size="md" />
-          <span className="hidden font-display text-[17px] font-semibold tracking-[-0.02em] sm:block">
+          <span
+            aria-hidden
+            className="grid size-8 shrink-0 place-items-center rounded-(--radius-sm) bg-accent text-sm font-bold text-accent-on"
+          >
+            {brandName.slice(0, 1)}
+          </span>
+          <span className="hidden font-display text-lg font-semibold tracking-[-0.02em] sm:block">
             {brandName}
           </span>
         </Link>
@@ -120,20 +142,16 @@ export function TopNav({
                     href={b.href}
                     aria-current={aktiv ? "page" : undefined}
                     className={cn(
-                      "flex h-11 items-center gap-2 rounded-(--radius-pill) px-4 text-[15px] transition-colors duration-(--duration-fast)",
+                      "flex h-11 items-center gap-2 rounded-(--radius-pill) px-4 text-sm transition-colors duration-(--duration-fast)",
                       aktiv
                         ? "bg-lavender font-medium text-ink"
                         : "text-ink-2 hover:bg-soft hover:text-ink",
                     )}
                   >
-                    {Icon === NinaSignal ? (
-                      <NinaSignal size="xs" state={aktiv ? "active" : "idle"} />
-                    ) : (
-                      <Icon
-                        className={cn("size-[18px]", aktiv ? "text-accent" : "text-ink-3")}
-                        strokeWidth={aktiv ? 2 : 1.7}
-                      />
-                    )}
+                    <Icon
+                      className={cn("size-[18px]", aktiv ? "text-accent" : "text-ink-3")}
+                      strokeWidth={aktiv ? 2 : 1.7}
+                    />
                     {b.label}
                   </Link>
                 </li>
@@ -158,9 +176,9 @@ export function TopNav({
           <button
             type="button"
             onClick={() => nina.setOpen(true)}
-            className="hidden h-11 items-center gap-2 rounded-(--radius-pill) bg-lavender pl-3 pr-4 text-[15px] font-medium text-ink transition-colors hover:bg-soft-hover sm:flex"
+            className="hidden h-11 items-center gap-2 rounded-(--radius-pill) bg-lavender pl-3.5 pr-4 text-sm font-medium text-ink transition-colors hover:bg-soft-hover sm:flex"
           >
-            <NinaSignal size="xs" state="active" />
+            <MessagesSquare className="size-[18px] text-accent" strokeWidth={1.9} />
             {assistantName} fragen
           </button>
 
@@ -175,7 +193,11 @@ export function TopNav({
           >
             <Bell className="size-[18px]" strokeWidth={1.7} />
             {unreadCount > 0 && (
-              <span className="absolute right-2 top-2 grid min-w-[16px] place-items-center rounded-full bg-accent px-1 font-mono text-[9px] font-semibold leading-4 text-accent-on">
+              /* 9px waren hier vorher — kleiner als jede Stufe der Skala
+                 und schlicht nicht lesbar. Die Zahl steht zusätzlich im
+                 Aria-Label, aber wer sie sieht, soll sie auch lesen
+                 können. */
+              <span className="absolute right-1.5 top-1.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 font-mono text-[12px] font-semibold leading-[18px] text-accent-on">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -192,9 +214,19 @@ export function TopNav({
 /**
  * Die untere Leiste auf schmalen Geräten.
  *
- * Fünf Bereiche mit Beschriftung, weiche Kapsel für den aktiven. Sie
- * liegt im Fluss und nicht darüber: eine überlagernde Leiste verdeckt
- * sonst das Ende der Seite.
+ * Fünf Bereiche mit Beschriftung, weiche Kapsel für den aktiven.
+ *
+ * Sie liegt fest am unteren Rand, nicht im Textfluss. Vorher tat sie
+ * das nicht — die Klasse `app-nav-bottom` sollte das regeln, war aber
+ * nirgends definiert. Kein Fehler, keine Warnung: eine Klasse, die es
+ * nicht gibt, ist im HTML nicht von einer zu unterscheiden, die nichts
+ * bewirkt. Die Leiste rutschte damit ans Dokumentende und war erst
+ * nach dem Durchscrollen einer langen Jobliste erreichbar — also genau
+ * dann nicht, wenn man sie braucht.
+ *
+ * Damit sie nichts verdeckt, hält `--nav-bottom-h` unten im
+ * Inhaltsbereich denselben Platz frei. Die Höhe steht an einer Stelle,
+ * nicht an zweien, sonst laufen Leiste und Freiraum auseinander.
  */
 export function BottomNav() {
   const pathname = usePathname();
@@ -202,9 +234,24 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Hauptbereiche"
-      className="app-nav-bottom bg-raised pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_0_rgba(16,18,26,0.06)] md:hidden"
+      className={cn(
+        /*
+         * `app-nav-bottom` steht hier als Kennzeichen, nicht als Stil.
+         *
+         * Die Klasse war einmal für CSS gedacht, das es nie gab — und
+         * genau deshalb hatte die Leiste lange gar keine Positionierung.
+         * Sie ist aber der Griff, an dem die Testreihe die untere
+         * Navigation findet. Als sie verschwand, fiel eine Prüfung aus,
+         * die nichts mit dem Fehler zu tun hatte.
+         */
+        "app-nav-bottom",
+        "fixed inset-x-0 bottom-0 z-40 md:hidden",
+        "bg-raised/95 backdrop-blur-xl",
+        "pb-[env(safe-area-inset-bottom)]",
+        "shadow-[0_-1px_0_rgba(16,18,26,0.06),0_-8px_24px_rgba(16,18,26,0.05)]",
+      )}
     >
-      <ul className="flex px-1 py-1.5">
+      <ul className="flex h-(--nav-bottom-h) items-stretch px-1 py-1.5">
         {BEREICHE.map((b) => {
           const aktiv = istAktiv(pathname, b.href, "exact" in b ? b.exact : false);
           const Icon = b.icon;
@@ -214,15 +261,11 @@ export function BottomNav() {
                 href={b.href}
                 aria-current={aktiv ? "page" : undefined}
                 className={cn(
-                  "flex min-h-[52px] flex-col items-center justify-center gap-1 rounded-(--radius-md) text-2xs transition-colors",
+                  "flex h-full flex-col items-center justify-center gap-1 rounded-(--radius-sm) text-2xs transition-colors",
                   aktiv ? "bg-lavender font-medium text-ink" : "text-ink-3",
                 )}
               >
-                {Icon === NinaSignal ? (
-                  <NinaSignal size="sm" state={aktiv ? "active" : "idle"} />
-                ) : (
-                  <Icon className="size-[19px]" strokeWidth={aktiv ? 2 : 1.7} />
-                )}
+                <Icon className="size-[19px]" strokeWidth={aktiv ? 2 : 1.7} />
                 {b.label}
               </Link>
             </li>

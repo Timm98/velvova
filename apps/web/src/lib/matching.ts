@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getDb, schema, withUser } from "@paycheck/db";
 import {
   UserConstraintsSchema,
@@ -147,26 +148,46 @@ const EMPTY_CONSTRAINTS = UserConstraintsSchema.parse({
   maxTravelPercent: null,
 });
 
-export async function loadProfileContext(userId: string): Promise<UserProfileContext> {
+/*
+ * Auch das Profil einmal je Anfrage.
+ *
+ * Die Heute-Seite lädt es selbst, der Riegel lädt es, der Trichter lädt
+ * es, und `loadScoredJob` lädt es noch einmal. Viermal dieselbe
+ * Transaktion für Daten, die sich innerhalb einer Anfrage nicht ändern
+ * können.
+ */
+export const loadProfileContext = cache(async function loadProfileContext(
+  userId: string,
+): Promise<UserProfileContext> {
   const db = await getDb();
 
   return withUser(db, userId, async (tx) => {
-    const [constraintRow] = await tx
-      .select()
-      .from(schema.userConstraints)
-      .where(eq(schema.userConstraints.userId, userId))
-      .limit(1);
-
-    const evidenceRows = await tx
-      .select()
-      .from(schema.evidenceItems)
-      .where(and(eq(schema.evidenceItems.userId, userId), isNull(schema.evidenceItems.deletedAt)));
-
-    const [profileRow] = await tx
-      .select()
-      .from(schema.careerProfiles)
-      .where(eq(schema.careerProfiles.userId, userId))
-      .limit(1);
+    /*
+     * Drei unabhängige Abfragen gleichzeitig.
+     *
+     * Bedingungen, Belege und Profil hängen nicht voneinander ab — sie
+     * standen nur untereinander. Jedes `await` ist gegen Supabase ein
+     * eigener Netzweg von 44 Millisekunden; drei davon sind 132, für
+     * Daten, die alle gleichzeitig hätten unterwegs sein können.
+     */
+    const [constraintRows, evidenceRows, profileRows] = await Promise.all([
+      tx
+        .select()
+        .from(schema.userConstraints)
+        .where(eq(schema.userConstraints.userId, userId))
+        .limit(1),
+      tx
+        .select()
+        .from(schema.evidenceItems)
+        .where(and(eq(schema.evidenceItems.userId, userId), isNull(schema.evidenceItems.deletedAt))),
+      tx
+        .select()
+        .from(schema.careerProfiles)
+        .where(eq(schema.careerProfiles.userId, userId))
+        .limit(1),
+    ]);
+    const constraintRow = constraintRows[0];
+    const profileRow = profileRows[0];
 
     const evidence = evidenceRows.map(rowToEvidence);
     const alive = evidence.filter((e) => !e.userRejected);
@@ -202,7 +223,7 @@ export async function loadProfileContext(userId: string): Promise<UserProfileCon
       coverage: profileRow?.coverage ?? 0,
     };
   });
-}
+});
 
 // --- Bewerten ------------------------------------------------------------
 
@@ -279,41 +300,52 @@ async function scoreAllJobsUncached(
 ): Promise<ScoredJob[]> {
   const db = await getDb();
 
-  const allJobRows = await db
-    .select({ job: schema.jobs, companyName: schema.companies.name })
-    .from(schema.jobs)
-    .innerJoin(schema.companies, eq(schema.companies.id, schema.jobs.companyId));
+  /*
+   * Sechs Abfragen gleichzeitig statt nacheinander.
+   *
+   * Vorher stand hier sechsmal `await` untereinander: Stellen,
+   * Anforderungen, Quellen, Fundstellen, Bewertungen, Themen. Keine
+   * davon hängt von einer anderen ab — sie warteten nur der Reihe nach.
+   * Bei einer Datenbank in der Cloud ist jede Runde ein Netzweg, und
+   * sechs Netzwege hintereinander sind sechsmal die Latenz statt einmal.
+   */
+  const [allJobRows, requirementRows, sourceRows, linkRows, reviewRows, themeRows] =
+    await Promise.all([
+      db
+        .select({ job: schema.jobs, companyName: schema.companies.name })
+        .from(schema.jobs)
+        .innerJoin(schema.companies, eq(schema.companies.id, schema.jobs.companyId))
+        /*
+         * Demo-Datensätze fallen in der ABFRAGE weg, nicht danach.
+         *
+         * Vorher kamen sie mit und wurden in JavaScript herausgefiltert
+         * — inklusive ihrer Beschreibungstexte, die den grössten Teil
+         * der übertragenen Menge ausmachen. Was man nicht anzeigen
+         * darf, muss man auch nicht holen.
+         */
+        .where(eq(schema.jobs.isDemo, false)),
+      db.select().from(schema.jobRequirements),
+      db.select().from(schema.jobSources),
+      db.select().from(schema.jobSourceLinks),
+      db.select().from(schema.reviewAggregates),
+      db.select().from(schema.reviewThemes),
+    ]);
 
   /*
    * Erfundene Stellen erscheinen nicht in der Produktoberfläche.
    *
-   * Die Regel ist bewusst datenabhängig statt konfigurierbar: sobald
-   * auch nur eine echte Anzeige vorliegt, verschwinden die
-   * Demo-Datensätze. Ein Schalter dafür würde irgendwann falsch stehen,
-   * und dann stünden erfundene Unternehmen neben echten — genau das
-   * darf nicht passieren.
-   *
-   * Seed-Datensätze werden NIE ausgeliefert — auch nicht, wenn dadurch
-   * die Liste leer bleibt.
-   *
-   * Vorher standen sie da, sobald keine echten Stellen vorhanden waren,
-   * "damit ein frisch aufgesetztes Projekt nicht leer wirkt". Das war
-   * der Fehler: eine leere Liste ist eine wahre Aussage über den
-   * Zustand des Produkts. Eine gefüllte Liste mit erfundenen Stellen
-   * ist eine falsche — und die Kennzeichnung daneben trägt sie nicht,
-   * weil niemand ein Etikett liest, wenn darunter ein passender Job
-   * steht.
+   * Die Regel steht jetzt in der Abfrage oben (`isDemo = false`) statt
+   * hier als Filter danach. Sachlich unverändert: Seed-Datensätze
+   * werden NIE ausgeliefert, auch nicht, wenn dadurch die Liste leer
+   * bleibt. Eine leere Liste ist eine wahre Aussage über den Zustand
+   * des Produkts; eine mit erfundenen Stellen gefüllte ist eine
+   * falsche, und die Kennzeichnung daneben trägt sie nicht.
    */
-  const jobRows = allJobRows.filter((r) => !r.job.isDemo);
+  const jobRows = allJobRows;
 
-  const requirementRows = await db.select().from(schema.jobRequirements);
-  const sourceRows = await db.select().from(schema.jobSources);
   // Die weiteren Fundstellen derselben Stelle. Ein Abruf für alle
   // Stellen; pro Stelle einzeln nachzufragen wäre bei 150 Anzeigen
   // genau die Art von Abfrage, die eine Liste langsam macht.
-  const linkRows = await db.select().from(schema.jobSourceLinks);
-  const reviewRows = await db.select().from(schema.reviewAggregates);
-  const themeRows = await db.select().from(schema.reviewThemes);
 
   // Reposts erkennen: gleiche Inhalte, früher erfasst.
   const byHash = new Map<string, Date[]>();
@@ -325,24 +357,67 @@ async function scoreAllJobsUncached(
 
   const now = new Date();
 
+  /*
+   * Einmal nach Schlüssel ordnen statt bei jeder Stelle neu suchen.
+   *
+   * Vorher lief in der Schleife über 994 Stellen je ein `filter` über
+   * 636 Anforderungen, ein `find` über die Quellen und zwei weitere
+   * `filter` über Bewertungen und Themen. Das sind mehr als 600.000
+   * Vergleiche für eine einzige Seitenansicht — Arbeit, die quadratisch
+   * mit dem Bestand wächst und niemandem auffällt, solange die
+   * Datenbank klein ist.
+   *
+   * Mit vorher gebauten Karten ist es ein Nachschlagen je Stelle. Das
+   * Ergebnis ist Zeichen für Zeichen dasselbe.
+   */
+  const anforderungenJeJob = new Map<string, JobRequirement[]>();
+  for (const r of requirementRows) {
+    const liste = anforderungenJeJob.get(r.jobId) ?? [];
+    liste.push({
+      id: r.id,
+      jobId: r.jobId,
+      kind: r.kind,
+      text: r.text,
+      skillKey: r.skillKey,
+      category: r.category as JobRequirement["category"],
+    });
+    anforderungenJeJob.set(r.jobId, liste);
+  }
+
+  const quelleJeId = new Map(sourceRows.map((s) => [s.id, s]));
+
+  const bewertungenJeFirma = new Map<string, ReviewAggregate[]>();
+  for (const r of reviewRows) {
+    const liste = bewertungenJeFirma.get(r.companyId) ?? [];
+    liste.push({ ...r, ratingScaleMax: r.ratingScaleMax } as ReviewAggregate);
+    bewertungenJeFirma.set(r.companyId, liste);
+  }
+
+  const themenJeFirma = new Map<string, ReviewTheme[]>();
+  for (const t of themeRows) {
+    const liste = themenJeFirma.get(t.companyId) ?? [];
+    liste.push(t as ReviewTheme);
+    themenJeFirma.set(t.companyId, liste);
+  }
+
+  /* Auch die Fundstellen einmal nach Stelle ordnen — derselbe Grund. */
+  const fundstellenJeJob = new Map<string, typeof linkRows>();
+  for (const l of linkRows) {
+    const liste = fundstellenJeJob.get(l.jobId) ?? [];
+    liste.push(l);
+    fundstellenJeJob.set(l.jobId, liste);
+  }
+
+  const LEER_ANFORDERUNGEN: JobRequirement[] = [];
+  const LEER_BEWERTUNGEN: ReviewAggregate[] = [];
+  const LEER_THEMEN: ReviewTheme[] = [];
+
   return jobRows.map(({ job: row, companyName }) => {
     const job = rowToJob(row, companyName);
-    const requirements: JobRequirement[] = requirementRows
-      .filter((r) => r.jobId === job.id)
-      .map((r) => ({
-        id: r.id,
-        jobId: r.jobId,
-        kind: r.kind,
-        text: r.text,
-        skillKey: r.skillKey,
-        category: r.category as JobRequirement["category"],
-      }));
-
-    const source = sourceRows.find((s) => s.id === job.sourceId) ?? null;
-    const reviews: ReviewAggregate[] = reviewRows
-      .filter((r) => r.companyId === job.companyId)
-      .map((r) => ({ ...r, ratingScaleMax: r.ratingScaleMax }) as ReviewAggregate);
-    const themes: ReviewTheme[] = themeRows.filter((t) => t.companyId === job.companyId) as ReviewTheme[];
+    const requirements = anforderungenJeJob.get(job.id) ?? LEER_ANFORDERUNGEN;
+    const source = quelleJeId.get(job.sourceId ?? "") ?? null;
+    const reviews = bewertungenJeFirma.get(job.companyId) ?? LEER_BEWERTUNGEN;
+    const themes = themenJeFirma.get(job.companyId) ?? LEER_THEMEN;
 
     const mine = job.publishedAt ?? job.fetchedAt;
     const earlierDuplicates = (byHash.get(job.contentHash) ?? []).filter(
@@ -404,10 +479,10 @@ async function scoreAllJobsUncached(
 
     // Nur ANDERE Quellen. Die eigene noch einmal als "auch gelistet bei"
     // zu zeigen, wäre eine Behauptung über Reichweite, die nicht stimmt.
-    const alsoListedOn = linkRows
-      .filter((l) => l.jobId === job.id && l.sourceId !== job.sourceId && l.url)
+    const alsoListedOn = (fundstellenJeJob.get(job.id) ?? [])
+      .filter((l) => l.sourceId !== job.sourceId && l.url)
       .map((l) => ({
-        sourceName: sourceRows.find((s) => s.id === l.sourceId)?.displayName ?? "unbekannt",
+        sourceName: quelleJeId.get(l.sourceId ?? "")?.displayName ?? "unbekannt",
         url: l.url,
       }));
 

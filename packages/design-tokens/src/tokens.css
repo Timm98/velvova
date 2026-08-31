@@ -41,10 +41,10 @@
   color-scheme: light;
 
   --background: #f7f8fc;
-  --background-subtle: #f0f2f8;
+  --background-subtle: #f0f2f7;
   --surface-1: #ffffff;
   --surface-2: #fbfcfe;
-  --surface-3: #f0f2f8;
+  --surface-3: #f0f2f7;
   --surface-glass: rgba(255, 255, 255, 0.84);
 
   /* ---- Die beiden farbigen Ruheflächen ----
@@ -57,10 +57,10 @@
   /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
      eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
      einsperrt. */
-  --surface-soft: #f0f2f8;
+  --surface-soft: #f0f2f7;
   --surface-soft-hover: #e7eaf4;
 
-  --text-primary: #0b0e16;
+  --text-primary: #11131b;
   /*
    * Beide Textstufen sind gegen JEDE Fläche geprüft, auf der sie
    * vorkommen — auch gegen die weiche Lavendel- und die Eisfläche, wo
@@ -68,12 +68,12 @@
    * mit 4,39 und 3,53 durch. Genau dort steht die kleine Schrift, bei
    * der ein zu heller Ton am wenigsten auffällt und am meisten schadet.
    */
-  --text-secondary: #636d82;
+  --text-secondary: #616a7b;
   /* Aufgehellt wirkt „muted" wie Nebensache — und genau deshalb steht
      dort oft etwas, das man lesen muss. #9299A8 aus der Vorgabe erreicht
      2,50:1 auf der Lavendelfläche. Der Ton bleibt zurückhaltend, aber
      lesbar. */
-  --text-tertiary: #686d78;
+  --text-tertiary: #666a75;
   --text-on-primary: #ffffff;
 
   /* Linien gibt es noch — für Tabellen, Trennungen in dichten Listen
@@ -82,29 +82,29 @@
   --border-subtle: rgba(11, 14, 22, 0.07);
   --border-strong: rgba(11, 14, 22, 0.13);
 
-  --primary: #635bff;
-  --primary-fill: #635bff;
+  --primary: #655dff;
+  --primary-fill: #655dff;
   --primary-strong: #4f47e8;
-  --primary-soft: #f0eeff;
+  --primary-soft: #eae8ff;
   /* 4,53:1 auf der ungünstigsten Fläche (Soft Lavender). Der Markenton
      selbst liegt dort bei 4,13 und trägt deshalb Flächen, aber keine
      Schrift. */
-  --primary-text: #5d56f1;
+  --primary-text: #5a53ea;
 
   --signal-cyan: #b9d8ff;
   --signal-cyan-text: #0e7290;
   --signal-cyan-soft: #edf6ff;
-  --signal-violet: #8b83ff;
+  --signal-violet: #8b84ff;
   --signal-violet-text: #5b4fd6;
   --signal-violet-soft: #f0eeff;
 
-  --success: #24b47e;
-  --success-text: #187c57;
+  --success: #22a970;
+  --success-text: #177854;
   --success-soft: #e2f5ec;
-  --warning: #e0a52a;
+  --warning: #c88a27;
   --warning-text: #7a5d0a;
   --warning-soft: #fbf0d8;
-  --danger: #ef5f7f;
+  --danger: #d74f67;
   --danger-text: #a32547;
   --danger-soft: #fde8ed;
 
@@ -128,15 +128,16 @@
   --shadow-glow: 0 6px 24px rgba(98, 92, 255, 0.24);
 
   /* ---- Radien ----
-     Die Vorgabe: Schaltflächen als Pille, Eingaben 16–22, Flächen
-     24–32, Schubladen 28–36. Die alten Werte (6 bis 22) lagen
-     durchgehend darunter — deshalb wirkte alles eckig, obwohl überall
-     ein Radius stand. */
+     Die Skala steht in V7 §3.2 und wird hier wörtlich übernommen. Die
+     alten Werte (6 bis 22) lagen durchgehend darunter — deshalb wirkte
+     alles eckig, obwohl überall ein Radius stand. Zwei Zwischenstufen
+     verschieben sich dabei um wenige Pixel; das ist Absicht, damit die
+     Skala eine Skala bleibt und nicht sieben Einzelentscheidungen. */
   --radius-xs: 12px;
-  --radius-sm: 18px;
-  --radius-md: 24px;
-  --radius-lg: 32px;
-  --radius-xl: 44px;
+  --radius-sm: 16px;
+  --radius-md: 22px;
+  --radius-lg: 30px;
+  --radius-xl: 40px;
   --radius-2xl: 56px;
   --radius-pill: 999px;
   /* Der alte Name bleibt als Weiterleitung: rund zwanzig Dateien
@@ -144,18 +145,25 @@
      ein altes. */
   --radius-full: var(--radius-pill);
 
-  /* Benannt nach der Aufgabe, nicht nach der Größe. Die Werte folgen
-     der Vorgabe: kleine Controls ab 16, Eingaben ab 20, Textfelder ab
-     26, Jobflächen 24–32, Schubladen 32–40, große Flächen 36–56. */
+  /* Benannt nach der Aufgabe, nicht nach der Größe — wer eine Jobfläche
+     baut, soll nicht entscheiden müssen, ob 28 oder 30 richtig ist.
+     Die Werte folgen V7 §3.2: Buttons und Composer als Pille,
+     Jobflächen 24–30, Modale und Schubladen mindestens 30, Bilder
+     28–48. */
   --radius-control: var(--radius-pill);
   --radius-chip: var(--radius-pill);
-  --radius-input: 22px;
-  --radius-textarea: var(--radius-md);
+  /* Eingaben und Composer sind Pillen, nicht „stark gerundet". Ein
+     22px-Feld neben einem Pillen-Button sieht aus wie ein Versehen. */
+  --radius-input: var(--radius-pill);
+  --radius-textarea: var(--radius-lg);
   --radius-surface: 28px;
   --radius-job: 28px;
+  /* Mindestens 30 laut Vorgabe. */
   --radius-sheet: 36px;
   --radius-modal: var(--radius-lg);
   --radius-canvas: var(--radius-xl);
+  /* Bilder: eigene Stufe, weil sie weiter gehen darf als eine Fläche. */
+  --radius-image: 32px;
 
   /* ---- Bewegung ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -255,6 +263,25 @@
   --danger-text: #ff93aa;
   --danger-soft: rgba(255, 125, 153, 0.14);
 
+  /*
+   * Die beiden farbigen Ruheflächen — im dunklen Modus lange vergessen.
+   *
+   * Sie standen nur im hellen Block, als feste Hexwerte und nicht als
+   * Alias. Aliase wie `--accent: var(--primary-fill)` lösen sich pro
+   * Element auf und kippen deshalb von allein mit; ein fester Wert tut
+   * das nicht. Also blieb `bg-lavender` auch im dunklen Modus hell —
+   * mit heller Schrift darauf. axe misst dort 1,07:1: praktisch
+   * unsichtbarer Text, und niemandem aufgefallen, weil der helle Modus
+   * der Standard ist und dunkel selten geprüft wurde.
+   */
+  --surface-lavender: #1c1f33;
+  --surface-ice: #14202e;
+
+  /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
+     gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */
+  --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
+  --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);
+
   --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
   --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
 
@@ -323,7 +350,26 @@
     --danger-text: #ff93aa;
     --danger-soft: rgba(255, 125, 153, 0.14);
 
-    --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
+    /*
+   * Die beiden farbigen Ruheflächen — im dunklen Modus lange vergessen.
+   *
+   * Sie standen nur im hellen Block, als feste Hexwerte und nicht als
+   * Alias. Aliase wie `--accent: var(--primary-fill)` lösen sich pro
+   * Element auf und kippen deshalb von allein mit; ein fester Wert tut
+   * das nicht. Also blieb `bg-lavender` auch im dunklen Modus hell —
+   * mit heller Schrift darauf. axe misst dort 1,07:1: praktisch
+   * unsichtbarer Text, und niemandem aufgefallen, weil der helle Modus
+   * der Standard ist und dunkel selten geprüft wurde.
+   */
+  --surface-lavender: #1c1f33;
+  --surface-ice: #14202e;
+
+  /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
+     gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */
+  --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
+  --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);
+
+  --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
     --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
 
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -413,7 +459,21 @@
    Normalfall, und die Landingpage kam dunkel heraus, obwohl hell der
    Standard sein soll. Die Systemeinstellung wird weiter unten in der
    Medienabfrage berücksichtigt; sie gehört dorthin und nicht hierher. */
-:root[data-theme="dark"] [data-surface="editorial"] {
+/*
+ * `:not([data-theme="light"])` ist hier nicht Kosmetik.
+ *
+ * Die Landingpage setzt auf ihrer Wurzel ausdrücklich
+ * `data-theme="light"` — sie soll immer hell sein, auch für jemanden
+ * mit dunklem Konto. Ohne diese Ausnahme greift die Regel trotzdem,
+ * weil das Element ein Nachfahre von `:root[data-theme="dark"]` ist.
+ *
+ * Das Ergebnis war die schlimmste Sorte Fehler: kein Absturz, keine
+ * Warnung, nur unsichtbarer Text. Die Flächen kamen aus dem hellen
+ * Block (den die Wurzel der Seite selbst setzt), die Schrift aus dem
+ * dunklen hier — weiss auf weiss, von axe mit 1,06:1 gemessen. Wer
+ * dunkel eingestellt hatte, sah die halbe Startseite nicht.
+ */
+:root[data-theme="dark"] [data-surface="editorial"]:not([data-theme="light"]) {
   color-scheme: dark;
 
   --ed-canvas: #070910;
@@ -437,7 +497,9 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root[data-theme-mode="system"] [data-surface="editorial"] {
+  /* Dieselbe Ausnahme wie oben: eine Seite, die sich hell erklärt,
+     bleibt hell — auch wenn das Betriebssystem dunkel steht. */
+  :root[data-theme-mode="system"] [data-surface="editorial"]:not([data-theme="light"]) {
     color-scheme: dark;
     --ed-canvas: #070910;
     --ed-surface: #0e111b;
