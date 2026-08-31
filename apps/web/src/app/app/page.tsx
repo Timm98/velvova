@@ -1,7 +1,7 @@
 import { plural } from "@paycheck/domain";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bell, Briefcase, History, Sparkles, Target } from "lucide-react";
+import { ArrowRight, Bell, Briefcase, Check, History, Sparkles } from "lucide-react";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
@@ -68,7 +68,33 @@ export default async function DashboardPage() {
     ),
   ]);
 
-  const topJobs = gate.unlocked ? (await listJobsForUser(user.id, ctx, { limit: 3 })).jobs : [];
+  /*
+   * Auch ohne bestätigtes Profil werden Stellen geladen (V8 §8.3).
+   *
+   * Vorher stand hier eine leere Liste und darüber „Noch gesperrt".
+   * Das war doppelt falsch: die Jobseite zeigte dieselben Stellen die
+   * ganze Zeit, und eine Sperre ohne Alternative sagt einem Menschen
+   * nur, was er NICHT darf.
+   *
+   * Der Unterschied bleibt erhalten und wird benannt: ohne Profil ist
+   * es keine Rangfolge, sondern ein erster Blick. `explorativ` trägt
+   * diese Unterscheidung bis in die Überschrift.
+   */
+  const explorativ = !gate.unlocked;
+  const topJobs = (await listJobsForUser(user.id, ctx, { limit: 3 })).jobs;
+
+  /*
+   * Was Nina schon weiß (V8 §8.2).
+   *
+   * Bestätigte Belege, höchstens drei. Sie stehen an der Stelle, an
+   * der vorher ein Defizit stand — „es fehlen noch 6 Themen". Beides
+   * ist wahr; nur zeigt das eine, was jemand schon erreicht hat, und
+   * das andere, was ihm fehlt.
+   */
+  const erkanntes = ctx.evidence
+    .filter((e) => e.userConfirmed && !e.userRejected)
+    .slice(0, 3)
+    .map((e) => e.statement);
   const funnel = await diagnoseFunnel(user.id);
 
   // Genau eine nächste Handlung. Die Reihenfolge hier ist die Rangfolge.
@@ -128,7 +154,14 @@ export default async function DashboardPage() {
           }).format(new Date())}
         </p>
         <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] break-words sm:text-4xl">
-          {user.displayName ? `Hallo ${user.displayName.split(" ")[0]}` : "Willkommen zurück"}
+          {/* „Willkommen zurück" an jemanden, der sich gerade zum ersten
+              Mal angemeldet hat, ist eine kleine Unwahrheit — und die
+              erste, die er vom Produkt hört. */}
+          {user.displayName
+            ? `Hallo ${user.displayName.split(" ")[0]}`
+            : gate.hasAnySession
+              ? "Willkommen zurück"
+              : "Schön, dass du da bist"}
         </h1>
       </div>
 
@@ -171,33 +204,71 @@ export default async function DashboardPage() {
         </Card>
       </section>
 
+      {/* ── 1b. Was Nina bereits verstanden hat ──────────────────── */}
+      {/*
+       * Der Gegenpol zur Defizitmeldung (V8 §8.2).
+       *
+       * Auf der Heute-Seite stand bisher nur, was fehlt. Beides ist
+       * wahr — aber wer zurückkommt, will zuerst sehen, was er schon
+       * erreicht hat. Ohne bestätigte Belege bleibt der Abschnitt weg,
+       * statt mit Platzhaltern zu füllen: eine leere Liste unter
+       * „Nina kennt bereits" wäre schlimmer als gar keine.
+       */}
+      {erkanntes.length > 0 && (
+        <section aria-labelledby="erkanntes" className="grid gap-3">
+          <h2 id="erkanntes" className="font-display text-xl font-semibold tracking-[-0.02em]">
+            {brand.assistantName} kennt bereits
+          </h2>
+          <ul className="grid gap-2">
+            {erkanntes.map((satz) => (
+              <li
+                key={satz}
+                className="flex items-start gap-2.5 rounded-(--radius-lg) bg-lavender px-5 py-3.5"
+              >
+                <Check className="mt-1 size-4 shrink-0 text-positive" strokeWidth={2.2} />
+                <span className="min-w-0 text-base leading-relaxed">{satz}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {/* ── 2. Beste Möglichkeiten ───────────────────────────────── */}
       <Section
-        title="Deine besten Möglichkeiten"
+        title={explorativ ? "Erste Möglichkeiten" : "Deine besten Möglichkeiten"}
         action={
-          gate.unlocked ? (
-            <Link
-              href="/app/jobs"
-              className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-            >
-              Alle ansehen
-              <ArrowRight className="size-3.5" strokeWidth={1.9} />
-            </Link>
-          ) : undefined
+          <Link
+            href="/app/jobs"
+            className="inline-flex items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+          >
+            Alle ansehen
+            <ArrowRight className="size-3.5" strokeWidth={1.9} />
+          </Link>
         }
       >
-        {!gate.unlocked ? (
-          <EmptyState
-            icon={<Target className="size-5" strokeWidth={1.7} />}
-            title={t("jobs.locked")}
-            body={t("jobs.lockedBody")}
-            action={
-              <Button asChild variant="primary">
-                <Link href="/app/nina">{t("jobs.lockedCta")}</Link>
-              </Button>
-            }
-          />
-        ) : topJobs.length === 0 ? (
+        {explorativ && topJobs.length > 0 && (
+          /*
+           * Der ehrliche Zwischenzustand statt einer Sperre (V8 §8.3).
+           *
+           * Hier stand „Noch gesperrt" mit einem zweiten „Gespräch
+           * fortsetzen" — derselbe Knopf wie im Abschnitt darüber. Zwei
+           * Primäraktionen für denselben Schritt, und dazwischen eine
+           * Fläche, die nur sagt, was nicht geht.
+           *
+           * Jetzt steht dort, was geht: drei Stellen, ausdrücklich als
+           * erster Blick benannt. Der Weg zum Profil bleibt daneben —
+           * als Verweis, nicht als zweiter Hauptknopf.
+           */
+          <p className="mb-4 max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
+            Noch keine endgültige Rangfolge — dafür fehlen {brand.assistantName} bestätigte
+            Angaben. Ein erster Blick ist trotzdem möglich.{" "}
+            <Link href="/app/nina" className="text-accent-text underline underline-offset-[3px]">
+              Profil zuerst schärfen
+            </Link>
+          </p>
+        )}
+
+        {topJobs.length === 0 ? (
           <EmptyState
             icon={<Briefcase className="size-5" strokeWidth={1.7} />}
             title={t("states.emptyTitle")}

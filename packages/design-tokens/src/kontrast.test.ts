@@ -28,29 +28,34 @@ import { describe, expect, it } from "vitest";
  * auf Seiten, die jemand besucht, und erst nach einem vollen Build.
  */
 
-const CSS = readFileSync(path.join(__dirname, "tokens.css"), "utf8");
+/*
+ * `import.meta.dirname` statt `__dirname`.
+ *
+ * Dieses Paket wird als ES-Modul gebaut; `__dirname` gibt es dort
+ * nicht, und der Lint hat das zu Recht gemeldet.
+ */
+const CSS = readFileSync(path.join(import.meta.dirname, "tokens.css"), "utf8");
 
 /** Nur der helle Block: `:root, [data-theme="light"]`. */
 const HELL = CSS.slice(0, CSS.indexOf('[data-theme="dark"]'));
 
 function token(name: string): string {
   const treffer = HELL.match(new RegExp(`\\s--${name}:\\s*(#[0-9a-fA-F]{6})`));
-  expect(treffer, `--${name} ist im hellen Block nicht als Hexwert definiert`).not.toBeNull();
-  return treffer![1];
+  const wert = treffer?.[1];
+  expect(wert, `--${name} ist im hellen Block nicht als Hexwert definiert`).toBeDefined();
+  return wert ?? "#000000";
 }
 
 function leuchtdichte(hex: string): number {
-  const kanäle = hex
-    .replace("#", "")
-    .match(/../g)!
+  const kanäle = (hex.replace("#", "").match(/../g) ?? ["0", "0", "0"])
     .map((x) => parseInt(x, 16) / 255)
     .map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * kanäle[0] + 0.7152 * kanäle[1] + 0.0722 * kanäle[2];
+  return 0.2126 * (kanäle[0] ?? 0) + 0.7152 * (kanäle[1] ?? 0) + 0.0722 * (kanäle[2] ?? 0);
 }
 
 function kontrast(a: string, b: string): number {
-  const [hell, dunkel] = [leuchtdichte(a), leuchtdichte(b)].sort((x, y) => y - x);
-  return (hell + 0.05) / (dunkel + 0.05);
+  const werte = [leuchtdichte(a), leuchtdichte(b)].sort((x, y) => y - x);
+  return ((werte[0] ?? 0) + 0.05) / ((werte[1] ?? 0) + 0.05);
 }
 
 /* Jede Fläche, auf der Text stehen kann — auch die farbigen. Genau

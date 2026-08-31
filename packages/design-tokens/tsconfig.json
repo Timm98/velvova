@@ -1,1 +1,16 @@
-{ "extends": "../../tsconfig.base.json", "include": ["src/**/*"] }
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    /*
+     * Node-Typen für die Prüfung der Farbkontraste.
+     *
+     * Das Paket selbst liefert nur Tokens und braucht keine Laufzeit.
+     * Der Kontrasttest liest allerdings `tokens.css` von der Platte —
+     * er misst absichtlich die AUSGELIEFERTE Datei und nicht eine
+     * Kopie im Code, weil sonst genau die Abweichung unbemerkt bliebe,
+     * die er verhindern soll.
+     */
+    "types": ["node"]
+  },
+  "include": ["src/**/*"]
+}

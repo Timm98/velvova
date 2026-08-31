@@ -41,10 +41,10 @@
   color-scheme: light;
 
   --background: #f7f8fc;
-  --background-subtle: #f0f2f7;
+  --background-subtle: #f1f3f8;
   --surface-1: #ffffff;
   --surface-2: #fbfcfe;
-  --surface-3: #f0f2f7;
+  --surface-3: #f1f3f8;
   --surface-glass: rgba(255, 255, 255, 0.84);
 
   /* ---- Die beiden farbigen Ruheflächen ----
@@ -57,7 +57,7 @@
   /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
      eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
      einsperrt. */
-  --surface-soft: #f0f2f7;
+  --surface-soft: #f1f3f8;
   --surface-soft-hover: #e7eaf4;
 
   --text-primary: #11131b;
@@ -98,13 +98,13 @@
   --signal-violet-text: #5b4fd6;
   --signal-violet-soft: #f0eeff;
 
-  --success: #22a970;
+  --success: #21a971;
   --success-text: #177854;
   --success-soft: #e2f5ec;
-  --warning: #c88a27;
+  --warning: #c58b2b;
   --warning-text: #7a5d0a;
   --warning-soft: #fbf0d8;
-  --danger: #d74f67;
+  --danger: #d44d66;
   --danger-text: #a32547;
   --danger-soft: #fde8ed;
 

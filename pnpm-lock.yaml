@@ -361,6 +361,9 @@ importers:
 
   packages/design-tokens:
     devDependencies:
+      '@types/node':
+        specifier: ^26.4.0
+        version: 26.4.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2
