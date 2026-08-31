@@ -26,6 +26,7 @@ export interface RadarAnzeige {
   link: string;
   datumIso: string | null;
   quelleName: string;
+  bild: string;
 }
 
 export function ArbeitsweltRadar({
@@ -75,8 +76,20 @@ export function ArbeitsweltRadar({
 
       <ul className="grid gap-2">
         {beiträge.map((b) => (
-          <li key={b.id} className="grid gap-2 rounded-(--radius-lg) bg-soft px-5 py-4">
-            <a href={b.link} target="_blank" rel="noopener noreferrer" className="group grid gap-1.5">
+          <li
+            key={b.id}
+            className="grid gap-3 overflow-hidden rounded-(--radius-lg) bg-soft transition-colors hover:bg-soft-hover"
+          >
+            {/*
+              Eine Fläche aus Quelle und Titel, kein Bild aus dem
+              Artikel: das gehört dem Herausgeber. Derselbe Herausgeber
+              bekommt dieselbe Fläche — das macht die Liste
+              wiedererkennbar, ohne etwas zu behaupten.
+            */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={b.bild} alt="" aria-hidden loading="lazy" decoding="async" className="h-28 w-full object-cover" />
+
+            <a href={b.link} target="_blank" rel="noopener noreferrer" className="group grid gap-1.5 px-5">
               <span className="flex items-start gap-2 text-base font-medium leading-snug">
                 <span className="min-w-0">{b.titel}</span>
                 <ExternalLink
@@ -92,7 +105,7 @@ export function ArbeitsweltRadar({
               )}
             </a>
 
-            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-3">
+            <p className="flex flex-wrap items-center gap-x-2 gap-y-1 px-5 text-sm text-ink-3">
               <span>{b.quelleName}</span>
               {b.datumIso && (
                 <>
@@ -123,10 +136,10 @@ export function ArbeitsweltRadar({
                     `gelesen. Sag das, wenn es für die Einordnung wichtig ist.`,
                 );
               }}
-              className="inline-flex h-10 w-fit items-center gap-2 rounded-(--radius-pill) bg-raised px-4 text-sm font-medium transition-colors hover:bg-lavender"
+              className="mx-5 mb-4 inline-flex h-10 w-fit items-center gap-2 rounded-(--radius-pill) bg-raised px-4 text-sm font-medium transition-colors hover:bg-lavender"
             >
               <Sparkle className="size-4 text-accent" strokeWidth={1.8} aria-hidden />
-              Von {assistantName} erklären lassen
+              Von {assistantName} einordnen lassen
             </button>
           </li>
         ))}

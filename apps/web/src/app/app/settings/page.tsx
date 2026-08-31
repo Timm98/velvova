@@ -1,3 +1,4 @@
+import { zugangFür } from "@/lib/billing/zugang";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -44,7 +45,17 @@ export default async function AccountSettingsPage() {
     listSessions(user.id),
   ]);
 
+  const zugang = await zugangFür(user.id);
+
   const kurzwege = [
+    {
+      href: "/app/settings/abo",
+      label: "Abo & Zahlung",
+      hint:
+        zugang.plan === "premium"
+          ? "Premium — Plan, Zahlungsart, Rechnungen"
+          : "Free — Plan ansehen und vergleichen",
+    },
     {
       href: "/app/settings/language-region",
       label: "Sprache & Region",

@@ -69,8 +69,16 @@ export function JobActions({
           {saved ? labels.saved : labels.save}
         </Button>
 
+        {/*
+          Zum Job-Chat auf DIESER Seite, nicht zur Hauptseite.
+          
+          Der Knopf führte nach /app/nina und liess die Stelle hinter
+          sich — mit einem leeren Gespräch als Ergebnis. Jetzt springt
+          er zum Fragenblock weiter unten, der an diese Stelle gebunden
+          ist.
+        */}
         <Button asChild variant="secondary">
-          <a href="/app/nina">
+          <a href="#nina-fragen">
             <MessageSquare className="size-4" strokeWidth={1.9} />
             {labels.discuss}
           </a>

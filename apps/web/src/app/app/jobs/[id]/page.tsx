@@ -13,7 +13,7 @@ import { ConfidenceMeter, MetricValue, ScoreRing } from "@/components/ui/score";
 import { SourceNote } from "@/components/ui/states";
 import { BlockedNotice, FactorBreakdown } from "@/components/scores";
 import { JobActions } from "./JobActions";
-import { NinaPanel } from "./NinaPanel";
+import { JobKurzfragen } from "@/components/jobs/JobKurzfragen";
 import { ViewTracker } from "./ViewTracker";
 import { NinaScope } from "@/components/nina/NinaScope";
 
@@ -683,11 +683,15 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             )}
           </Card>
 
-          <NinaPanel
-            jobId={job.id}
-            assistantName={brand.assistantName}
-            hasReviews={reviews.length > 0}
-          />
+          {/*
+            Derselbe Inline-Chat wie in der geteilten Ansicht.
+            
+            Hier standen Links nach /app/nina?job=… — ein Klick nahm
+            einem die Anzeige weg, über die man gerade eine Frage hatte.
+            Jetzt bleibt die Stelle stehen und die Antwort erscheint
+            darunter, gebunden an genau diese job_id.
+          */}
+          <JobKurzfragen jobId={job.id} assistantName={brand.assistantName} />
         </aside>
       </div>
     </div>

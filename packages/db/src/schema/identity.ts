@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid,
+  boolean, doublePrecision, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum,
   privacyRequestKindEnum, privacyRequestStatusEnum, userRoleEnum } from "./enums.ts";
@@ -190,3 +190,64 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   consents: many(consents),
   settings: one(userSettings, { fields: [users.id], references: [userSettings.userId] }),
 }));
+
+/* ── Abrechnung ────────────────────────────────────────────────
+   Anbieterneutral: `provider` und `provider_ref` halten die Kennungen
+   des jeweiligen Zahlungsdienstes. Zahlungsdaten selbst — Kartennummer,
+   IBAN, Prüfziffer — stehen hier NIRGENDS. Sie gehören zum Anbieter. */
+
+export const planKeyEnum = pgEnum("plan_key", ["free", "premium"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", [
+  "active", "trialing", "past_due", "canceled", "incomplete",
+]);
+export const billingIntervalEnum = pgEnum("billing_interval", ["month", "year"]);
+
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  plan: planKeyEnum("plan").notNull().default("free"),
+  status: subscriptionStatusEnum("status").notNull().default("active"),
+  interval: billingIntervalEnum("interval"),
+  /** Bis wann bezahlt ist. Danach fällt der Zugang von selbst auf free. */
+  currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  provider: text("provider"),
+  providerRef: text("provider_ref"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const billingCustomers = pgTable("billing_customers", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  providerCustomerId: text("provider_customer_id").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const paymentMethods = pgTable("payment_methods", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** card, paypal, apple_pay, google_pay, sepa_debit, bank_transfer */
+  kind: text("kind").notNull(),
+  /** Nur zur Wiedererkennung: „Visa •••• 4242". Nie die volle Nummer. */
+  label: text("label").notNull(),
+  isDefault: boolean("is_default").notNull().default(false),
+  provider: text("provider").notNull(),
+  providerRef: text("provider_ref").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const invoices = pgTable("invoices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** In Cent. Beträge als Fliesskomma sind der Klassiker unter den
+      Abrechnungsfehlern. */
+  amountCents: integer("amount_cents").notNull(),
+  currency: text("currency").notNull().default("EUR"),
+  status: text("status").notNull(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
+  pdfUrl: text("pdf_url"),
+  provider: text("provider"),
+  providerRef: text("provider_ref"),
+});

@@ -36,6 +36,7 @@ export async function RadarBereich({
         // Als Zeichenkette über die Grenze zur Client-Komponente.
         datumIso: b.datum ? b.datum.toISOString() : null,
         quelleName: b.quelle.name,
+        bild: b.bild,
       }))}
     />
   );

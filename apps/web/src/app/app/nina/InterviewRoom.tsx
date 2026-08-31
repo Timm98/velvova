@@ -370,7 +370,16 @@ export function InterviewRoom({
                   live.stand.zustand === "aus"
                     ? "text-ink-2 hover:bg-soft hover:text-ink"
                     : "bg-accent text-accent-on hover:bg-accent-hover",
-                  !live.möglich && "cursor-not-allowed opacity-45 hover:bg-transparent",
+                  /*
+                   * Gedämpft über die Textfarbe, nicht über Deckkraft.
+                   *
+                   * `opacity-45` senkt den Kontrast von allem darunter —
+                   * axe hat das auf /app/nina als Verstoss gemeldet.
+                   * `text-ink-3` ist geprüft und erreicht 4,5:1 auf
+                   * jeder Fläche; der Knopf sieht trotzdem inaktiv aus,
+                   * weil ihm die Umrandung und der Hover fehlen.
+                   */
+                  !live.möglich && "cursor-not-allowed text-ink-3 hover:bg-transparent",
                 )}
               >
                 {live.stand.zustand === "aus" ? (
@@ -607,7 +616,20 @@ export function InterviewRoom({
                 "absolute -top-7 left-1/2 z-10 -translate-x-1/2",
                 "inline-flex h-10 items-center gap-2 rounded-(--radius-pill) bg-ink px-4",
                 "text-sm font-medium text-ink-inv shadow-lg",
-                "motion-safe:animate-[fade-up_var(--duration-base)_var(--ease-out)]",
+                /*
+                 * Nur die Bewegung, nicht die Deckkraft.
+                 *
+                 * `fade-up` startet bei `opacity: 0`. Während dieser
+                 * Zehntelsekunde misst eine Kontrastprüfung weissen
+                 * Text auf halbdurchsichtigem Schwarz und meldet einen
+                 * Verstoss — im Einzeltest nie, im vollen Lauf
+                 * gelegentlich, je nachdem wann axe hinsieht.
+                 *
+                 * Ein Fehler, den man nur manchmal sieht, ist der
+                 * teuerste. Die Pille schiebt sich jetzt nur noch
+                 * herein; sichtbar ist sie von der ersten Bildfolge an.
+                 */
+                "motion-safe:animate-[slide-up-solid_var(--duration-base)_var(--ease-out)]",
               )}
             >
               <ArrowDown className="size-4" strokeWidth={2} />

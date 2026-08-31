@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AlertTriangle, Building2, Check, Clock, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
-import { verlaufFür } from "@/lib/jobs/visuals";
+import { JobMiniatur } from "@/components/jobs/JobBild";
 
 /**
  * Eine Stelle in der linken Spalte.
@@ -42,39 +42,6 @@ const WORK_MODEL: Record<string, string> = {
   on_site: "Vor Ort",
 };
 
-/**
- * Die Marke einer Stelle.
- *
- * Kein Firmenlogo, solange keins vorliegt, das gezeigt werden darf —
- * ein von irgendwo geholtes Logo wäre eine Nutzung fremder
- * Kennzeichen. Stattdessen die Initialen auf einem Verlauf, der aus der
- * Stellenkennung gerechnet ist (§21.1, letzte Stufe).
- *
- * Der Effekt ist klein und trägt trotzdem: die Liste bekommt Rhythmus,
- * jede Zeile ist wiedererkennbar, und keine Fläche behauptet etwas über
- * den Arbeitgeber. Erzeugt wird dabei nichts — der Verlauf ist eine
- * Rechnung, kein Bild (§21.5).
- */
-function CompanyMark({ name, jobId }: { name: string; jobId: string }) {
-  const initials = name
-    .replace(/\b(GmbH|AG|SE|eG|gGmbH|KG|mbH|Ltd|Inc|BV|NV)\b/gi, "")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? "")
-    .join("");
-
-  return (
-    <span
-      aria-hidden
-      className="grid size-10 shrink-0 place-items-center rounded-(--radius-pill) text-xs font-semibold text-ink-2"
-      style={{ background: verlaufFür(jobId) }}
-    >
-      {initials || <Building2 className="size-4" strokeWidth={1.7} />}
-    </span>
-  );
-}
-
 export function JobRow({
   job,
   selected,
@@ -103,7 +70,10 @@ export function JobRow({
       )}
     >
       <div className="flex items-start gap-3">
-        <CompanyMark name={job.companyName} jobId={job.id} />
+        {/* Ein Motiv der Berufsgruppe statt zweier Buchstaben: die
+            Liste bekommt Rhythmus, ohne etwas über den Arbeitgeber zu
+            behaupten. */}
+        <JobMiniatur job={{ id: job.id, title: job.title, companyName: job.companyName }} />
 
         <div className="min-w-0 flex-1">
           {/* 19px, halbfett — die Spanne aus §16.5. Vorher 15px:

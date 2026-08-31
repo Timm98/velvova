@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Globe, LifeBuoy, Palette, ShieldCheck, User } from "lucide-react";
+import { CreditCard, Globe, LifeBuoy, Palette, ShieldCheck, User } from "lucide-react";
 import { CommandPalette } from "./CommandPalette.tsx";
 import { AccountMenu } from "./AccountMenu.tsx";
 import { BottomNav, TopNav } from "./TopNav.tsx";
@@ -84,6 +84,7 @@ export function AppShell({
 
   const accountItems = [
     { href: "/app/settings", label: labels.settings, icon: User },
+    { href: "/app/settings/abo", label: "Abo & Zahlung", icon: CreditCard },
     { href: "/app/settings/language-region", label: labels.languageRegion, icon: Globe },
     { href: "/app/settings/appearance", label: labels.appearance, icon: Palette },
     { href: "/app/settings/privacy", label: labels.privacy, icon: ShieldCheck },

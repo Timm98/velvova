@@ -27,25 +27,21 @@ export default async function OpportunitiesPage() {
   const { brand } = await getPageContext();
   const gate = await loadGate(user.id);
 
-  if (!gate.unlocked) {
-    return (
-      <div className="grid gap-6">
-        <PageHeader eyebrow="Chancenraum" title="Dein realer Chancenraum" />
-        <EmptyState
-          icon={<Target className="size-5" strokeWidth={1.7} />}
-          title={`${brand.assistantName} braucht erst dein bestätigtes Profil`}
-          body="Ohne Profil gibt es keine harten Bedingungen, gegen die sich etwas prüfen liesse — und damit keinen ehrlichen Trichter."
-          action={
-            <Button asChild variant="primary">
-              <Link href="/app/nina">Gespräch fortsetzen</Link>
-            </Button>
-          }
-        />
-      </div>
-    );
-  }
-
+  /*
+   * Keine Vollsperre mehr.
+   *
+   * Hier stand die ganze Seite hinter einem bestätigten Profil, mit
+   * derselben Begründung wie überall sonst: ohne harte Bedingungen
+   * lässt sich nichts dagegen prüfen. Das stimmt für die LETZTE Stufe
+   * des Trichters — nicht für die ersten. Wie viele Anzeigen es gibt,
+   * wie viele davon noch erreichbar sind und wie viele überhaupt zur
+   * groben Richtung passen, lässt sich auch ohne Profil sagen.
+   *
+   * Wer eine ganze Seite sperrt, weil ein Teil davon noch nicht
+   * berechenbar ist, nimmt jemandem auch das, was schon da wäre.
+   */
   const funnel = await buildAndStoreFunnel(user.id);
+  const ohneProfil = !gate.unlocked;
   const erste = funnel.stufen[0]!.count;
   const letzte = funnel.stufen.at(-1)!.count;
 
@@ -60,6 +56,22 @@ export default async function OpportunitiesPage() {
             : "Noch nicht genügend Daten für eine belastbare Aussage."
         }
       />
+
+      {ohneProfil && (
+        /*
+         * Der Hinweis ersetzt die Sperre — er nimmt nichts weg, er
+         * ordnet ein. Die frühen Stufen des Trichters stimmen bereits;
+         * nur die letzte, das Prüfen gegen harte Bedingungen, braucht
+         * ein bestätigtes Profil.
+         */
+        <p className="max-w-[var(--measure)] rounded-(--radius-lg) bg-lavender px-5 py-4 text-base leading-relaxed text-ink-2">
+          Die letzte Stufe — das Prüfen gegen deine harten Bedingungen — braucht dein
+          bestätigtes Profil. Alles davor stimmt schon jetzt.{" "}
+          <Link href="/app/nina" className="text-accent-text underline underline-offset-[3px]">
+            Profil schärfen
+          </Link>
+        </p>
+      )}
 
       {/* ── Der Trichter ────────────────────────────────────── */}
       <section aria-labelledby="trichter">

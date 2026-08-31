@@ -84,6 +84,14 @@ DECLARE
     -- Zeilen sind unter der Anwendungsrolle fuer niemanden sichtbar; die
     -- Betriebsansicht liest sie ueber die unbeschraenkte Verbindung.
     'auth_accounts','memberships','ai_runs',
+    -- Abrechnung. Vier Tabellen mit Nutzerkennung, die ohne Zeilenfilter
+    -- angelegt wurden -- der Abdeckungstest hat es beim ersten Lauf
+    -- gemeldet, bevor eine einzige Zeile darin stand.
+    --
+    -- Was hier durchsickern koennte, waere besonders unangenehm: welchen
+    -- Plan jemand hat, womit er zahlt, was er bezahlt hat. Nichts davon
+    -- geht ein anderes Konto etwas an.
+    'subscriptions','billing_customers','payment_methods','invoices',
     -- Decision Intelligence (Addendum V5.1). Alles hier ist
     -- nutzerbezogen: Chancenraum, Einstiegswege, Bewerbungspass,
     -- Prozessbeobachtungen, Zielunternehmen, Kontakte, Suchplan.

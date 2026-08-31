@@ -20,6 +20,43 @@ import { RADAR_QUELLEN, type RadarQuelle } from "./radar-quellen.ts";
  * nicht mitreissen.
  */
 
+/**
+ * Ein Vorschaubild für einen Beitrag.
+ *
+ * Bewusst kein Bild AUS dem Artikel: das gehört dem Herausgeber, und
+ * ein Feed erlaubt die Nennung, nicht die Übernahme von Bildern. Auch
+ * kein Stockfoto — es würde einen Inhalt behaupten, den wir nicht
+ * kennen.
+ *
+ * Stattdessen eine Fläche aus der Quelle selbst: derselbe Herausgeber
+ * bekommt immer dasselbe Motiv, verschiedene bekommen verschiedene. Das
+ * macht die Liste ruhig und wiedererkennbar, ohne etwas zu erfinden.
+ */
+export function beitragsbild(quelleId: string, titel: string): string {
+  let h = 2166136261;
+  for (const zeichen of quelleId + titel) {
+    h ^= zeichen.charCodeAt(0);
+    h = Math.imul(h, 16777619);
+  }
+  const n = Math.abs(h);
+  // 210–280 Grad: Eisblau bis Violett, wie überall im Produkt.
+  const ton = 210 + (n % 70);
+  const winkel = 110 + (n % 70);
+  const versatz = 25 + (n % 50);
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" width="400" height="220">` +
+    `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1" gradientTransform="rotate(${winkel} .5 .5)">` +
+    `<stop offset="0" stop-color="oklch(0.95 0.03 ${ton})"/>` +
+    `<stop offset="1" stop-color="oklch(0.89 0.07 ${ton + 20})"/></linearGradient></defs>` +
+    `<rect width="400" height="220" fill="url(#g)"/>` +
+    `<circle cx="${versatz + 60}" cy="${110 + (n % 40) - 20}" r="${44 + (n % 30)}" ` +
+    `fill="oklch(0.7 0.12 ${ton})" opacity=".16"/>` +
+    `<circle cx="${300 - (n % 60)}" cy="${70 + (n % 60)}" r="${30 + (n % 26)}" ` +
+    `fill="oklch(0.65 0.14 ${ton + 30})" opacity=".13"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 export interface RadarBeitrag {
   id: string;
   titel: string;
@@ -28,6 +65,8 @@ export interface RadarBeitrag {
   link: string;
   datum: Date | null;
   quelle: RadarQuelle;
+  /** Vorschaufläche, aus Quelle und Titel gerechnet. Kein fremdes Bild. */
+  bild: string;
 }
 
 /** Höchstens so alt darf ein Beitrag sein, um noch „aktuell" zu heissen. */
@@ -122,6 +161,7 @@ export function leseFeed(xml: string, quelle: RadarQuelle): RadarBeitrag[] {
         link,
         datum: datum && !Number.isNaN(datum.getTime()) ? datum : null,
         quelle,
+        bild: beitragsbild(quelle.id, titel),
       };
     })
     .filter((b): b is RadarBeitrag => b !== null);

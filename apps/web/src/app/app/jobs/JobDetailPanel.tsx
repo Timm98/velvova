@@ -4,6 +4,7 @@ import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
 import { recommendationLabel, type DecisionBrief } from "@/lib/applications/decision-brief";
 import { Badge, Button, Separator } from "@/components/ui";
+import { JobBild } from "@/components/jobs/JobBild";
 import { JobKurzfragen } from "@/components/jobs/JobKurzfragen";
 import { SaveJobButton } from "./SaveJobButton";
 
@@ -226,7 +227,16 @@ export function JobDetailPanel({
           </p>
         )}
 
-        <h2 className="font-display text-[1.75rem] font-semibold leading-[1.12] tracking-[-0.025em]">
+        {/* Titelbild der Berufsgruppe — abstrakt, ohne Behauptung über
+            den Arbeitgeber (siehe JobBild). */}
+        <JobBild
+          job={{ id: job.id, title: job.title, companyName: job.companyName, coreTasks: job.coreTasks }}
+          hoehe="h-36"
+          className="mb-5"
+        />
+
+        {/* 34–44px laut Vorgabe für den Jobtitel im Detail. */}
+        <h2 className="font-display text-3xl font-semibold leading-[1.12] tracking-[-0.025em] lg:text-4xl">
           {job.title}
         </h2>
 
