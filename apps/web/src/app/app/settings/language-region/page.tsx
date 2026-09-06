@@ -184,7 +184,30 @@ export default async function LanguageRegionPage() {
             />
           </Field>
 
-          <Field label="Wohnort" htmlFor="baseLocation" hint="Stadt oder Postleitzahl">
+          {/*
+            Strasse und Hausnummer dürfen dazu — müssen aber nicht.
+
+            ══════════════════════════════════════════════════════
+            Was die Hausnummer wirklich bringt
+            ══════════════════════════════════════════════════════
+
+            Weniger, als es klingt. Die Fahrzeit wird gegen die
+            Koordinaten der STELLE gerechnet, und die stehen auf
+            Stadtebene — mehr gibt keine Stellenanzeige her.
+
+            Zwischen zwei Adressen in derselben Stadt liegt in dieser
+            Rechnung nichts. Wer sie trotzdem einträgt, verliert
+            nichts; wer nur die Postleitzahl angibt, bekommt dieselbe
+            Zahl.
+
+            Deshalb steht es als Angebot da und nicht als Pflichtfeld
+            — und der Hinweis sagt, was es ändert.
+          */}
+          <Field
+            label="Wohnort"
+            htmlFor="baseLocation"
+            hint="Stadt oder Postleitzahl. Strasse und Hausnummer dürfen dazu — für die Fahrzeit genügt der Ort."
+          >
             <Input
               id="baseLocation"
               name="baseLocation"

@@ -1,4 +1,5 @@
 import type { ProviderCapabilities } from "../adapter.ts";
+import { landAusOrt } from "./landausort.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -242,11 +243,19 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
       title: j.title.trim(),
       companyName: j.company_name.trim(),
       location,
-      country: /deutschland|germany|berlin|münchen|munich|hamburg|köln|frankfurt|stuttgart/i.test(
-        location,
-      )
-        ? "DE"
-        : "DE",
+      /*
+       * Hier stand ein Ternär, dessen beide Zweige „DE" ergaben.
+       *
+       * Arbeitnow ist eine Börse mit deutschem Schwerpunkt, aber
+       * nicht ausschliesslich: Gemessen am 7. September 2026 trugen
+       * 222 von 2.000 Anzeigen einen Ort in London, Watford oder
+       * Toronto — und alle das Land „DE".
+       *
+       * Jetzt entscheidet, was in der Ortsangabe steht. Wo nichts
+       * erkennbar ist, bleibt es bei DE: Das ist der Schwerpunkt
+       * dieser Quelle und damit die bessere Vermutung als gar keine.
+       */
+      country: landAusOrt(location) ?? "DE",
       workModel: j.remote ? "remote" : normaliseWorkModel(location),
       remotePercent: j.remote ? 100 : null,
       // Arbeitnow überträgt keine Gehälter. Nicht offengelegt heißt

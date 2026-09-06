@@ -1,0 +1,61 @@
+name: Geodaten
+
+# ─────────────────────────────────────────────────────────────
+# Der Wecker für die Koordinaten neuer Stellen.
+#
+# Ruft `POST /api/intern/geodaten` auf. Die Arbeit passiert dort —
+# nur der Server hat die Datenbank. Diese Datei ist der Wecker.
+#
+# ── Warum alle zehn Minuten ──────────────────────────────────
+#
+# Weil der Lauf nichts kostet: kein Modell, kein fremder Dienst, nur
+# Rechenzeit gegen die eigene Referenztabelle. Und weil die Liste die
+# NEUESTEN Anzeigen zeigt — eine Stelle ohne Koordinaten ist genau
+# dort unsichtbar für Umkreis und Fahrzeit, wo sie am meisten gesehen
+# wird.
+#
+# Fünfhundert je Lauf sind 72.000 am Tag. Mehr, als in derselben Zeit
+# importiert wird — die Lücke schliesst sich also, statt zu wachsen.
+#
+# ── Zwei Secrets, dieselben wie überall ──────────────────────
+#
+#   PAYCHECK_BASE_URL      Adresse der Anwendung, ohne Schrägstrich
+#   JOBS_REFRESH_SECRET    derselbe Wert wie in der Serverumgebung
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # Zur Minute 4, 14, 24 … — die vollen Zehner sind belegt.
+    - cron: "4,14,24,34,44,54 * * * *"
+  workflow_dispatch:
+    inputs:
+      stapel:
+        description: "Höchstzahl Stellen je Lauf"
+        required: false
+        default: "500"
+
+concurrency:
+  group: geodaten
+  cancel-in-progress: false
+
+jobs:
+  aufloesen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Anwendung anstossen
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+          STAPEL: ${{ github.event.inputs.stapel || '500' }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "PAYCHECK_BASE_URL oder JOBS_REFRESH_SECRET fehlt — Lauf übersprungen."
+            exit 0
+          fi
+          antwort=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 300 \
+            "$BASIS/api/intern/geodaten?stapel=$STAPEL")
+          echo "$antwort"
+          echo "$antwort" | grep -q '"gelesen"' || exit 1

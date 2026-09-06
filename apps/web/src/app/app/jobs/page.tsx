@@ -30,6 +30,7 @@ import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
 import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
 import { titelOhneEmoji } from "@/lib/jobs/titel";
 import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
+import { entfernungKm } from "@paycheck/matching";
 import { ortNachschlagen } from "@paycheck/jobs";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { filterLaden, nurFilter } from "@/lib/jobs/listenfilter";
@@ -314,8 +315,16 @@ export default async function JobsPage({
    * Nur wenn er gebraucht wird: Ohne `pendelzeit` in der Adresse ist
    * das eine Datenbankrunde für nichts.
    */
-  const wohnpunkt = params.pendelzeit
-    ? await ortNachschlagen(db, wohnzeile[0]?.baseLocation ?? "")
+  /*
+   * Der Wohnort in Koordinaten — für den Filter UND für die Angabe
+   * an jeder Stelle.
+   *
+   * Vorher wurde er nur aufgelöst, wenn jemand nach der Fahrzeit
+   * filterte. Jetzt trägt jede Zeile, wie weit es ist — dafür muss
+   * er immer da sein, sobald ein Wohnort im Profil steht.
+   */
+  const wohnpunkt = wohnzeile[0]?.baseLocation
+    ? await ortNachschlagen(db, wohnzeile[0].baseLocation)
         .then((a) =>
           /*
            * Genau oder auf Stadtebene — beides genügt.
@@ -504,6 +513,8 @@ export default async function JobsPage({
     return { text: `ca. ${f(r.q1)} – ${f(r.q3)} €`, geschaetzt: true };
   };
 
+  const fortbewegung = ctx.constraints.commuteMode ?? null;
+
   const rows: JobRowData[] = sichtbar.map((j) => ({
     id: j.jobId,
     /*
@@ -522,6 +533,21 @@ export default async function JobsPage({
     title: titelOhneEmoji(j.job.title),
     /* Entscheidet über das Berufssymbol links in der Zeile. */
     kldb: j.job.kldb ?? null,
+    /*
+     * Wie weit es ist — geschätzt aus Koordinaten.
+     *
+     * `null`, wenn der Wohnort nicht aufgelöst werden konnte oder
+     * die Stelle keine Koordinaten trägt. Dann steht in der Zeile
+     * nichts; eine erfundene Zahl wäre schlimmer als eine fehlende.
+     */
+    fahrzeitMin:
+      j.job.workModel === "remote" ? 0 : fahrzeitMinuten(wohnpunkt, j.job, fortbewegung),
+    entfernungKm:
+      wohnpunkt && j.job.latitude !== null && j.job.longitude !== null
+        ? Math.round(
+            entfernungKm(wohnpunkt.latitude, wohnpunkt.longitude, j.job.latitude, j.job.longitude),
+          )
+        : null,
     companyName: j.job.companyName,
     location: j.job.location,
     workModel: j.job.workModel,
@@ -1104,6 +1130,25 @@ export default async function JobsPage({
               zukunft={zukunftAngabe}
               scored={selected}
               wohnort={wohnzeile[0]?.baseLocation ?? null}
+              /* Dieselben Zahlen wie an der Zeile links — eine
+                 Rechnung, zwei Anzeigen. */
+              fahrzeitMin={
+                selected.job.workModel === "remote"
+                  ? null
+                  : fahrzeitMinuten(wohnpunkt, selected.job, fortbewegung)
+              }
+              entfernungKm={
+                wohnpunkt && selected.job.latitude !== null && selected.job.longitude !== null
+                  ? Math.round(
+                      entfernungKm(
+                        wohnpunkt.latitude,
+                        wohnpunkt.longitude,
+                        selected.job.latitude,
+                        selected.job.longitude,
+                      ),
+                    )
+                  : null
+              }
               gehaltsangaben={gehaltsangaben}
               lebenshaltung={lebenshaltung}
               t={t}

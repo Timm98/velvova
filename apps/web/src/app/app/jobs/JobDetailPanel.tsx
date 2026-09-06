@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { herkunftAusArt } from "@paycheck/domain";
 import Link from "next/link";
-import { ExternalLink, ShieldAlert } from "lucide-react";
+import { Clock, ExternalLink, ShieldAlert } from "lucide-react";
 import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
 import { recommendationLabel, type DecisionBrief } from "@/lib/applications/decision-brief";
@@ -71,6 +71,8 @@ export function JobDetailPanel({
   labels,
   brief,
   wohnort,
+  fahrzeitMin,
+  entfernungKm,
   wunschgehalt,
   maxPendelzeit,
   zukunft,
@@ -93,6 +95,22 @@ export function JobDetailPanel({
    * die Seite wechseln — also genau dann, wenn er gerade vergleicht.
    */
   wohnort?: string | null;
+  /**
+   * Die geschätzte Fahrzeit und die Entfernung — dieselben Zahlen
+   * wie in der Liste links.
+   *
+   * ── Warum sie hier noch einmal stehen ───────────────────────
+   *
+   * Der Pendelrechner darunter bleibt: Er rechnet Kosten, Zeit im
+   * Jahr und was davon vom Gehalt übrig bleibt. Das ist eine
+   * Auskunft, für die man sich hinsetzt.
+   *
+   * Das Plättchen ist die Zahl für den Blick — dieselbe, die links
+   * an der Zeile stand. Wer von der Liste hierherkommt, soll sie
+   * wiederfinden und nicht suchen müssen.
+   */
+  fahrzeitMin?: number | null;
+  entfernungKm?: number | null;
   /** Die eigene Gehaltsuntergrenze — Massstab für die Farbe. */
   wunschgehalt?: number | null;
   /** Die eigene Pendelzeit-Obergrenze in Minuten. */
@@ -595,6 +613,23 @@ export function JobDetailPanel({
             <h3 id="arbeitsweg-panel" className="abschnitts-titel text-ink-3">
               Dein Arbeitsweg
             </h3>
+          )}
+
+          {/*
+            Die Zahl für den Blick, bevor die Rechnung kommt.
+
+            Geschätzt aus Luftlinie mal Umwegfaktor — keine Route.
+            Deshalb „ca." und die Kilometer daneben: Sie sind die
+            Zahl, die stimmt, und sie machen die Schätzung prüfbar.
+          */}
+          {wohnort && typeof fahrzeitMin === "number" && scored.job.workModel !== "remote" && (
+            <p className="mb-3 inline-flex items-center gap-2 rounded-(--radius-pill) bg-inset px-3 py-1.5 text-sm text-ink-2">
+              <Clock aria-hidden className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
+              <span>
+                <span className="font-medium text-ink">ca. {fahrzeitMin} min</span>
+                {typeof entfernungKm === "number" && <> · {entfernungKm} km ab {wohnort}</>}
+              </span>
+            </p>
           )}
           {!wohnort ? (
             <p className="text-sm leading-relaxed text-ink-2">

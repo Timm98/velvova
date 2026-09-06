@@ -60,6 +60,21 @@ export interface JobRowData {
   confidence: "high" | "medium" | "low";
   /** 0 bis 100 — der gerechnete Wert hinter der Stufe. Geht in die Farbe ein. */
   sicherheitWert?: number | null;
+  /**
+   * Wie lange man hinfährt, geschätzt — und wie weit es ist.
+   *
+   * ── Warum beides und warum geschätzt ────────────────────────
+   *
+   * Luftlinie mal Umwegfaktor, geteilt durch eine
+   * Durchschnittsgeschwindigkeit. Keine Route: keine Baustelle, kein
+   * Berufsverkehr. Deshalb steht ein „ca." davor, und die Kilometer
+   * stehen daneben — sie sind die Zahl, die stimmt.
+   *
+   * `null` heisst: nicht berechenbar, weil der Wohnort fehlt oder
+   * die Anzeige keine Koordinaten trägt. Dann steht nichts da.
+   */
+  fahrzeitMin?: number | null;
+  entfernungKm?: number | null;
   /** Höchstens zwei kurze Signale. Siehe lib/jobs/listensignale.ts. */
   signale: { text: string; art: "gut" | "achtung" | "neutral" }[];
   blocked: boolean;
@@ -456,6 +471,29 @@ export function JobRow({
           {job.location}
         </li>
         <li>{WORK_MODEL[job.workModel] ?? job.workModel}</li>
+        {/*
+          Die Entfernung als eigene Angabe in derselben Zeile.
+
+          ── Warum bei Remote nichts steht ──────────────────────
+          Weil „0 Minuten" eine Fahrzeit behauptet, die es nicht gibt.
+          „Remote" steht schon daneben und sagt alles.
+        */}
+        {job.workModel !== "remote" && typeof job.fahrzeitMin === "number" && (
+          <li
+            className="flex items-center gap-1"
+            title={
+              typeof job.entfernungKm === "number"
+                ? `${job.entfernungKm} km Luftlinie — geschätzt, keine Route`
+                : "geschätzt, keine Route"
+            }
+          >
+            <Clock className="size-3.5 shrink-0" strokeWidth={1.8} />
+            ca. {job.fahrzeitMin} min
+            {typeof job.entfernungKm === "number" && (
+              <span className="text-ink-3">· {job.entfernungKm} km</span>
+            )}
+          </li>
+        )}
         {job.contractType && <li>{job.contractType}</li>}
         {/*
          * Kursiv heisst „hier fehlt etwas".

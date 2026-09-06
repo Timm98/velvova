@@ -5,6 +5,7 @@ import { markExpired, runLinkCheck } from "./tasks/linkCheck.ts";
 import { createCheckInReminders, createFollowUpReminders } from "./tasks/reminders.ts";
 import { runEntgeltReferenz } from "./tasks/entgeltreferenz.ts";
 import { runProfilsynthese } from "./tasks/profilsynthese.ts";
+import { runGeodaten } from "./tasks/geodaten.ts";
 
 /**
  * Der Worker.
@@ -39,9 +40,17 @@ async function runAll(): Promise<void> {
      * antwortet.
      */
     runProfilsynthese(),
+    /*
+     * Koordinaten für neu importierte Stellen.
+     *
+     * Reine Rechenzeit gegen die eigene Referenztabelle — kein
+     * Modell, kein fremder Dienst. Sie steht hinter der Synthese,
+     * weil sie ohne Netz auskommt und deshalb nie hängen bleibt.
+     */
+    runGeodaten(),
   ]);
 
-  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins", "Gehalts-Referenz", "Profilsynthese"];
+  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins", "Gehalts-Referenz", "Profilsynthese", "Geodaten"];
   results.forEach((r, i) => {
     if (r.status === "fulfilled") {
       console.log(`  ${names[i]}: ${JSON.stringify(r.value)}`);
