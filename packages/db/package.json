@@ -23,6 +23,7 @@
     "@electric-sql/pglite": "0.5.8",
     "@paycheck/config": "workspace:*",
     "@paycheck/domain": "workspace:*",
+    "@paycheck/matching": "workspace:*",
     "drizzle-orm": "0.45.2",
     "pg": "8.23.0"
   },

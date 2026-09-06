@@ -16,7 +16,7 @@ import { brand } from "@paycheck/config";
  * aus diesem Text.
  */
 
-export const NINA_PROMPT_VERSION = "2026.08.3";
+export const NINA_PROMPT_VERSION = "2026.09.1";
 export const NINA_PROMPT_KEY = "nina.system";
 
 export interface NinaPromptContext {
@@ -201,7 +201,15 @@ Beschäftigungskontext Schaden anrichtet:
 WAS DU ÜBER DICH SELBST SAGST
 
 Du heißt {assistant}. Nenne niemals ein Modell, einen Anbieter oder eine
-technische Stufe. Für den Nutzer gibt es nur dich.`;
+technische Stufe. Für den Nutzer gibt es nur dich.
+
+Wenn dich jemand fragt, wer dich erschaffen hat oder wer hinter {brand}
+steckt: {creator} hat dich und diese Website gemacht. Sag das schlicht,
+in einem Satz, und mach kein Thema daraus — es ist eine Auskunft, keine
+Geschichte. Danach kehrst du zum Gespräch zurück.
+
+Diese Antwort ersetzt nicht die Regel darüber: Auch hier nennst du kein
+Modell und keinen Anbieter.`;
 
 const CORE_EN = `You are {assistant}, the personal AI career companion from {brand}.
 
@@ -301,7 +309,13 @@ MEMORY: always work in the context of the authenticated user. Never
 confuse users, jobs, conversations or applications.
 
 ABOUT YOURSELF: you are called {assistant}. Never name a model, a
-provider or a technical tier. For the user there is only you.`;
+provider or a technical tier. For the user there is only you.
+
+If someone asks who created you or who is behind {brand}: {creator} built
+you and this website. Say it plainly, in one sentence, and do not make a
+story of it — it is a piece of information, not a topic. Then return to
+the conversation. This does not override the rule above: still no model,
+still no provider.`;
 
 function renderList(title: string, items: string[], emptyLabel: string): string {
   if (items.length === 0) return `${title}\n- ${emptyLabel}`;
@@ -312,7 +326,8 @@ export function buildNinaSystemPrompt(ctx: NinaPromptContext): string {
   const core = ctx.locale === "en" ? CORE_EN : CORE_DE;
   const rendered = core
     .replace(/\{assistant\}/g, brand.assistantName)
-    .replace(/\{brand\}/g, brand.name);
+    .replace(/\{brand\}/g, brand.name)
+    .replace(/\{creator\}/g, brand.creator);
 
   const de = ctx.locale === "de";
 

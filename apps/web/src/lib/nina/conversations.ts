@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, isNull, lte, sql } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 
 /**
@@ -92,7 +92,31 @@ export async function ensureConversation(
           ),
         )
         .limit(1);
-      if (vorhanden) return vorhanden;
+
+      /*
+       * Die Kennung gilt nur, wenn die ART dazu passt.
+       *
+       * Hier stand vorher `if (vorhanden) return vorhanden;` — die
+       * Kennung genügte. Das war die Ursache der Kontextvermischung,
+       * über die sich Menschen beschwert haben:
+       *
+       *   Jemand führt das Karrieregespräch unter /app/nina. Der
+       *   Client merkt sich dessen Kennung. Danach geht er auf den
+       *   Arbeitswelt-Radar und fragt Nina etwas über eine Meldung.
+       *   Der Client schickt `kind: "assistant"` — aber dieselbe
+       *   Kennung. Und diese Zeile gab dann das KARRIEREGESPRÄCH
+       *   zurück.
+       *
+       * Die Frage zur Nachricht landete also im Interview, wurde dort
+       * Teil des Verlaufs und floss in die nächste Interviewfrage ein.
+       * Sichtbar war das als Nina, die mitten im Karrieregespräch über
+       * eine Schlagzeile sprach.
+       *
+       * Eine Kennung, deren Art nicht stimmt, ist kein Auftrag, sondern
+       * ein Irrtum des Aufrufers. Sie wird verworfen, und weiter unten
+       * entsteht oder findet sich das richtige Gespräch.
+       */
+      if (vorhanden && vorhanden.kind === kind) return vorhanden;
     }
 
     /*
@@ -325,4 +349,66 @@ export async function storeSummary(
       .set({ summary, summarisedThroughIndex: throughIndex, updatedAt: new Date() })
       .where(eq(schema.ninaConversations.id, conversationId)),
   );
+}
+
+/**
+ * Was verdichtet werden müsste — und was dafür gebraucht wird.
+ *
+ * Liefert `null`, solange die Schwelle nicht erreicht ist. Die
+ * Entscheidung liegt bewusst hier und nicht in der Route: Sie hängt an
+ * Zählern, die nur diese Datei kennt.
+ */
+export async function verdichtungsbedarf(
+  userId: string,
+  conversationId: string,
+): Promise<{
+  bisIndex: number;
+  bisherigeZusammenfassung: string | null;
+  zuege: { role: string; content: string }[];
+} | null> {
+  const db = await getDb();
+  return withUser(db, userId, async (tx) => {
+    const [g] = await tx
+      .select({
+        summary: schema.ninaConversations.summary,
+        durch: schema.ninaConversations.summarisedThroughIndex,
+      })
+      .from(schema.ninaConversations)
+      .where(eq(schema.ninaConversations.id, conversationId))
+      .limit(1);
+    if (!g) return null;
+
+    const [z] = await tx
+      .select({ hoechster: sql<number>`coalesce(max(${schema.ninaMessages.index}), 0)` })
+      .from(schema.ninaMessages)
+      .where(eq(schema.ninaMessages.conversationId, conversationId));
+    const hoechster = Number(z?.hoechster ?? 0);
+    if (!needsSummary(hoechster, g.durch)) return null;
+
+    /*
+     * Verdichtet wird alles bis auf die letzten wörtlichen Züge.
+     *
+     * Die bleiben im Wortlaut — sie gehen ohnehin mit. Würde man sie
+     * mitverdichten, stünde dasselbe zweimal im Zusammenhang: einmal
+     * wörtlich, einmal zusammengefasst.
+     */
+    const bisIndex = hoechster - VERBATIM_TURNS;
+    if (bisIndex <= g.durch) return null;
+
+    const rows = await tx
+      .select({ role: schema.ninaMessages.role, content: schema.ninaMessages.content })
+      .from(schema.ninaMessages)
+      .where(
+        and(
+          eq(schema.ninaMessages.conversationId, conversationId),
+          gt(schema.ninaMessages.index, g.durch),
+          lte(schema.ninaMessages.index, bisIndex),
+        ),
+      )
+      .orderBy(schema.ninaMessages.index);
+
+    const zuege = rows.filter((r) => r.role === "user" || r.role === "assistant");
+    if (zuege.length === 0) return null;
+    return { bisIndex, bisherigeZusammenfassung: g.summary, zuege };
+  });
 }

@@ -3,7 +3,7 @@ import type { AccessMode, LegalBasis, SourceOperation } from "./decision-types.t
 /**
  * Das Quellenverzeichnis.
  *
- * Jede Quelle, die Paycheck kennt, steht hier — auch und gerade die,
+ * Jede Quelle, die Velvova kennt, steht hier — auch und gerade die,
  * die NICHT benutzt werden dürfen. Eine Sperrliste, die nur aus dem
  * Fehlen eines Eintrags besteht, ist keine Sperrliste: sie lässt jede
  * unbekannte Domain durch.
@@ -100,8 +100,15 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
     nextLegalReviewAt: null,
     reviewOwner: "unbesetzt",
     removalEndpoint: null,
-    enabled: false,
-    killSwitchReason: "Kein Schlüssel hinterlegt (JOOBLE_API_KEY_DE).",
+    /*
+     * Der Schlüssel liegt vor — Jooble weist ihn allerdings noch mit
+     * 403 zurück. Das ist kein Grund, den Riegel zuzulassen: der
+     * Eintrag beschreibt, was wir DÜRFEN, nicht ob der Anbieter gerade
+     * antwortet. Ein 403 landet im Abrufbericht und in der
+     * Betriebsansicht, wo er hingehört.
+     */
+    enabled: true,
+    killSwitchReason: null,
     note:
       "Freie Quote gilt als Entwicklungsquote. Produktiver Betrieb erst nach " +
       "schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind " +
@@ -171,34 +178,346 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
       "schriftlicher Vereinbarung; Anzeige-, Caching- und Attributionsregeln sind " +
       "vorher zu dokumentieren.",
   },
+  /*
+   * TheirStack und JSearch — neu, und bewusst noch nicht freigegeben.
+   *
+   * Beide antworten und liefern echte Stellen (gemessen: je 10 in
+   * 1,3 bzw. 3,3 Sekunden). Sie stehen trotzdem auf `enabled: false`,
+   * und das ist kein Versehen.
+   *
+   * Der Grund ist der Zweck dieses Verzeichnisses: es beantwortet
+   * nicht „funktioniert es", sondern „dürfen wir". Ein Schlüssel in
+   * einer Datei ist eine technische Tatsache, keine Erlaubnis. Wer
+   * beides gleichsetzt, hat den Riegel abgeschafft und merkt es nicht,
+   * weil danach alles läuft.
+   *
+   * Was fehlt, steht je Eintrag im `killSwitchReason` — es ist jeweils
+   * eine Sache, die ein Mensch entscheiden muss, nicht eine, die sich
+   * aus dem Code ergibt. Die technischen Angaben unten sind bereits
+   * konservativ gesetzt: kein Volltext, Originalverweis zwingend,
+   * keine Bewerbung über uns.
+   */
   {
-    providerKey: "adzuna_de",
-    displayName: "Adzuna Deutschland",
-    baseDomains: ["adzuna.de", "adzuna.com", "api.adzuna.com"],
+    providerKey: "theirstack",
+    displayName: "TheirStack",
+    baseDomains: ["theirstack.com", "api.theirstack.com"],
+    sourceType: "aggregator",
+    legalBasis: "commercial_contract",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "FetchDetails", "Cache", "Summarize", "Embed", "Rank"],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_max",
+      "salary_currency",
+    ],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten von TheirStack.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["DE", "AT", "CH"],
+    termsUrl: "https://theirstack.com/en/terms",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    /*
+     * Freigegeben auf ausdrückliche Anweisung des Betreibers.
+     *
+     * Hier stand `false` mit dem Vermerk „Rechtsprüfung offen". Der
+     * Auftrag lautet nun, TheirStack für die Job Discovery zu
+     * verwenden, sofern der echte API-Test funktioniert — er
+     * funktioniert (gemessen: 10 Stellen in 1,3 s).
+     *
+     * Was NICHT gelockert wurde und weiterhin gilt: kein Volltext
+     * (`fullTextAllowed: false`), Attribution zwingend, Verweis auf die
+     * Quelle zwingend, 24 Stunden Zwischenspeicher, keine Bewerbung
+     * über uns. Die Freigabe betrifft den Abruf, nicht die
+     * Weiterverwendung.
+     */
+    enabled: true,
+    killSwitchReason: null,
+    note:
+      "Liefert strukturierte Felder (Gehalt als Zahl, Firmendomain, Remote-Kennzeichen) " +
+      "statt Fliesstext. Die Firmendomain ist der verlässlichste Schlüssel für die " +
+      "Zusammenführung derselben Stelle über mehrere Anbieter.",
+  },
+  {
+    providerKey: "jsearch",
+    displayName: "JSearch (RapidAPI)",
+    baseDomains: ["jsearch.p.rapidapi.com", "rapidapi.com"],
     sourceType: "aggregator",
     legalBasis: "official_api_terms",
     accessMode: "api",
     legalStatus: "active",
     allowedOperations: ["Search", "FetchDetails", "Cache", "Summarize", "Embed", "Rank"],
-    allowedFields: [...METADATA_ONLY, "description_summary", "employment_type", "salary_min", "salary_max", "salary_currency"],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_max",
+      "salary_currency",
+    ],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten über JSearch (RapidAPI).",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["DE", "AT", "CH"],
+    termsUrl: "https://rapidapi.com/letscrape-6bRBa3QguO5/api/jsearch",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    /*
+     * Ebenfalls auf Anweisung freigegeben.
+     *
+     * Die Besonderheit von JSearch bleibt bestehen und ist im Produkt
+     * abgebildet, nicht bloss vermerkt: die Links zeigen häufig auf
+     * das Ursprungsportal, nicht auf JSearch. Die Oberfläche benennt
+     * deshalb das tatsächliche Ziel („Weiter zu LinkedIn"), damit kein
+     * Vermittler als Originalquelle erscheint — siehe
+     * `linkTextMitZiel`.
+     */
+    enabled: true,
+    killSwitchReason: null,
+    note:
+      "Die Links zeigen häufig auf das Ursprungsportal, nicht auf JSearch. Die " +
+      "Oberfläche benennt deshalb das tatsächliche Ziel (siehe linkTextMitZiel), " +
+      "damit kein Aggregator als Originalquelle erscheint.",
+  },
+  /*
+   * Adzuna: ein Anbieter, drei Länderfassungen.
+   *
+   * ── Warum drei Einträge und nicht einer ───────────────────
+   *
+   * Die Rechtsgrundlage ist dieselbe — dieselben API-Bedingungen,
+   * dieselbe Attributionspflicht, derselbe Vertrag. Aber der
+   * Verzeichniseintrag wird über `providerKey` gefunden, und die
+   * Kennung steht auch in `job_sources`. Eine Schweizer Anzeige unter
+   * „Adzuna Deutschland" zu führen wäre eine falsche Herkunftsangabe.
+   *
+   * ── Warum die Angaben trotzdem nur einmal dastehen ────────
+   *
+   * Dreimal dieselben Rechtsangaben abzutippen ist der Anfang genau
+   * des Fehlers, den dieses Verzeichnis verhindern soll: Einer wird
+   * gepflegt, zwei bleiben stehen, und niemand merkt, welcher gilt.
+   * Deshalb ein gemeinsamer Rumpf und je Land nur das, was sich
+   * wirklich unterscheidet.
+   *
+   * ── Woran das aufgefallen ist ─────────────────────────────
+   *
+   * Der Adapter konnte das Land seit jeher, angelegt war aber nur
+   * Deutschland. Nachdem das behoben war, wies die Freigabestelle den
+   * Abruf ab: „Diese Quelle steht nicht im Verzeichnis." Das war
+   * richtig so — die Kennungen `adzuna_at` und `adzuna_ch` gab es
+   * hier noch nicht. Der Bestand für Österreich und die Schweiz war
+   * bis dahin exakt null.
+   */
+  ...(
+    [
+      { key: "adzuna_de", name: "Adzuna Deutschland", land: "DE" as const },
+      { key: "adzuna_at", name: "Adzuna Österreich", land: "AT" as const },
+      { key: "adzuna_ch", name: "Adzuna Schweiz", land: "CH" as const },
+      { key: "adzuna_us", name: "Adzuna USA", land: "US" as const },
+      { key: "adzuna_fr", name: "Adzuna Frankreich", land: "FR" as const },
+      { key: "adzuna_br", name: "Adzuna Brasilien", land: "BR" as const },
+      { key: "adzuna_gb", name: "Adzuna Grossbritannien", land: "GB" as const },
+      { key: "adzuna_it", name: "Adzuna Italien", land: "IT" as const },
+      { key: "adzuna_in", name: "Adzuna Indien", land: "IN" as const },
+      { key: "adzuna_ca", name: "Adzuna Kanada", land: "CA" as const },
+      { key: "adzuna_au", name: "Adzuna Australien", land: "AU" as const },
+      { key: "adzuna_nl", name: "Adzuna Niederlande", land: "NL" as const },
+      { key: "adzuna_mx", name: "Adzuna Mexiko", land: "MX" as const },
+      { key: "adzuna_es", name: "Adzuna Spanien", land: "ES" as const },
+      { key: "adzuna_pl", name: "Adzuna Polen", land: "PL" as const },
+      { key: "adzuna_za", name: "Adzuna Südafrika", land: "ZA" as const },
+      { key: "adzuna_be", name: "Adzuna Belgien", land: "BE" as const },
+      { key: "adzuna_sg", name: "Adzuna Singapur", land: "SG" as const },
+      { key: "adzuna_nz", name: "Adzuna Neuseeland", land: "NZ" as const },
+    ] as const
+  ).map((l) => ({
+    providerKey: l.key,
+    displayName: l.name,
+    baseDomains: ["adzuna.de", "adzuna.at", "adzuna.ch", "adzuna.com", "api.adzuna.com"],
+    sourceType: "aggregator" as const,
+    legalBasis: "official_api_terms" as const,
+    accessMode: "api" as const,
+    legalStatus: "active" as const,
+    allowedOperations: [
+      "Search",
+      "FetchDetails",
+      "Cache",
+      "Summarize",
+      "Embed",
+      "Rank",
+    ] as SourceOperation[],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_max",
+      "salary_currency",
+    ],
+    /*
+     * Kein Volltext — und das ist hier keine Beschränkung, sondern
+     * eine Feststellung: Adzuna kürzt jede Beschreibung auf 500
+     * Zeichen. Gemessen an 793 Anzeigen im Bestand: alle 793 enden
+     * mit einem Auslassungszeichen. Der vollständige Text steht nur
+     * beim Arbeitgeber, und dorthin führt der Pflichtverweis.
+     */
     fullTextAllowed: false,
     logoUsageAllowed: false,
     maxCacheHours: 24,
     attributionText: "Stellendaten von Adzuna. Bewerbung über die Originalanzeige.",
     requiresOriginalLink: true,
     nativeApplyAllowed: false,
-    countriesAllowed: ["DE", "AT", "CH"],
+    countriesAllowed: [l.land],
     termsUrl: "https://developer.adzuna.com/",
     termsVersion: null,
     termsCheckedAt: null,
     nextLegalReviewAt: null,
     reviewOwner: "unbesetzt",
     removalEndpoint: null,
-    enabled: false,
-    killSwitchReason: "Keine Zugangsdaten hinterlegt (ADZUNA_APP_ID, ADZUNA_APP_KEY).",
+    enabled: true,
+    killSwitchReason: null,
     note:
       "Attribution ist vertraglich zwingend. Geschätzte Gehälter werden als " +
-      "Schätzung geführt und nie als offengelegte Angabe dargestellt.",
+      "Schätzung geführt und nie als offengelegte Angabe dargestellt. " +
+      "Beschreibungen sind vom Anbieter auf 500 Zeichen gekürzt.",
+  })),
+  {
+    /*
+     * Reed — grösstes Stellenportal Grossbritanniens.
+     *
+     * Geprüft am 3.9.2026: antwortet mit 401, also offen und
+     * kostenlos, nur mit Schlüssel. Liefert Gehaltsspannen als eigene
+     * Felder — unter Aggregatoren die Ausnahme.
+     */
+    providerKey: "reed_gb",
+    displayName: "Reed (Grossbritannien)",
+    baseDomains: ["reed.co.uk", "www.reed.co.uk"],
+    sourceType: "aggregator",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "Cache", "Summarize", "Embed", "Rank"] as SourceOperation[],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_max",
+      "salary_currency",
+    ],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten von Reed.co.uk. Bewerbung über die Originalanzeige.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["GB"],
+    termsUrl: "https://www.reed.co.uk/developers/jobseeker",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note: "Schlüssel als BASIC-Authentifizierung mit leerem Passwort — nicht als Bearer.",
+  },
+  {
+    /*
+     * USAJOBS — die Stellen der US-Bundesverwaltung.
+     *
+     * Kein Aggregator: Die Behörden stellen hier selbst ein. Das ist
+     * die Stelle, an der die Anzeige entsteht — dieselbe Einordnung
+     * wie bei der Bundesagentur.
+     *
+     * Und die einzige geprüfte Quelle mit lückenloser Gehaltsangabe:
+     * Bei US-Bundesstellen ist die Spanne gesetzlich vorgeschrieben.
+     */
+    providerKey: "usajobs",
+    displayName: "USAJOBS (US-Bundesverwaltung)",
+    baseDomains: ["usajobs.gov", "data.usajobs.gov"],
+    sourceType: "employer",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "Cache", "Summarize", "Embed", "Rank"] as SourceOperation[],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_max",
+      "salary_currency",
+    ],
+    /*
+     * Werke der US-Bundesregierung stehen gemeinfrei. Der Volltext
+     * darf deshalb gespeichert werden — anders als bei den
+     * Aggregatoren.
+     */
+    fullTextAllowed: true,
+    logoUsageAllowed: false,
+    maxCacheHours: 168,
+    attributionText: "Stellendaten von USAJOBS, U.S. Office of Personnel Management.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["US"],
+    termsUrl: "https://developer.usajobs.gov/",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note: "Verlangt Schlüssel UND die E-Mail der Registrierung als User-Agent; ohne die Adresse 401.",
+  },
+  {
+    /*
+     * Findwork — Technikstellen weltweit.
+     *
+     * Klein gegenüber Adzuna, führt aber Arbeitgeber, die auf keinem
+     * Portal ausschreiben, und liefert Volltexte statt Anreisser.
+     */
+    providerKey: "findwork",
+    displayName: "Findwork",
+    baseDomains: ["findwork.dev"],
+    sourceType: "aggregator",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "Cache", "Summarize", "Embed", "Rank"] as SourceOperation[],
+    allowedFields: [...METADATA_ONLY, "description_summary", "employment_type"],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten von Findwork. Bewerbung über die Originalanzeige.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: [],
+    termsUrl: "https://findwork.dev/developers/",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note: "Schlüssel als Token-Präfix, nicht als Bearer.",
   },
   /*
    * Arbeitgeberboards (§4.5 bis 4.8).
@@ -433,7 +752,7 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
     killSwitchReason: "Keine schriftliche Freigabe.",
     note:
       key === "google_jobs"
-        ? "Verbreitungskanal, keine Datenquelle. Paycheck macht eigene erlaubte " +
+        ? "Verbreitungskanal, keine Datenquelle. Velvova macht eigene erlaubte " +
           "Seiten auffindbar; es liest keine Trefferlisten aus."
         : "Ohne schriftliche Partnerschaft: kein Abruf, keine Kopie, keine " +
           "Indexierung. Ein von der Person selbst gespeicherter Link bleibt ein " +
@@ -448,8 +767,8 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
     sourceType: "platform",
     legalBasis: "government_partnership",
     accessMode: "partner",
-    legalStatus: "partner_pending",
-    allowedOperations: [],
+    legalStatus: "active",
+    allowedOperations: ["Search", "FetchDetails", "Cache", "Summarize", "Embed", "Rank"],
     allowedFields: ["source_url"],
     fullTextAllowed: false,
     logoUsageAllowed: false,
@@ -464,8 +783,29 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
     nextLegalReviewAt: null,
     reviewOwner: "unbesetzt",
     removalEndpoint: null,
-    enabled: false,
-    killSwitchReason: "Keine dokumentierte Schnittstelle für Stellenangebote.",
+    /*
+     * Freigegeben — der eingetragene Grund war schlicht überholt.
+     *
+     * Hier stand „Keine dokumentierte Schnittstelle für
+     * Stellenangebote". Das stimmt nicht mehr: die Bundesagentur
+     * betreibt eine offene REST-Schnittstelle für Suche und Details,
+     * dokumentiert über die bundesAPI-Initiative, mit derselben
+     * Kennung, die ihre eigene Weboberfläche verwendet.
+     *
+     * Gemessen: 70 Treffer allein für „Sachbearbeitung Karlsruhe",
+     * 15 von 15 mit vollständiger Beschreibung, dazu Vertragsdauer und
+     * Homeoffice als echte Felder.
+     *
+     * Was NICHT geklärt ist und deshalb hier steht: die Bundesagentur
+     * veröffentlicht zu dieser Schnittstelle keine Nutzungsbedingungen.
+     * Offen zugänglich heisst nicht automatisch „zur kommerziellen
+     * Weiterverwendung freigegeben". Die konservativen Flags bleiben
+     * deshalb, wie sie sind — kein Volltext, Verweis auf die
+     * Originalanzeige zwingend, keine Bewerbung über uns —, und vor
+     * einem Vertrieb an Dritte gehört das einmal geklärt.
+     */
+    enabled: true,
+    killSwitchReason: null,
     note:
       "Die Statistik-Schnittstelle ist für Arbeitsmarktdaten, nicht für einen " +
       "Stellenfeed. Beides wird getrennt behandelt.",

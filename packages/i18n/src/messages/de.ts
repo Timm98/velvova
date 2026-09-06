@@ -161,7 +161,7 @@ export const de = {
     hasAccount: "Schon ein Konto?",
     errorInvalid: "E-Mail-Adresse oder Passwort stimmen nicht.",
     errorEmailTaken: "Zu dieser Adresse besteht bereits ein Konto.",
-    errorPasswordShort: "Das Passwort ist zu kurz. Es braucht mindestens zwölf Zeichen.",
+    errorPasswordShort: "Das Passwort ist zu kurz. Es braucht mindestens acht Zeichen.",
     errorEmailInvalid: "Diese E-Mail-Adresse sieht nicht vollständig aus.",
   },
 
@@ -282,7 +282,12 @@ export const de = {
     fitHigh: "hohe Passung",
     fitMedium: "mittlere Passung",
     fitExploratory: "explorativ",
-    fitInsufficient: "Datenbasis zu dünn",
+    /*
+     * „Datenbasis zu dünn" war eine Auskunft über UNS, formuliert wie
+     * ein Mangel der Stelle — und sie stand unter fast jeder Zeile
+     * einer frischen Trefferliste, gleich neben einem roten Balken.
+     */
+    fitInsufficient: "Passung noch offen",
     confidence: "Sicherheit",
     confidenceHigh: "hoch",
     confidenceMedium: "mittel",

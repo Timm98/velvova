@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { STILLE } from "@/lib/nina/stille";
+
 
 /**
  * Ninas Stimme im Browser.
@@ -25,7 +27,20 @@ export function useNinaVoice() {
   const [aktiveNachricht, setAktiveNachricht] = useState<string | null>(null);
   const [fehler, setFehler] = useState<string | null>(null);
 
+  /*
+   * Ein wiederverwendetes, im Klick freigegebenes Element.
+   *
+   * Dieselbe Ursache wie beim Live-Gespräch: Safari lässt Ton nur aus
+   * einer Nutzerhandlung heraus beginnen, und `play()` läuft hier erst
+   * nach `await fetch` — also nachdem der Klick längst vorbei ist.
+   *
+   * Der Unterschied zum Live-Gespräch: dort verschwand der Fehler
+   * lautlos, hier wurde immerhin ein Satz gezeigt. Nur half der Satz
+   * nicht, weil auch der zweite Versuch scheiterte — das Element war
+   * jedes Mal ein neues und damit jedes Mal ungefragt.
+   */
   const audio = useRef<HTMLAudioElement | null>(null);
+  const freigeschaltet = useRef(false);
   const objektUrl = useRef<string | null>(null);
   const abbruch = useRef<AbortController | null>(null);
   /* Die laufende Nummer. Alles Ältere ist ungültig. */
@@ -41,8 +56,9 @@ export function useNinaVoice() {
 
     if (audio.current) {
       audio.current.pause();
-      audio.current.src = "";
-      audio.current = null;
+      // Element behalten: die Freigabe hängt daran.
+      audio.current.removeAttribute("src");
+      audio.current.load();
     }
     if (objektUrl.current) {
       URL.revokeObjectURL(objektUrl.current);
@@ -66,6 +82,53 @@ export function useNinaVoice() {
       }
 
       stoppen();
+
+      /*
+       * Freischalten — synchron, solange der Klick noch zählt.
+       *
+       * Muss vor jedem `await` stehen; danach gilt die Wiedergabe für
+       * den Browser als selbst begonnen.
+       */
+      if (!audio.current) {
+        const el = new Audio();
+        el.preload = "auto";
+        el.setAttribute("playsinline", "");
+        audio.current = el;
+      }
+      if (!freigeschaltet.current) {
+        const el = audio.current;
+        el.muted = true;
+        el.src = STILLE;
+        const versuch = el.play();
+        if (versuch && typeof versuch.then === "function") {
+          void versuch
+            .then(() => {
+              freigeschaltet.current = true;
+              el.pause();
+              el.muted = false;
+              /*
+               * Die Stille stehen lassen.
+               *
+               * Hier stand `removeAttribute("src"); load();` — aufgeräumt
+               * gedacht, aber ein Element ohne Quelle neu zu laden löst
+               * ein `error`-Ereignis aus. Es blieb folgenlos, weil noch
+               * kein Fehlerbehandler hing; im Protokoll stand trotzdem
+               * ein Ladefehler, der keiner war, und beim nächsten
+               * Sprachfehler hätte man ihn für die Ursache gehalten.
+               *
+               * Die Stille ist 1,6 Kilobyte und wird ohnehin bei der
+               * ersten echten Antwort überschrieben.
+               */
+            })
+            .catch(() => {
+              el.muted = false;
+            });
+        } else {
+          freigeschaltet.current = true;
+          el.muted = false;
+        }
+      }
+
       const meinLauf = lauf.current;
 
       setFehler(null);
@@ -108,8 +171,9 @@ export function useNinaVoice() {
         const url = URL.createObjectURL(blob);
         objektUrl.current = url;
 
-        const element = new Audio(url);
+        const element = audio.current ?? new Audio();
         audio.current = element;
+        element.src = url;
 
         element.onended = () => {
           if (lauf.current !== meinLauf) return;

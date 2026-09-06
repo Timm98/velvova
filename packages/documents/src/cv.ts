@@ -83,7 +83,12 @@ export function buildCv(
  * das niemand verlangt hat, kostet Zeit und bringt oft nichts.
  */
 export function coverLetterAdvisable(job: Job): { advisable: boolean; reason: string } {
-  const asksForIt = /anschreiben|motivationsschreiben|cover letter|motivation/i.test(job.description);
+  // Ohne geladenen Text keine Behauptung: „verlangt kein Anschreiben"
+  // wäre eine Aussage, die wir aus einem fehlenden Feld nicht ableiten
+  // dürfen. Der Rest der Funktion entscheidet dann anhand des Wegs.
+  const asksForIt = /anschreiben|motivationsschreiben|cover letter|motivation/i.test(
+    job.description ?? "",
+  );
   if (asksForIt) {
     return { advisable: true, reason: "Die Anzeige verlangt ausdrücklich ein Anschreiben." };
   }

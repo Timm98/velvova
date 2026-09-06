@@ -8,6 +8,7 @@ import { seedJobs } from "./jobs.ts";
 import { LEA_EMAIL, leaConstraints, leaEvidence, leaRoleClusters } from "./lea.ts";
 import { seedReviews } from "./reviews.ts";
 import { seedTaxonomy } from "./taxonomy.ts";
+import { beschreibungsTokens } from "@paycheck/matching";
 
 /**
  * Seed-Daten. Ausschließlich synthetisch und durchgaengig als Demo
@@ -129,6 +130,9 @@ async function seedAll(db: Database): Promise<void> {
         workPermitRequired: j.workPermitRequired,
         coreTasks: j.coreTasks,
         description: j.description,
+        // Wie beim Import: die Ableitungen entstehen mit dem Original.
+        descriptionTokens: beschreibungsTokens(j.description),
+        descriptionLength: j.description.length,
         benefits: j.benefits,
         applyMethod: j.applyMethod,
         applyTarget: j.applyTarget,

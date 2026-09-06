@@ -1,5 +1,11 @@
 import { createHash } from "node:crypto";
-import type { Job, JobRequirement, JobSource } from "@paycheck/domain";
+import { anforderungEinstufen, istWunschUeberschrift } from "./anforderungsart.ts";
+import { erfahrungsniveauAusText } from "./erfahrungsniveau.ts";
+import type { Herkunft, Job, JobRequirement, JobSource } from "@paycheck/domain";
+import { leistungsnamen } from "./leistungen.ts";
+import { beschreibungsTokens } from "@paycheck/matching";
+import { gehaltAusText } from "./gehalt-aus-text.ts";
+import { waehrungBestimmen } from "./waehrung.ts";
 
 /**
  * Jobquellen-Adapter.
@@ -23,6 +29,17 @@ export interface RawListing {
   salaryMin?: number | null;
   salaryMax?: number | null;
   salaryCurrency?: string;
+  /**
+   * Woher der Betrag stammt, wenn der Adapter es weiss.
+   *
+   * Nur nötig, wenn es NICHT die schlichte Anbieterangabe ist. Adzuna
+   * etwa markiert eigene Schätzungen (`salary_is_predicted`) — die sind
+   * eine brauchbare Grössenordnung, aber keine Zusage des Arbeitgebers.
+   *
+   * Ohne dieses Feld gab es nur zwei Möglichkeiten: die Schätzung
+   * wegwerfen oder sie als Arbeitgeberangabe ausgeben. Beides falsch.
+   */
+  salaryProvenance?: "provider" | "board_estimate" | "text";
   salaryPeriod?: "year" | "month" | "hour";
   contractType?: string | null;
   weeklyHours?: number | null;
@@ -95,6 +112,16 @@ export interface JobSourceAdapter {
   readonly displayName: string;
   readonly kind: JobSource["kind"];
   readonly licenseStatus: JobSource["licenseStatus"];
+  /**
+   * Wie nah diese Quelle am Arbeitgeber ist.
+   *
+   * Getrennt von `kind`, weil das eine Vertragsfrage ist und das hier
+   * die Frage der Person vor dem Link: lande ich beim Arbeitgeber oder
+   * bei einer weiteren Sammelstelle? Fehlt die Angabe, wird sie aus
+   * `kind` abgeleitet — vorsichtig, also im Zweifel als Sammelstelle.
+   */
+  readonly herkunft?: Herkunft;
+
   readonly attributionRequired: boolean;
   readonly attributionText: string | null;
   readonly termsUrl: string | null;
@@ -186,6 +213,109 @@ export interface NormalisedListing {
   raw: Record<string, unknown>;
 }
 
+/**
+ * Die Gehaltsangabe — vom Anbieter, sonst aus dem Text, sonst keine.
+ *
+ * Die Reihenfolge ist die Verlässlichkeit. Ein Feld, das der
+ * Arbeitgeber ausgefüllt hat, gewinnt immer; erst wenn keines da ist,
+ * wird die Beschreibung gelesen.
+ *
+ * Gemessen an echten Rohantworten: Arbeitnow kennt gar kein
+ * Gehaltsfeld, Adzuna lieferte bei 20 deutschen Anzeigen keines,
+ * JSearch bei 10 keines, TheirStack bei einer von zwanzig. Von 1015
+ * gespeicherten Stellen hatte deshalb keine einzige eine Angabe —
+ * während 4,5 % der Beschreibungen eine enthalten. Diese Angabe
+ * wegzuwerfen, weil sie im falschen Feld steht, hiesse: die Person
+ * sieht „keine Angabe", wo die Anzeige eine macht.
+ *
+ * `disclosed` bleibt bei der Textlesung bewusst `false`. Es bedeutet
+ * „der Anbieter hat es offengelegt", und das hat er nicht.
+ */
+function gehaltFuer(listing: RawListing): Job["salary"] {
+  /*
+   * Die Währung wird bestimmt, nicht durchgereicht.
+   *
+   * Hier stand zweimal `listing.salaryCurrency ?? "EUR"`. Das reichte
+   * die Anbieterangabe ungeprüft weiter — und machte aus fehlendem
+   * Wissen einen Euro.
+   *
+   * Beides ging schief. Eine Stelle in Frankfurt kam von TheirStack mit
+   * `salary_currency: "GBP"` und wurde als „60.000–80.000 GBP"
+   * angezeigt: plausible Zahl, plausibles Kürzel, und zusammen ein um
+   * rund fünfzehn Prozent falscher Betrag — in die Richtung, die eine
+   * Stelle attraktiver aussehen lässt, als sie ist.
+   *
+   * `waehrungBestimmen()` lässt dem Anbieter den Vorrang, aber kein
+   * Vetorecht: Widerspricht seine Angabe dem Land der Stelle und
+   * bestätigt der Gehaltstext sie nicht, gilt das Land. Die Begründung
+   * kommt mit, damit eine spätere Reparatur nachvollziehbar bleibt.
+   */
+  const befund = waehrungBestimmen({
+    providerWaehrung: listing.salaryCurrency,
+    rohtext: listing.description,
+    land: listing.country,
+  });
+
+  const vomAnbieter = listing.salaryMin != null || listing.salaryMax != null;
+  if (vomAnbieter) {
+    /*
+     * Eine Plattformschätzung ist nicht „offengelegt".
+     *
+     * `disclosed` heisst: Der Arbeitgeber hat die Zahl genannt. Bei
+     * einer Schätzung der Jobplattform hat er das nicht — sie ist
+     * gerechnet, nicht gemeldet. Sie trotzdem als offengelegt zu führen
+     * hiesse, dem Arbeitgeber eine Aussage zuzuschreiben, die er nie
+     * gemacht hat.
+     */
+    const herkunft = listing.salaryProvenance ?? "provider";
+    return {
+      min: listing.salaryMin ?? null,
+      max: listing.salaryMax ?? null,
+      currency: befund.waehrung ?? "EUR",
+      period: listing.salaryPeriod ?? "year",
+      disclosed: herkunft === "provider",
+      provenance: herkunft,
+      evidence: null,
+    };
+  }
+
+  const ausText = gehaltAusText(listing.description);
+  if (ausText) {
+    return {
+      min: ausText.min,
+      max: ausText.max,
+      currency: ausText.currency,
+      period: ausText.period,
+      // Nicht offengelegt: gelesen. Der Unterschied ist der Punkt.
+      disclosed: false,
+      provenance: "text",
+      evidence: ausText.beleg,
+    };
+  }
+
+  /*
+   * Fehlt die Angabe, ist sie NICHT null-Gehalt, sondern schlicht
+   * nicht vorhanden. Diese Unterscheidung trägt die ganze
+   * Bedingungsprüfung.
+   */
+  /*
+   * Ohne Betrag ist die Währung ohne Bedeutung.
+   *
+   * Sie steht hier trotzdem, weil das Feld in der Datenbank nicht
+   * leer sein darf. Angezeigt wird sie nie — wo kein Betrag ist, steht
+   * „Gehalt nicht angegeben".
+   */
+  return {
+    min: null,
+    max: null,
+    currency: befund.waehrung ?? "EUR",
+    period: listing.salaryPeriod ?? "year",
+    disclosed: false,
+    provenance: null,
+    evidence: null,
+  };
+}
+
 export function normalise(listing: RawListing, fetchedAt = new Date()): NormalisedListing {
   const contentHash = computeContentHash({
     title: listing.title,
@@ -194,19 +324,60 @@ export function normalise(listing: RawListing, fetchedAt = new Date()): Normalis
     description: listing.description,
   });
 
-  const requirementLines = listing.description
-    .split(/\n/)
-    .map((l) => l.replace(/^[-•·*]\s*/, "").trim())
-    .filter((l) => l.length > 10 && l.length < 160 && /\b(erfahrung|kenntnis|abschluss|sprach|fuehrerschein|sicher im|bereitschaft)\b/i.test(l));
+  /*
+   * Zeilen mit ihrem Abschnitt lesen, nicht einzeln.
+   *
+   * Viele Anzeigen kennzeichnen ihre Punkte gar nicht — sie machen die
+   * Trennung nur über zwei Überschriften: „Das bringen Sie mit" und
+   * „Das wäre zusätzlich schön". Die einzelne Zeile enthält dann kein
+   * Signalwort, und wer sie für sich liest, verliert die einzige
+   * Information darüber, ob sie Pflicht ist.
+   *
+   * Deshalb läuft die Extraktion einmal von oben durch und merkt sich,
+   * in welchem Block sie gerade ist.
+   */
+  let imWunschblock = false;
+  const requirementLines: { text: string; wunschblock: boolean }[] = [];
+  for (const roh of listing.description.split(/\n/)) {
+    const zeile = roh.replace(/^[-•·*]\s*/, "").trim();
+    if (!zeile) continue;
+
+    /*
+     * Eine Überschrift ist selbst keine Anforderung.
+     *
+     * Sie ist kurz, endet oft ohne Satzzeichen und trägt keinen
+     * Aufzählungspunkt. Erkennen wir sie als Anforderung, steht später
+     * „Das wünschen wir uns" als Muss-Kriterium in der Liste.
+     */
+    if (istWunschUeberschrift(zeile)) { imWunschblock = true; continue; }
+    if (/^(das\s+)?(bringen\s+Sie\s+mit|erwarten\s+wir|ihr\s+profil|dein\s+profil|anforderungen)\b/i.test(zeile)) {
+      imWunschblock = false;
+      continue;
+    }
+
+    if (zeile.length > 10 && zeile.length < 160
+      && /\b(erfahrung|kenntnis|abschluss|sprach|fuehrerschein|sicher im|bereitschaft)\b/i.test(zeile)) {
+      requirementLines.push({ text: zeile, wunschblock: imWunschblock });
+    }
+  }
 
   return {
     externalId: listing.externalId,
     companyName: listing.companyName,
     raw: listing.raw ?? {},
-    requirements: requirementLines.slice(0, 12).map((text) => ({
+    requirements: requirementLines.slice(0, 12).map(({ text, wunschblock }) => ({
       kind: classifyRequirement(text),
       text,
       skillKey: null,
+      /*
+       * Ob die Anzeige es verlangt oder wünscht — und ob es holbar ist.
+       *
+       * Ohne diese Felder sind zwölf Aufzählungspunkte zwölf
+       * gleichwertige Zeilen, und niemand kann sagen, ob neun von zwölf
+       * reichen. Mit ihnen wird daraus der Satz, auf den es ankommt:
+       * „Dir fehlt eines von sieben Muss-Kriterien, und das ist ein Kurs."
+       */
+      ...anforderungEinstufen(text, wunschblock),
       category: /sprach/i.test(text)
         ? ("language" as const)
         : /fuehrerschein|lizenz|zertifikat/i.test(text)
@@ -222,31 +393,73 @@ export function normalise(listing: RawListing, fetchedAt = new Date()): Normalis
       companyName: listing.companyName.trim(),
       location: listing.location.trim(),
       country: listing.country ?? "DE",
+      /*
+       * Beim Import noch offen.
+       *
+       * Die Kennung entsteht aus der Zuordnung des Titels zu einer
+       * amtlichen Bezeichnung, und die steht erst fest, wenn
+       * `entgelt-sammeln.mjs zuordnung` gelaufen ist.
+       * `kldb-nachtragen.mjs` trägt sie danach nach. Hier zu raten
+       * hiesse, eine amtliche Kennung zu erfinden.
+       */
+      kldb: null,
       latitude: null,
       longitude: null,
       workModel: listing.workModel ?? normaliseWorkModel(undefined),
       remotePercent: listing.remotePercent ?? null,
-      salary: {
-        min: listing.salaryMin ?? null,
-        max: listing.salaryMax ?? null,
-        currency: listing.salaryCurrency ?? "EUR",
-        period: listing.salaryPeriod ?? "year",
-        // Entscheidend: fehlt die Angabe, ist sie NICHT null-Gehalt,
-        // sondern schlicht nicht offengelegt.
-        disclosed: listing.salaryMin != null || listing.salaryMax != null,
-      },
+      salary: gehaltFuer(listing),
       contractType: (listing.contractType ?? null) as Job["contractType"],
       weeklyHours: listing.weeklyHours ?? null,
       shiftWork: listing.shiftWork ?? null,
       travelPercent: listing.travelPercent ?? null,
-      experienceLevel: (listing.experienceLevel ?? null) as Job["experienceLevel"],
+      /*
+       * Fehlt die Angabe, wird sie aus dem Text gelesen.
+       *
+       * Gemessen an den 5.000 neuesten deutschen Anzeigen füllen 67
+       * dieses Feld — 1,3 Prozent. Der Bewertungsfaktor `growth` mit
+       * 15 Prozent Gewicht war damit praktisch immer unbekannt, und
+       * eine niedrige Deckung ist der Grund, aus dem gar keine Passung
+       * berechnet wird.
+       *
+       * Die Quelle hat Vorrang: Was der Arbeitgeber angibt, schlägt
+       * das, was wir im Text finden.
+       */
+      experienceLevel: ((listing.experienceLevel ??
+        erfahrungsniveauAusText(listing.title, listing.description)) ??
+        null) as Job["experienceLevel"],
       industry: listing.industry ?? null,
       languageRequirements: listing.languageRequirements ?? {},
       requiredLicenses: listing.requiredLicenses ?? [],
       workPermitRequired: listing.workPermitRequired ?? null,
       coreTasks: extractCoreTasks(listing.description),
       description: listing.description.trim(),
-      benefits: listing.benefits ?? [],
+      /*
+       * Die Wortmenge entsteht hier, nicht in der Datenbank.
+       *
+       * Sie ist eine Ableitung der Beschreibung, und Ableitungen
+       * gehören dorthin, wo das Original entsteht — sonst gibt es
+       * einen Moment, in dem beide auseinanderlaufen. Beim Schreiben
+       * zusammen, beim Lesen getrennt: die Rangfolge nimmt nur die
+       * Wortmenge, die Detailseite nur den Text.
+       */
+      descriptionTokens: beschreibungsTokens(listing.description),
+      descriptionLength: listing.description.trim().length,
+      /*
+       * Leistungen: erst der Anbieter, dann der Text.
+       *
+       * Gemessen am 1.9.2026 hatten 0 von 1.500 Stellen einen Eintrag.
+       * Genau ein Anbieter liefert überhaupt ein Benefits-Feld, und der
+       * deutsche Markt nennt Leistungen im Fliesstext. Sie lagen also
+       * die ganze Zeit vor und wurden weggeworfen; die Textauswertung
+       * findet sie bei zwei Dritteln der Anzeigen.
+       *
+       * Die Reihenfolge ist wie beim Gehalt: Was der Anbieter
+       * ausdrücklich angibt, hat Vorrang. Gelesen wird nur, wo nichts
+       * angegeben ist.
+       */
+      benefits: (listing.benefits ?? []).length > 0
+        ? listing.benefits!
+        : leistungsnamen(listing.description),
       applyMethod: listing.applyMethod ?? "unknown",
       applyTarget: listing.applyTarget ?? null,
       publishedAt: listing.publishedAt ?? null,

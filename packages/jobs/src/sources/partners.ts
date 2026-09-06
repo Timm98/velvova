@@ -126,23 +126,24 @@ export class EuresPartnerAdapter extends UnauthorizedPartnerAdapter {
   }
 }
 
-export class BundesagenturPartnerAdapter extends UnauthorizedPartnerAdapter {
-  constructor() {
-    super({
-      key: "bundesagentur",
-      displayName: "Bundesagentur für Arbeit",
-      missing:
-        "Es gibt keine dokumentierte Schnittstelle für Stellenangebote. Die Statistik-API " +
-        "liefert Arbeitsmarktstatistik und ist kein Live-Stellenfeed; sie darf getrennt für " +
-        "Engpassanalysen genutzt werden, wenn Nutzungsbedingungen und Nennung erfüllt sind.",
-    });
-  }
-}
+/*
+ * Der Platzhalter für die Bundesagentur ist entfallen.
+ *
+ * Er stand hier mit der Begründung, es gebe „keine dokumentierte
+ * Schnittstelle für Stellenangebote" und nur eine Statistik-API. Das
+ * war überholt: die Jobbörse betreibt eine offene REST-Schnittstelle
+ * für Suche und Details. Es gibt jetzt einen echten Adapter
+ * (`bundesagentur.ts`), der sie abruft.
+ *
+ * Beide gleichzeitig unter demselben Schlüssel wären ein Widerspruch —
+ * die Betriebsansicht zeigte die Quelle doppelt, einmal als gesperrt
+ * und einmal als aktiv, und welche Zeile stimmt, entschiede die
+ * Reihenfolge einer Liste.
+ */
 
 export const PARTNER_ADAPTERS = [
   LinkedInPartnerAdapter,
   IndeedPartnerAdapter,
   StepStonePartnerAdapter,
   EuresPartnerAdapter,
-  BundesagenturPartnerAdapter,
 ] as const;

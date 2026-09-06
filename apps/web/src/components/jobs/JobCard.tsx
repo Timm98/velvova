@@ -5,6 +5,7 @@ import type { ScoredJob } from "@/lib/matching";
 import { Badge } from "@/components/ui/badge";
 import { ConfidenceMeter, ScoreRing } from "@/components/ui/score";
 import { cn } from "@/lib/cn";
+import { gehaltsanzeige } from "@/lib/jobs/gehaltsanzeige";
 
 /**
  * Eine Stelle in der Liste.
@@ -88,13 +89,7 @@ export function JobCard({
           ? t("jobs.fitExploratory")
           : t("jobs.fitInsufficient");
 
-  const salary = job.salary.disclosed
-    ? `${new Intl.NumberFormat("de-DE").format(job.salary.min ?? job.salary.max ?? 0)}${
-        job.salary.min && job.salary.max
-          ? `–${new Intl.NumberFormat("de-DE").format(job.salary.max)}`
-          : ""
-      } ${job.salary.currency}`
-    : null;
+  const salary = gehaltsanzeige(job.salary)?.betrag ?? null;
 
   return (
     <article
@@ -126,7 +121,7 @@ export function JobCard({
                   {job.title}
                 </Link>
               </h3>
-              <p className="mt-1 truncate text-sm text-ink-2">{job.companyName}</p>
+              <p className="mt-1 text-sm text-ink-2">{job.companyName}</p>
             </div>
           </div>
 

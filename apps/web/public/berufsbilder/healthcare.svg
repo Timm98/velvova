@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" role="img"><defs><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f2fd"/><stop offset="1" stop-color="#f2c8d4" stop-opacity=".85"/></linearGradient></defs><style>
+  .bg { fill: url(#v); }
+  .fl { fill: #ffffff; }
+  .li { fill: none; stroke: #2b2545; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; opacity: .82; }
+  .du { fill: #2b2545; opacity: .82; }
+  .ak { fill: #c25c7a; }
+  .ak-l { fill: none; stroke: #c25c7a; stroke-width: 3.5; stroke-linecap: round; }
+  .we { fill: #f2c8d4; opacity: .5; }
+  .sc { fill: #2b2545; opacity: .07; }
+</style><rect width="800" height="400" class="bg"/><path d="M0 300h800" stroke="#2b2545" stroke-width="3.5" opacity=".2"/><path d="M340 120h64v52h52v64h-52v52h-64v-52h-52v-64h52z" class="fl"/><path d="M340 120h64v52h52v64h-52v52h-64v-52h-52v-64h52z" class="li"/><path d="M480 230h34l18-34 24 62 20-42h74" class="ak-l"/></svg>

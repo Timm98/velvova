@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
-import { confirmEvidence, rejectEvidence } from "@/lib/profile";
+import { confirmEvidence, dismissEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
-import { NinaVisual } from "@/components/nina/NinaVisual";
+import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
+import { Bedingungen } from "@/components/nina/Bedingungen";
 import { useNina } from "@/components/nina/NinaProvider";
 import { useLiveVoice } from "@/components/nina/useLiveVoice";
 import { LIVE_TEXT } from "@/lib/nina/live-voice";
@@ -109,7 +110,6 @@ export function InterviewRoom({
   const ende = useRef<HTMLDivElement>(null);
   const strom = useRef<HTMLDivElement>(null);
   const [neueAntwort, setNeueAntwort] = useState(false);
-  const [gescrollt, setGescrollt] = useState(false);
 
   const geladen = useRef(false);
   useEffect(() => {
@@ -180,7 +180,6 @@ export function InterviewRoom({
       angefordert = true;
       requestAnimationFrame(() => {
         angefordert = false;
-        setGescrollt(el.scrollTop > 24);
         if (amEnde()) setNeueAntwort(false);
       });
     };
@@ -189,6 +188,14 @@ export function InterviewRoom({
     return () => el.removeEventListener("scroll", beiScroll);
   }, [amEnde]);
 
+  /*
+   * `erledigt` ist nur die Anzeige bis zum nächsten Laden.
+   *
+   * Es hält die Zeile sofort aus dem Blick, während der Server noch
+   * schreibt. Dauerhaft entschieden wird auf dem Server — vorher war
+   * genau das der Fehler: dieses Set war die EINZIGE Erinnerung, und
+   * nach jedem Neuladen stand alles wieder da.
+   */
   function bewerten(id: string, stimmt: boolean) {
     startTransition(async () => {
       await (stimmt ? confirmEvidence(id) : rejectEvidence(id));
@@ -196,6 +203,36 @@ export function InterviewRoom({
       router.refresh();
     });
   }
+
+  /** Weglegen, ohne zu urteilen. */
+  function weglegen(id: string) {
+    startTransition(async () => {
+      await dismissEvidence(id);
+      setErledigt((s) => new Set(s).add(id));
+      router.refresh();
+    });
+  }
+
+  /*
+   * Escape legt die oberste Erkenntnis weg.
+   *
+   * Nicht die ganze Fläche auf einmal: das wäre eine Entscheidung über
+   * bis zu drei Aussagen mit einem Tastendruck, und rückgängig machen
+   * kann man sie hier nicht. Eine nach der anderen ist langsamer und
+   * die einzige Lesart, die zu „Escape" passt.
+   */
+  useEffect(() => {
+    const beiTaste = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || pending) return;
+      const erste = hypotheses.find((h) => !erledigt.has(h.id));
+      if (!erste) return;
+      e.preventDefault();
+      weglegen(erste.id);
+    };
+    window.addEventListener("keydown", beiTaste);
+    return () => window.removeEventListener("keydown", beiTaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hypotheses, erledigt, pending]);
 
   function pausieren() {
     startTransition(async () => {
@@ -235,6 +272,8 @@ export function InterviewRoom({
   const offen = hypotheses.filter((h) => !erledigt.has(h.id));
   const stufe = nina.stage ?? initialStage;
   const status = nina.stageStatus ?? initialStatus;
+  /* Derzeit ohne Abnehmer — die Plättchen unter dem Feld sind
+     entfernt. Siehe die Begründung weiter unten. */
   const impulse = IMPULSE_JE_STUFE[stufe] ?? [];
   const nochNichtsGesagt = nina.messages.length === 0;
 
@@ -251,17 +290,23 @@ export function InterviewRoom({
      */
     <div className="relative h-full">
       {/*
-       * Das Licht hinter dem Gespräch.
+       * Hier lag das Licht hinter dem Gespräch — und es ist weg.
        *
-       * Ein einziger sehr weiter radialer Verlauf, oben, sehr schwach.
-       * Er soll den Blick nicht holen — er soll verhindern, dass die
-       * Fläche wie ein leeres Blatt aussieht.
+       * Ein radialer Verlauf über die volle Breite, 420 Pixel hoch, ab
+       * 24 Pixel oberhalb des Bereichs. Gedacht war er als leiser
+       * Grund, damit die Fläche nicht wie ein leeres Blatt wirkt.
+       *
+       * Auf dem Bildschirm wurde daraus etwas anderes: ein heller
+       * Kegel, der unter dem Header hervorschien und mehrere hundert
+       * Pixel in die Seite reichte. Weil der Header selbst durchsichtig
+       * ist (`bg-page/85`), lag der Verlauf teilweise HINTER ihm — es
+       * sah aus, als leuchte die Kopfzeile nach unten.
+       *
+       * Nina hat ihren eigenen Schein, und der sitzt dort, wo er
+       * hingehört: `inset-[-18%]` um ihre Fläche. Ein zweites Licht
+       * über die ganze Seitenbreite fügt nichts hinzu, das eine Person
+       * benennen könnte — es macht nur den oberen Rand unruhig.
        */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-24 h-[420px]"
-        style={{ background: "var(--glow-nina)" }}
-      />
 
       <div className="relative mx-auto flex h-full w-full max-w-[820px] flex-col">
         {/* ── Kopf ────────────────────────────────────────────── */}
@@ -291,13 +336,32 @@ export function InterviewRoom({
            * der ResizeObserver in NinaScene passt die Leinwand
            * währenddessen mit an.
            */}
-          <NinaVisual
-            size={gescrollt ? "sm" : "md"}
-            className={cn(
-              "-ml-3 transition-[width,height] duration-(--duration-slow) ease-(--ease-out)",
-              "motion-reduce:transition-none",
-            )}
-          />
+          {/*
+           * Auf dem Telefon immer die kleine Fassung.
+           *
+           * Bei 390 Pixeln bricht die Kopfzeile ohnehin in zwei Reihen:
+           * Nina mit Titel oben, die Knöpfe darunter. Mit dem grossen
+           * Bild ergab das 220 Pixel — ein Viertel eines 844 Pixel hohen
+           * Bildschirms, bevor eine einzige Nachricht zu sehen war.
+           *
+           * Auf dem Telefon ist Platz das knappste Gut. Ninas Grösse
+           * darf dort nicht die Hälfte des Gesprächs kosten; ab `sm`
+           * bleibt sie gross, weil dort Raum dafür da ist.
+           */}
+          {/*
+           * Eine Grösse, keine Animation beim Scrollen.
+           *
+           * Vorher wechselte der Kern zwischen 120 und 72 Pixeln, je
+           * nachdem wie weit man gescrollt hatte. Das kostete oben ein
+           * Viertel des Bildschirms und bewegte danach die ganze
+           * Kopfzeile, während man las.
+           *
+           * `NinaCore` steht fest bei 72 beziehungsweise 120 Pixeln —
+           * gross genug, dass man die Struktur im Inneren sieht und
+           * nicht nur eine Kugel, klein genug, dass das Gespräch die
+           * Seite behält.
+           */}
+          <NinaCore />
 
           <div className="grid min-w-0 flex-1 gap-0.5">
             <h1 className="font-display text-xl font-semibold tracking-[-0.02em]">
@@ -313,14 +377,59 @@ export function InterviewRoom({
             </p>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-1">
-  <button
+          {/*
+           * Drei Handlungen, drei Ränge — vorher drei gleich laute Knöpfe.
+           *
+           * Gemessen: 232 + 229 + 208 Pixel, zusammen 677 in einer
+           * Spalte von 820. Neben Nina und der Statuszeile ging das
+           * nicht auf, also brach die Gruppe in eine zweite Reihe und
+           * die Kopfzeile war 220 Pixel hoch — ein Viertel des Fensters,
+           * bevor eine einzige Nachricht zu sehen war.
+           *
+           * Umbrechen war nicht das Problem, sondern dass alle drei so
+           * aussahen, als wären sie gleich wichtig. Sie sind es nicht:
+           *
+           *   „Was ich über dich weiß" bleibt vollständig beschriftet.
+           *   In einem Produkt, dessen Versprechen die Verfügung über
+           *   die eigenen Daten ist, ist das kein Knopf, den man zu
+           *   einem Symbol eindampft — „über dich" ist genau der Teil,
+           *   auf den es ankommt.
+           *
+           *   „Live sprechen" verliert Ninas Namen. Er steht als
+           *   Überschrift zwei Zentimeter daneben; ihn im Knopf zu
+           *   wiederholen kostete 70 Pixel und sagte nichts Neues. Die
+           *   ganze Formulierung bleibt als aria-label für alle, die
+           *   die Überschrift nicht mitlesen.
+           *
+           *   Pausieren wird ein Symbol. Es ist die seltenste der drei
+           *   Handlungen, und ein durchgestrichener Kreis mit zwei
+           *   Balken ist eine der wenigen Formen, die wirklich jeder
+           *   kennt.
+           */}
+          <div className="flex shrink-0 items-center gap-1">
+            <button
               type="button"
               onClick={() => setFortschrittOffen(true)}
               className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) bg-soft px-4 text-sm text-ink-2 transition-colors hover:bg-soft-hover hover:text-ink"
             >
               <Sparkle className="size-4" strokeWidth={1.8} />
-              Was ich über dich weiß
+              {/*
+               * Auf dem Telefon kürzer.
+               *
+               * Mit der vollen Beschriftung brach die Knopfgruppe bei
+               * 390 Pixeln in eine zweite Reihe, und die Kopfzeile war
+               * 220 Pixel hoch — ein Viertel des Bildschirms, bevor
+               * eine Nachricht zu sehen war.
+               *
+               * „über dich" ist der Teil, auf den es ankommt, und er
+               * bleibt: er unterscheidet „was Nina weiss" von „was Nina
+               * kann". Weg fällt nur das Verb, das aus dem Zusammenhang
+               * ohnehin klar ist. Für Vorlesegeräte bleibt der ganze
+               * Satz über `aria-label`.
+               */}
+              <span aria-hidden className="sm:hidden">Über dich</span>
+              <span aria-hidden className="hidden sm:inline">Was ich über dich weiß</span>
+              <span className="sr-only">Was ich über dich weiß</span>
             </button>
 
             {/*
@@ -365,6 +474,11 @@ export function InterviewRoom({
                 disabled={!live.möglich}
                 title={live.möglich ? undefined : "Dieser Browser stellt kein Mikrofon bereit."}
                 aria-pressed={live.stand.zustand !== "aus"}
+                aria-label={
+                  live.stand.zustand === "aus"
+                    ? `Live mit ${assistantName} sprechen`
+                    : `Gespräch mit ${assistantName} beenden`
+                }
                 className={cn(
                   "inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm transition-colors",
                   live.stand.zustand === "aus"
@@ -387,9 +501,7 @@ export function InterviewRoom({
                 ) : (
                   <Square className="size-3.5 fill-current" strokeWidth={0} />
                 )}
-                {live.stand.zustand === "aus"
-                  ? `Live mit ${assistantName} sprechen`
-                  : "Beenden"}
+                {live.stand.zustand === "aus" ? "Live sprechen" : "Beenden"}
               </button>
             )}
 
@@ -397,15 +509,40 @@ export function InterviewRoom({
               type="button"
               onClick={pausieren}
               disabled={pending}
-              className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm text-ink-2 transition-colors hover:bg-soft hover:text-ink"
+              aria-label={labels.pauseSession}
+              title={labels.pauseSession}
+              /* Quadratisch statt `px-4`: ohne Text ist waagerechte
+                 Polsterung nur Luft, und 44×44 ist die Fläche, die
+                 auch ein Daumen trifft. */
+              className="inline-flex size-11 items-center justify-center rounded-(--radius-control) text-ink-2 transition-colors hover:bg-soft hover:text-ink disabled:cursor-not-allowed disabled:text-ink-3"
             >
               <PauseCircle className="size-4" strokeWidth={1.8} />
-              {labels.pauseSession}
             </button>
 
           </div>
 
         </header>
+
+        {/*
+         * Was beim Sprechen schiefging — sichtbar, nicht nur im Zustand.
+         *
+         * `live.stand.fehler` wurde bisher gesetzt und nirgends gezeigt.
+         * Damit war jeder Sprachfehler stumm: das Mikrofon ging nicht
+         * an, der Ton kam nicht, und die Oberfläche sah aus wie immer.
+         * Wer nichts hörte, konnte nur raten, ob es an ihm lag.
+         *
+         * `role="status"` und nicht `alert`: es unterbricht nicht, es
+         * steht da. Die häufigste Ursache — der Browser will erst eine
+         * Berührung — ist kein Notfall, sondern eine Anweisung.
+         */}
+        {live.stand.fehler && (
+          <p
+            role="status"
+            className="mb-4 shrink-0 rounded-(--radius-md) bg-caution-soft px-4 py-3 text-sm leading-relaxed text-ink-2"
+          >
+            {live.stand.fehler}
+          </p>
+        )}
 
         {/* ── Gespräch ────────────────────────────────────────── */}
         {/*
@@ -419,12 +556,59 @@ export function InterviewRoom({
          */}
         <div
           ref={strom}
-          className="min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pb-6"
+          /*
+           * Solange nichts gesagt wurde, steht die erste Frage in der
+           * Mitte.
+           *
+           * Vorher klebte sie oben, und darunter standen fünfhundert
+           * Pixel Nichts bis zum Eingabefeld. Für jemanden, der die
+           * Seite zum ersten Mal öffnet, sieht das nicht nach Ruhe aus,
+           * sondern nach einer Seite, die nicht fertig geladen hat.
+           *
+           * Sobald die erste Antwort da ist, fällt die Zentrierung weg:
+           * ein Gesprächsverlauf gehört nach oben und wächst nach
+           * unten. `justify-center` bliebe hier ein Fehler, weil der
+           * Verlauf sonst bei jeder Nachricht springt.
+           */
+          className={cn(
+            /*
+             * `ohne-rollbalken`: kein grauer Balken in der Spalte.
+             *
+             * `pr-1`: Die eigenen Nachrichten stehen rechtsbündig und
+             * lagen damit auf der Kante des scrollenden Bereichs — die
+             * abgerundete Ecke wurde angeschnitten. Vier Pixel Luft
+             * genügen; mehr würde die Blase sichtbar einrücken.
+             */
+            "ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1 pb-6",
+            /*
+             * Auch die Ausrichtung wird normal.
+             *
+             * `justify-center` schob die erste Frage in die Mitte der
+             * leeren Fläche — passend zu einer Schautafel, nicht zu
+             * einer Nachricht. Ein Gespräch beginnt oben und wächst
+             * nach unten; das gilt schon für den ersten Satz.
+             */
+          )}
         >
           {nochNichtsGesagt && (
-            /* Die erste Frage bekommt den Raum, den eine erste Frage
-               verdient: groß, frei, ohne Kasten. */
-            <p className="max-w-[34ch] font-display text-[28px] leading-[1.32] tracking-[-0.02em] text-ink sm:text-[32px]">
+            /*
+             * Die erste Frage sieht aus wie jede andere Nachricht.
+             *
+             * Hier standen 28 beziehungsweise 32 Pixel in der
+             * Überschriftenschrift, mit der Begründung, eine erste
+             * Frage verdiene Raum. Genau diese Begründung stand ein
+             * paar Zeilen weiter unten schon einmal — für Ninas
+             * Antworten — und wurde dort verworfen: In Schaugrösse
+             * liest es sich wie die Ausgabe eines Sprachmodells und
+             * nicht wie ein Satz von jemandem, der einem
+             * gegenübersitzt.
+             *
+             * Der Satz wurde damals für die Antworten korrigiert und
+             * für die Eröffnung vergessen. Jetzt trägt sie dieselben
+             * Klassen wie jede Nachricht von Nina — dieselbe Grösse,
+             * dieselbe Schrift, dasselbe Mass.
+             */
+            <p className="max-w-[var(--measure)] whitespace-pre-wrap text-base leading-relaxed text-ink">
               {openingQuestion}
             </p>
           )}
@@ -450,19 +634,49 @@ export function InterviewRoom({
                        sichtbar der Person, und Grau liest sich als
                        „deaktiviert". Die eine eckigere Ecke unten rechts
                        zeigt, von wem sie kommt, ohne einen Pfeil. */
-                    <p className="max-w-[80%] whitespace-pre-wrap rounded-(--radius-lg) rounded-br-md bg-lavender px-5 py-3.5 text-base leading-relaxed">
+                    /*
+                     * Blau statt Lavendel.
+                     *
+                     * Lavendel war ein Zwischenschritt: Grau las sich
+                     * als „deaktiviert", also wurde es ein sehr helles
+                     * Violett. Neben Ninas blauem Kern, dem blauen
+                     * Sendeknopf und den blauen Verweisen war das die
+                     * einzige Farbe auf der Seite, die zu nichts
+                     * gehörte.
+                     *
+                     * Die eigenen Nachrichten tragen jetzt dieselbe
+                     * Akzentfarbe wie der Knopf, mit dem man sie
+                     * abschickt. Die eckigere Ecke unten rechts zeigt
+                     * weiterhin, von wem sie kommen, ohne einen Pfeil.
+                     */
+                    <p className="max-w-[80%] whitespace-pre-wrap rounded-(--radius-lg) rounded-br-md bg-accent px-5 py-3.5 text-base leading-relaxed text-accent-on">
                       {m.content}
                     </p>
                   ) : (
-                    /* Ninas Antworten liegen frei auf der Fläche. Die
-                       letzte etwas größer: sie ist die aktuelle Frage. */
+                    /*
+                      * Ninas Antworten laufen wie der Rest der Seite.
+                      *
+                      * ── Was hier stand ────────────────────────────
+                      *
+                      * Die jeweils letzte Antwort lief auf 21 bis 23
+                      * Pixeln in der Überschriftenschrift. Der Gedanke
+                      * dahinter war, die aktuelle Frage hervorzuheben —
+                      * die Wirkung war eine andere: Es sah aus wie die
+                      * Ausgabe eines Sprachmodells, nicht wie ein Satz
+                      * von jemandem, der einem gegenübersitzt.
+                      *
+                      * ── Was stattdessen zeigt, was aktuell ist ────
+                      *
+                      * Die Stelle. Die letzte Antwort steht unten, dort
+                      * schaut man ohnehin hin. Ältere treten über die
+                      * Farbe zurück, nicht über die Grösse — und
+                      * `aria-live` sagt es denen, die es nicht sehen.
+                      */
                     <p
                       aria-live={istLetzte ? "polite" : undefined}
                       className={cn(
-                        "max-w-[var(--measure)] whitespace-pre-wrap text-ink",
-                        istLetzte
-                          ? "font-display text-[21px] leading-[1.45] tracking-[-0.01em] sm:text-[23px]"
-                          : "text-base leading-relaxed",
+                        "max-w-[var(--measure)] whitespace-pre-wrap text-base leading-relaxed",
+                        istLetzte ? "text-ink" : "text-ink-2",
                       )}
                     >
                       {m.content}
@@ -526,44 +740,27 @@ export function InterviewRoom({
             </div>
           )}
 
-          {/* ── Was Nina verstanden hat ───────────────────────── */}
-          {offen.length > 0 && (
-            <div className="mt-10 rounded-(--radius-surface) bg-lavender px-6 py-5">
-              <p className="text-sm text-ink-2">
-                Das habe ich verstanden. Nichts davon zählt, bevor du es bestätigt hast.
-              </p>
-              <ul className="mt-4 grid gap-3">
-                {offen.slice(0, 4).map((h) => (
-                  <li
-                    key={h.id}
-                    className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2"
-                  >
-                    <span className="min-w-0 flex-1 leading-relaxed">{h.statement}</span>
-                    <div className="flex shrink-0 gap-1">
-                      <button
-                        type="button"
-                        onClick={() => bewerten(h.id, true)}
-                        disabled={pending}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-(--radius-control) bg-raised px-4 text-sm shadow-sm transition-colors hover:bg-soft"
-                      >
-                        <Check className="size-4 text-positive" strokeWidth={2.4} />
-                        Stimmt
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => bewerten(h.id, false)}
-                        disabled={pending}
-                        className="inline-flex h-10 items-center gap-1.5 rounded-(--radius-control) px-4 text-sm text-ink-2 transition-colors hover:bg-raised"
-                      >
-                        <X className="size-4" strokeWidth={2.2} />
-                        Stimmt nicht
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* ── Harte Bedingungen aus dem Gespräch ────────────── */}
+          <Bedingungen />
+
+          {/*
+            Hier stand „Das habe ich verstanden" — eine blaue Fläche
+            mit Aussagen aus dem Gespräch und je drei Knöpfen:
+            stimmt, stimmt nicht, weglegen.
+
+            Sie hing mitten im Verlauf, zwischen Ninas letzter Frage
+            und dem Eingabefeld. Wer gerade antworten wollte, bekam
+            stattdessen drei ältere Aussagen zur Beurteilung vorgelegt
+            — und musste an ihnen vorbei, um weiterzuschreiben.
+
+            Ein Gespräch verträgt keine Zwischenprüfung. Was Nina
+            verstanden hat, gehört dorthin, wo man es in Ruhe ansieht,
+            und nicht zwischen zwei Sätze.
+
+            Die Bewertung selbst bleibt möglich: `bewerten` und
+            `weglegen` stehen unverändert oben in dieser Datei, und
+            die Fortschrittsanzeige führt dieselben Punkte.
+          */}
 
           {nina.error && (
             <p
@@ -594,7 +791,7 @@ export function InterviewRoom({
            * Vermutung, die sich beim Weitersprechen noch ändert.
            */}
           {live.stand.zustand !== "aus" && (
-            <div className="mb-2 flex items-center gap-2.5 rounded-(--radius-lg) bg-lavender px-4 py-2.5">
+            <div className="mb-2 flex items-center gap-2.5 rounded-(--radius-lg) bg-accent-soft px-4 py-2.5">
               <span
                 aria-hidden
                 className={cn(
@@ -641,24 +838,31 @@ export function InterviewRoom({
             busy={nina.busy}
             onListeningChange={nina.setListening}
             placeholder={labels.yourAnswer}
+            dokumenteFür={assistantName}
             autoFocus
           />
 
-          {impulse.length > 0 && !nina.busy && (
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {impulse.map((impuls) => (
-                <li key={impuls}>
-                  <button
-                    type="button"
-                    onClick={() => void nina.send(impuls)}
-                    className="rounded-(--radius-chip) bg-soft px-4 py-2 text-sm text-ink-2 transition-colors hover:bg-soft-hover hover:text-ink"
-                  >
-                    {impuls}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          {/*
+            Hier standen die Antwortimpulse — Plättchen unter dem
+            Eingabefeld: „Ich bin angestellt", „Besseres Gehalt",
+            „Sicherheit" und je nach Stufe drei bis vier weitere.
+
+            Gedacht waren sie als Starthilfe für jemanden, der vor
+            einem leeren Feld sitzt. In der Wirkung sind sie das
+            Gegenteil dessen, worum es in diesem Gespräch geht: Nina
+            fragt, was jemand kann und will — und darunter stehen vier
+            fertige Antworten. Man wählt eine, statt zu erzählen, und
+            Nina bekommt ein Schlagwort statt einer Situation.
+
+            Genau daraus lässt sich aber nichts belegen. Aus „Ich bin
+            angestellt" wird kein Nachweis; aus zwei Sätzen darüber,
+            was man gerade macht, schon.
+
+            `IMPULSE_JE_STUFE` bleibt oben stehen. Falls Impulse
+            zurückkommen, dann als Rückfrage von Nina, wenn jemand
+            wirklich nicht weiterweiss — nicht als Dauerangebot unter
+            jedem Feld.
+          */}
         </div>
       </div>
 

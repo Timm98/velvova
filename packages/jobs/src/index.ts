@@ -6,11 +6,31 @@ export * from "./sources/adzuna.ts";
 export * from "./sources/jooble.ts";
 export * from "./ingest.ts";
 export * from "./canonical.ts";
+export * from "./leistungen.ts";
 export * from "./health.ts";
 export * from "./sources/ats/board.ts";
 export * from "./sources/ats/registrations.ts";
 export * from "./sources/partners.ts";
 export * from "./sources/lightcast.ts";
+
+/*
+ * Die neuen Anbieter benannt statt mit `*`.
+ *
+ * Jeder bringt eine eigene `zuRawListing` mit — dieselbe Aufgabe, aber
+ * je Anbieter ein anderes Antwortformat. Mit `export *` würden drei
+ * gleichnamige Funktionen kollidieren, und welche gewinnt, entschiede
+ * die Reihenfolge dieser Zeilen. Sie bleiben deshalb intern.
+ */
+export { JSearchAdapter, type JSearchOptions } from "./sources/jsearch.ts";
+export { TheirStackAdapter, type TheirStackOptions } from "./sources/theirstack.ts";
+export { BrightDataAdapter, type BrightDataOptions } from "./sources/brightdata.ts";
+export { ApifyAdapter, type ApifyOptions } from "./sources/apify.ts";
+export {
+  CoresignalEnrichment,
+  SAMMLUNGEN as CORESIGNAL_SAMMLUNGEN,
+  type ZugangsBefund,
+} from "./sources/coresignal.ts";
+export { holJson, envWert, ProviderHttpError } from "./net.ts";
 
 /*
  * Die Web-Discovery-Schicht.
@@ -26,3 +46,22 @@ export {
   GoogleSearchDiscoveryProvider,
   aktiveDiscoveryProvider,
 } from "./discovery/providers.ts";
+export { nutzung, nutzungZuruecksetzen, type Nutzungszahlen } from "./nutzung.ts";
+export { anbieterStand, protokolliereStart, type Anbieterstand, type Anbieterzustand } from "./startpruefung.ts";
+export * from "./zusammenfuehren.ts";
+export * from "./orchestrierung.ts";
+export { gehaltAusText, type GehaltAusText } from "./gehalt-aus-text.ts";
+export { BundesagenturAdapter, stellenUrl as bundesagenturStellenUrl, type BundesagenturOptions } from "./sources/bundesagentur.ts";
+export { LAND_ZU_WAEHRUNG, waehrungAusText, waehrungBestimmen, type Waehrungsbefund, type Waehrungsherkunft } from "./waehrung.ts";
+export * from "./berufskennung.ts";
+export * from "./anforderungsart.ts";
+export * from "./gehaltsbefund.ts";
+export * from "./erfahrungsniveau.ts";
+export * from "./analyseschluessel.ts";
+export * from "./analyse-warteschlange.ts";
+export * from "./versandfenster.ts";
+export * from "./stellenzeile.ts";
+export * from "./suchauftrag/index.ts";
+export * from "./geodaten.ts";
+export * from "./proaktiv/index.ts";
+export * from "./intelligenz/index.ts";

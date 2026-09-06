@@ -40,6 +40,32 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(view.artifacts[0]?.id ?? null);
   const [draftText, setDraftText] = useState<string | null>(null);
+  /*
+   * Der getippte Text des Editors — hier oben, nicht im Editor.
+   *
+   * ── Was passiert ist ──────────────────────────────────────
+   *
+   * Der Editor hielt seinen Text in eigenem Zustand, angelegt aus
+   * `artifact.content`. Trifft nach dem Erzeugen ein spätes Neuladen
+   * ein, wird er neu eingehängt — und der Zustand beginnt wieder beim
+   * Serverwert. Gemessen: Getippter Text war nach 500 Millisekunden
+   * überschrieben, ohne Meldung, ohne Rückfrage.
+   *
+   * Jemand, der an seiner Bewerbung schreibt, verliert dabei seine
+   * Worte. Das ist der schlimmste Datenverlust, den dieses Produkt
+   * haben kann.
+   *
+   * ── Warum nach Art und nicht nach Kennung ─────────────────
+   *
+   * Eine neue Fassung desselben Dokuments bekommt eine neue Kennung.
+   * Nach Kennung abgelegt wäre der Entwurf genau dann weg, wenn er
+   * gebraucht wird. Die Art (Anschreiben, Lebenslauf) bleibt.
+   *
+   * Bei einer neuen Fassung gewinnt der Entwurf: Was ein Mensch
+   * geschrieben hat, wiegt schwerer als was das Modell erzeugt hat.
+   * Der Hinweis „Ungespeicherte Änderung" steht daneben.
+   */
+  const [editorEntwuerfe, setEditorEntwuerfe] = useState<Record<string, string>>({});
   const [confirmed, setConfirmed] = useState(false);
 
   const active = view.artifacts.find((a) => a.id === activeId) ?? view.artifacts[0] ?? null;
@@ -216,9 +242,17 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                   key={active.id}
                   artifact={active}
                   pending={pending}
+                  entwurf={editorEntwuerfe[active.kind]}
+                  onChange={(t) => setEditorEntwuerfe((e) => ({ ...e, [active.kind]: t }))}
                   onSave={(text) =>
                     startTransition(async () => {
                       await updateArtifact(active.id, text);
+                      /* Gespeichert heisst: der Entwurf ist jetzt der Serverstand. */
+                      setEditorEntwuerfe((e) => {
+                        const neu = { ...e };
+                        delete neu[active.kind];
+                        return neu;
+                      });
                       setMessage({ tone: "ok", text: "Gespeichert. Die Freigabe wurde zurückgesetzt." });
                       router.refresh();
                     })
@@ -387,13 +421,24 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
 function ArtifactEditor({
   artifact,
   pending,
+  entwurf,
+  onChange,
   onSave,
 }: {
   artifact: StudioView["artifacts"][number];
   pending: boolean;
+  /** Der ungespeicherte Text, falls es einen gibt. Lebt beim Elternteil. */
+  entwurf: string | undefined;
+  onChange: (text: string) => void;
   onSave: (text: string) => void;
 }) {
-  const [text, setText] = useState(artifact.content);
+  /*
+   * Kein eigener Zustand mehr.
+   *
+   * Er ging bei jedem Neueinhängen verloren — und die Komponente wird
+   * neu eingehängt, sobald eine neue Fassung eintrifft.
+   */
+  const text = entwurf ?? artifact.content;
   const changed = text !== artifact.content;
 
   return (
@@ -404,7 +449,7 @@ function ArtifactEditor({
       <textarea
         id="artifact"
         value={text}
-        onChange={(e) => setText(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         rows={18}
         style={{
           width: "100%",

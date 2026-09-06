@@ -35,8 +35,22 @@ export function computeListingConfidence(input: ListingConfidenceInput): Listing
     else if (ok === null) points += weight * 0.5; // Unbekannt ist halb, nicht null.
   };
 
-  add("original_url", "Originalquelle vorhanden", job.originalUrl !== null,
-    job.originalUrl ? "Die Anzeige lässt sich im Original öffnen." : "Es liegt kein Link zur Originalanzeige vor.", 20);
+  /*
+   * „Quelle verlinkt" statt „Originalquelle vorhanden".
+   *
+   * Der Link führt in aller Regel zu der Stelle, von der WIR die
+   * Anzeige haben — bei einem Aggregator also zu einer weiteren
+   * Sammelstelle, nicht zum Arbeitgeber. „Original" behauptete an
+   * dieser Stelle etwas, das wir nicht wissen, und ausgerechnet unter
+   * der Überschrift „Woraus sich das Vertrauen in die Anzeige ergibt".
+   *
+   * Ob es die Arbeitgeberseite ist, sagt das nächste Signal — und das
+   * darf es sagen, weil es die Art der Quelle kennt.
+   */
+  add("original_url", "Quelle verlinkt", job.originalUrl !== null,
+    job.originalUrl
+      ? "Die Anzeige lässt sich bei der Quelle nachlesen, aus der wir sie haben."
+      : "Es liegt kein Link zur Anzeige vor.", 20);
 
   add("employer_identity", "Arbeitgeber nachvollziehbar",
     source === null ? null : source.kind === "employer_feed" || source.licenseStatus === "licensed",
@@ -74,7 +88,7 @@ export function computeListingConfidence(input: ListingConfidenceInput): Listing
     dupes === 0 ? "Kein Hinweis auf eine früher identische Anzeige."
       : `Es gibt ${dupes} früher erfasste Anzeige(n) mit gleichem Inhalt. Das kann Nachbesetzung oder bloße Wiedervorlage bedeuten.`, 10);
 
-  const complete = [job.salary.disclosed, job.coreTasks.length > 0, job.contractType !== null, job.description.length > 200];
+  const complete = [job.salary.disclosed, job.coreTasks.length > 0, job.contractType !== null, job.descriptionLength > 200];
   const completeCount = complete.filter(Boolean).length;
   add("completeness", "Vollständigkeit", completeCount >= 3 ? true : completeCount >= 2 ? null : false,
     `${completeCount} von 4 Grundangaben sind vorhanden.`, 10);

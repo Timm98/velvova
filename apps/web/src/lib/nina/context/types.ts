@@ -1,4 +1,5 @@
 import type { Stage } from "../workflow/state-machine.ts";
+import type { Berechtigung, PlanKey } from "@/lib/billing/plaene";
 
 /**
  * Der Kontext-Umschlag.
@@ -34,6 +35,23 @@ export interface NinaContextEnvelope {
   selectedJobIds: string[];
   /** Nur Kennungen. Die Inhalte werden separat und gefiltert geladen. */
   relevantMemoryItemIds: string[];
+
+  /**
+   * Welcher Plan gilt und was er zulässt.
+   *
+   * Nina soll wissen, was sie anbieten kann — nicht, um weniger zu
+   * antworten, sondern um nichts anzubieten, das gerade nicht geht.
+   * „Ich vergleiche dir die drei Stellen" ist eine Zusage; sie
+   * einzulösen setzt eine Berechtigung voraus, die sie kennen muss.
+   *
+   * Ausdrücklich NICHT dazu gedacht, Antworten zu verschlechtern. Der
+   * Unterschied zwischen den Plänen entsteht durch Funktionen,
+   * laufende Beobachtung und zusätzliche Analysen — nie dadurch, dass
+   * dieselbe Frage einer Person schlechter beantwortet wird als einer
+   * anderen.
+   */
+  plan: PlanKey;
+  berechtigungen: Record<Berechtigung, boolean>;
 }
 
 /**

@@ -5,9 +5,25 @@ import { describe, expect, it } from "vitest";
 /**
  * Die Schriftgrößen müssen in ihren Spannen bleiben.
  *
- * V7 §4.1 gibt für jede Rolle eine Spanne vor — Fließtext 16,5–18 px,
- * Seitentitel 38–48, Metadaten nicht unter 14. Das ist keine Stilfrage:
- * die Oberfläche wirkte „billig und klein", und der Grund war messbar.
+ * Die Spannen stammen aus der aktuellen Gestaltungsvorgabe:
+ * Fließtext 15–16 px, Jobtitel in Karten 17–18, Seitentitel höchstens
+ * 32–36, Metadaten nicht unter 14.
+ *
+ * ── Warum sie sich geändert haben ─────────────────────────────
+ *
+ * Vorher galt V7 §4.1 mit Fließtext 16,5–18 und Seitentiteln bis 48.
+ * Diese Werte kamen aus einer Zeit, in der die Oberfläche „billig und
+ * klein" wirkte — die Gegenmassnahme war richtig und hat gewirkt.
+ *
+ * Die neue Vorgabe geht in die andere Richtung: Ein Jobportal wird
+ * gelesen und verglichen, nicht betrachtet. Grosse Titel und grosser
+ * Fließtext kosten dabei Zeilen, und Zeilen kosten Übersicht.
+ *
+ * Was NICHT geändert wurde, ist der Zweck dieses Tests: Er verhindert
+ * weiterhin, dass die Skala beim nächsten Aufräumen leise
+ * zusammenschrumpft — nur die Spannen sind andere. Die Untergrenze
+ * von 14 Pixeln für alles, was eine Information trägt, steht
+ * unverändert.
  *
  * Der eigentliche Fehler war subtiler als eine zu kleine Skala. Der
  * Fließtext lief nicht auf `--text-base`, sondern 373 Mal auf
@@ -36,14 +52,14 @@ function stufe(name: string): number {
 const SPANNEN: [string, string, number, number][] = [
   ["Eyebrow / Label", "text-2xs", 14, 16],
   ["Metadaten", "text-xs", 14, 17],
-  ["UI-Standard und Buttons", "text-sm", 15, 17],
-  ["Fließtext", "text-base", 16.5, 18],
-  ["Jobtitel in der Liste", "text-lg", 18, 20],
-  ["Abschnittsüberschrift", "text-xl", 22, 28],
-  ["Abschnittsüberschrift groß", "text-2xl", 22, 28],
-  ["Jobtitel im Detail", "text-3xl", 34, 44],
-  ["Seitentitel", "text-4xl", 38, 48],
-  ["Seitentitel groß", "text-5xl", 38, 48],
+  ["UI-Standard und Buttons", "text-sm", 15, 16],
+  ["Fließtext", "text-base", 15, 16],
+  ["Jobtitel in der Liste", "text-lg", 17, 18],
+  ["Abschnittsüberschrift", "text-xl", 20, 24],
+  ["Abschnittsüberschrift groß", "text-2xl", 24, 28],
+  ["Jobtitel im Detail", "text-3xl", 30, 34],
+  ["Seitentitel", "text-4xl", 32, 36],
+  ["Seitentitel groß", "text-5xl", 44, 52],
   ["Headline Landingpage", "text-6xl", 64, 76],
 ];
 
@@ -74,9 +90,18 @@ describe("Typografie", () => {
     ).toEqual([]);
   });
 
-  it("steigt monoton", () => {
-    // Eine Skala, in der eine Stufe kleiner ist als ihre Vorgängerin,
-    // ist keine Skala mehr, sondern eine Sammlung von Ausnahmen.
+  it("fällt nie", () => {
+    /*
+     * Eine Skala, in der eine Stufe KLEINER ist als ihre Vorgängerin,
+     * ist keine Skala mehr, sondern eine Sammlung von Ausnahmen.
+     *
+     * Gleichauf ist erlaubt, streng grösser nicht mehr gefordert:
+     * `--text-2xs` und `--text-xs` liegen beide auf der Untergrenze
+     * von 14 Pixeln. Mit Fließtext bei 16 bleibt darunter kein Platz
+     * für zwei getrennte Stufen — und eine davon unter 14 zu drücken,
+     * nur damit die Skala streng steigt, wäre die falsche
+     * Reihenfolge: Lesbarkeit vor Ebenmass.
+     */
     const reihe = ["text-2xs", "text-xs", "text-sm", "text-base", "text-lg", "text-xl",
       "text-2xl", "text-3xl", "text-4xl", "text-5xl", "text-6xl"];
     const werte: number[] = reihe.map(stufe);
@@ -84,8 +109,8 @@ describe("Typografie", () => {
       const [vorher, jetzt] = [werte[i - 1]!, werte[i]!];
       expect(
         jetzt,
-        `--${reihe[i]} (${jetzt}px) ist nicht größer als --${reihe[i - 1]} (${vorher}px)`,
-      ).toBeGreaterThan(vorher);
+        `--${reihe[i]} (${jetzt}px) ist kleiner als --${reihe[i - 1]} (${vorher}px)`,
+      ).toBeGreaterThanOrEqual(vorher);
     }
   });
 });

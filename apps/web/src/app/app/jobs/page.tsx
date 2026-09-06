@@ -3,7 +3,7 @@ import { plural } from "@paycheck/domain";
 import type { SortKey } from "@paycheck/matching";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Compass, Filter, Link2, Sparkles, Target } from "lucide-react";
+import { Columns3, Compass } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
@@ -14,13 +14,36 @@ import { loadGate } from "@/lib/gate";
 import { Badge, Button, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 import type { JobRowData } from "@/components/jobs/JobRow";
+import { Jobalarm } from "@/components/jobs/Jobalarm";
+import { Vertrauensbereich } from "@/components/shell/Vertrauensbereich";
 import { JobFilters } from "./JobFilters";
-import { blätterstand } from "@/lib/jobs/blaettern";
 import { JobPagination } from "./JobPagination";
+import { FilterChips } from "./FilterChips";
 import { JobSplitView } from "./JobSplitView";
+import { workspaceDaten } from "./nina/daten";
+import { zukunftLaden } from "@/lib/jobs/zukunft";
+import { NinaSteuerungProvider } from "./NinaSteuerung";
 import { JobDetailPanel } from "./JobDetailPanel";
+import { ladeGehaltsangaben } from "@/lib/payroll/einstellungen";
+import { ladeLebenshaltung } from "@/lib/lebenswert/speicher";
 import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
+import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
+import { titelOhneEmoji } from "@/lib/jobs/titel";
+import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
+import { ortNachschlagen } from "@paycheck/jobs";
+import { besucherHerkunft } from "@/lib/herkunft";
+import { filterLaden, nurFilter } from "@/lib/jobs/listenfilter";
+import { Suchrichtungen } from "@/components/jobs/Suchrichtungen";
+import { suchrichtungen } from "@paycheck/matching";
 import { abdeckungssatz, ladeQuellenabdeckung } from "@/lib/jobs/coverage";
+import { listensignale } from "@/lib/jobs/listensignale";
+import { gehaltsanzeige } from "@/lib/jobs/gehaltsanzeige";
+import { referenzenFuerKldb, referenzenFuerTitel } from "@/lib/jobs/berufsreferenz";
+import {
+  beschaeftigungsart,
+  BESCHAEFTIGUNGSARTEN,
+  type Beschaeftigungsart,
+} from "@/lib/jobs/beschaeftigungsart";
 
 export const metadata: Metadata = { title: "Matches" };
 export const dynamic = "force-dynamic";
@@ -32,12 +55,23 @@ export const dynamic = "force-dynamic";
  * beim Blättern nicht von vorn anfangen. `job` fällt weg: die Auswahl
  * der alten Seite auf die neue mitzunehmen wäre verwirrend.
  */
-function blätterParams(params: Record<string, string | undefined>, seite: number): string {
+/**
+ * Der Verweis auf „mehr anzeigen".
+ *
+ * Er trägt die ANZAHL, nicht die Seitennummer. Der Unterschied ist die
+ * ganze Umstellung: `?anzahl=50` zeigt fünfzig Stellen, also die
+ * bisherigen plus fünfundzwanzig neue darunter. `?seite=2` hätte die
+ * ersten fünfundzwanzig ersetzt.
+ *
+ * Damit gibt es kein Zurück, keine Seitenzahl und kein „25 von 719" —
+ * eine Liste, die wächst, braucht das alles nicht.
+ */
+function mehrParams(params: Record<string, string | undefined>, anzahl: number): string {
   const next = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
-    if (v && k !== "seite" && k !== "job") next.set(k, v);
+    if (v && k !== "anzahl" && k !== "seite" && k !== "job") next.set(k, v);
   }
-  if (seite > 1) next.set("seite", String(seite));
+  next.set("anzahl", String(anzahl));
   return next.toString();
 }
 
@@ -68,31 +102,242 @@ export default async function JobsPage({
 }) {
   const user = await requireUser();
   const { t, brand } = await getPageContext();
-  const params = await searchParams;
-  const [gate, abdeckung] = await Promise.all([loadGate(user.id), ladeQuellenabdeckung()]);
+  const adresse = await searchParams;
 
-  // Der Riegel: ohne bestätigtes Mindestprofil keine personalisierten
-  // Vorschläge. Kein Gimmick, sondern der Unterschied zwischen
-  // Empfehlung und Zufall.
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Der zuletzt eingestellte Stand, wenn die Adresse nichts sagt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die Filter standen bisher nur in der Adresse. Ein geteilter Link
+   * trug sie mit, ein frischer Besuch nicht: Wer gestern Umkreis,
+   * Gehalt und Vertragsart eingestellt hatte, fing heute bei null an
+   * und musste dasselbe noch einmal eintippen.
+   *
+   * ── Warum die Adresse gewinnt, sobald sie etwas sagt ────────
+   *
+   * Weil sie dann von einer Handlung stammt: einem Klick auf einen
+   * Chip, einer Eingabe, einem geteilten Link. Den gespeicherten Stand
+   * darüberzulegen hiesse, eine gerade getroffene Entscheidung durch
+   * eine ältere zu ersetzen.
+   *
+   * ── Und warum es einen Ausweg gibt ──────────────────────────
+   *
+   * Wer den letzten Filter entfernt, landet auf einer Adresse ohne
+   * Filter — und bekäme den gespeicherten Stand zurück, den er gerade
+   * losgeworden ist. `?leer=1` sagt: Ich will wirklich nichts.
+   */
+  const eigene = nurFilter(adresse);
+  const gemerkt =
+    Object.keys(eigene).length > 0 || adresse.leer === "1"
+      ? {}
+      : await filterLaden(user.id);
+  const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
+  /*
+   * Alles gleichzeitig, was nicht voneinander abhängt.
+   *
+   * ── Warum das so viel ausmacht ────────────────────────────
+   *
+   * Diese Seite bezahlt keine Rechenzeit, sondern Netzrunden. Gemessen
+   * gegen die Datenbank:
+   *
+   *   eine Abfrage                     43 ms
+   *   `withUser` mit einer Abfrage    174 ms   (BEGIN, Rolle, Abfrage, COMMIT)
+   *   drei Abfragen parallel           46 ms
+   *
+   * Der Riegel, das Profil und die gemerkten Stellen sind drei
+   * `withUser`-Aufrufe. Nacheinander sind das über 500 Millisekunden,
+   * in denen nichts gerechnet wird — die Verbindung wartet.
+   *
+   * Sie hängen nicht voneinander ab: Der Riegel liest Interviewsitzungen,
+   * das Profil liest Bedingungen und Belege, die gemerkten Stellen lesen
+   * eine Kennungsliste. Nebeneinander kosten sie so viel wie der
+   * langsamste von ihnen.
+   *
+   * Die Stellenliste bleibt danach, weil sie das Profil braucht.
+   */
   const db = await getDb();
-  const ctx = await loadProfileContext(user.id);
-  const includeBlocked = params.blocked === "1";
-  const sort = (SORT_KEYS as string[]).includes(params.sort ?? "")
-    ? (params.sort as SortKey)
-    : "best_overall";
-
-  const [saved, { jobs, blockedCount, staleCount }] = await Promise.all([
+  /*
+   * Die beiden Rechner brauchen drei Angaben.
+   *
+   * `ladeGehaltsangaben` und `ladeLebenshaltung` für den Nettorechner,
+   * der Wohnort für den Arbeitsweg. Alle drei laufen in derselben
+   * Runde wie der Rest — nacheinander wären es drei weitere Umläufe
+   * gegen Supabase, und die kosten je rund 170 Millisekunden.
+   */
+  const [gate, abdeckung, ctx, saved, gehaltsangaben, lebenshaltung, wohnzeile] = await Promise.all([
+    loadGate(user.id),
+    ladeQuellenabdeckung(),
+    loadProfileContext(user.id),
     withUser(db, user.id, (tx) =>
       tx
         .select({ jobId: schema.savedJobs.jobId })
         .from(schema.savedJobs)
         .where(eq(schema.savedJobs.userId, user.id)),
     ),
-    listJobsForUser(user.id, ctx, { sort, includeBlocked }),
+    ladeGehaltsangaben(),
+    ladeLebenshaltung(),
+    withUser(db, user.id, (tx) =>
+      tx
+        .select({ baseLocation: schema.userSettings.baseLocation })
+        .from(schema.userSettings)
+        .where(eq(schema.userSettings.userId, user.id))
+        .limit(1),
+    ),
   ]);
 
+  /*
+   * Wie viele Stellen die Seite zeigen soll — aus der Adresse.
+   *
+   * Sie wird hier gebraucht, bevor die Liste geladen wird: Die Zahl
+   * entscheidet, wie viele Kandidaten überhaupt bewertet werden
+   * müssen. Weiter unten wird sie noch einmal geklammert, dann gegen
+   * die tatsächliche Trefferzahl.
+   */
+  const gewuenschteAnzahl = (() => {
+    const roh = Number.parseInt(params.anzahl ?? "", 10);
+    return Number.isFinite(roh) ? Math.max(roh, 25) : 25;
+  })();
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Welches Land gilt für diese Suche
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Vier Quellen, in dieser Reihenfolge — und jede schlägt die
+   * folgende:
+   *
+   *   1. `?land=` in der Adresse      diese eine Suche
+   *   2. das Profil                    im Gespräch gesagt
+   *   3. Netz oder Sprache             was die Anfrage mitbringt
+   *   4. nichts                        dann überall
+   *
+   * Der Normalfall ist zwei: Wer das Interview gemacht hat, hat es
+   * gesagt. Drei ist für den, der direkt auf die Stellen geht —
+   * `besucherHerkunft` liest den Ländercode, den das CDN ohnehin
+   * mitschickt, sonst die Sprachregion aus `Accept-Language`.
+   *
+   * ── Warum das sichtbar sein muss ────────────────────────────
+   *
+   * Ein Ländercode aus dem Netz ist eine VERMUTUNG. Wer über ein
+   * Firmen-VPN kommt, im Urlaub ist oder gerade umzieht, bekommt die
+   * falsche. Genau deshalb ist die alte Vorgabe „DE" so lange
+   * unbemerkt geblieben: Sie stand nirgends.
+   *
+   * Eine abgeleitete Einschränkung steht deshalb als Plättchen über
+   * der Liste und lässt sich mit einem Klick wegnehmen —
+   * `?land=alle`.
+   */
+  const herkunft =
+    ctx.constraints.country === null && params.land === undefined
+      ? await besucherHerkunft().catch(() => ({ code: null, quelle: "unbekannt" as const }))
+      : { code: null, quelle: "unbekannt" as const };
+
+  const landWahl =
+    params.land === "alle"
+      ? null
+      : /^[A-Za-z]{2}$/.test(params.land ?? "")
+        ? params.land!.toUpperCase()
+        : (ctx.constraints.country ?? herkunft.code);
+
+  /*
+   * Die Bedingung gilt nur für diese Suche.
+   *
+   * Geschrieben wird nichts: Eine Vermutung aus einer Kopfzeile im
+   * Profil abzulegen hiesse, sie beim nächsten Mal für eine Aussage
+   * der Person zu halten.
+   */
+  const ctxSuche =
+    landWahl === (ctx.constraints.country ?? null)
+      ? ctx
+      : { ...ctx, constraints: { ...ctx.constraints, country: landWahl } };
+
+  const includeBlocked = params.blocked === "1";
+  const sort = (SORT_KEYS as string[]).includes(params.sort ?? "")
+    ? (params.sort as SortKey)
+    : "best_overall";
+
+  const { jobs, klaerung, blockedCount, staleCount } = await listJobsForUser(user.id, ctxSuche, {
+    sort,
+    includeBlocked,
+    /*
+     * Wie tief gesucht wird, hängt daran, wie viel gezeigt wird.
+     *
+     * Vorher wurden immer 2.000 Stellen bewertet — auch für die
+     * fünfundzwanzig auf dem Bildschirm. Gemessen kostet das 397 ms
+     * gegenüber 90 ms für 600, und bezahlt wird es für Zeilen, die
+     * niemand sieht.
+     */
+    sichtbar: gewuenschteAnzahl,
+    suche: params.q ?? null,
+    /*
+     * Der Ort geht in die Datenbank, nicht mehr in den Nachfilter.
+     *
+     * Vorher lieferte die Abfrage die neuesten 2.000 Anzeigen
+     * bundesweit, und erst danach behielt JavaScript die aus
+     * Karlsruhe. Bei „Bayern" blieb davon fast nichts — und die
+     * Liste sah aus, als gäbe es dort kaum Stellen.
+     */
+    ort: params.ort ?? null,
+  });
+
   const savedIds = new Set(saved.map((s) => s.jobId));
-  const filtered = applyFilters(jobs, params);
+
+  /*
+   * Die Suchrichtungen aus dem Profil.
+   *
+   * Reine Rechnung auf schon geladenen Daten — kein Netzzugriff, keine
+   * Datenbankabfrage, kein Modellaufruf. Sie darf deshalb im
+   * Seitenaufbau stehen, ohne ihn zu verlangsamen.
+   *
+   * ── Derzeit ohne Abnehmer ─────────────────────────────────
+   *
+   * Die Plättchen unter dem Eingabefeld sind entfernt (siehe weiter
+   * unten). Die Rechnung bleibt stehen, weil sie nichts kostet und
+   * weil das Wiedereinsetzen sonst zwei Schritte wären statt einem.
+   * Wer sie endgültig nicht mehr braucht, nimmt sie samt Einbindung
+   * von `Suchrichtungen` heraus.
+   */
+  const richtungen = suchrichtungen(
+    {
+      evidence: ctx.evidence,
+      energisingTasks: ctx.energisingTasks,
+      drainingTasks: ctx.drainingTasks,
+      statedInterests: ctx.statedInterests,
+      constraints: ctx.constraints,
+    },
+    5,
+  );
+  /*
+   * Der Wohnort in Koordinaten — für den Fahrzeitfilter.
+   *
+   * Nur wenn er gebraucht wird: Ohne `pendelzeit` in der Adresse ist
+   * das eine Datenbankrunde für nichts.
+   */
+  const wohnpunkt = params.pendelzeit
+    ? await ortNachschlagen(db, wohnzeile[0]?.baseLocation ?? "")
+        .then((a) =>
+          /*
+           * Genau oder auf Stadtebene — beides genügt.
+           *
+           * `ambiguous` ausdrücklich nicht: Ein falscher Mittelpunkt
+           * verschiebt nicht eine Anzeige, sondern die ganze Suche.
+           */
+          (a.status === "resolved_exact" || a.status === "resolved_city") &&
+          a.latitude !== null &&
+          a.longitude !== null
+            ? { latitude: a.latitude, longitude: a.longitude }
+            : null,
+        )
+        .catch(() => null)
+    : null;
+
+  const { jobs: filtered, ohneAngabe } = applyFilters(
+    jobs,
+    params,
+    wohnpunkt,
+    ctx.constraints.commuteMode ?? null,
+  );
   const blockedJobs = includeBlocked
     ? filtered.filter((j) => j.constraints.overall === "blocked")
     : [];
@@ -135,10 +380,19 @@ export default async function JobsPage({
    * nur 25 mehr. Eine unendliche Liste ist bequemer zu bauen und
    * teurer zu benutzen.
    */
-  const PRO_SEITE = 25;
-  // Die Klammer steht in `blaettern.ts` und ist dort geprüft.
-  const { seite, seitenGesamt, von, bis } = blätterstand(filtered.length, params.seite, PRO_SEITE);
-  const sichtbar = filtered.slice(von, bis);
+  const SCHRITT = 25;
+  /*
+   * Wie viele gerade sichtbar sind — aus der Adresse, geklammert.
+   *
+   * Ohne obere Klammer könnte `?anzahl=999999` die ganze Liste
+   * erzwingen; ohne untere käme bei `?anzahl=0` eine leere Seite
+   * heraus, die wie ein Fehler aussieht.
+   */
+  const anzahl = Number.isFinite(gewuenschteAnzahl)
+    ? Math.min(Math.max(gewuenschteAnzahl, SCHRITT), Math.max(filtered.length, SCHRITT))
+    : SCHRITT;
+  const sichtbar = filtered.slice(0, anzahl);
+  const nochOffen = Math.max(0, filtered.length - sichtbar.length);
 
   // Die Auswahl steht im Suchparameter, damit sie verlinkbar ist und der
   // Zurück-Knopf das Erwartete tut.
@@ -148,34 +402,260 @@ export default async function JobsPage({
    * verlinkter Job muss sich öffnen lassen, egal auf welcher Seite er
    * steht. Deshalb wird in `filtered` gesucht, nicht in `sichtbar`.
    */
-  const selected: ScoredJob | null =
-    (requested ? filtered.find((j) => j.jobId === requested) : undefined) ?? sichtbar[0] ?? null;
+  const angefordert = requested
+    ? /*
+       * Auch im Klärungsabschnitt suchen.
+       *
+       * Seit offene Bedingungen eine eigene Gruppe haben, steht ein
+       * Teil der Stellen nicht mehr in `filtered`. Ein Klick dort
+       * führte auf `/app/jobs?job=<id>` — und die geteilte Ansicht fand
+       * die Stelle nicht, zeigte stattdessen die erste der Hauptliste
+       * und daneben den Hinweis, die angeforderte Stelle sei
+       * ausgeschlossen. Sie ist nicht ausgeschlossen; sie steht nur in
+       * der anderen Gruppe.
+       *
+       * Eine Stelle ist eine Stelle. In welcher Gruppe sie steht, ist
+       * eine Frage der Darstellung und darf nicht darüber entscheiden,
+       * ob sie sich öffnen lässt.
+       */
+      (filtered.find((j) => j.jobId === requested) ??
+      klaerung.find((j) => j.jobId === requested))
+    : undefined;
+  const selected: ScoredJob | null = angefordert ?? sichtbar[0] ?? null;
+
+  /*
+   * Der Fall, in dem die Adresse etwas anderes sagt als die Anzeige.
+   *
+   * Wer einen Link zu einer Stelle öffnet, die der aktuelle Filter
+   * ausschliesst — etwa weil ein Ausschlusskriterium greift —, bekam
+   * bisher stillschweigend die erste Stelle der Liste zu sehen. Titel,
+   * Gehalt, Analyse: alles gehörte zu einer anderen Anzeige, und in
+   * der Adresszeile stand weiterhin die angeforderte Kennung.
+   *
+   * Das ist die unangenehmste Sorte Fehler: nichts sieht kaputt aus,
+   * und die Person trifft eine Entscheidung über die falsche Stelle.
+   * Jetzt steht ein Satz darüber.
+   */
+  const auswahlVerfehlt = Boolean(requested) && !angefordert;
+
+  /*
+   * Eine Grössenordnung auch für die Stellen ohne Zahl.
+   *
+   * ── Warum die Liste sie braucht ───────────────────────────
+   *
+   * Nur 190 von 2.506 Anzeigen nennen ein Gehalt. In der Liste stand
+   * bei allen übrigen „Gehalt nicht angegeben" — bei 92 % der Zeilen
+   * also nichts, wonach man vergleichen könnte. Wer eine Liste
+   * überfliegt, überfliegt sie nach Zahlen.
+   *
+   * Eine Sammelabfrage für die sichtbaren Zeilen, kein Aufruf je
+   * Zeile. Was keine tragfähige Referenz hat, behält den ehrlichen
+   * Satz — geschätzt wird nichts.
+   */
+  const ohneGehalt = [...sichtbar, ...klaerung.slice(0, 10)].filter(
+    (j) => j.job.salary.min === null && j.job.salary.max === null,
+  );
+
+  /*
+   * Zwei Wege zur Referenz, in dieser Reihenfolge.
+   *
+   * Über die amtliche Kennung ist es ein Nachschlag in 752 Zeilen —
+   * exakt, ohne Schwellenwert. Über den Titel ist es eine
+   * Normalisierung mit allen Unsicherheiten deutscher Berufsnamen.
+   * Wo beides möglich ist, gewinnt die Kennung.
+   *
+   * Beide laufen als eine Sammelabfrage, nicht je Zeile.
+   */
+  const [nachKldb, nachTitel] = await Promise.all([
+    referenzenFuerKldb(ohneGehalt.map((j) => j.job.kldb)).catch(() => new Map()),
+    referenzenFuerTitel(ohneGehalt.map((j) => j.job.title)).catch(() => new Map()),
+  ]);
+
+  /**
+   * Die Referenz zu einer Stelle — Kennung vor Titel.
+   *
+   * Eine Stelle, zwei mögliche Quellen: Die amtliche Kennung ist ein
+   * exakter Nachschlag, der normalisierte Titel eine Näherung. An drei
+   * Stellen in dieser Datei wird sie gebraucht; ohne diese Funktion
+   * stünde die Reihenfolge dreimal da und könnte dreimal auseinanderlaufen.
+   */
+  /* Aus dem Bestand gezählt, halbstündig zwischengespeichert. */
+
+  const referenz = (j: ScoredJob) => {
+    const code = (j.job.kldb ?? "").replace(/\D/g, "").slice(0, 5);
+    return (code.length === 5 ? nachKldb.get(code) : null) ?? nachTitel.get(j.job.title) ?? null;
+  };
+
+  /** Was in einer Zeile als Gehalt steht — echte Angabe oder Referenz. */
+  const gehaltszeile = (j: ScoredJob): { text: string; geschaetzt: boolean } | null => {
+    const a = gehaltsanzeige(j.job.salary);
+    /*
+     * „umgerechnet" gehört an die Zahl, nicht in eine Fussnote.
+     *
+     * Jede Angabe steht jetzt als Jahresgehalt — auch die, die in der
+     * Anzeige pro Stunde oder pro Monat stand. Ohne den Zusatz sähe
+     * eine hochgerechnete Zahl aus wie eine genannte, und der
+     * Unterschied ist genau das, worauf es bei einem Gehalt ankommt.
+     */
+    if (a) return { text: a.umgerechnet ? `${a.betrag} (umgerechnet)` : a.betrag, geschaetzt: false };
+    const r = referenz(j);
+    if (!r) return null;
+    const f = (n: number) => n.toLocaleString("de-DE");
+    return { text: `ca. ${f(r.q1)} – ${f(r.q3)} €`, geschaetzt: true };
+  };
 
   const rows: JobRowData[] = sichtbar.map((j) => ({
     id: j.jobId,
-    title: j.job.title,
+    /*
+     * Ohne Emojis.
+     *
+     * Sie stehen in den Anzeigen, nicht bei uns — gemessen in 2 von
+     * 400 Titeln, meist als Blickfang um eine Gehaltsangabe. In einer
+     * Liste aus fünfundzwanzig Zeilen schreien damit zwei und
+     * dreiundzwanzig nicht, und die Reihenfolge sagt bereits, was
+     * wichtig ist.
+     *
+     * Gespeichert bleibt der Titel des Arbeitgebers unverändert:
+     * Was wir zeigen, ist unsere Entscheidung; was wir speichern,
+     * seine Angabe.
+     */
+    title: titelOhneEmoji(j.job.title),
+    /* Entscheidet über das Berufssymbol links in der Zeile. */
+    kldb: j.job.kldb ?? null,
     companyName: j.job.companyName,
     location: j.job.location,
     workModel: j.job.workModel,
     contractType: CONTRACT[j.job.contractType ?? ""] ?? null,
-    salaryLabel: j.job.salary.disclosed
-      ? `${new Intl.NumberFormat("de-DE").format(j.job.salary.min ?? j.job.salary.max ?? 0)}${
-          j.job.salary.min && j.job.salary.max
-            ? `–${new Intl.NumberFormat("de-DE").format(j.job.salary.max)}`
-            : ""
-        } ${j.job.salary.currency}`
-      : null,
+    /*
+     * Eine Formatierung für alle Stellen, aus `geld.ts`.
+     *
+     * Hier stand `Intl.NumberFormat("de-DE")` mit angehängtem Kürzel —
+     * „60.000–80.000 EUR". Das Jobdetail nebenan setzte das Symbol
+     * davor. Dieselbe Stelle sah an zwei Orten verschieden aus, und
+     * beide Fassungen schrieben jede Währung deutsch.
+     */
+    /*
+     * Der Betrag entscheidet, nicht `disclosed`.
+     *
+     * `disclosed` heisst „der Arbeitgeber hat es offengelegt". Als
+     * Anzeigeschalter verwendet, versteckte es die siebzig Gehälter,
+     * die aus den Stellenbeschreibungen gelesen wurden — und liess die
+     * Liste 1.446 Mal „nicht angegeben" schreiben, obwohl in siebzig
+     * Anzeigen eine Zahl stand.
+     */
+    salaryLabel: gehaltsanzeige(j.job.salary)?.betrag ?? null,
+    /*
+     * Die Referenzspanne — getrennt vom echten Gehalt.
+     *
+     * Bewusst ein eigenes Feld und nicht `salaryLabel`. Wären beide
+     * dasselbe, sähe eine Schätzung in der Liste aus wie eine Zusage,
+     * und der Unterschied hinge an einem Kürzel daneben. Zwei Felder
+     * heisst: die Zeile kann sie nicht verwechseln.
+     */
+    referenzSpanne: (() => {
+      const r = referenz(j);
+      if (!r) return null;
+      const f = (n: number) => n.toLocaleString("de-DE");
+      return `${f(r.q1)} – ${f(r.q3)} €`;
+    })(),
+    referenzQuelle: referenz(j)?.quelle ?? null,
+    /*
+     * Die Herkunft gehört auf die Karte, nicht nur ins Detail.
+     *
+     * „75.000 €" und „75.000 €" sehen in einer Liste gleich aus. Das
+     * eine hat ein Arbeitgeber geschrieben, das andere hat ein Portal
+     * geschätzt. Wer die Liste überfliegt und sich eine Zahl merkt,
+     * merkt sich sonst eine Vermutung als Tatsache.
+     */
+    salaryHerkunft: gehaltsanzeige(j.job.salary)?.herkunftKurz ?? null,
+    salaryZugesagt: gehaltsanzeige(j.job.salary)?.zugesagt ?? false,
     ageLabel: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).label,
     isFresh: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).fresh,
     sourceName: j.source?.displayName ?? "unbekannt",
     score: j.fit.score,
     band: j.fit.band,
     confidence: j.confidence.level,
-    reason: j.fit.topReason,
-    reservation: j.fit.topReservation,
+    /*
+     * Was die Zahl auf der Karte bedeutet.
+     *
+     * Ohne bestätigtes Profil gibt es keine Passung — und dann stand bei
+     * JEDER Stelle derselbe Strich. Eine Liste, in der alle Zeilen
+     * dasselbe anzeigen, ordnet nichts und sagt nichts.
+     *
+     * Die Jobqualität lässt sich dagegen aus der Anzeige selbst
+     * beurteilen: Offenheit, Vertragsart, Flexibilität, Weiterbildung.
+     * Sie steht deshalb ein, solange die Passung fehlt — mit eigenem
+     * Etikett, damit niemand sie für eine Passung hält.
+     */
+    /* Transparenz der Anzeige, nicht die Arbeitsbedingungen — dieselbe
+       Zahl wie im Kopf der Anzeige. */
+    qualitaet: j.anzeige.score,
+    /* Dritter Wert der Farbrechnung — dieselbe Formel wie im Kopf. */
+    sicherheitWert: j.confidence.score,
+    /*
+     * Kurze Etiketten statt gekürzter Sätze.
+     *
+     * Hier standen `topReason` und `topReservation` — Ninas ganze
+     * Sätze, in der Zeile auf `line-clamp-1` gestutzt und damit mitten
+     * im Wort abgebrochen. Die vollständigen Sätze stehen weiterhin
+     * rechts im Detail, wo Platz für sie ist.
+     */
+    signale: listensignale(j),
     blocked: j.constraints.overall === "blocked",
+    /*
+     * Nur die Namen, nicht die Begründungen.
+     *
+     * In einer Zeile ist Platz für „Gehalt nicht angegeben", nicht für
+     * den ganzen Satz. Der steht auf der Detailseite. Zwei reichen —
+     * bei drei Zeichen daneben liest niemand mehr eines davon.
+     */
+    offeneBedingungen: j.constraints.checks
+      .filter((c) => c.verdict === "uncertain")
+      .slice(0, 2)
+      .map((c) => c.label),
     saved: savedIds.has(j.jobId),
   }));
+
+  /*
+   * Ninas Lesart der ausgewählten Stelle.
+   *
+   * Einmal gerechnet, von Mitte und Panel gemeinsam benutzt. `null`,
+   * solange keine Stelle gewählt ist — dann gibt es nichts zu deuten.
+   */
+
+  /*
+   * Die Zukunftseinschätzung der Berufsgruppe.
+   *
+   * Eine Abfrage je Seitenaufbau, nur für die ausgewählte Stelle.
+   * Sie ist das, was Nina sagen kann, wenn sie über die Person zu
+   * wenig weiss — dann steht dort etwas über den Beruf statt dreimal
+   * „kenne dich noch nicht".
+   */
+  const zukunftAngabe = selected
+    ? await zukunftLaden(selected.job.kldb ?? null).catch(() => null)
+    : null;
+
+  const ninaLesart = selected
+    ? workspaceDaten(selected, {
+        assistentin: brand.assistantName,
+        gemerkt: savedIds.has(selected.jobId),
+        wunschgehalt: ctx.constraints.minSalaryPerYear,
+        marktspanne: (() => {
+          const r = referenz(selected);
+          if (!r) return null;
+          const f = (n: number) => n.toLocaleString("de-DE");
+          return `${f(r.q1)} – ${f(r.q3)} €`;
+        })(),
+        /* Vergleichen lässt sich erst ab zwei Stellen. Den Knopf
+           vorher anzubieten hiesse, in eine Ansicht zu führen, die
+           nichts gegenüberstellen kann. */
+        hatVergleichsstelle: filtered.length > 1,
+        /* Ohne Wohnort gibt es keinen Arbeitsweg zu rechnen, nur eine
+           Aufforderung, ihn einzutragen. */
+        hatWohnort: Boolean(ctx.constraints.baseLocation),
+      })
+    : null;
+
 
   return (
     /*
@@ -192,33 +672,62 @@ export default async function JobsPage({
      * Jobliste steht — sie gilt für jedes Raster, nicht nur für das
      * mit den langen Titeln.
      */
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-6">
+/* `gap-4`: Zwanzig Pixel zwischen Titel, Eingabe, Zahlenzeile und
+       Liste waren viermal Luft, bevor die erste Stelle kam. Sechzehn
+       genügen, und die gesparten Pixel sind zusammen eine halbe
+       Stellenzeile. */
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <PageHeader
-        eyebrow="Entdecken"
+        /*
+         * Kein Eyebrow mehr.
+         *
+         * „Entdecken" stand über „Deine besten Möglichkeiten" und sagte
+         * dasselbe wie der aktive Punkt in der Navigation zwei Zeilen
+         * darüber. Zwei Angaben desselben Ortes untereinander kosten
+         * hier vierundzwanzig Pixel — und Pixel über der Liste sind auf
+         * dieser Seite das knappste Gut.
+         */
         title="Deine besten Möglichkeiten"
-        lead={`${brand.assistantName} hat ${plural(jobs.length + blockedCount, "Stelle", "Stellen")} gegen dein bestätigtes Profil geprüft. Sortiert nach begründeter Passung — nicht nach Werbebudget.`}
+        /*
+         * Kein Vorspann mehr — auf keiner Breite.
+         *
+         * Er war schon auf dem Telefon ausgeblendet, mit einer
+         * Begründung, die auf dem Rechner genauso gilt: Dieselbe
+         * Auskunft steht drei Zeilen weiter unten genauer, direkt über
+         * der Liste — „X passende Stellen von Y geprüften". Der
+         * Vorspann sagte dasselbe in Prosa und kostete dabei rund
+         * siebzig Pixel, also eine Stellenzeile.
+         *
+         * Auf einer Seite namens „Jobs" gewinnt ein Job gegen einen
+         * Satz über Jobs.
+         */
         actions={
           // Wer die Stelle woanders gefunden hat, soll sie hier
           // trotzdem prüfen lassen können. Ohne diesen Weg endet jede
           // Empfehlung an der Grenze unserer Quellen.
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {/* Der Trichter gehört hierher, nicht in die Navigation: er
-                beantwortet eine Frage, die genau beim Blick auf diese
-                Liste entsteht — „ist das wirklich alles?". */}
-            <Link
-              href="/app/opportunities"
-              className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-            >
-              <Filter aria-hidden className="size-3.5" strokeWidth={1.9} />
-              Wie viele davon sind echte Chancen?
-            </Link>
-            <Link
-              href="/app/jobs/import"
-              className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-            >
-              <Link2 aria-hidden className="size-3.5" strokeWidth={1.9} />
-              Job-Link analysieren
-            </Link>
+            {/*
+              Hier standen „Wie viele davon sind echte Chancen?" und
+              „Job-Link analysieren".
+
+              Beide Wege gibt es weiterhin — `/app/opportunities` und
+              `/app/jobs/import` sind unverändert erreichbar. Was weg
+              ist, sind zwei Verweise über der Liste, die eine Frage
+              beantworteten, die an dieser Stelle niemand stellt: Wer
+              gerade Stellen durchsieht, will die nächste sehen und
+              nicht erklärt bekommen, wie viele davon nichts taugen.
+            */}
+            {/* Nur mit gemerkten Stellen — ein Vergleich ohne etwas zu
+                vergleichen führt auf eine leere Seite. */}
+            {savedIds.size >= 2 && (
+              <Link
+                href={`/app/jobs/vergleich?ids=${[...savedIds].slice(0, 3).join(",")}`}
+                className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+              >
+                <Columns3 aria-hidden className="size-3.5" strokeWidth={1.9} />
+                Gemerkte vergleichen
+              </Link>
+            )}
           </div>
         }
       />
@@ -253,11 +762,91 @@ export default async function JobsPage({
       {/* Zuerst der Weg in Worten, danach die Filter. Wer eine
           Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
           erst in Felder übersetzen müssen. */}
-      <NinaSearchComposer assistantName={brand.assistantName} />
+      {/*
+        Die Suchzeile und Ninas Rückfrage gehören zusammen.
 
-      <Suspense fallback={<SkeletonText lines={2} />}>
-        <JobFilters resultCount={filtered.length} />
-      </Suspense>
+        Der Provider hält genau einen Zustand: die offene Frage oder
+        keine. Er steht hier und nicht weiter oben, weil ausserhalb
+        der Stellenseite niemand danach fragt — und ein Kontext, der
+        überall liegt, wird irgendwann überall benutzt.
+      */}
+      <SuchdialogProvider>
+        <NinaSearchComposer assistantName={brand.assistantName} />
+        <Suchrueckfrage assistantName={brand.assistantName} />
+      </SuchdialogProvider>
+
+      {/*
+        Filter erst aus dem Gespräch.
+        
+        `FilterChips` gibt `null` zurück, solange keine Bedingung
+        gesetzt ist — auf einer frischen Suchseite steht hier also
+        nichts. Erst wenn jemand Nina etwas gesagt hat („Vertrieb in
+        Karlsruhe, höchstens 30 Kilometer"), erscheinen genau die
+        Bedingungen, die daraus wurden, und lassen sich einzeln
+        zurücknehmen.
+        
+        Das ist der Unterschied zum gelöschten Filterblock darunter:
+        Der stand immer da, für jede Suche gleich, und bot Felder für
+        Dinge an, nach denen niemand gefragt hatte. Diese hier sind
+        eine Antwort auf das, was gerade gesucht wird.
+      */}
+      <FilterChips
+        ohneAngabe={ohneAngabe}
+        /*
+         * Ein abgeleitetes Land steht sichtbar da — mit seiner Quelle.
+         *
+         * „Österreich" allein wäre eine Behauptung. „Österreich, aus
+         * deiner Spracheinstellung" ist eine Auskunft, der man
+         * widersprechen kann.
+         */
+        abgeleitetesLand={
+          herkunft.code && landWahl === herkunft.code
+            ? { code: herkunft.code, quelle: herkunft.quelle }
+            : null
+        }
+      />
+
+      {/*
+        Hier standen die Suchrichtungen — Plättchen mit Berufsbildern
+        aus dem Profil, direkt unter dem Eingabefeld.
+
+        Sie sahen aus wie Filter, waren aber keine: Sie kamen aus dem
+        Profil und nicht aus dem, was gerade gesucht wird. Unter einem
+        Feld, in das man Nina etwas schreibt, liest sich das als
+        Vorauswahl, die man erst wegklicken muss.
+
+        Was unter der Eingabe bleibt, entsteht ausschliesslich aus dem
+        Gespräch: `FilterChips` zeigt die Bedingungen, die aus dem
+        Gesagten wurden, und ist leer, solange nichts gesagt wurde.
+
+        Die Richtungen selbst gibt es weiter — `Suchrichtungen` liegt
+        unverändert daneben und wird aus dem Profil gespeist. Wenn sie
+        wieder auftauchen sollen, dann an einer Stelle, an der sie ein
+        Angebot sind und keine Vorbelegung.
+      */}
+
+      {/*
+        Hier stand `JobFilters` — ein Block mit Feldern für Ort,
+        Umkreis, Vertragsart, Gehalt und Arbeitsmodell.
+
+        Er ist weg, und nicht, weil Filtern schlecht wäre. Sondern
+        weil er zweimal dasselbe anbot: Wer „Vertrieb in Karlsruhe,
+        höchstens 30 Kilometer" in die Zeile darüber schreibt, hat
+        gefiltert — und sah danach dieselben Bedingungen noch einmal
+        als leere Felder darunter.
+
+        Was bleibt, ist die Reihenfolge, in der es entsteht: erst die
+        Eingabe, dann die Bedingungen, die daraus wurden, als Chips
+        (`FilterChips`), dann die Richtungen, die Nina daraus ableitet
+        (`Suchrichtungen`). Jeder Filter, der erscheint, hat einen
+        Anlass in dem, was gerade gesucht wird — statt in einer Liste,
+        die für jede Suche gleich aussieht.
+
+        Die Felder selbst gibt es weiterhin: `JobFilters` liegt
+        unverändert daneben, und die Adressparameter, die es gesetzt
+        hat, werden weiter gelesen. Was fehlt, ist der Block, der sie
+        ungefragt auf jeden Bildschirm stellte.
+      */}
 
       {/*
         Was wirklich durchsucht wurde — mit gezählten Zahlen.
@@ -266,9 +855,81 @@ export default async function JobsPage({
         Quelle" da, nicht „das ganze Internet".
       */}
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-        <p className="text-ink-2">{abdeckungssatz(abdeckung, realCount)}</p>
+        {/*
+                 * Die Zahl, die zählt, zuerst — der Rest kleiner daneben.
+                 *
+                 * Hier stand „7 Quellen durchsucht · 1.489 Stellen
+                 * geprüft · 719 erfüllen deine Bedingungen". Drei Zahlen
+                 * in einer Zeile, und die relevante stand hinten. Wer
+                 * die Liste öffnet, will wissen, wie viele für IHN
+                 * übrig bleiben.
+                 */}
+                {/*
+                  * Die Zahl sagt, worauf sie sich bezieht.
+                  *
+                  * ── Warum das nötig war ───────────────────────
+                  *
+                  * Hier stand „1.961 passende Stellen". Das las sich
+                  * wie eine Zahl über den ganzen Bestand — tatsächlich
+                  * ist es die Zahl aus den geprüften Kandidaten, und
+                  * die sind auf 2.000 begrenzt.
+                  *
+                  * Eine echte Zählung wäre ehrlicher und ist nicht zu
+                  * bezahlen: gemessen 12 bis 44 Sekunden für
+                  * `count(*) where country = 'DE'` über 1,02 Millionen
+                  * deutsche Anzeigen — auch mit eigenem Index, denn
+                  * eine Million Einträge muss gelesen werden, egal wie
+                  * sortiert.
+                  *
+                  * Also nennt die Zeile die Grundlage mit. Eine
+                  * ungenaue Zahl, die sagt, woher sie kommt, ist
+                  * besser als eine genaue Zahl über etwas anderes.
+                  */}
+                {/*
+                  * ══════════════════════════════════════════════════
+                  * Die Zahl darf nicht nach Bestand klingen
+                  * ══════════════════════════════════════════════════
+                  *
+                  * Hier stand „1.995 passende Stellen", darunter klein
+                  * „von 2.000 geprüften". Gelesen wurde nur die grosse
+                  * Zahl — und die las sich wie eine Aussage über den
+                  * ganzen Bestand. Bei 2,6 Millionen Anzeigen ist
+                  * „1.995 passende Stellen" dann eine sehr schlechte
+                  * Nachricht über einen Arbeitsmarkt, der sie nicht
+                  * verdient hat.
+                  *
+                  * Jetzt trägt die grosse Zahl ihren Bezug selbst:
+                  * „1.995 der 2.000 neuesten passen". Das ist genau
+                  * das, was gerechnet wurde.
+                  *
+                  * ── Warum nicht die echte Zahl ────────────────────
+                  *
+                  * Sie ist nicht zu bezahlen. Gemessen am
+                  * 6. September 2026, nach allen Indexarbeiten:
+                  *
+                  *   count(*) über die deutschen Anzeigen   > 60 s
+                  *   gedeckelt bei 10.000                    16 s
+                  *   gedeckelt bei 1.000                    2,2 s
+                  *
+                  * Eine Million Zeilen müssen gelesen werden, egal wie
+                  * sortiert. „Über 1.000" wäre bezahlbar und sagt
+                  * weniger als der Satz, der jetzt dasteht.
+                  */}
+                <span className="grid gap-0.5">
+                  <span className="text-[15px] font-medium text-ink">
+                    {filtered.length.toLocaleString("de-DE")} der{" "}
+                    {(jobs.length + blockedCount).toLocaleString("de-DE")} neuesten passen
+                  </span>
+                  <span className="text-2xs text-ink-3">
+                    Nina prüft die neuesten Anzeigen, nicht den ganzen Bestand ·{" "}
+                    {abdeckungssatz(abdeckung, realCount)}
+                  </span>
+                </span>
+        {/* Der Zeitstempel steht ganz rechts. Er ist eine Fussnote zur
+            Zahl links, keine Angabe, die man sucht — dazwischen wäre
+            er ein Hindernis auf dem Weg zur Liste. */}
         {abdeckung.zuletzt && (
-          <span className="text-ink-3">
+          <span className="ml-auto text-ink-3">
             zuletzt aktualisiert{" "}
             {new Intl.DateTimeFormat("de-DE", {
               day: "numeric",
@@ -278,21 +939,68 @@ export default async function JobsPage({
             }).format(abdeckung.zuletzt)}
           </span>
         )}
-        <Link
-          href="/app/settings/integrations"
-          /* `inline-flex` mit Mindesthöhe: als reiner Textlink war das
-             Ziel 23 Pixel hoch und damit einen Pixel unter dem
-             Mindestmass aus WCAG 2.5.8. */
-          className="ml-auto inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
-        >
-          Quellen ansehen
-        </Link>
+        {/* „Quellen ansehen" stand hier und ist weg. Der Weg zu den
+            Quellen bleibt: `/app/settings/integrations` ist über die
+            Einstellungen erreichbar. Über einer Stellenliste ist er
+            eine Frage, die sich beim Suchen nicht stellt. */}
       </div>
 
+      {/*
+        Der Provider umschliesst die ganze Spaltenaufteilung.
+
+        Nicht nur Ninas Panel: `open_job` und `filter_jobs` wirken auf
+        die Liste links und die Anzeige in der Mitte. Läge der Kontext
+        nur um die rechte Spalte, könnte Nina genau das nicht — und
+        Abschnitt 6 des Auftrags verlangt es ausdrücklich.
+
+        Eine Client-Komponente um serverseitig gerenderte Kinder ist
+        unbedenklich: Die Kinder sind fertige Knoten und werden
+        durchgereicht, nicht erneut ausgeführt.
+      */}
+      {/*
+        Ninas Lesart wird EINMAL gerechnet und zweimal gezeigt.
+        
+        Die Mitte zeigt die Zusammenfassung, das Panel rechts die
+        Aufschlüsselung — aber es sind dieselben Zahlen aus derselben
+        Berechnung. Sie an zwei Stellen zu rechnen hiesse, zwei Stände
+        zu haben, die auseinanderlaufen können: Die Mitte sagte dann
+        86 %, das Panel 84, und beide hätten recht.
+      */}
+      <NinaSteuerungProvider jobId={selected?.jobId ?? null}>
       <JobSplitView
         rows={rows}
         selectedId={selected?.jobId ?? null}
         explicitSelection={Boolean(requested)}
+        /*
+         * Ninas Spalte, serverseitig gefüllt.
+         *
+         * Die Zahlen darin — Passung, Faktoren, Gehaltsvergleich —
+         * sind dieselben, die die Mitte zeigt. Sie stammen aus
+         * derselben Berechnung, statt über eine zweite Schnittstelle
+         * noch einmal geholt zu werden: Ein zweiter Weg zur selben
+         * Zahl ist ein zweiter Stand, der auseinanderlaufen kann.
+         */
+        /*
+         * Das Nina-Panel wird hier nicht mehr gerendert.
+         *
+         * Es lief nach der Rücknahme des Drei-Spalten-Rasters über die
+         * volle Breite unter beiden Spalten und war dort ein grosser
+         * heller Block, der die Seite unten abschloss, ohne dass ihn
+         * jemand gesucht hätte.
+         *
+         * Die Bausteine bleiben: `NinaPanel`, `NinaPanelRahmen`, die
+         * Ansichten und die Steuerung stehen bereit, sobald es eine
+         * Spalte gibt, in die sie gehören. Ninas Lesart wird weiterhin
+         * gerechnet — die Mitte zeigt sie als Analyse unter dem Kopf.
+         */
+        blaetterung={
+          nochOffen > 0 ? (
+            <JobPagination
+              weitereAnzahl={Math.min(SCHRITT, nochOffen)}
+              weiterHref={`/app/jobs?${mehrParams(params, anzahl + SCHRITT)}`}
+            />
+          ) : null
+        }
         emptyState={
           /*
            * Die leere Liste erklärt sich (§16.4).
@@ -310,13 +1018,33 @@ export default async function JobsPage({
            */
           <EmptyState
             icon={<Compass className="size-5" strokeWidth={1.7} />}
-            title="Mit diesen Bedingungen finde ich aktuell keine bestätigte Stelle"
+            title={
+              klaerung.length > 0
+                ? "Keine Stelle, bei der deine Bedingungen belegt erfüllt sind"
+                : "Mit diesen Bedingungen finde ich aktuell keine bestätigte Stelle"
+            }
             body={
-              aktiveBedingungen(params).length > 0
-                ? `Es gilt gerade: ${aktiveBedingungen(params)
-                    .map((b) => b.label)
-                    .join(", ")}. Soll ich eine davon einmalig weglassen? Es wird nichts ausgedacht, um die Liste zu füllen.`
-                : "Es wird nichts ausgedacht, um die Liste zu füllen."
+              /*
+               * Der Unterschied zwischen „es gibt nichts" und „nichts
+               * ist belegt".
+               *
+               * Wer eine Gehaltsuntergrenze setzt, bekommt hier
+               * schnell eine leere Hauptliste — nicht weil es keine
+               * passenden Stellen gäbe, sondern weil deutsche
+               * Anzeigen selten ein Gehalt nennen. Diese beiden Fälle
+               * sehen gleich aus und sind völlig verschieden, und wer
+               * sie verwechselt, hält die Suche für kaputt.
+               *
+               * Also: die Zahl der offenen Stellen nennen und sagen,
+               * woran es liegt.
+               */
+              klaerung.length > 0
+                ? `${klaerung.length} ${klaerung.length === 1 ? "Stelle sagt" : "Stellen sagen"} zu mindestens einer deiner Bedingungen nichts — sie ${klaerung.length === 1 ? "steht" : "stehen"} weiter unten. Es wird nichts ausgedacht, um die Liste zu füllen.`
+                : aktiveBedingungen(params).length > 0
+                  ? `Es gilt gerade: ${aktiveBedingungen(params)
+                      .map((b) => b.label)
+                      .join(", ")}. Soll ich eine davon einmalig weglassen? Es wird nichts ausgedacht, um die Liste zu füllen.`
+                  : "Es wird nichts ausgedacht, um die Liste zu füllen."
             }
             action={
               <div className="flex flex-wrap justify-center gap-2">
@@ -330,36 +1058,64 @@ export default async function JobsPage({
                 <Button asChild variant="secondary">
                   <Link href="/app/jobs">Alle Filter zurücksetzen</Link>
                 </Button>
+                {klaerung.length > 0 && (
+                  <Button asChild variant="secondary">
+                    <Link href="/app/settings/matching">Offene Angaben mitzeigen</Link>
+                  </Button>
+                )}
               </div>
             }
           />
         }
         detail={
           selected ? (
+            <>
+              {auswahlVerfehlt && (
+                <div
+                  role="status"
+                  className="mx-5 mt-5 rounded-(--radius-md) bg-caution-soft px-4 py-3 text-sm leading-relaxed text-ink-2 lg:mx-7"
+                >
+                  Die verlinkte Stelle passt nicht zu deinen aktuellen Filtern — hier steht
+                  stattdessen die erste aus der Liste.{" "}
+                  <Link href="/app/jobs?blocked=1" className="text-accent-text underline underline-offset-[3px]">
+                    Auch ausgeschlossene Stellen zeigen
+                  </Link>
+                </div>
+              )}
+            {/*
+              Wieder die vollständigen Informationen.
+              
+              Zwischenzeitlich stand hier nur `JobWorkspace`: Fakten
+              oben, alles Weitere auf Nachfrage. Der Gedanke war, die
+              Seite ruhig zu halten — das Ergebnis war eine Seite, auf
+              der man nach dem suchen musste, was vorher dastand.
+              
+              Jetzt beides: `JobDetailPanel` mit allem, was über die
+              Stelle bekannt ist, und darin `NinaAnalyse` als
+              Zusammenfassung oben. Ninas Ansichten bleiben über die
+              Blase unten rechts erreichbar.
+            */}
             <JobDetailPanel
+              /* Dieselbe Lesart wie in Ninas Ansichten — eine
+                 Rechnung, zwei Anzeigen. */
+              ninaDaten={ninaLesart}
+              wunschgehalt={ctx.constraints.minSalaryPerYear}
+              maxPendelzeit={ctx.constraints.maxCommuteMinutes}
+              zukunft={zukunftAngabe}
               scored={selected}
+              wohnort={wohnzeile[0]?.baseLocation ?? null}
+              gehaltsangaben={gehaltsangaben}
+              lebenshaltung={lebenshaltung}
               t={t}
               saved={savedIds.has(selected.jobId)}
               assistantName={brand.assistantName}
               labels={{ save: t("jobs.save"), saved: t("jobs.saved") }}
-              brief={buildDecisionBrief({
-                scored: selected,
-                // Die Jahre stehen nicht als Feld im Profil. Sie aus
-                // einer Zahl abzuleiten, die es nicht gibt, wäre eine
-                // Erfindung — also bleibt das Niveau unbekannt, und der
-                // Abgleich sagt das auch so.
-                userYearsExperience: null,
-                userConstraints: {
-                  maxTravelPercent: ctx.constraints.maxTravelPercent ?? null,
-                  maxCommuteMinutes: ctx.constraints.maxCommuteMinutes ?? null,
-                  minSalary: ctx.constraints.minSalaryPerYear ?? null,
-                  noShiftWork: ctx.constraints.acceptsShiftWork === false,
-                },
-              })}
             />
+            </>
           ) : null
         }
       />
+      </NinaSteuerungProvider>
 
       {/*
        * Blättern statt endlos scrollen.
@@ -368,39 +1124,202 @@ export default async function JobsPage({
        * hat eine eigene Adresse, der Zurück-Knopf tut das Erwartete,
        * und ein geteilter Link führt dorthin, wo der Absender war.
        */}
-      {seitenGesamt > 1 && (
-        <JobPagination
-          seite={seite}
-          seitenGesamt={seitenGesamt}
-          sichtbar={sichtbar.length}
-          gesamt={filtered.length}
-          zurückHref={seite > 1 ? `/app/jobs?${blätterParams(params, seite - 1)}` : null}
-          weiterHref={seite < seitenGesamt ? `/app/jobs?${blätterParams(params, seite + 1)}` : null}
-          weitereAnzahl={Math.min(PRO_SEITE, filtered.length - seite * PRO_SEITE)}
+      {/* Die Blätterung steht jetzt IN der Liste — siehe die
+          Eigenschaft `blaetterung` am `JobSplitView` weiter oben. Hier
+          stand sie unter der ganzen Aufteilung und hätte nach der
+          Begrenzung der Listenhöhe nie wieder ausgelöst. */}
+
+      {/* ── Offene Bedingungen, eigener Abschnitt ─────────────── */}
+      {klaerung.length > 0 && (
+        /*
+         * Warum diese Stellen nicht oben stehen.
+         *
+         * Bei ihnen ist eine harte Bedingung offen — die Anzeige sagt
+         * nichts dazu. Sie verletzen nichts, aber sie sind auch nicht
+         * geprüft, und zwischen den geprüften sähen sie geprüft aus.
+         * Genau dieser Eindruck war der teuerste Fehler der bisherigen
+         * Liste: Passungswert, Empfehlung, alles wie gewohnt — und die
+         * eigene Gehaltsuntergrenze bei dieser Stelle schlicht ungeklärt.
+         *
+         * Also: sichtbar, aber getrennt, und mit dem offenen Punkt
+         * dabei. Wer es anders will, stellt es in den Einstellungen um.
+         */
+        <section aria-labelledby="klaerung" className="grid gap-4 border-t border-line pt-8">
+          <div>
+            <h2 id="klaerung" className="text-xl font-semibold">
+              {plural(klaerung.length, "Stelle", "Stellen")}, bei {klaerung.length === 1 ? "der" : "denen"} etwas offen ist
+            </h2>
+            <p className="mt-1.5 max-w-prose leading-relaxed text-ink-2">
+              Diese Anzeigen widersprechen keiner deiner Bedingungen — sie sagen nichts dazu. Sie
+              stehen deshalb hier und nicht oben zwischen den geprüften.
+            </p>
+          </div>
+          <ul className="grid gap-3">
+            {klaerung.slice(0, 10).map((j) => {
+              const offenePunkte = j.constraints.checks.filter((c) => c.verdict === "uncertain");
+              return (
+                <li key={j.jobId}>
+                  <Link
+                    href={`/app/jobs/${j.jobId}`}
+                    /* Dieselbe Kennung wie in der Hauptliste: eine Stelle
+                       ist eine Stelle, gleich in welcher Gruppe sie steht. */
+                    data-job-id={j.jobId}
+                    className="block rounded-(--radius-surface) bg-raised px-5 py-4 transition-colors hover:bg-soft"
+                  >
+                    <p className="font-medium">{j.job.title}</p>
+                    <p className="mt-0.5 text-sm text-ink-2">
+                      {j.job.companyName} · {j.job.location}
+                    </p>
+                    {/*
+                     * Auch hier eine Grössenordnung.
+                     *
+                     * Diese Karte zeigte gar kein Gehalt — auch nicht,
+                     * wo die Anzeige eines nennt. „Bei jeder
+                     * angezeigten Stelle" heisst auch bei denen, bei
+                     * denen etwas offen ist; sonst hinge die Auskunft
+                     * daran, in welche Gruppe eine Stelle gerutscht
+                     * ist.
+                     */}
+                    {(() => {
+                      const g = gehaltszeile(j);
+                      if (!g) return null;
+                      return (
+                        <p className="mt-1 text-sm text-ink-2">
+                          {g.text}
+                          {g.geschaetzt && (
+                            <span className="ml-1.5 rounded-(--radius-pill) bg-inset px-1.5 py-px text-[11px] text-ink-3">
+                              Marktspanne
+                            </span>
+                          )}
+                        </p>
+                      );
+                    })()}
+                    <p className="mt-2 text-sm leading-relaxed text-ink-3">
+                      Offen:{" "}
+                      {offenePunkte.map((c) => c.label).join(", ") || "eine deiner Bedingungen"}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+          {klaerung.length > 10 && (
+            <p className="text-sm text-ink-3">
+              und {klaerung.length - 10} weitere.
+            </p>
+          )}
+          <p className="text-sm text-ink-3">
+            <Link
+              href="/app/settings/matching"
+              className="inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
+            >
+              Ändern, wie mit offenen Angaben umgegangen wird
+            </Link>
+          </p>
+        </section>
+      )}
+
+      {/*
+       * Die Datenqualität steht nicht mehr dauerhaft unter der Liste.
+       *
+       * Hier standen zwei Absätze: „19 Anzeigen sind abgelaufen oder
+       * nicht mehr erreichbar …" und „770 Stellen verletzen eine deiner
+       * harten Bedingungen …". Beides ist wahr und beides war als
+       * Ehrlichkeit gemeint.
+       *
+       * Auf dem Bildschirm wirkte es anders. Wer eine Jobliste öffnet,
+       * will Stellen sehen; darunter zwei Absätze über Anzeigen, die er
+       * NICHT sieht, lesen sich als Betriebsprotokoll. Und die Zahl 770
+       * ohne Kontext klingt nach einem Fehler, nicht nach einer
+       * Filterleistung.
+       *
+       * Die Zahlen bleiben — sie werden weiterhin berechnet und stehen
+       * im Trichter unter „Chancenraum", wo jede Stufe einzeln
+       * heruntergezählt wird. Dort beantworten sie eine Frage, die
+       * jemand gestellt hat. Hier beantworteten sie eine, die niemand
+       * gestellt hatte.
+       */}
+
+      {/*
+        * Die Bereiche unter der Trefferliste.
+        *
+        * Sie stehen NACH den Ergebnissen, nicht davor: Wer die
+        * Stellenseite öffnet, sucht Stellen. Ein Marketingbereich über
+        * der Liste kostet ihn jedes Mal einen Bildlauf.
+        */}
+      {/*
+        ── Der Balken zwischen Jobs und Erklärung ────────────────
+        
+        Hier standen `mt-32` und `pt-16` mit einer Trennlinie
+        dazwischen: 192 Pixel Abstand, dazu `gap-20` zwischen den
+        Abschnitten darunter. Auf einem hellen Grund liest sich das als
+        Luft. Im Dunkelmodus ist leerer Raum aber die dunkelblaue
+        Seitenfläche — und 192 Pixel davon am Stück sind kein Abstand
+        mehr, sondern ein Balken quer über den Bildschirm.
+        
+        Genau dort, wo jemand nach der letzten Stelle weiterliest,
+        stand damit ein Block, der nichts sagt und ein Sechstel des
+        Bildschirms kostet.
+        
+        Der Weg dorthin, weil die Zahl mehrfach falsch war: 128 Pixel
+        über der Linie, dann 48, dann 96 — jedes Mal zu viel.
+        
+        Der Grund ist der Dunkelmodus. Leerer Raum ist dort keine
+        Luft, sondern eine dunkelblaue Fläche, und ab etwa fünfzig
+        Pixel liest sie sich nicht mehr als Abstand, sondern als
+        Balken quer über den Bildschirm — genau an der Stelle, wo
+        jemand nach der letzten Stelle weiterlesen will.
+        
+        Jetzt 40 Pixel über der Linie und 40 darunter. Die Linie
+        trägt die Trennung; sie braucht keinen langen Vorlauf. Was
+        Abstand schafft, ist der Strich selbst — die Fläche davor darf
+        ihn ankündigen, aber nicht ersetzen.
+      */}
+      <div className="mt-10 grid gap-12 border-t border-line pt-10">
+        {/*
+          Hier stand „Alles für deinen nächsten Karriereschritt" —
+          eine Kachelreihe mit Verweisen auf Gehalt, Lebenslauf,
+          Vorbereitung und Weiteres.
+
+          Sie stand unter der Stellenliste und bot alles an ausser der
+          nächsten Stelle. Wer bis dorthin gescrollt hat, sucht weiter
+          — und bekam ein Inhaltsverzeichnis des Produkts. Die Wege
+          selbst gibt es unverändert in der Navigation.
+        */}
+        {/*
+          Hier stand „Berufsfelder mit den meisten offenen Stellen".
+
+          Eine Rangliste der grössten Felder beantwortet die Frage, wo
+          es viel gibt — nicht die, wo es etwas für DIESE Person gibt.
+          Das ist der Unterschied, um den es diesem Produkt geht, und
+          ein Abschnitt, der ihn übergeht, arbeitet gegen den Rest der
+          Seite.
+        */}
+        {/*
+          * Der Suchauftrag steht wieder oben in diesem Block.
+          *
+          * Er stand hier, wanderte dann unter den Erklärungsabschnitt
+          * — mit dem Gedanken, erst zu erklären, dann zu handeln —
+          * und steht jetzt wieder hier.
+          *
+          * Der Grund für die Rückkehr: Wer bis unter die letzte Stelle
+          * gescrollt hat, hat die Treffer gesehen. War nichts
+          * Passendes dabei, ist „Nina sucht weiter" die nächste
+          * sinnvolle Handlung — und die gehört vor einen Abschnitt,
+          * der erklärt, wie das Produkt gedacht ist.
+          */}
+        <Jobalarm
+          params={params}
+          vorschlag={
+            [params.q, params.ort].filter(Boolean).join(" in ") || "Meine Suche"
+          }
         />
-      )}
 
-      {staleCount > 0 && (
-        <p className="text-sm leading-relaxed text-ink-3">
-          {staleCount} {staleCount === 1 ? "Anzeige ist" : "Anzeigen sind"} abgelaufen oder nicht
-          mehr erreichbar und {staleCount === 1 ? "steht" : "stehen"} deshalb nicht in der Liste.
-          Eine Bewerbung dort würde ins Leere gehen.
-        </p>
-      )}
+        <Vertrauensbereich />
 
-      {blockedCount > 0 && (
-        <p className="text-sm leading-relaxed text-ink-3">
-          {blockedCount} {blockedCount === 1 ? "Stelle verletzt" : "Stellen verletzen"} eine deiner
-          harten Bedingungen und {blockedCount === 1 ? "ist" : "sind"} deshalb nicht in der Liste.{" "}
-          <Link
-            href={includeBlocked ? "/app/jobs" : "/app/jobs?blocked=1"}
-            scroll={false}
-            className="inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
-          >
-            {includeBlocked ? "Wieder ausblenden" : "Mit Begründung anzeigen"}
-          </Link>
-        </p>
-      )}
+
+      </div>
+
     </div>
   );
 }
@@ -434,12 +1353,57 @@ function relativeAge(date: Date | null): { label: string | null; fresh: boolean 
  * eine Suche, die etwas anderes tut als eingegeben, ist schlimmer als
  * eine, die zu wenig findet.
  */
-function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefined>): ScoredJob[] {
+/**
+ * Die eingetippten Filter anwenden — und mitzählen, was mangels
+ * Angabe herausfällt.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum die Zahl mit hinaus muss
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Seit die eingetippten Filter streng sind, verschwinden Anzeigen,
+ * die zur Sache nichts sagen — bei „Teilzeit" etwa die 46 Prozent
+ * ohne Stundenangabe.
+ *
+ * Ohne die Zahl sieht das aus wie ein kleiner Arbeitsmarkt. Mit ihr
+ * ist es eine Auskunft über die ANZEIGEN: „acht ausgeblendet, weil
+ * sie dazu nichts sagen" ist etwas völlig anderes als „es gibt nur
+ * zwei Stellen".
+ */
+function applyFilters(
+  jobs: ScoredJob[],
+  params: Record<string, string | undefined>,
+  /**
+   * Wo die Person wohnt, in Koordinaten.
+   *
+   * `null` heisst: nicht auflösbar. Dann kann die Fahrzeit nicht
+   * gefiltert werden, und der Filter greift gar nicht — besser als
+   * eine leere Liste aus einer Zahl, die niemand berechnen konnte.
+   */
+  wohnpunkt: { latitude: number; longitude: number } | null = null,
+  fortbewegung: string | null = null,
+): { jobs: ScoredJob[]; ohneAngabe: number } {
   let result = jobs;
+
+  /*
+   * Gezählt wird je Stelle höchstens einmal.
+   *
+   * Wer Teilzeit UND ein Gehalt verlangt, blendet dieselbe schweigsame
+   * Anzeige an zwei Stellen aus. Zweimal gezählt ergäbe eine Zahl,
+   * die grösser ist als die Zahl der Stellen — und dann glaubt sie
+   * niemand mehr.
+   */
+  const schweigsam = new Set<string>();
+  const zaehleStumme = (vorher: ScoredJob[], stumm: (j: ScoredJob) => boolean) => {
+    for (const j of vorher) if (stumm(j)) schweigsam.add(j.jobId);
+  };
 
   const q = params.q?.trim().toLowerCase();
   if (q) {
-    const words = q.split(/\s+/).filter((w) => w.length > 2);
+    /* Ab zwei Zeichen, wie in der Datenbankabfrage. „IT" ist ein
+       Suchwort; es hier wegzuwerfen hiesse, dass die Liste breiter
+       filtert als die Auswahl. */
+    const words = q.split(/\s+/).filter((w) => w.length >= 2);
     result = result.filter((j) => {
       const haystack = [
         j.job.title,
@@ -481,10 +1445,146 @@ function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefin
    * Hamburg. Auf das Ortsfeld angewandt trifft er das, was gemeint ist.
    */
   const ort = params.ort?.trim().toLowerCase();
-  if (ort) result = result.filter((j) => j.job.location.toLowerCase().includes(ort));
+  if (ort) {
+    /*
+     * „Nur Karlsruhe" ist enger als „rund um Karlsruhe".
+     *
+     * ── Warum der Unterschied zählt ───────────────────────────
+     *
+     * `includes` auf dem Ortsfeld trifft „Karlsruhe" auch in
+     * „Karlsruhe-Durlach" und „Landkreis Karlsruhe" — das ist bei
+     * „rund um" gewollt. Wer ausdrücklich „nur" sagt, meint die
+     * Stadt selbst.
+     *
+     * Verglichen wird das erste Segment des Ortsfelds: „Karlsruhe,
+     * Baden-Württemberg" ist Karlsruhe, „Bruchsal, Baden-Württemberg"
+     * nicht.
+     */
+    result =
+      params.ortGenau === "1"
+        ? result.filter((j) => {
+            const stadt = j.job.location.split(",")[0]?.trim().toLowerCase() ?? "";
+            return stadt === ort;
+          })
+        : result.filter((j) => j.job.location.toLowerCase().includes(ort));
+  }
+
+  /*
+   * Arbeitszeit — nur wo sie in der Anzeige steht.
+   *
+   * Gemessen sind 65,2 Prozent der deutschen Stellen mit
+   * Wochenstunden versehen. Bei den übrigen ist nichts bekannt, und
+   * eine unbekannte Angabe ist keine erfüllte: Sie fällt hier NICHT
+   * heraus, aber die Zeile sagt, dass sie offen ist — dieselbe Regel
+   * wie bei allen anderen unklaren Bedingungen.
+   *
+   * Die Grenze bei 35 Stunden ist die übliche deutsche Trennung
+   * zwischen Vollzeit und Teilzeit.
+   */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein eingetippter Filter filtert wirklich
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `weeklyHours === null || …` — eine Anzeige ohne
+   * Stundenangabe kam durch. Das folgte der Regel, die für die
+   * BEDINGUNGEN AUS DEM PROFIL gilt und dort richtig ist:
+   * Unbekanntes ist kein Widerspruch, und eine Anzeige, die nichts
+   * zum Gehalt sagt, verletzt keine Gehaltsuntergrenze.
+   *
+   * Für einen Filter, den jemand gerade selbst eingetippt hat, ist
+   * sie falsch. „Teilzeit" ist keine Vermutung über die Person,
+   * sondern ein Auftrag — und wer ihn erteilt und danach zur Hälfte
+   * Vollzeitstellen und Anzeigen ohne Angabe sieht, hält den Filter
+   * für kaputt.
+   *
+   * Der Unterschied ist die ganze Regel:
+   *
+   *   Profilbedingung   tolerant — Schweigen ist kein Verstoss
+   *   Eingetippt        streng   — Schweigen ist keine Erfüllung
+   *
+   * ── Was das kostet, gemessen ────────────────────────────────
+   *
+   * An den 8.000 neuesten deutschen Anzeigen der letzten 21 Tage
+   * (6. September 2026):
+   *
+   *   Wochenstunden genannt    54 %
+   *   Schichtarbeit angegeben  59 %
+   *   Vertragsart angegeben    55 %
+   *   Gehalt angegeben         32 %
+   *   Arbeitsmodell angegeben 100 %
+   *
+   * Ein Zeitfilter halbiert die Liste also etwa. Das ist der Preis
+   * dafür, dass die Liste hält, was der Filter verspricht — und wer
+   * ihn nicht setzt, sieht weiterhin alles.
+   */
+  if (params.arbeitszeit === "vollzeit" || params.arbeitszeit === "teilzeit") {
+    zaehleStumme(result, (j) => j.job.weeklyHours === null);
+    result = result.filter((j) =>
+      params.arbeitszeit === "vollzeit"
+        ? j.job.weeklyHours !== null && j.job.weeklyHours >= 35
+        : j.job.weeklyHours !== null && j.job.weeklyHours < 35,
+    );
+  }
+
+  /*
+   * Keine Schichtarbeit — was bestätigt ist, fällt raus.
+   *
+   * Nur 5,9 Prozent der Anzeigen sagen überhaupt etwas dazu, davon
+   * 488 mit „ja". Diese fallen heraus. Die 94 Prozent Schweigen als
+   * „keine Schicht" zu lesen wäre die bequeme Auslegung — und genau
+   * der Fehler, den die Vorgabe benennt: Unbekanntes ist nicht
+   * automatisch erfüllt. Es bleibt sichtbar und ungeklärt.
+   */
+  if (params.schicht === "0") {
+    /*
+     * Nachgemessen — und die alte Begründung stimmt nicht mehr.
+     *
+     * Hier stand `shiftWork !== true` mit dem Argument, 94 Prozent
+     * der Anzeigen sagten nichts zur Schichtarbeit; strenger zu
+     * filtern hätte die Liste geleert.
+     *
+     * Am 6. September 2026 an den 8.000 neuesten deutschen Anzeigen
+     * nachgezählt: 59 Prozent machen eine Angabe. Der Bestand ist ein
+     * anderer geworden, und damit die Antwort auch.
+     *
+     * „Keine Schichtarbeit" heisst jetzt: Die Anzeige sagt, dass es
+     * keine gibt. Schweigen ist keine Zusage — und für jemanden mit
+     * festen Abholzeiten ist der Unterschied nicht akademisch.
+     */
+    zaehleStumme(result, (j) => j.job.shiftWork === null || j.job.shiftWork === undefined);
+    result = result.filter((j) => j.job.shiftWork === false);
+  }
+
+  /*
+   * Die Art der Beschäftigung.
+   *
+   * ── Warum das ein Filter sein muss ────────────────────────
+   *
+   * Praktika, Werkstudien, Ausbildungen und Minijobs standen bisher
+   * unsortiert zwischen den festen Stellen. Wer eines davon SUCHT,
+   * musste sie aus der Liste fischen; wer keines will, bekam sie
+   * trotzdem.
+   *
+   * Mehrere Arten sind mit Komma erlaubt: `art=praktikum,werkstudium`.
+   * Ohne Angabe wird nichts gefiltert — der bisherige Zustand bleibt
+   * die Voreinstellung, damit niemand stillschweigend weniger sieht.
+   */
+  const arten = params.art
+    ?.split(",")
+    .map((a) => a.trim())
+    .filter((a): a is Beschaeftigungsart =>
+      (BESCHAEFTIGUNGSARTEN as readonly string[]).includes(a),
+    );
+  if (arten && arten.length > 0) {
+    result = result.filter((j) => arten.includes(beschaeftigungsart(j.job.title)));
+  }
 
   if (params.remote) result = result.filter((j) => j.job.workModel === params.remote);
-  if (params.contract) result = result.filter((j) => j.job.contractType === params.contract);
+  if (params.contract) {
+    zaehleStumme(result, (j) => j.job.contractType === null);
+    result = result.filter((j) => j.job.contractType === params.contract);
+  }
   if (params.salary === "disclosed") result = result.filter((j) => j.job.salary.disclosed);
 
   /*
@@ -496,8 +1596,60 @@ function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefin
    * nicht heimlich durch — dafür sorgt `salary=disclosed`, das die
    * Sucherkennung zusammen mit dem Betrag setzt.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die Fahrzeit
+   * ══════════════════════════════════════════════════════════════
+   *
+   * „Keine längere Autofahrt als 170 Minuten" wurde bisher gar nicht
+   * verstanden: Der Satz wanderte als Ganzes in die Volltextsuche,
+   * und die fand nichts. Die Zahl gibt es längst — `commuteMinutes`
+   * steht an jeder bewerteten Stelle.
+   *
+   * Streng wie jeder eingetippte Filter: Eine Stelle, deren Fahrzeit
+   * sich nicht berechnen lässt, erfüllt „höchstens 45 Minuten" nicht.
+   * Sie zählt in die Zahl der ausgeblendeten Anzeigen — dort ist das
+   * eine Auskunft, hier wäre es ein stilles Durchwinken.
+   */
+  const pendelzeit = Number(params.pendelzeit);
+  if (Number.isFinite(pendelzeit) && pendelzeit > 0) {
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Aus Koordinaten, nicht aus einer Tabelle mit vier Städten
+     * ══════════════════════════════════════════════════════════════
+     *
+     * `commuteMinutes` kam aus `DISTANCE_MINUTES` — Hamburg, Berlin,
+     * München, Köln. Für jede andere Stadt: `null`.
+     *
+     * Solange die Zahl nur in eine Bewertung einging, fiel das kaum
+     * auf. Als sie zum Filter wurde, war die Folge sofort da:
+     * „höchstens 120 Minuten" liess NICHTS übrig, weil für fast jede
+     * Stelle gar keine Fahrzeit bekannt war.
+     *
+     * Die Koordinaten gibt es längst — 90 Prozent der Anzeigen tragen
+     * sie, seit die Geodaten nachgezogen wurden.
+     *
+     * Ohne auflösbaren Wohnort greift der Filter gar nicht. Eine
+     * leere Liste aus einer Zahl, die niemand berechnen konnte, wäre
+     * die schlechtere Antwort.
+     */
+    if (wohnpunkt) {
+      const minuten = (j: ScoredJob) =>
+        j.job.workModel === "remote"
+          ? 0
+          : (fahrzeitMinuten(wohnpunkt, j.job, fortbewegung) ?? j.commuteMinutes ?? null);
+
+      zaehleStumme(result, (j) => typeof minuten(j) !== "number");
+      result = result.filter((j) => {
+        const m = minuten(j);
+        return typeof m === "number" && m <= pendelzeit;
+      });
+    }
+  }
+
   const gehaltAb = Number(params.gehaltAb);
   if (Number.isFinite(gehaltAb) && gehaltAb > 0) {
+    zaehleStumme(result, (j) => typeof (j.job.salary.min ?? j.job.salary.max) !== "number");
     result = result.filter((j) => {
       const von = j.job.salary.min ?? j.job.salary.max;
       if (typeof von !== "number") return false;
@@ -525,7 +1677,18 @@ function applyFilters(jobs: ScoredJob[], params: Record<string, string | undefin
     result = result.filter((j) => (j.job.publishedAt?.getTime() ?? 0) >= cutoff);
   }
 
-  return result;
+  /*
+   * Gezählt wird nur, was am Ende auch fehlt.
+   *
+   * Eine Anzeige ohne Stundenangabe, die schon am Ort gescheitert
+   * ist, war nicht wegen ihres Schweigens draussen. Sie mitzuzählen
+   * hiesse, dem Filter etwas anzulasten, was er nicht getan hat.
+   */
+  const uebrig = new Set(result.map((j) => j.jobId));
+  let ohneAngabe = 0;
+  for (const id of schweigsam) if (!uebrig.has(id)) ohneAngabe++;
+
+  return { jobs: result, ohneAngabe };
 }
 
 /**
@@ -559,6 +1722,9 @@ function aktiveBedingungen(
   }
   if (params.contract && vertrag[params.contract]) {
     raus.push({ key: "contract", label: vertrag[params.contract]! });
+  }
+  if (params.pendelzeit) {
+    raus.push({ key: "pendelzeit", label: `höchstens ${params.pendelzeit} Min. Fahrt` });
   }
   if (params.gehaltAb) {
     raus.push({

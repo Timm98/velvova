@@ -1,0 +1,16 @@
+import { chromium } from "@playwright/test";
+const B = "http://localhost:3000";
+const b = await chromium.launch();
+const p = await b.newContext({ viewport: { width: 1440, height: 1200 }, locale: "de-DE" }).then(c => c.newPage());
+p.setDefaultTimeout(90000); p.setDefaultNavigationTimeout(90000);
+await p.goto(`${B}/register`, { waitUntil: "domcontentloaded" });
+await p.getByLabel("E-Mail-Adresse").fill(`li-${Date.now()}@example.invalid`);
+await p.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!");
+await p.getByRole("button", { name: /Konto anlegen/i }).click();
+await p.waitForURL(/\/(app|setup)/, { timeout: 90000 });
+await p.goto(`${B}/app/jobs`, { waitUntil: "domcontentloaded" });
+await p.locator("[data-job-id]").first().waitFor({ timeout: 60000 }).catch(() => {});
+console.log("Zeilen mit data-job-id:", await p.locator("[data-job-id]").count());
+const t = (await p.locator("main").innerText()).replace(/\s+/g, " ");
+console.log("Ausschnitt:", t.slice(0, 600));
+await b.close(); process.exit(0);

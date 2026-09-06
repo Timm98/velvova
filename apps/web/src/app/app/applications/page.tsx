@@ -7,6 +7,7 @@ import { APPLICATION_PIPELINE } from "@paycheck/domain";
 import { desc, eq } from "drizzle-orm";
 import { diagnoseFunnel } from "@/lib/funnel";
 import { Badge, buttonClass, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { VelvovaBewerbungen } from "./VelvovaBewerbungen";
 
 export const metadata: Metadata = { title: "Bewerbungen" };
 export const dynamic = "force-dynamic";
@@ -69,6 +70,15 @@ export default async function ApplicationsPage({
     return (
       <Stack gap={6}>
         <PageHeader title={t("applications.title")} />
+        {/*
+         * Die Velvova-Bewerbungen stehen VOR dem Leerzustand.
+         *
+         * Wer sich ausschliesslich über Velvova beworben hat, sah hier
+         * „noch keine Bewerbungen" — während seine Bewerbung beim
+         * Unternehmen lag. Die Liste darunter führt nur selbst
+         * eingetragene Bewerbungen; ihre Leere sagt nichts über diese.
+         */}
+        <VelvovaBewerbungen />
         <EmptyState
           title={t("states.emptyTitle")}
           body={t("applications.empty")}
@@ -94,6 +104,8 @@ export default async function ApplicationsPage({
   return (
     <Stack gap={6}>
       <PageHeader title={t("applications.title")} />
+
+      <VelvovaBewerbungen />
 
       {/* Ansichten */}
       <nav aria-label="Ansicht" style={{ display: "flex", gap: "var(--space-2)" }}>

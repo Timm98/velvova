@@ -38,6 +38,19 @@ const SIZES = {
   md: 28,
   lg: 44,
   xl: 72,
+  /*
+   * Die Grösse für den Auftritt, nicht für die Zeile.
+   *
+   * Auf der Startseite steht Nina in einer Fläche von 180 Pixeln. Mit
+   * `xl` füllte sie davon 72 — ein kleiner Punkt in der Mitte einer
+   * grossen leeren Box, umgeben vom dekorativen Schein des Abschnitts.
+   * Das las sich nicht als „Nina", sondern als „hier lädt noch etwas".
+   *
+   * Der Fehler war nicht der Schein und nicht die Box, sondern das
+   * Verhältnis: Ein Bauteil, das für einen Kopfzeilenpunkt gebaut ist,
+   * trägt keinen Auftritt.
+   */
+  hero: 168,
 } as const;
 
 export function NinaSignal({

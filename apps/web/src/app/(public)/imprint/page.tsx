@@ -46,7 +46,7 @@ export default async function ImprintPage() {
 
         {fehlend.length > 0 && (
           <div className="grid gap-1.5 pt-1">
-            <p className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+            <p className="abschnitts-titel text-ink-3">
               Was noch fehlt
             </p>
             <ul className="grid gap-1">

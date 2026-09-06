@@ -42,6 +42,17 @@ export interface OpenAiOptions {
   /** Das schnellere Modell für einfache Schritte. */
   modelFast: string;
   modelEmbed: string;
+  /**
+   * Was einspringt, wenn das eigentliche Modell ausfällt.
+   *
+   * Fehlt der Eintrag, gibt es keinen Ersatz — und ein Ausfall bleibt
+   * ein Ausfall. Das ist Absicht: Ein erfundener Ersatz wäre
+   * schlimmer als eine ehrliche Fehlermeldung.
+   */
+  modelInteractiveFallback?: string;
+  modelDeepFallback?: string;
+  modelFastFallback?: string;
+  modelEmbedFallback?: string;
   maxTokens: number;
   timeoutMs: number;
   baseUrl?: string;
@@ -75,8 +86,30 @@ function isRetryable(error: unknown): boolean {
  * im Nachhinein: einen Parameter erst zu schicken und dann auf den
  * Fehler zu reagieren, kostet bei jedem Aufruf eine volle Antwortzeit.
  */
+/**
+ * Ob dieses Modell `temperature` annimmt.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum die Liste nach oben offen sein muss
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Das Muster stand bei `^(gpt-5|o1|o3|o4)`. Es fing die damals
+ * bekannten Denkmodelle und liess `gpt-6-astra` durch — jeder Aufruf
+ * endete mit:
+ *
+ *   400 Unsupported parameter: 'temperature' is not supported
+ *       with this model.
+ *
+ * Gefunden im Benchmark, nicht im Betrieb: Astra war als höchste
+ * Stufe eingetragen und hätte bei der ersten wichtigen Analyse
+ * versagt.
+ *
+ * `gpt-6` und alles darüber sind Denkmodelle; die Annahme, dass die
+ * nächste Generation wieder Temperatur annimmt, wäre die Wette, die
+ * hier schon einmal verloren ging.
+ */
 function unterstütztTemperature(model: string): boolean {
-  return !/^(gpt-5|o1|o3|o4)/.test(model);
+  return !/^(gpt-[5-9]|gpt-[1-9][0-9]|o[1-9])/.test(model);
 }
 
 /**
@@ -126,13 +159,132 @@ export class OpenAiProvider implements AiProvider {
     return streamOpenAiConversation(this, options);
   }
 
+  /**
+   * Wie lange auf eine Antwort gewartet wird.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum je Stufe eine andere
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Eine Extraktion, die nach fünfzehn Sekunden nicht fertig ist,
+   * wird es auch nach neunzig nicht — dort ist etwas kaputt, und
+   * langes Warten macht aus einem schnellen Fehler einen langsamen.
+   *
+   * Eine tiefe Analyse dagegen darf dauern. Sie läuft im Hintergrund,
+   * und niemand sitzt davor. Sie nach dreissig Sekunden abzubrechen
+   * hiesse, das teuerste Modell zu bezahlen und sein Ergebnis
+   * wegzuwerfen.
+   *
+   * Die gemeinsame Grenze aus `AI_TIMEOUT_MS` bleibt die Obergrenze:
+   * Wer sie niedriger setzt, meint es so.
+   */
+  private zeitgrenze(tier: ChatOptions["tier"], gewuenscht?: number): number {
+    /*
+     * ── Warum FAST nicht 15 Sekunden bekommt ────────────────────
+     *
+     * Die erste Fassung stand dort. Der Gedanke: Eine Extraktion, die
+     * nach fünfzehn Sekunden nicht fertig ist, wird es auch nach
+     * neunzig nicht.
+     *
+     * Der erste Lauf danach widerlegte ihn. Systemprompt 2 läuft auf
+     * `fast` und beurteilt fünf Kandidaten in einem Aufruf — mit
+     * Stellendaten, Kriterien und Belegen im Kontext. Er brauchte
+     * länger als fünfzehn Sekunden und brach ab: „Request timed out."
+     *
+     * Der Denkfehler war, von der Stufe auf die Grösse der Aufgabe zu
+     * schliessen. `fast` sagt, welches Modell rechnet, nicht wie viel
+     * es zu lesen bekommt. Ein Stapelaufruf ist auch mit einem
+     * schnellen Modell eine grosse Aufgabe.
+     *
+     * Deshalb: Der Aufrufer darf sagen, was er braucht. Ohne Angabe
+     * gilt ein Wert je Stufe, und der ist für `fast` nicht mehr
+     * knapp bemessen.
+     */
+    const jeStufe = tier === "fast" ? 45_000 : tier === "deep" ? 90_000 : 30_000;
+    return Math.min(gewuenscht ?? jeStufe, this.options.timeoutMs);
+  }
+
   private model(tier: ChatOptions["tier"]): string {
     if (tier === "fast") return this.options.modelFast;
     if (tier === "deep") return this.options.modelDeep;
     return this.options.modelInteractive;
   }
 
+  /**
+   * Das Ersatzmodell einer Stufe — oder nichts.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum es einen Ersatz braucht und keinen weiteren Versuch
+   * ══════════════════════════════════════════════════════════════
+   *
+   * `withRetry` wiederholt bei 429 und 5xx — sinnvoll, denn dieselbe
+   * Anfrage kann beim zweiten Mal durchgehen.
+   *
+   * Bei 404 hilft Wiederholen nicht. Das Modell gibt es nicht, und
+   * es wird es auch beim dritten Versuch nicht geben. Genau das ist
+   * uns passiert: Drei Modellnamen standen als Grundwert im Code,
+   * die es auf unserem Konto nie gab.
+   *
+   * Ein Ersatzmodell ist die einzige Antwort, die den Nutzer nicht
+   * mit einem Fehler zurücklässt.
+   */
+  private ersatzmodell(tier: ChatOptions["tier"]): string | null {
+    const ersatz =
+      tier === "fast"
+        ? this.options.modelFastFallback
+        : tier === "deep"
+          ? this.options.modelDeepFallback
+          : this.options.modelInteractiveFallback;
+
+    if (!ersatz) return null;
+    /*
+     * Derselbe Name wäre kein Ersatz, sondern eine Schleife. Das
+     * passiert leicht, wenn jemand die Umgebungsvariablen kopiert.
+     */
+    return ersatz === this.model(tier) ? null : ersatz;
+  }
+
   /** Wiederholung mit wachsendem Abstand, höchstens dreimal. */
+  /**
+   * Ein Aufruf, und wenn das Modell fehlt, derselbe mit dem Ersatz.
+   *
+   * ── Warum nur einmal ausgewichen wird ───────────────────────
+   *
+   * Eine Kette über drei Modelle würde bei einer falsch gesetzten
+   * Umgebung drei Fehlschläge nacheinander erzeugen und die Antwort
+   * um ihre Zeitgrenzen verlängern. Einmal ausweichen deckt den
+   * realen Fall ab: ein Modell ist weg, die anderen sind da.
+   *
+   * Der Wechsel steht im Rückgabewert, damit das Protokoll ihn
+   * festhalten kann. Ein stiller Modellwechsel wäre die Sorte
+   * Verbesserung, die man erst in der Rechnung bemerkt.
+   */
+  protected async mitErsatz<T>(
+    tier: ChatOptions["tier"],
+    run: (model: string) => Promise<T>,
+  ): Promise<{ wert: T; modell: string; ersatzGenutzt: boolean }> {
+    const erst = this.model(tier);
+    try {
+      return { wert: await this.withRetry(erst, () => run(erst)), modell: erst, ersatzGenutzt: false };
+    } catch (fehler) {
+      const ersatz = this.ersatzmodell(tier);
+      /*
+       * Nur bei einem Konfigurationsfehler ausweichen — also wenn das
+       * Modell nicht existiert oder gesperrt ist.
+       *
+       * Bei einem Zeitüberschreiten oder einem 500 wäre der Ersatz
+       * eine zweite Wette auf dieselbe Störung; `withRetry` hat es
+       * dann schon dreimal versucht.
+       */
+      if (!ersatz || !(fehler instanceof OpenAiConfigurationError)) throw fehler;
+      return {
+        wert: await this.withRetry(ersatz, () => run(ersatz)),
+        modell: ersatz,
+        ersatzGenutzt: true,
+      };
+    }
+  }
+
   private async withRetry<T>(model: string, run: () => Promise<T>): Promise<T> {
     let lastError: unknown;
 
@@ -179,7 +331,9 @@ export class OpenAiProvider implements AiProvider {
 
   async structuredGenerate<T>(options: StructuredOptions<T>): Promise<StructuredResult<T>> {
     const start = Date.now();
-    const model = this.model(options.tier);
+    /* Ein ausdrücklich genanntes Modell schlägt die Stufe — siehe
+       `StructuredOptions.modell`. */
+    const model = options.modell ?? this.model(options.tier);
 
     const response = await this.withRetry(model, () =>
       this.client.responses.create(
@@ -198,7 +352,10 @@ export class OpenAiProvider implements AiProvider {
             },
           },
         },
-        options.signal ? { signal: options.signal } : undefined,
+        {
+          timeout: this.zeitgrenze(options.tier, options.timeoutMs),
+          ...(options.signal ? { signal: options.signal } : {}),
+        },
       ),
     );
 

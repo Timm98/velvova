@@ -36,9 +36,38 @@ const NinaScene = dynamic(() => import("./NinaScene").then((m) => m.NinaScene), 
 });
 
 const GRÖSSE = {
-  sm: "h-[72px] w-[72px]",
-  md: "h-[120px] w-[120px]",
-  lg: "h-[180px] w-[180px]",
+  /*
+   * `xs` für den Streifen unter der Kopfzeile.
+   *
+   * Dort standen zuerst 72 Pixel in einer 52 Pixel hohen Leiste — der
+   * Core lief nach unten heraus und legte sich über die Zeile. Eine
+   * eigene Stufe ist ehrlicher als den Streifen aufzublasen: Über dem
+   * Inhalt liegen bereits Ankündigung, Kopfzeile und Wegeleiste, und
+   * jeder weitere Streifen schiebt die Stellen tiefer.
+   */
+  xs: "h-[62px] w-[62px]",
+  sm: "h-[86px] w-[86px]",
+  md: "h-[144px] w-[144px]",
+  lg: "h-[216px] w-[216px]",
+  /* Für den Einstieg auf der Startseite: dort ist Nina der Grund, warum
+     jemand die Seite geöffnet hat, und darf entsprechend gross sein. */
+  /*
+   * Relativ, nicht fest.
+   *
+   * `h-[640px] w-[640px]` schrumpfte nicht mit: Auf einem 320 Pixel
+   * breiten Bildschirm stand der Core 340 Pixel über den Rand hinaus
+   * und riss die ganze Seite auf. Eine feste Grösse in einem Gitter,
+   * dessen Spalte schmaler ist, drückt — sie passt sich nicht an.
+   */
+  /*
+   * An den Behälter gebunden, nicht an das Fenster.
+   *
+   * `min(88vw, 640px)` mass am Fenster — in einer 600 Pixel breiten
+   * Spalte ergab das bei 1024 Pixeln Fensterbreite 640 Pixel und damit
+   * 135 Pixel Überstand. Ein Element, das sich am Fenster orientiert,
+   * weiss nichts von der Spalte, in der es steht.
+   */
+  xl: "aspect-square w-full max-w-[620px]",
 } as const;
 
 /** Fürs Vorlesegerät. Das Bild selbst ist Dekoration. */
@@ -77,11 +106,39 @@ export function NinaVisual({
   state,
   className,
   strategie = "sichtbar",
+  grund = "verlauf",
+  zyklus = false,
 }: {
   size?: keyof typeof GRÖSSE;
   /** Ohne Angabe kommt der Zustand aus dem Provider. */
   state?: NinaVisualState;
   className?: string;
+  /**
+   * Was hinter dem Modell liegt.
+   *
+   *   `verlauf`  ein weicher radialer Schein aus tiefem Indigo. Er
+   *              gibt dem Leuchten etwas, wogegen es leuchtet — nötig
+   *              überall dort, wo Nina auf heller Fläche steht.
+   *
+   *   `keiner`   nichts. Nur richtig, wenn der Aufrufer selbst für
+   *              einen dunklen Grund sorgt; sonst ist das Modell auf
+   *              weisser Seite praktisch unsichtbar.
+   */
+  grund?: "verlauf" | "keiner";
+  /**
+   * Die Zustände der Reihe nach durchlaufen.
+   *
+   * Nur für den Einstieg auf der Startseite gedacht. Dort steht Nina,
+   * ohne dass ein Gespräch läuft — und ein Modell, das ruhig atmet,
+   * zeigt nicht, was es kann. Der Durchlauf spielt CALM, Thinking und
+   * Talking nacheinander, mit den Überblendungen, die das Modell
+   * ohnehin mitbringt.
+   *
+   * Überall sonst bleibt der Zustand, was er ist: die Auskunft
+   * darüber, was Nina gerade tut. Ihn dort zu erfinden hiesse, eine
+   * Aussage über die Anwendung zu fälschen.
+   */
+  zyklus?: boolean;
   /**
    * Wann das Modell geholt wird.
    *
@@ -112,6 +169,29 @@ export function NinaVisual({
   const behälter = useRef<HTMLDivElement>(null);
   const [bereit, setBereit] = useState(false);
   const [ruhig, setRuhig] = useState(false);
+
+  /*
+   * Der Vorführdurchlauf.
+   *
+   * Wechselt alle sechs Sekunden zwischen den drei Clips, die die
+   * Datei mitbringt. Sechs Sekunden, weil die Überblendung selbst
+   * schon eine halbe braucht und ein Clip Zeit haben muss, seine
+   * Bewegung zu zeigen — bei zwei Sekunden sähe man nur noch Übergänge.
+   *
+   * Bei „Bewegung reduzieren" bleibt es bei CALM: Wer Animationen
+   * abbestellt hat, will keine Vorführung.
+   */
+  const [vorfuehrung, setVorfuehrung] = useState<NinaVisualState>("idle");
+  useEffect(() => {
+    if (!zyklus || ruhig) return;
+    const folge: NinaVisualState[] = ["idle", "thinking", "speaking"];
+    let i = 0;
+    const uhr = setInterval(() => {
+      i = (i + 1) % folge.length;
+      setVorfuehrung(folge[i]!);
+    }, 6000);
+    return () => clearInterval(uhr);
+  }, [zyklus, ruhig]);
   /* Einmal gescheitert, nicht wieder versuchen: der Loader hat es
      bereits mit derselben URL probiert, und ein zweiter Anlauf würde
      nur dieselben 12 MB erneut anfordern. */
@@ -230,7 +310,7 @@ export function NinaVisual({
   return (
     <div
       ref={behälter}
-      className={cn("relative shrink-0", GRÖSSE[size], className)}
+      className={cn("relative shrink-0 [&>canvas]:[filter:drop-shadow(0_0_1px_rgba(0,0,0,0.55))]", GRÖSSE[size], className)}
       /* Das Bild ist Dekoration. Die Bedeutung steht daneben im Text —
          ein Vorlesegerät soll keine Animation beschreiben. */
       aria-hidden
@@ -254,25 +334,50 @@ export function NinaVisual({
        * Listening-Clip, ohne eine Bewegung zu erfinden, die das Modell
        * nicht hat.
        */}
-      <div
-        className={cn(
-          "pointer-events-none absolute inset-[-18%] rounded-full",
-          zustand === "listening" && "motion-safe:animate-[pulse-soft_2.4s_ease-in-out_infinite]",
-        )}
-        style={{
-          background:
-            "radial-gradient(circle at 50% 45%, " +
-            "rgba(28, 24, 74, 0.96) 0%, " +
-            "rgba(46, 40, 110, 0.82) 38%, " +
-            "rgba(101, 93, 255, 0.22) 66%, " +
-            "rgba(101, 93, 255, 0) 78%)",
-        }}
-      />
+      {/*
+       * Nur unter dem Modell, nicht unter dem Ersatzbild.
+       *
+       * Diese Fläche ist fast deckendes Indigo. Unter der leuchtenden
+       * 3D-Nina ist sie richtig: das Leuchten braucht etwas, wogegen es
+       * leuchtet. Unter dem flachen Signal ist sie falsch — dort steht
+       * dann eine dunkle Scheibe mit einem dünnen Drahtring darauf.
+       *
+       * Auf der Startseite war genau das der Dauerzustand. Das Modell
+       * lädt dort mit `beiInteresse`, also erst nach einer Handlung;
+       * bis dahin sah die erste Sekunde der Seite aus wie ein Bauteil,
+       * das nicht fertig geladen hat. Ausgerechnet an der Stelle, an
+       * der sich jemand ein Bild vom Produkt macht.
+       */}
+      {grund === "verlauf" && bereit && imBlick && !gescheitert && (
+        <div
+          className={cn(
+            "pointer-events-none absolute inset-[-18%] rounded-full",
+            zustand === "listening" && "motion-safe:animate-[pulse-soft_2.4s_ease-in-out_infinite]",
+          )}
+          style={{
+            background:
+              "radial-gradient(circle at 50% 45%, " +
+              "rgba(28, 24, 74, 0.96) 0%, " +
+              "rgba(46, 40, 110, 0.82) 38%, " +
+              "rgba(101, 93, 255, 0.22) 66%, " +
+              "rgba(101, 93, 255, 0) 78%)",
+          }}
+        />
+      )}
 
+      {/*
+        Ein hauchdünner dunkler Saum um jedes sichtbare Pixel.
+
+        `drop-shadow` folgt der Alphamaske des Canvas, nicht seinem
+        Rechteck — es zeichnet also die Kontur jedes Rings, jeder
+        Strebe und jedes Partikels nach, nicht einen Kasten. Ein Pixel
+        Radius genügt: Auf hellem Grund setzen sich die feinen
+        Strukturen dadurch ab, ohne dass es nach Umrandung aussieht.
+      */}
       {bereit && imBlick && !gescheitert ? (
-        <NinaScene state={zustand} reducedMotion={ruhig} onError={beiFehler} />
+        <NinaScene state={zyklus ? vorfuehrung : zustand} reducedMotion={ruhig} onError={beiFehler} />
       ) : (
-        <NinaVisualFallback state={zustand} size={size === "sm" ? "lg" : "xl"} />
+        <NinaVisualFallback state={zustand} size={size === "sm" ? "lg" : size === "md" ? "xl" : "hero"} />
       )}
 
       <span className="sr-only">Nina: {ZUSTAND_TEXT[zustand]}</span>

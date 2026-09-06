@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { decideForUrl, restrictFields, findByUrl } from "@paycheck/sources";
+import { beschreibungsTokens } from "@paycheck/matching";
 
 /**
  * Eine einzelne Anzeige von einer freigegebenen Quelle holen.
@@ -111,6 +112,7 @@ export async function importFromUrl(
 
     if (!source) return null;
 
+    const beschreibung = erlaubt.description ?? "";
     const [job] = await tx
       .insert(schema.jobs)
       .values({
@@ -118,7 +120,19 @@ export async function importFromUrl(
         companyId,
         location: erlaubt.location ?? "Nicht angegeben",
         workModel: "on_site",
-        description: erlaubt.description ?? "",
+        description: beschreibung,
+        /*
+         * Die Ableitungen gehören zum Schreibvorgang, nicht zur Kür.
+         *
+         * Die Spalten haben einen Standardwert in der Datenbank — was
+         * bequem ist und deshalb gefährlich: ohne diese zwei Zeilen
+         * hätte der Typprüfer geschwiegen, die Zeile wäre entstanden,
+         * und die Stelle wäre für immer mit leerer Wortmenge bewertet
+         * worden. Kein Fehler, keine Warnung, nur ein Passungswert, der
+         * zwei seiner sieben Achsen nicht kennt.
+         */
+        descriptionTokens: beschreibungsTokens(beschreibung),
+        descriptionLength: beschreibung.length,
         sourceId: source.id,
         originalUrl: url.href,
         contentHash: `import:${url.href}`,
@@ -164,7 +178,7 @@ async function fetchLimited(url: URL, address: string | undefined): Promise<stri
         // Ehrlich sagen, wer da anfragt. Ein getarnter User-Agent wäre
         // der erste Schritt zu genau dem Verhalten, das dieses Produkt
         // ablehnt.
-        "user-agent": "PaycheckJobImport/1.0 (+https://paycheck.example/bot)",
+        "user-agent": "VelvovaJobImport/1.0 (+https://paycheck.example/bot)",
         accept: "text/html,application/xhtml+xml",
         ...(address ? { host: url.host } : {}),
       },

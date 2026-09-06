@@ -9,6 +9,9 @@ import { ConfirmProfileButton, RoleClusterCard } from "./CareerClient";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Badge, Button, Card } from "@/components/ui";
 import { EmptyState, PageHeader, Section } from "@/components/ui/states";
+import { TwinRegler } from "@/components/profile/TwinRegler";
+import type { Arbeitsdimension } from "@paycheck/domain";
+import { twinLaden } from "@/lib/arbeitsprofil";
 
 export const metadata: Metadata = { title: "Karriere" };
 export const dynamic = "force-dynamic";
@@ -41,10 +44,41 @@ export default async function ProfilePage() {
 
   const group = (needle: string) => confirmed.filter((e) => e.sourceRef?.includes(needle));
 
+  /*
+   * Der Career Twin.
+   *
+   * Nur die zusammengefassten Werte, nicht die einzelnen Angaben: Die
+   * Regler zeigen, wo jemand steht, nicht die Geschichte, wie er
+   * dorthin kam.
+   */
+  const twin = await twinLaden(user.id).catch(() => new Map() as Awaited<ReturnType<typeof twinLaden>>);
+  /*
+   * `offeneAchsen()` wird nicht mehr abgerufen.
+   *
+   * Der Kasten, der die Werte anzeigte, ist weg (siehe weiter unten).
+   * Die Abfrage stehenzulassen kostete einen Datenbankumlauf bei jedem
+   * Aufruf dieser Seite — für Daten, die niemand sieht. Gemessen sind
+   * das rund 170 Millisekunden gegen Supabase.
+   *
+   * Die Funktion selbst bleibt unverändert; das Wiedereinsetzen ist
+   * diese eine Zeile.
+   */
+  const twinWerte: Partial<Record<Arbeitsdimension, number>> = {};
+  for (const [d, z] of twin) twinWerte[d] = z.wert;
+
   if (evidence.length === 0) {
+    /*
+     * Auch ohne Gespräch stehen die Regler da.
+     *
+     * Sie waren hinter dieser Weiche versteckt — ausgerechnet die
+     * Fläche, die ein frisches Konto in drei Minuten ausfüllen kann und
+     * die unmittelbar auf die Stellenauswahl wirkt. Wer neu ist, sah
+     * stattdessen nur die Aufforderung, erst einmal zu reden.
+     */
     return (
       <div className="grid gap-8">
         <PageHeader eyebrow="Karriereprofil" title={t("profile.title")} />
+        <TwinRegler vorhanden={twinWerte} />
         <EmptyState
           icon={<Sparkles className="size-5" strokeWidth={1.7} />}
           title={t("states.emptyTitle")}
@@ -65,6 +99,50 @@ export default async function ProfilePage() {
   return (
     <div className="grid gap-10">
       <PageHeader eyebrow="Karriereprofil" title={t("profile.title")} />
+
+      {/*
+       * Der Weg zur zweiten Frage.
+       *
+       * Diese Seite beantwortet „stimmt das?" — jede Aussage lässt sich
+       * bestätigen, ändern, ablehnen. Die andere Frage ist „was davon
+       * kann ich zeigen?", und sie hat andere Handlungen: freigeben
+       * oder nicht. Beides auf eine Seite zu legen hiesse, an jeder
+       * Aussage sechs Schalter anzubieten.
+       */}
+      <p className="text-sm text-ink-2">
+        <Link href="/app/belege" className="text-accent-text underline underline-offset-[3px]">
+          Was du davon belegen kannst
+        </Link>{" "}
+        — und was du Arbeitgebern zeigst.
+      </p>
+
+      {/*
+        Hier stand „Habe ich das richtig verstanden?" — ein Kasten mit
+        Aussagen aus dem Gespräch und je zwei Knöpfen.
+
+        Er stand vor den Reglern, mit der Begründung, er koste zwei
+        Klicks und schärfe, was ohnehin schon wirkt. In der Wirkung war
+        er eine Prüfung beim Betreten der Seite: Wer sein Profil öffnen
+        wollte, bekam zuerst Behauptungen vorgelegt, die er beurteilen
+        sollte — und darunter erst das, weshalb er gekommen war.
+
+        Die Regler darunter zeigen dieselben Werte und lassen sich
+        direkt ändern. Wer etwas korrigieren will, tut es dort, ohne
+        vorher über eine Formulierung zu urteilen.
+
+        `OffeneAchsen` liegt unverändert daneben. Falls die Rückfrage
+        zurückkommt, dann an einer Stelle, an der sie eine Einladung
+        ist und keine Schranke.
+      */}
+
+      {/*
+       * Die zehn Achsen stehen weit oben.
+       *
+       * Sie sind das Einzige im Profil, das unmittelbar auf die
+       * Stellenauswahl wirkt — und das Einzige, was in drei Minuten
+       * ausgefüllt ist.
+       */}
+      <TwinRegler vorhanden={twinWerte} />
 
       {profile?.careerCompass && (
         <Card className="border-assistant-border bg-assistant-soft">

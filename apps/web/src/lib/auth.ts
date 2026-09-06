@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { besucherSprache } from "./herkunft";
 import { and, eq, gt, isNull, sql } from "drizzle-orm";
 
 /**
@@ -21,11 +22,49 @@ import { and, eq, gt, isNull, sql } from "drizzle-orm";
  */
 
 const SESSION_TTL_DAYS = 30;
-const MIN_PASSWORD_LENGTH = 12;
+/*
+ * Acht statt zwölf.
+ *
+ * Zwölf war als Vorgabe gut gemeint und in der Praxis eine Hürde beim
+ * Anlegen des Kontos — der Schritt, bei dem die meisten abspringen.
+ *
+ * Ganz weglassen wäre der falsche Schluss: Ein Passwortfeld ohne
+ * Untergrenze nimmt „a" entgegen, und dagegen hilft kein Hashverfahren.
+ * Acht ist die Untergrenze, die auch das NIST als Mindestmass nennt.
+ *
+ * Der Hinweistext unter dem Feld ist weg: Die Regel steht am Feld
+ * selbst (`minLength`), der Browser sagt sie an, wenn sie greift, und
+ * ein Satz, der bei jedem Anlegen mitgelesen werden muss, ist eine
+ * Zeile für eine Auskunft, die man nur im Fehlerfall braucht.
+ */
+const MIN_PASSWORD_LENGTH = 8;
 
 export interface SessionUser {
   id: string;
-  email: string;
+  /*
+   * Kann fehlen, seit es die Anmeldung per Telefonnummer gibt.
+   *
+   * Der bequeme Weg wäre gewesen, hier `string` stehen zu lassen und
+   * bei Telefonkonten eine erfundene Adresse einzusetzen. Dann hätte
+   * jede Stelle, die eine E-Mail schreibt, eine Adresse in der Hand,
+   * die es nicht gibt — und niemand hätte es gemerkt, bis eine
+   * Nachricht nicht ankommt.
+   *
+   * `kennung()` liefert das, was eine Anzeige braucht: Adresse oder
+   * Nummer, je nachdem, was dasteht.
+   */
+  email: string | null;
+  /** Im E.164-Format, wenn per SMS angemeldet oder nachgetragen. */
+  phone: string | null;
+  /**
+   * Wann die Adresse bestätigt wurde — `null`, solange nicht.
+   *
+   * Steht hier und nicht nur in der Tabelle, weil geschützte Bereiche
+   * danach fragen: Ein unbestätigtes Konto darf sie nicht benutzen.
+   * Ohne das Feld an der Sitzung wäre das eine zusätzliche Abfrage je
+   * Seitenaufruf.
+   */
+  emailVerifiedAt: Date | null;
   displayName: string | null;
   role: "candidate" | "operator" | "admin";
   locale: "de" | "en";
@@ -124,10 +163,25 @@ export async function issueSessionToken(userId: string, userAgent?: string): Pro
   return token;
 }
 
-export async function createSession(userId: string, userAgent?: string): Promise<void> {
+/**
+ * Eine Sitzung anlegen.
+ *
+ * `dauerhaft` entscheidet nur über das Ablaufdatum des Cookies, nicht
+ * über die Sitzung selbst: Serverseitig läuft sie in beiden Fällen nach
+ * `SESSION_TTL_DAYS` ab. Ohne Ablaufdatum ist es ein Sitzungscookie —
+ * der Browser wirft ihn beim Schliessen weg.
+ *
+ * Das ist der ehrliche Unterschied hinter „Eingeloggt bleiben". Ein
+ * Häkchen, das nichts ändert, wäre schlimmer als keines: Wer es
+ * abwählt, tut das an einem fremden Rechner.
+ */
+export async function createSession(
+  userId: string,
+  userAgent?: string,
+  dauerhaft = true,
+): Promise<void> {
   const cfg = loadRuntimeConfig();
   const token = await issueSessionToken(userId, userAgent);
-  const expiresAt = new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000);
 
   const store = await cookies();
   store.set(cfg.auth.cookieName, token, {
@@ -135,7 +189,7 @@ export async function createSession(userId: string, userAgent?: string): Promise
     sameSite: "lax",
     secure: await cookieSicher(),
     path: "/",
-    expires: expiresAt,
+    ...(dauerhaft ? { expires: new Date(Date.now() + SESSION_TTL_DAYS * 86_400_000) } : {}),
   });
 }
 
@@ -177,6 +231,8 @@ export const currentUser = cache(async function currentUser(): Promise<SessionUs
     .select({
       id: schema.users.id,
       email: schema.users.email,
+      phone: schema.users.phone,
+      emailVerifiedAt: schema.users.emailVerifiedAt,
       displayName: schema.users.displayName,
       role: schema.users.role,
       locale: schema.userSettings.locale,
@@ -204,20 +260,93 @@ export const currentUser = cache(async function currentUser(): Promise<SessionUs
     db.update(schema.sessions).set({ lastSeenAt: new Date() }).where(eq(schema.sessions.id, row.sessionId)),
   ).catch(() => undefined);
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ohne eigene Einstellung entscheidet die Anfrage, nicht „de"
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `row.locale ?? "de"`. Das `??` greift, wenn es zu
+   * einem Konto gar keine Einstellungszeile gibt — der Normalfall bei
+   * jedem, der sich gerade erst angemeldet hat.
+   *
+   * Diese Menschen bekamen deutsch, gleich woher sie kamen. Es ist
+   * derselbe stille Vorgabewert, der beim Land 998 von 1.024 Konten
+   * auf Deutschland festgelegt hat: unsichtbar, unwidersprechbar und
+   * für einen Teil der Leute schlicht falsch.
+   *
+   * ── Was sich dadurch NICHT ändert ───────────────────────────
+   *
+   * Wer eine Einstellungszeile hat, behält seine Sprache — auch im
+   * Urlaub, auch über ein VPN. Eine gewählte Sprache ist eine
+   * Entscheidung; eine Kopfzeile ist ein Hinweis, und ein Hinweis
+   * überschreibt keine Entscheidung.
+   *
+   * Nina folgt automatisch: Sie bekommt `locale` durchgereicht.
+   */
+  const sprache =
+    row.locale ?? (await besucherSprache().then((s) => s.sprache).catch(() => "de" as const));
+
   return {
     id: row.id,
     email: row.email,
+    phone: row.phone,
+    emailVerifiedAt: row.emailVerifiedAt,
     displayName: row.displayName,
     role: row.role,
-    locale: row.locale ?? "de",
+    locale: sprache,
   };
 });
 
 /** Für Seiten, die ohne Anmeldung keinen Sinn ergeben. */
 export async function requireUser(): Promise<SessionUser> {
   const user = await currentUser();
-  if (!user) redirect("/login");
-  return user;
+  if (user) return user;
+
+  /*
+   * Nach dem Anmelden dorthin, wo der Besucher hinwollte.
+   *
+   * Vorher ging es pauschal nach /login und von dort auf die
+   * Übersicht. Wer aus der öffentlichen Stellensuche auf eine Anzeige
+   * klickte, verlor sie damit beim Anmelden — und der einzige Weg
+   * zurück war, die Suche noch einmal zu tippen.
+   *
+   * Der Pfad kommt aus dem Header, den die Middleware setzt;
+   * Serverkomponenten kennen ihren eigenen Pfad nicht.
+   *
+   * Nur seiteninterne Ziele: ein Wert, der mit `//` oder einem Schema
+   * beginnt, führte sonst nach dem Login auf eine fremde Adresse.
+   * Genau so baut man eine offene Weiterleitung.
+   */
+  const ziel = (await headers()).get("x-pfad") ?? "";
+  const sicher = ziel.startsWith("/") && !ziel.startsWith("//") ? ziel : "";
+  redirect(sicher ? `/login?weiter=${encodeURIComponent(sicher)}` : "/login");
+}
+
+/**
+ * Wie `requireUser`, verlangt aber zusätzlich eine bestätigte Adresse.
+ *
+ * ── Warum nicht in `requireUser` selbst ───────────────────────
+ *
+ * Weil die Bestätigungsseite selbst `requireUser` braucht. Die Prüfung
+ * dort einzubauen ergäbe eine Schleife: Wer unbestätigt ist, wird auf
+ * die Bestätigung geschickt, die ihn wieder auf die Bestätigung
+ * schickt.
+ *
+ * Zwei Funktionen machen den Unterschied auch lesbar: An jeder
+ * Aufrufstelle steht, ob eine bestätigte Adresse verlangt wird oder
+ * nur eine Anmeldung.
+ *
+ * ── Warum Konten ohne Adresse durchgelassen werden ────────────
+ *
+ * Wer sich per SMS angemeldet hat, hat keine Adresse — und damit auch
+ * nichts zu bestätigen. Ihn auf eine E-Mail-Bestätigung zu schicken
+ * wäre eine Sackgasse: Das Formular dort verlangt eine Adresse, die er
+ * nicht hat.
+ */
+export async function requireVerifiedUser(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!user.email || user.emailVerifiedAt) return user;
+  redirect("/bestaetigen");
 }
 
 export async function destroySession(): Promise<void> {
@@ -301,7 +430,12 @@ export type RegisterResult =
   | { ok: true; userId: string }
   | { ok: false; error: "email_taken" | "email_invalid" | "password_short" };
 
-export async function registerUser(email: string, password: string): Promise<RegisterResult> {
+export async function registerUser(
+  email: string,
+  password: string,
+  /** Ob per E-Mail über passende Stellen und Nachrichten informiert wird. */
+  benachrichtigen?: boolean,
+): Promise<RegisterResult> {
   const normalised = email.toLowerCase().trim();
   if (!isValidEmail(normalised)) return { ok: false, error: "email_invalid" };
   const check = checkPassword(password);
@@ -320,7 +454,19 @@ export async function registerUser(email: string, password: string): Promise<Reg
     .values({ email: normalised, passwordHash: hashPassword(password) })
     .returning();
 
-  await db.insert(schema.userSettings).values({ userId: user!.id });
+  /*
+   * Die Einstellungszeile entsteht mit dem Konto, nicht beim ersten
+   * Besuch der Einstellungen.
+   *
+   * `benachrichtigen` kommt aus dem Registrierungsformular. Der
+   * Vorgabewert der Spalte ist `true` — wer das Kästchen abwählt, soll
+   * das aber auch bekommen, und nicht erst nach der ersten Mail in den
+   * Einstellungen nachziehen müssen.
+   */
+  await db.insert(schema.userSettings).values({
+    userId: user!.id,
+    ...(benachrichtigen === undefined ? {} : { notificationEmail: benachrichtigen }),
+  });
   return { ok: true, userId: user!.id };
 }
 
@@ -414,4 +560,17 @@ export async function listSessions(userId: string): Promise<SessionListe> {
   }
 
   return { sessions: sichtbar, total: alle.length };
+}
+
+/**
+ * Womit dieses Konto benannt wird, wenn kein Name gesetzt ist.
+ *
+ * Die Reihenfolge ist die der Verbindlichkeit: der selbst gesetzte
+ * Name, dann die Adresse, dann die Nummer. Der leere Fall kann laut
+ * Datenbank nicht eintreten — `users_kennung_vorhanden` verlangt
+ * mindestens eines von beiden —, steht hier aber trotzdem, weil eine
+ * Anzeige nicht abstürzen soll, wenn eine Prüfung einmal wegfällt.
+ */
+export function kennung(user: Pick<SessionUser, "email" | "phone">): string {
+  return user.email ?? user.phone ?? "";
 }

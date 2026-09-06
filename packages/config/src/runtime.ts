@@ -58,13 +58,67 @@ const RuntimeSchema = z.object({
      * das Teuerste zu zahlen und für jede Analyse das Schnellste zu
      * nehmen.
      */
-    modelInteractive: z.string().default("gpt-5.6-terra"),
-    modelDeep: z.string().default("gpt-5.6-sol"),
-    modelFast: z.string().default("gpt-5.6-luna"),
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Warum hier getestete Namen stehen und keine angekündigten
+     * ══════════════════════════════════════════════════════════════
+     *
+     * Bis hierher waren die Grundwerte `gpt-5.6-terra`, `gpt-5.6-sol`
+     * und `gpt-5.6-luna`. Auf unserem Konto gibt es sie nicht — jeder
+     * Aufruf endete mit 404.
+     *
+     * Das ist die schlimmste Sorte Grundwert: Er greift genau dann,
+     * wenn eine Umgebungsvariable fehlt, also beim frisch
+     * aufgesetzten Server, und er führt dort zu einem Fehler, der wie
+     * ein Anbieterproblem aussieht.
+     *
+     * Ein Grundwert soll das Sichere sein. Hier stehen deshalb die
+     * Modelle, die am 6. September 2026 auf unserem Konto tatsächlich
+     * geantwortet haben. Sie bleiben über ENV austauschbar — der
+     * Grundwert ist der Boden, nicht die Vorgabe.
+     */
+    modelInteractive: z.string().default("gpt-5-mini"),
+    modelDeep: z.string().default("gpt-5"),
+    modelFast: z.string().default("gpt-4.1-mini"),
     modelRealtime: z.string().default("gpt-realtime-2.1"),
     modelTranscribe: z.string().optional(),
     modelSpeech: z.string().optional(),
     modelEmbed: z.string().default("local-hash-embedding"),
+    /*
+     * Das Modell, das einspringt, wenn das eigentliche ausfällt.
+     *
+     * ── Warum je Stufe ein anderes ──────────────────────────────
+     *
+     * Ein einziges Ersatzmodell für alles wäre entweder zu langsam
+     * für die Extraktion oder zu schwach für die Analyse. Die Kette
+     * geht deshalb quer: Fällt das tiefe Modell aus, übernimmt das
+     * schnellere derselben Familie; fällt das schnelle aus,
+     * übernimmt das mittlere.
+     *
+     * Der Ersatz ist immer ein anderes Modell als das Original —
+     * sonst wäre es ein Wiederholungsversuch und keine Absicherung.
+     */
+    modelInteractiveFallback: z.string().default("gpt-4.1-mini"),
+    modelDeepFallback: z.string().default("gpt-5-mini"),
+    modelFastFallback: z.string().default("gpt-5-mini"),
+    modelEmbedFallback: z.string().optional(),
+    /*
+     * Die höchste Stufe — nur für aussergewöhnlich komplexe Fälle.
+     *
+     * ══════════════════════════════════════════════════════════════
+     * Warum sie optional ist und keinen Grundwert hat
+     * ══════════════════════════════════════════════════════════════
+     *
+     * Ein Grundwert würde sie überall einschalten, wo niemand sie
+     * bestellt hat. „Hallo Nina" darf nicht das teuerste Modell
+     * wecken.
+     *
+     * Fehlt der Eintrag, gibt es die Stufe nicht, und alles, was sie
+     * gebraucht hätte, fällt auf `deep` zurück. Das ist der richtige
+     * Grundzustand: Ohne ausdrückliche Entscheidung kein Premiumlauf.
+     */
+    modelUltraDeep: z.string().optional(),
+    modelUltraDeepFallback: z.string().optional(),
     speechVoice: z.string().optional(),
     maxTokensPerRun: z.coerce.number().int().positive().default(4096),
     timeoutMs: z.coerce.number().int().positive().default(60_000),
@@ -126,9 +180,26 @@ const RuntimeSchema = z.object({
   }),
 
   mail: z.object({
-    provider: z.enum(["draft", "mailpit", "gmail", "outlook"]).default("draft"),
+    provider: z.enum(["draft", "mailpit", "gmail", "outlook", "resend"]).default("draft"),
     smtpUrl: z.string().optional(),
     from: z.string().optional(),
+    /**
+     * Der Resend-Schlüssel. Trägt bewusst kein `NEXT_PUBLIC_`.
+     *
+     * Er darf nie ins Browserbündel: Wer ihn hat, versendet Mails im
+     * Namen der verifizierten Absenderdomain — also im Namen von
+     * Velvova.
+     */
+    resendKey: z.string().optional(),
+    /**
+     * Das Geheimnis, mit dem Zustellereignisse signiert sind.
+     *
+     * Ohne es nimmt der Webhook nichts an. Ein Endpunkt, der
+     * unsignierte Ereignisse verarbeitet, lässt sich von jedem
+     * beschicken — und ein gefälschtes `bounced` sperrt eine Adresse,
+     * ein gefälschtes `delivered` verdeckt einen echten Fehler.
+     */
+    webhookSecret: z.string().optional(),
   }),
 
   storage: z.object({
@@ -202,9 +273,24 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       // OPENAI_MODEL_INTERACTIVE. Wer dem Beispiel folgte, setzte eine
       // Variable, die niemand las.
       modelInteractive:
-        env.OPENAI_MODEL_DEFAULT ?? env.OPENAI_MODEL_INTERACTIVE ?? "gpt-5.6-terra",
-      modelDeep: env.OPENAI_MODEL_DEEP ?? "gpt-5.6-sol",
-      modelFast: env.OPENAI_MODEL_FAST ?? "gpt-5.6-luna",
+        env.OPENAI_MODEL_DEFAULT ?? env.OPENAI_MODEL_INTERACTIVE ?? "gpt-5-mini",
+      modelDeep: env.OPENAI_MODEL_DEEP ?? "gpt-5",
+      modelFast: env.OPENAI_MODEL_FAST ?? "gpt-4.1-mini",
+      modelInteractiveFallback: env.OPENAI_MODEL_DEFAULT_FALLBACK ?? "gpt-4.1-mini",
+      modelDeepFallback: env.OPENAI_MODEL_DEEP_FALLBACK ?? "gpt-5-mini",
+      modelFastFallback: env.OPENAI_MODEL_FAST_FALLBACK ?? "gpt-5-mini",
+      /*
+       * Kein Grundwert für den Einbettungsersatz.
+       *
+       * Zwei Einbettungsmodelle haben verschiedene Dimensionen, und
+       * ihre Vektoren sind nicht vergleichbar. Ein stillschweigender
+       * Wechsel würde die gespeicherten Vektoren unbrauchbar machen,
+       * ohne dass irgendwo ein Fehler steht — deshalb nur, wenn ihn
+       * jemand ausdrücklich einträgt.
+       */
+      modelEmbedFallback: env.OPENAI_EMBEDDING_MODEL_FALLBACK,
+      modelUltraDeep: env.OPENAI_MODEL_ULTRA_DEEP,
+      modelUltraDeepFallback: env.OPENAI_MODEL_ULTRA_DEEP_FALLBACK,
       modelRealtime: env.OPENAI_MODEL_REALTIME ?? env.OPENAI_REALTIME_MODEL ?? "gpt-realtime-2.1",
       modelTranscribe: env.OPENAI_TRANSCRIBE_MODEL,
       modelSpeech: env.OPENAI_SPEECH_MODEL,
@@ -230,7 +316,13 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
         silenceMs: Number(env.VOICE_SILENCE_MS ?? 600),
       },
     },
-    mail: { provider: env.MAIL_PROVIDER ?? "draft", smtpUrl: env.SMTP_URL, from: env.MAIL_FROM },
+    mail: {
+      provider: env.MAIL_PROVIDER ?? "draft",
+      smtpUrl: env.SMTP_URL,
+      from: env.MAIL_FROM,
+      resendKey: env.RESEND_API_KEY,
+      webhookSecret: env.MAIL_WEBHOOK_SECRET,
+    },
     storage: {
       driver: env.STORAGE_DRIVER ?? "local",
       dir: env.STORAGE_DIR ?? ".storage",

@@ -38,7 +38,7 @@ import type { ChatOptions } from "./provider.ts";
  *             → OPENAI_MODEL_REALTIME
  */
 
-export type ModelTier = "FAST" | "DEFAULT" | "DEEP" | "REALTIME";
+export type ModelTier = "FAST" | "DEFAULT" | "DEEP" | "ULTRA" | "REALTIME";
 
 /** Die Aufgaben, die im Produkt tatsächlich vorkommen. */
 export type AiTask =
@@ -101,6 +101,15 @@ const PROVIDER_TIER: Record<ModelTier, NonNullable<ChatOptions["tier"]>> = {
   FAST: "fast",
   DEFAULT: "interactive",
   DEEP: "deep",
+  /*
+   * Die höchste Stufe spricht denselben Anbieterkanal wie die tiefe.
+   *
+   * Welches Modell dahinter steht, entscheidet `modellFuer` — und
+   * ohne eingerichtete Höchststufe ist es dasselbe wie bei DEEP. Der
+   * Router muss das nicht wissen; er sagt, wie schwer die Aufgabe
+   * ist, nicht welches Modell sie erledigt.
+   */
+  ULTRA: "deep",
   // Sprache läuft über einen eigenen Pfad. Fällt der aus, ist die
   // Textstufe der ehrliche Rückfall — nicht ein stiller Abbruch.
   REALTIME: "interactive",
@@ -342,3 +351,115 @@ export function fallbackRoute(decision: RoutingDecision): RoutingDecision | null
 
 /** Alle Aufgaben. Für Dokumentation und Prüfungen. */
 export const ALL_TASKS = Object.keys(ROUTEN) as AiTask[];
+
+/* ═══════════════════════════════════════════════════════════════
+   Eskalation
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * Woran man erkennt, dass eine Aufgabe schwerer ist als üblich.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum kein Modell entscheidet, welches Modell rechnet
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Ein Router, der selbst ein Sprachmodell fragt, verdoppelt Latenz und
+ * Kosten jeder Anfrage — für eine Entscheidung, die in den meisten
+ * Fällen offensichtlich ist. `extractSalary()` braucht FAST, immer,
+ * und dafür muss niemand nachdenken.
+ *
+ * Die Merkmale unten sind zählbar: wie viele Möglichkeiten stehen zur
+ * Wahl, wie sicher war die letzte Analyse, hat die Person sich
+ * widersprochen. Das sind Zahlen aus unseren eigenen Daten, keine
+ * Deutung.
+ */
+export interface Aufgabenlast {
+  /** Wie viele Optionen gegeneinander abzuwägen sind. */
+  optionen?: number;
+  /** Wie sicher die vorige Analyse war, 0 bis 1. */
+  konfidenz?: number;
+  /** Ob sich Angaben der Person widersprechen. */
+  widersprueche?: number;
+  /** Wie viele Stellen in die Betrachtung eingehen. */
+  stellen?: number;
+  /** Ob die Person ausdrücklich um eine gründliche Analyse gebeten hat. */
+  ausdruecklichGruendlich?: boolean;
+}
+
+/**
+ * Ab wann eine Aufgabe als aussergewöhnlich gilt.
+ *
+ * Produktentscheidungen, keine Messwerte. Sie sind bewusst hoch
+ * angesetzt: Die höchste Stufe soll die Ausnahme sein, nicht der
+ * Normalfall. „Hallo Nina" darf sie nie erreichen.
+ */
+export const ESKALATION = {
+  optionenAb: 4,
+  konfidenzUnter: 0.5,
+  widersprueecheAb: 2,
+  stellenAb: 8,
+} as const;
+
+export interface Eskalationsbefund {
+  tier: ModelTier;
+  /** Warum eskaliert wurde — oder warum nicht. */
+  grund: string;
+  eskaliert: boolean;
+}
+
+/**
+ * Ob eine Aufgabe eine Stufe höher gehört.
+ *
+ * ── Warum nur DEEP eskalieren kann ────────────────────────────
+ *
+ * Eine Extraktion wird nicht dadurch schwer, dass viele Stellen im
+ * Spiel sind — sie bleibt eine Extraktion. Und ein Gespräch soll
+ * schnell antworten; wer dort eskaliert, macht aus einer Rückfrage
+ * eine Wartezeit.
+ *
+ * Eskaliert wird deshalb nur, was ohnehin schon eine Analyse ist.
+ * Die Höchststufe ist eine Verstärkung, keine Abkürzung.
+ */
+export function eskalieren(
+  entscheidung: RoutingDecision,
+  last: Aufgabenlast = {},
+): Eskalationsbefund {
+  if (entscheidung.tier !== "DEEP") {
+    return {
+      tier: entscheidung.tier,
+      grund: "Nur eine tiefe Analyse kann eskalieren.",
+      eskaliert: false,
+    };
+  }
+
+  const gruende: string[] = [];
+  if ((last.optionen ?? 0) >= ESKALATION.optionenAb)
+    gruende.push(`${last.optionen} Optionen gegeneinander`);
+  if (last.konfidenz !== undefined && last.konfidenz < ESKALATION.konfidenzUnter)
+    gruende.push(`vorige Analyse unsicher (${last.konfidenz.toFixed(2)})`);
+  if ((last.widersprueche ?? 0) >= ESKALATION.widersprueecheAb)
+    gruende.push(`${last.widersprueche} Widersprüche im Profil`);
+  if ((last.stellen ?? 0) >= ESKALATION.stellenAb)
+    gruende.push(`${last.stellen} Stellen einbezogen`);
+  if (last.ausdruecklichGruendlich) gruende.push("ausdrücklich um Gründlichkeit gebeten");
+
+  /*
+   * Ein einzelnes Merkmal genügt nicht.
+   *
+   * Vier Optionen sind bei einer Karriereberatung normal. Vier
+   * Optionen UND eine unsichere Vorabanalyse sind es nicht. Zwei
+   * Merkmale zu verlangen hält die Höchststufe da, wo sie hingehört.
+   *
+   * Ausnahme: Wer ausdrücklich um eine gründliche Analyse bittet,
+   * bekommt sie. Das ist keine Heuristik, sondern eine Aussage.
+   */
+  if (last.ausdruecklichGruendlich || gruende.length >= 2) {
+    return { tier: "ULTRA", grund: gruende.join(", "), eskaliert: true };
+  }
+
+  return {
+    tier: "DEEP",
+    grund: gruende.length === 1 ? `nur ein Merkmal: ${gruende[0]}` : "nichts Aussergewöhnliches",
+    eskaliert: false,
+  };
+}

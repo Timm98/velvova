@@ -17,7 +17,7 @@ export default function AboutPage() {
     <div className="mx-auto grid w-full max-w-[760px] gap-10 px-5 py-14 md:px-8">
       <PageHeader
         eyebrow="Über uns"
-        title="Wer hinter Paycheck steht"
+        title="Wer hinter Velvova steht"
         lead="Zwei Menschen, ein Produkt und die Überzeugung, dass eine Bewerbung mehr wert ist als dreihundert."
       />
 
@@ -25,7 +25,7 @@ export default function AboutPage() {
         {team.map((m) => (
           <div key={m.name} className="grid gap-2 border-t border-line pt-6">
             <p className="font-display text-lg font-semibold tracking-[-0.02em]">{m.name}</p>
-            <p className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+            <p className="abschnitts-titel text-ink-3">
               {m.roleConfirmed ? `${m.role} · ${m.focus}` : m.focus}
             </p>
             <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">{m.bio}</p>

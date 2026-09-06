@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createInMemoryDb, runMigrations, schema, withUser, type Database } from "@paycheck/db";
 import { buildContextEnvelope, buildScopedContext } from "./build-context-envelope.ts";
 import { ContextIntegrityError } from "./types.ts";
+import { beschreibungsTokens } from "@paycheck/matching";
 
 /**
  * Der Kontext-Umschlag ist die Stelle, an der zwei Versprechen
@@ -55,6 +56,8 @@ beforeAll(async () => {
       location: "Hamburg",
       workModel: "on_site",
       description: "Eine Beschreibung.",
+      descriptionTokens: beschreibungsTokens("Eine Beschreibung."),
+      descriptionLength: "Eine Beschreibung.".length,
       sourceId: source!.id,
       contentHash: randomUUID(),
     })

@@ -64,6 +64,21 @@ export type LiveEreignis =
   | { art: "antwort_fertig"; zug: number }
   | { art: "ton_beginnt"; zug: number }
   | { art: "ton_endet"; zug: number }
+  /**
+   * Der Browser hat die Wiedergabe verweigert.
+   *
+   * Ein eigenes Ereignis und nicht `fehler`, weil es kein Fehler ist:
+   * das Gespräch läuft weiter, Ninas Antwort steht geschrieben da, nur
+   * gehört hat sie niemand. `fehler` würde die Verbindung schliessen
+   * und das Mikrofon abschalten — für ein Problem, das nur den
+   * Lautsprecher betrifft.
+   *
+   * Vorher gab es dieses Ereignis nicht, und die Verweigerung lief als
+   * „ton_endet" durch. Von aussen sah das aus, als hätte Nina
+   * gesprochen und ausgeredet. Genau deshalb hat monatelang niemand
+   * gesehen, dass sie stumm war.
+   */
+  | { art: "ton_verweigert"; zug: number; text: string }
   | { art: "fehler"; text: string }
   | { art: "beenden" };
 
@@ -162,6 +177,19 @@ export function weiter(
       // Zurück ins Zuhören, ohne dass jemand etwas drücken muss. Das
       // ist der Unterschied zwischen einem Gespräch und einem Diktat.
       return { stand: { ...stand, zustand: "hört" }, wirkung: {} };
+
+    case "ton_verweigert":
+      if (e.zug !== stand.zug) return { stand, wirkung: {} };
+      // Zurück ins Zuhören wie nach einer normal beendeten Antwort —
+      // aber mit einem Hinweis, den die Oberfläche zeigen kann.
+      return {
+        stand: {
+          ...stand,
+          zustand: stand.zustand === "spricht" || stand.zustand === "denkt" ? "hört" : stand.zustand,
+          fehler: e.text,
+        },
+        wirkung: {},
+      };
 
     case "fehler":
       return {

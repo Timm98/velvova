@@ -232,3 +232,52 @@ export function canPublish(
   }
   return { ok: true, reason: "Anzeige erlaubt, Original verlinkt." };
 }
+
+/**
+ * Darf der Anzeigentext einer Quelle wörtlich und vollständig erscheinen?
+ *
+ * ── Was hier gefehlt hat ──────────────────────────────────────
+ *
+ * Die Registry sagt es bei 26 von 28 Quellen ausdrücklich, teils mit
+ * eigenem Kommentar: „Bewusst OHNE PublicDisplay des Volltexts …
+ * Angezeigt werden Metadaten und der Originallink." Die erlaubten
+ * Felder enthalten `description_summary`, nicht `description`.
+ *
+ * Die Stellenseite zeigte den vollständigen Text trotzdem — unter der
+ * Überschrift „Vollständige Stellenbeschreibung", aufklappbar, für
+ * jede Quelle gleich. Die Regel stand geschrieben und wurde nirgends
+ * angewandt.
+ *
+ * ── Warum das Speichern davon unberührt bleibt ────────────────
+ *
+ * Aus dem Text werden Aufgaben, Anforderungen und Bewertung
+ * abgeleitet — das ist `Summarize` und erlaubt, und ohne den Text
+ * ginge es nicht. Verboten ist die wörtliche Wiedergabe, nicht die
+ * Auswertung. Deshalb greift die Regel bei der Anzeige und nicht beim
+ * Import.
+ */
+export function volltextErlaubt(providerKey: string | null | undefined): boolean {
+  if (!providerKey) return false;
+  const eintrag = findByKey(providerKey);
+  /*
+   * Unbekannte Quelle heisst nein.
+   *
+   * Eine Quelle, für die keine Regel hinterlegt ist, ist keine Quelle
+   * mit Erlaubnis — der sichere Weg ist hier auch der richtige.
+   */
+  if (!eintrag) return false;
+
+  /*
+   * Beides muss stimmen — und warum.
+   *
+   * `usajobs` steht in der Registry auf `fullTextAllowed: true`, führt
+   * aber nur `description_summary` unter den erlaubten Feldern. Was
+   * gar nicht gespeichert werden darf, kann nicht wörtlich angezeigt
+   * werden; der Widerspruch löst sich nur in eine Richtung auf.
+   *
+   * Ich ändere die hinterlegte Regel nicht: Das ist eine rechtliche
+   * Angabe, und sie zu lockern, weil sie unbequem ist, wäre genau
+   * verkehrt. Gelesen wird die engere der beiden.
+   */
+  return eintrag.fullTextAllowed === true && eintrag.allowedFields.includes("description_text");
+}

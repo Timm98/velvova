@@ -60,14 +60,14 @@ describe("Unbekanntes ist neutral", () => {
 // ---------------------------------------------------------------------------
 describe("harte Bedingungen", () => {
   it("blockiert bei unterschrittenem Mindestgehalt", () => {
-    const job = makeJob({ salary: { min: 32000, max: 36000, currency: "EUR", period: "year", disclosed: true } });
+    const job = makeJob({ salary: { min: 32000, max: 36000, currency: "EUR", period: "year", disclosed: true, provenance: null, evidence: null } });
     const r = checkConstraints(job, makeConstraints({ minSalaryPerYear: 42000 }), testCommute);
     expect(r.overall).toBe("blocked");
     expect(r.blockedBy).toContain("salary");
   });
 
   it("blockiert nicht, wenn das Gehalt schlicht fehlt", () => {
-    const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false } });
+    const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false, provenance: null, evidence: null } });
     const r = checkConstraints(job, makeConstraints({ minSalaryPerYear: 42000 }), testCommute);
     const salary = r.checks.find((c) => c.key === "salary");
     expect(salary?.verdict).toBe("uncertain");
@@ -174,7 +174,7 @@ describe("Confidence", () => {
   });
 
   it("benennt fehlende Angaben der Anzeige einzeln", () => {
-    const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false }, contractType: null });
+    const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false, provenance: null, evidence: null }, contractType: null });
     const r = computeConfidence({ job, fitCoverage: 1, profileCoverage: 1, requirementCount: 3, reviews: [], now: new Date("2026-08-29") });
     expect(r.reducedBy.join(" ")).toContain("Gehalt");
   });
@@ -182,10 +182,50 @@ describe("Confidence", () => {
 
 describe("Jobqualität", () => {
   it("sagt bei dünner Datenlage 'nicht beurteilbar' statt schlecht", () => {
-    const job = makeJob({ salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false }, contractType: null, remotePercent: null, shiftWork: null });
+    /*
+     * Der Testfall musste dünner werden, weil die Bewertung besser wurde.
+     *
+     * Vorher genügte es, Gehalt und Vertragsart wegzunehmen — vier von
+     * sechs Dimensionen hingen ohnehin an Mitarbeiterstimmen, die es
+     * hier nicht gibt. Genau deshalb war die Bewertung in der
+     * Wirklichkeit bei 98,5 % der Stellen „nicht beurteilbar", auch bei
+     * Anzeigen, die viel hergaben.
+     *
+     * Seit Leistungen und Arbeitsmodell mitzählen, ist eine Anzeige mit
+     * `benefits: ["Weiterbildung", "flexible Arbeitszeit"]` KEINE dünne
+     * Datenlage mehr — das ist der Zweck der Änderung. Die Regel selbst
+     * gilt unverändert, und dieser Test prüft sie jetzt an einer
+     * Anzeige, die wirklich nichts hergibt.
+     */
+    const job = makeJob({
+      salary: { min: null, max: null, currency: "EUR", period: "year", disclosed: false, provenance: null, evidence: null },
+      contractType: null,
+      remotePercent: null,
+      shiftWork: null,
+      workModel: "on_site",
+      weeklyHours: null,
+      benefits: [],
+    });
     const r = computeJobQuality({ job, reviews: [], themes: [] });
     expect(r.insufficientData).toBe(true);
     expect(r.score).toBeNull();
+  });
+
+  it("beurteilt eine Anzeige, die etwas hergibt", () => {
+    /*
+     * Die Gegenprobe — und der eigentliche Grund für den Umbau.
+     *
+     * Ohne sie könnte die Bewertung wieder alles auf „nicht
+     * beurteilbar" setzen und der Test oben bliebe grün. Gemessen an
+     * 1.200 echten Stellen: von 1,5 % auf 69,4 % beurteilbar.
+     */
+    const r = computeJobQuality({
+      job: makeJob({ benefits: ["Weiterbildung", "Altersvorsorge", "Homeoffice"] }),
+      reviews: [],
+      themes: [],
+    });
+    expect(r.insufficientData).toBe(false);
+    expect(r.score).not.toBeNull();
   });
 
   it("liefert einen Wert, sobald genug Dimensionen bekannt sind", () => {
@@ -265,6 +305,14 @@ describe("Gesamtranking", () => {
       constraints, fit,
       confidence: computeConfidence({ job, fitCoverage: fit.coverage, profileCoverage: 0.9, requirementCount: 3, reviews: [], now: new Date("2026-08-29") }),
       jobQuality: computeJobQuality({ job, reviews: [], themes: [], salaryBenchmarkPerYear: 46000 }),
+      /*
+       * Die Anzeigenqualität — die Zahl, nach der `best_overall`
+       * sortiert, weil die Zeile sie zeigt. Hier bewusst dieselbe wie
+       * `jobQuality`, damit die übrigen Erwartungen unverändert
+       * gelten und der Unterschied nur dort auffällt, wo er geprüft
+       * wird.
+       */
+      anzeige: { score: computeJobQuality({ job, reviews: [], themes: [], salaryBenchmarkPerYear: 46000 }).score },
       aiTransition: computeAiTransition({ job }),
       listingConfidence: computeListingConfidence({ job, source: makeSource(), now: new Date("2026-08-29") }),
     };
@@ -298,11 +346,59 @@ describe("Gesamtranking", () => {
     }
   });
 
-  it("stellt Stellen ohne Wert hinter Stellen mit Wert", () => {
+  it("ordnet nach dem Fit Score, nicht nach dem Gesamtwert", () => {
+    /*
+     * `best_overall` sortierte früher nach `overall.score`. Angezeigt
+     * wird in der Liste aber der Fit Score — eine andere Formel. Beide
+     * konnten auseinanderlaufen, und dann stand oben eine Stelle mit
+     * einer kleineren Zahl als die darunter.
+     *
+     * Deshalb entscheidet jetzt `fitGesamt` aus Passung, Qualität und
+     * Sicherheit: dieselbe Zahl, die die Zeile zeigt.
+     */
+    const p = parts();
+    const bau = (id: string, fit: number, qualitaet: number): RankableJob => ({
+      jobId: id,
+      overall: { score: 50, components: [], suppressedReason: null, version: "t" },
+      ...p,
+      fit: { ...p.fit, score: fit },
+      jobQuality: { ...p.jobQuality, score: qualitaet },
+      /* Sortiert wird nach dieser Zahl — sie steht in der Zeile. */
+      anzeige: { score: qualitaet },
+      salaryPerYear: null,
+      commuteMinutes: null,
+      publishedAt: null,
+    });
+
+    const items = [bau("schwach", 40, 40), bau("stark", 90, 90)];
+    expect(sortJobs(items, "best_overall")[0]!.jobId).toBe("stark");
+  });
+
+  it("stellt Stellen ganz ohne Zahlen hinter die mit Zahlen", () => {
     const p = parts();
     const items: RankableJob[] = [
-      { jobId: "ohne", overall: { score: null, components: [], suppressedReason: "x", version: "t" }, ...p, salaryPerYear: null, commuteMinutes: null, publishedAt: null },
-      { jobId: "mit", overall: { score: 70, components: [], suppressedReason: null, version: "t" }, ...p, salaryPerYear: 50000, commuteMinutes: 10, publishedAt: new Date() },
+      {
+        jobId: "ohne",
+        overall: { score: null, components: [], suppressedReason: "x", version: "t" },
+        ...p,
+        fit: { ...p.fit, score: null },
+        jobQuality: { ...p.jobQuality, score: null },
+        anzeige: { score: null },
+        /* `score` ist eine Zahl, kein Optional — die Datenlage einer
+           Stelle ohne Angaben ist 0, nicht „unbekannt". */
+        confidence: { ...p.confidence, score: 0 },
+        salaryPerYear: null,
+        commuteMinutes: null,
+        publishedAt: null,
+      },
+      {
+        jobId: "mit",
+        overall: { score: 70, components: [], suppressedReason: null, version: "t" },
+        ...p,
+        salaryPerYear: 50000,
+        commuteMinutes: 10,
+        publishedAt: new Date(),
+      },
     ];
     expect(sortJobs(items, "best_overall")[0]!.jobId).toBe("mit");
     expect(sortJobs(items, "highest_salary")[0]!.jobId).toBe("mit");

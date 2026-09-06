@@ -1,107 +1,165 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
-import { cn } from "@/lib/cn";
+import { useEffect, useRef, useTransition } from "react";
+import { Loader2 } from "lucide-react";
 
 /**
- * Blättern, mit sichtbarem Zwischenzustand.
+ * Lädt die nächsten Stellen nach, sobald das Ende in Sicht kommt.
  *
- * Vorher waren das zwei nackte Links. Sie funktionierten — aber eine
- * Seite mit 25 bewerteten Stellen braucht einen Moment, und in diesem
- * Moment passierte nichts Sichtbares. Wer nicht sofort etwas sieht,
- * klickt noch einmal; der zweite Klick löst dieselbe Navigation erneut
- * aus, und es wirkt endgültig kaputt. Genau so entsteht der Eindruck,
- * „Weitere 25 Stellen" funktioniere nicht.
+ * ══════════════════════════════════════════════════════════════
+ * Nachladen und feste Begrenzung schliessen sich nicht aus
+ * ══════════════════════════════════════════════════════════════
  *
- * `useTransition` gibt den Zustand, den es dafür braucht: gedrückt,
- * unterwegs, fertig. Während der Fahrt ist der Knopf nicht mehr
- * anklickbar und sagt, was er tut.
+ * Zwischenzeitlich stand hier ein Knopf statt des Fühlers, weil sich
+ * die Liste beim Scrollen „immer weiter" anfühlte. Die Ursache lag
+ * aber nicht im Nachladen, sondern daran, dass die Begrenzung erst ab
+ * `lg` griff: Unter 1024 Pixeln gab es weder Höhe noch Rollbereich,
+ * und die ganze SEITE wuchs mit jedem Nachladen.
  *
- * `scroll: false` ist Absicht (§17.1): die Liste tauscht ihren Inhalt,
- * die Seite springt nicht an den Anfang. Wer unten stand, steht
- * weiterhin unten — bei den Knöpfen, die er gerade benutzt.
+ * Seit die Begrenzung ab `md` gilt, wächst nur noch der Inhalt IM
+ * Kasten. Der Kasten selbst behält seine Höhe und seine Linie —
+ * nachgeladen wird unsichtbar, gerollt wird innen.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum die Liste wächst statt zu blättern
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Adresse trägt die ANZAHL, nicht die Seite. `?anzahl=50` zeigt
+ * fünfzig Stellen — die bisherigen plus fünfundzwanzig darunter.
+ * Damit bleibt alles, was jemand schon gelesen hat, an seinem Platz,
+ * und ein geteilter Link führt dorthin, wo der Absender war.
  */
 export function JobPagination({
-  seite,
-  seitenGesamt,
-  sichtbar,
-  gesamt,
-  zurückHref,
-  weiterHref,
   weitereAnzahl,
+  weiterHref,
 }: {
-  seite: number;
-  seitenGesamt: number;
-  sichtbar: number;
-  gesamt: number;
-  zurückHref: string | null;
-  weiterHref: string | null;
   weitereAnzahl: number;
+  weiterHref: string;
 }) {
   const router = useRouter();
   const [unterwegs, starte] = useTransition();
+  const fuehler = useRef<HTMLDivElement | null>(null);
 
-  function geheZu(href: string) {
-    starte(() => router.push(href, { scroll: false }));
-  }
+  /*
+   * Beim Scrollen prüfen, nicht beobachten.
+   *
+   * Der erste Anlauf benutzte einen `IntersectionObserver` mit 600
+   * Pixeln Vorlauf. Er lud genau einmal nach und danach nie wieder —
+   * gemessen über vier Scrollrunden: 26 Stellen, dann 51, dann
+   * nichts mehr.
+   *
+   * Der Grund liegt in der Natur des Beobachters: Er meldet *Wechsel*
+   * des Sichtbarkeitszustands. Nach dem Nachladen bleibt der Fühler
+   * innerhalb des Vorlaufs — er wird also nie wieder „neu sichtbar"
+   * und schweigt. Genau der Vorlauf, der das Nachladen flüssig machen
+   * soll, verhindert die zweite Meldung.
+   *
+   * Eine Abstandsprüfung bei jedem Scrollen kennt das Problem nicht:
+   * Sie fragt jedes Mal neu, wie weit das Ende entfernt ist.
+   *
+   * `requestAnimationFrame` bündelt die Prüfungen auf höchstens eine
+   * je Bild — ein Scrollereignis feuert pro Sekunde hundertfach, und
+   * `getBoundingClientRect` erzwingt jedes Mal eine Neuberechnung des
+   * Layouts.
+   */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die nächsten fünfundzwanzig holen, bevor jemand danach fragt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Der Fühler löst 600 Pixel vor dem Ende aus, und erst dann beginnt
+   * die Arbeit: Der Server bewertet, rendert die ganze Seite und
+   * schickt sie zurück. Bis dahin steht der Kreisel.
+   *
+   * `prefetch` verschiebt genau das nach vorn. Next lädt die
+   * RSC-Antwort für die nächste Adresse im Hintergrund; wenn der
+   * Fühler auslöst, liegt sie meistens schon da, und `push` schaltet
+   * nur noch um.
+   *
+   * ── Warum das nichts doppelt rechnet ────────────────────────
+   *
+   * Die Bewertung je Person liegt 45 Sekunden im Speicher. Der
+   * Vorabruf füllt sie, der eigentliche Aufruf trifft sie — es ist
+   * derselbe Aufruf, nur früher.
+   *
+   * ── Und warum er nicht in der Scroll-Schleife steht ─────────
+   *
+   * Weil er einmal je Adresse genügt. In der Schleife stünde er
+   * hundertmal je Sekunde, und Next würde jedes Mal prüfen, ob es
+   * schon geholt hat — Arbeit für nichts.
+   */
+  useEffect(() => {
+    router.prefetch(weiterHref);
+  }, [router, weiterHref]);
+
+  useEffect(() => {
+    const ziel = fuehler.current;
+    if (!ziel) return;
+
+    /*
+     * Auf den Behälter hören, nicht auf das Fenster.
+     *
+     * Die Liste hat einen eigenen Rollbereich. Ein Zuhörer am
+     * `window` bekommt davon nichts mit — man rollt in der Liste, das
+     * Fenster steht still, und nachgeladen wird nie wieder.
+     */
+    const rollender = (() => {
+      let el: HTMLElement | null = ziel.parentElement;
+      while (el) {
+        const stil = getComputedStyle(el);
+        if (/auto|scroll/.test(stil.overflowY)) return el;
+        el = el.parentElement;
+      }
+      return null;
+    })();
+    const quelle: HTMLElement | Window = rollender ?? window;
+
+    let angefordert = false;
+    const pruefen = () => {
+      angefordert = false;
+      if (unterwegs) return;
+      const unten = rollender
+        ? rollender.getBoundingClientRect().bottom
+        : window.innerHeight;
+      const abstand = ziel.getBoundingClientRect().top - unten;
+      if (abstand > 600) return;
+      starte(() => router.push(weiterHref, { scroll: false }));
+    };
+    const beiScrollen = () => {
+      if (angefordert) return;
+      angefordert = true;
+      requestAnimationFrame(pruefen);
+    };
+
+    quelle.addEventListener("scroll", beiScrollen, { passive: true });
+    window.addEventListener("resize", beiScrollen, { passive: true });
+    /* Einmal sofort: Wer mit kurzer Trefferliste ankommt, steht schon
+       am Ende, ohne je gescrollt zu haben. */
+    beiScrollen();
+
+    return () => {
+      quelle.removeEventListener("scroll", beiScrollen);
+      window.removeEventListener("resize", beiScrollen);
+    };
+  }, [router, weiterHref, unterwegs, starte]);
 
   return (
-    <nav aria-label="Seiten" className="flex flex-wrap items-center justify-between gap-3 pt-2">
-      <p className="text-sm text-ink-2" aria-live="polite">
-        Seite {seite} von {seitenGesamt} · {sichtbar} von {gesamt.toLocaleString("de-DE")} Stellen
-      </p>
+    /*
+      Kein Knopf — nur der Fühler und ein Kreisel beim Laden.
 
-      <div className="flex gap-2">
-        {zurückHref && (
-          <button
-            type="button"
-            onClick={() => geheZu(zurückHref)}
-            disabled={unterwegs}
-            className={cn(
-              "inline-flex h-11 items-center rounded-(--radius-pill) bg-soft px-5 text-sm transition-colors",
-              unterwegs ? "opacity-60" : "hover:bg-soft-hover",
-            )}
-          >
-            Zurück
-          </button>
-        )}
-
-        {weiterHref && (
-          <button
-            type="button"
-            onClick={() => geheZu(weiterHref)}
-            disabled={unterwegs}
-            className={cn(
-              "inline-flex h-11 items-center gap-2 rounded-(--radius-pill) bg-accent px-5 text-sm font-medium text-accent-on transition-colors",
-              unterwegs ? "opacity-70" : "hover:bg-accent-hover",
-            )}
-          >
-            {unterwegs && (
-              <span
-                aria-hidden
-                className="size-3.5 rounded-full border-2 border-current border-t-transparent motion-safe:animate-spin"
-              />
-            )}
-            {unterwegs ? "Wird geladen …" : `Weitere ${weitereAnzahl} Stellen`}
-          </button>
-        )}
-      </div>
-
-      {/*
-       * Ohne Javascript bleiben es Links.
-       *
-       * Sie stehen für Vorlesegeräte und Suchmaschinen ohnehin bereit
-       * und sind der Grund, warum Blättern auch dann geht, wenn die
-       * Hydration hängt.
-       */}
-      <noscript>
-        <div className="flex gap-2">
-          {zurückHref && <Link href={zurückHref}>Zurück</Link>}
-          {weiterHref && <Link href={weiterHref}>Weitere {weitereAnzahl} Stellen</Link>}
-        </div>
-      </noscript>
-    </nav>
+      Ist alles geladen, rendert die Elternkomponente diesen Baustein
+      gar nicht mehr. Dann endet die Liste einfach, und das ist die
+      richtige Auskunft.
+    */
+    <div className="flex flex-col items-center gap-2 pt-4 pb-2">
+      <div ref={fuehler} aria-hidden className="h-px w-full" />
+      {unterwegs && (
+        <p className="flex items-center gap-2 text-sm text-ink-3" role="status" aria-live="polite">
+          <Loader2 aria-hidden className="size-4 animate-spin" />
+          Weitere {weitereAnzahl} Stellen
+        </p>
+      )}
+    </div>
   );
 }

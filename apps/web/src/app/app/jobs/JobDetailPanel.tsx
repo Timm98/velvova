@@ -1,23 +1,50 @@
+import { Suspense } from "react";
+import { herkunftAusArt } from "@paycheck/domain";
 import Link from "next/link";
 import { ExternalLink, ShieldAlert } from "lucide-react";
 import type { Translator } from "@paycheck/i18n";
 import type { ScoredJob } from "@/lib/matching";
 import { recommendationLabel, type DecisionBrief } from "@/lib/applications/decision-brief";
 import { Badge, Button, Separator } from "@/components/ui";
-import { JobBild } from "@/components/jobs/JobBild";
-import { JobKurzfragen } from "@/components/jobs/JobKurzfragen";
+import { Passungsbefund } from "@/components/jobs/Passungsbefund";
+import { NinaAnalyse } from "@/components/jobs/NinaAnalyse";
+import { NinaFragenKnopf } from "@/components/nina/NinaFragenKnopf";
+import type { WorkspaceDaten } from "./nina/daten";
+import { JobKopf } from "@/components/jobs/JobKopf";
+import { BerufsFragen } from "@/components/jobs/BerufsFragen";
+import { Arbeitswegblock } from "@/components/jobs/Arbeitswegblock";
+import { Nettorechner } from "@/components/jobs/Nettorechner";
+import { Fehlergrenze } from "@/components/Fehlergrenze";
+import type { Gehaltsangaben } from "@/lib/payroll/einstellungen";
+import type { Lebenshaltung } from "@/lib/lebenswert/speicher";
 import { SaveJobButton } from "./SaveJobButton";
 
 /**
  * Die ausgewählte Stelle in der rechten Spalte.
  *
- * Vier Fragen in vier Abschnitten, in dieser Reihenfolge: Passt das zu
- * mir? Was ist die Rolle wirklich? Was verlangt sie? Woher kommt die
- * Anzeige?
+ * Sie liest sich wie eine redaktionelle Seite, nicht wie ein Stapel
+ * Karten: Bild, Titel, Unternehmen, Eckdaten, Passung, Handlung. Alles
+ * frei auf der Fläche, ohne Rahmen umeinander — rechts steht nun einmal
+ * genau eine Stelle, und ein Kasten darum würde sie zu einem Eintrag in
+ * einer Sammlung machen.
+ *
+ * Die Reihenfolge folgt dem, was jemand beim Lesen entscheidet:
+ *
+ *   1. Wovon handelt das hier?   Bild, Titel, Unternehmen
+ *   2. Kommt es überhaupt infrage?  Ort, Modell, Vertrag, Gehalt
+ *   3. Passt es zu mir?          Passungswert und der eine Satz dazu
+ *   4. Was tue ich jetzt?        Wählen, mit Nina durchgehen, Original
+ *
+ * Erst danach kommt, was die Entscheidung begründet: die
+ * Entscheidungsvorlage, Warnzeichen, die aufgeschlüsselte Passung, die
+ * Anforderungen und der Arbeitsalltag. Vorher stand die
+ * Entscheidungsvorlage ganz oben und das Bild zwei Bildschirme weiter
+ * unten — die Begründung also vor dem, was sie begründet.
  *
  * Was hier bewusst NICHT steht: die volle Stellenbeschreibung als
  * Textwand. Sie ist einen Klick entfernt — wer sie liest, hat sich
- * schon entschieden, dass die Stelle interessant ist.
+ * schon entschieden, dass die Stelle interessant ist. Deshalb lädt die
+ * Ranglistenabfrage sie auch gar nicht erst (siehe lib/matching.ts).
  */
 
 const WORK_MODEL: Record<string, string> = {
@@ -43,6 +70,13 @@ export function JobDetailPanel({
   assistantName,
   labels,
   brief,
+  wohnort,
+  wunschgehalt,
+  maxPendelzeit,
+  zukunft,
+  ninaDaten,
+  gehaltsangaben,
+  lebenshaltung,
 }: {
   scored: ScoredJob;
   t: Translator["t"];
@@ -51,6 +85,35 @@ export function JobDetailPanel({
   labels: { save: string; saved: string };
   /** Die Entscheidungsvorlage. Fehlt sie, bleibt der Rest wie er ist. */
   brief?: DecisionBrief;
+  /**
+   * Für die beiden Rechner.
+   *
+   * Sie standen bisher nur auf der eigenen Stellenseite. Wer die Liste
+   * benutzt, musste für „was bleibt netto" und „wie lange fahre ich"
+   * die Seite wechseln — also genau dann, wenn er gerade vergleicht.
+   */
+  wohnort?: string | null;
+  /** Die eigene Gehaltsuntergrenze — Massstab für die Farbe. */
+  wunschgehalt?: number | null;
+  /** Die eigene Pendelzeit-Obergrenze in Minuten. */
+  maxPendelzeit?: number | null;
+  /**
+   * Wie es dem Beruf geht.
+   *
+   * Nur gebraucht, wenn keine Passung berechenbar ist — dann sagt
+   * Nina etwas über den Beruf statt über den Stand des Profils.
+   */
+  zukunft?: import("@/lib/jobs/zukunft").Zukunftsangabe | null;
+  /**
+   * Ninas Lesart — dieselben Zahlen wie im Panel rechts.
+   *
+   * Optional, weil `JobDetailPanel` auch ohne sie funktionieren muss:
+   * Ohne berechnete Passung gibt es nichts zu deuten, und dann steht
+   * die Werteaufschlüsselung dort, wo sonst die Analyse steht.
+   */
+  ninaDaten?: WorkspaceDaten | null;
+  gehaltsangaben?: Gehaltsangaben;
+  lebenshaltung?: Lebenshaltung;
 }) {
   const { job, fit, confidence, jobQuality, listingConfidence, constraints } = scored;
   const musts = scored.requirements.filter((r) => r.kind === "must");
@@ -65,27 +128,174 @@ export function JobDetailPanel({
           ? t("jobs.fitExploratory")
           : t("jobs.fitInsufficient");
 
-  const money = (value: number) =>
-    new Intl.NumberFormat("de-DE", {
-      style: "currency",
-      currency: job.salary.currency,
-      maximumFractionDigits: 0,
-    }).format(value);
-
   return (
-    <article className="grid gap-7 p-5 lg:p-7">
-      {/* ── Kopf ─────────────────────────────────────────── */}
-      <header className="grid gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone="outline">Quelle: {scored.source?.displayName ?? "unbekannt"}</Badge>
-          <span className="font-mono text-2xs text-ink-3">
-            abgerufen {new Intl.DateTimeFormat("de-DE").format(job.fetchedAt)}
-          </span>
-          {listingConfidence.possiblyStale && (
-            <Badge tone="caution">{t("jobDetail.staleWarning")}</Badge>
-          )}
-          {job.isDemo && <Badge tone="caution">Demo-Datensatz</Badge>}
-        </div>
+    /* Weniger Innenabstand: 28 Pixel Rand und 28 Pixel zwischen den
+       Abschnitten waren zusammen mehr Luft als Inhalt. 24 und 24
+       lassen zwei Abschnitte mehr ins Bild, ohne dass es eng wird. */
+    <article className="grid gap-6 p-4 lg:p-6">
+      {/*
+       * Derselbe Kopf wie auf der eigenen Seite — ein Bauteil, zwei
+       * Routen. Die Reihenfolge steht in JobKopf.tsx und nur dort.
+       */}
+      <JobKopf
+        titelAls="h2"
+        assistantName={assistantName}
+        daten={{
+          job,
+          firma: scored.firma ?? null,
+          quelle: scored.source?.displayName ?? null,
+          herkunft: scored.source ? herkunftAusArt(scored.source.kind) : null,
+          bedingungen: scored.constraints,
+          veraltet: listingConfidence.possiblyStale,
+          score: fit.score,
+          bandText,
+          /*
+           * Die Transparenz der ANZEIGE — nicht die Bedingungen.
+           *
+           * Hier stand `jobQuality.score`. Der misst, was die Stelle
+           * BIETET, und enthielt bis heute die Offenheit der Anzeige
+           * mit 15 Prozent — zwei Aussagen in einer Zahl unter einer
+           * Beschriftung, die nur eine davon nennt.
+           *
+           * `anzeige.score` misst ausschliesslich, was dasteht: sechs
+           * gleich gewichtete Punkte. Er ist immer berechenbar, denn
+           * Fehlen ist selbst die Antwort.
+           */
+          qualitaet: scored.anzeige.score,
+          /* Die Arbeitsbedingungen — was die Stelle bietet. `null`,
+             wenn zu wenig beurteilbar ist; das ist häufig, weil vier
+             der sieben Dimensionen aus Mitarbeiterstimmen stammen. */
+          bedingungenWert: jobQuality.insufficientData ? null : jobQuality.score,
+          /* Die dritte Leiste: wie belastbar die Einschätzung ist.
+             Sie stand weiter unten als drei Punkte — an drei Orten in
+             drei Formen, was man nicht vergleichen kann. */
+          sicherheit: confidence.level,
+          sicherheitWert: confidence.score,
+          /* Massstab für die Farbe des Gehaltskastens. Ohne
+             hinterlegte Untergrenze bleibt er neutral. */
+          wunschgehalt: wunschgehalt ?? null,
+          grund: fit.topReason || null,
+          vorbehalt: fit.topReservation || null,
+          empfehlung: brief
+            ? {
+                text: recommendationLabel(brief.recommendation),
+                ton:
+                  brief.recommendation === "apply_now"
+                    ? "positive"
+                    : brief.recommendation === "deprioritise"
+                      ? "critical"
+                      : "caution",
+              }
+            : null,
+          gesperrt: constraints.overall === "blocked",
+        }}
+        aktionen={
+          <>
+            {/*
+              Führt zu Nina, statt zu einem Anker weiter unten.
+              
+              Vorher sprang der Knopf zu einem Block in derselben
+              Spalte. Seit Nina nur noch einen Einstieg hat — die Blase
+              unten rechts —, ist der Sprung ins Leere gegangen: Der
+              Block dort ist keine Eingabe mehr.
+              
+              Jetzt öffnet er die Blase und lässt sie kurz blinken,
+              damit man sieht, wohin man geschickt wurde.
+            */}
+            <NinaFragenKnopf assistantName={assistantName} />
+            {/*
+              „Vollständige Analyse" stand ganz unten, mit der
+              Begründung, sie vertiefe, was darüber steht. Nach acht
+              Abschnitten kam sie aber bei niemandem mehr an — und wer
+              sie sucht, sucht sie oben bei den anderen Handlungen.
+            */}
+            <Button asChild variant="secondary" size="sm">
+              <Link href={`/app/jobs/${job.id}`}>Vollständige Analyse</Link>
+            </Button>
+            <SaveJobButton
+              jobId={job.id}
+              initiallySaved={saved}
+              labels={{ save: labels.save, saved: labels.saved }}
+            />
+          </>
+        }
+      />
+
+      <Separator soft />
+
+      {/*
+       * Ninas Analyse statt der Werteaufschlüsselung.
+       *
+       * Hier stand `Passungsbefund` — vier Teilwerte mit Balken. Der
+       * Baustein ist gut und bleibt auf der Einzelseite der Stelle,
+       * wo Platz für die Aufschlüsselung ist.
+       *
+       * In der Spaltenansicht ist er die falsche erste Auskunft:
+       * Zahlen beantworten nicht die Frage, mit der jemand die Seite
+       * öffnet. Die lautet „was heisst das für mich" — und darauf
+       * antworten ein Satz und drei kurze Listen besser als vier
+       * Balken. Wer die Aufschlüsselung will, findet sie rechts unter
+       * „Warum passt der Job zu mir".
+       */}
+      {ninaDaten ? (
+        <NinaAnalyse
+          daten={ninaDaten}
+          assistantName={assistantName}
+          vollstaendigHref={`/app/jobs/${job.id}`}
+          /*
+           * Dieselben Zahlen wie in den Leisten oben — die Analyse
+           * erklärt sie, sie rechnet sie nicht nach.
+           *
+           * ══════════════════════════════════════════════════════
+           * Was hier falsch war
+           * ══════════════════════════════════════════════════════
+           *
+           * Es waren NICHT dieselben Zahlen. Die Leisten oben wurden
+           * korrigiert — `qualitaet` liest dort seither
+           * `anzeige.score` —, die Analyse darunter nicht. Sie bekam
+           * weiter `jobQuality.score`.
+           *
+           * Und `bedingungen` bekam denselben Wert noch einmal: die
+           * Anzeigenqualität, ausgegeben als Arbeitsbedingungen.
+           *
+           * Das Ergebnis war das Schlimmste, was diese Seite tun
+           * kann: Über einer Zahl stand eine Erklärung, die eine
+           * andere Zahl meinte — und benannte sie mit einem dritten
+           * Begriff. Wer das liest, hält die Erklärung für falsch
+           * und danach die Zahl auch.
+           *
+           * Die Werte kommen jetzt aus denselben Ausdrücken wie die
+           * Leisten. Zwei Stellen, ein Wert — und wenn sich der eine
+           * ändert, fällt der andere auf.
+           */
+          zukunft={
+            zukunft
+              ? {
+                  sicherheit: zukunft.bild.sicherheit,
+                  berufsgruppen: zukunft.bild.berufsgruppen,
+                  nachfrage: zukunft.nachfrage,
+                  automatisierung: zukunft.automatisierung,
+                  konfidenz: zukunft.konfidenz,
+                  herkunft: zukunft.herkunft,
+                }
+              : null
+          }
+          werte={{
+            /* Leiste „Passung“ */
+            matching: fit.score,
+            /* Leiste „Transparenz der Anzeige“ — was dasteht. */
+            qualitaet: scored.anzeige.score,
+            /* Leiste „Sicherheit der Einschätzung“ */
+            sicherheit: confidence.score,
+            /* Leiste „Arbeitsbedingungen“ — was die Stelle bietet. */
+            bedingungen: jobQuality.insufficientData ? null : jobQuality.score,
+          }}
+        />
+      ) : (
+        <Passungsbefund fit={fit} confidence={confidence} bedingungen={constraints} />
+      )}
+
+      <Separator soft />
 
         {/*
           Die Entscheidungsvorlage.
@@ -97,28 +307,24 @@ export function JobDetailPanel({
         */}
         {brief && (
           <div className="grid gap-3.5 rounded-(--radius-md) border border-line-2 bg-inset px-4 py-3.5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Badge
-                tone={
-                  brief.recommendation === "apply_now"
-                    ? "positive"
-                    : brief.recommendation === "deprioritise"
-                      ? "critical"
-                      : "caution"
-                }
-              >
-                {recommendationLabel(brief.recommendation)}
-              </Badge>
-              {brief.effort.level !== "unbekannt" && (
-                <span className="font-mono text-2xs uppercase tracking-wider text-ink-3">
-                  Aufwand {brief.effort.level} · {brief.effort.minutesMin}–{brief.effort.minutesMax} Min.
-                </span>
-              )}
-            </div>
-
-            <p className="max-w-[var(--measure)] text-sm font-medium leading-relaxed">
-              {brief.headline}
-            </p>
+            {/*
+             * Empfehlung und Kernaussage stehen jetzt oben im Kopf.
+             *
+             * Sie hier ein zweites Mal zu zeigen war keine Betonung,
+             * sondern eine Dopplung: dieselbe Auszeichnung und derselbe
+             * Satz, zwei Handbreit auseinander. Eine E2E-Prüfung hat es
+             * gefunden, weil ihr Selektor plötzlich zwei Treffer hatte
+             * — was für einen Menschen heisst: er liest dasselbe zweimal
+             * und fragt sich, ob es einen Unterschied gibt.
+             *
+             * Was hier bleibt, ist das, was oben NICHT steht: der
+             * Aufwand und die drei Spalten darunter.
+             */}
+            {brief.effort.level !== "unbekannt" && (
+              <p className="abschnitts-titel text-ink-3">
+                Aufwand {brief.effort.level} · {brief.effort.minutesMin}–{brief.effort.minutesMax} Min.
+              </p>
+            )}
 
             <dl className="grid gap-3 sm:grid-cols-3">
               {[
@@ -128,7 +334,7 @@ export function JobDetailPanel({
               ].map(([titel, eintraege]) =>
                 eintraege.length === 0 ? null : (
                   <div key={titel} className="grid gap-1.5">
-                    <dt className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+                    <dt className="abschnitts-titel text-ink-3">
                       {titel}
                     </dt>
                     <dd>
@@ -170,7 +376,7 @@ export function JobDetailPanel({
         {/* Warnzeichen. Steht weit oben, weil ein Hinweis nach dem
             dritten Absatz keiner mehr ist — und weil es hier nicht um
             Passung geht, sondern um Schaden. */}
-        {scored.scam.level === "additional_verification_recommended" && (
+        {scored.scam?.level === "additional_verification_recommended" && (
           <div
             role="note"
             className="grid gap-3 rounded-(--radius-md) border border-caution/30 bg-caution-soft px-4 py-3.5"
@@ -227,141 +433,21 @@ export function JobDetailPanel({
           </p>
         )}
 
-        {/* Titelbild der Berufsgruppe — abstrakt, ohne Behauptung über
-            den Arbeitgeber (siehe JobBild). */}
-        <JobBild
-          job={{ id: job.id, title: job.title, companyName: job.companyName, coreTasks: job.coreTasks }}
-          hoehe="h-36"
-          className="mb-5"
-        />
 
-        {/* 34–44px laut Vorgabe für den Jobtitel im Detail. */}
-        <h2 className="font-display text-3xl font-semibold leading-[1.12] tracking-[-0.025em] lg:text-4xl">
-          {job.title}
-        </h2>
-
-        <p className="text-sm text-ink-2">
-          {job.companyName} · {job.location} · {WORK_MODEL[job.workModel] ?? job.workModel}
-          {job.contractType ? ` · ${CONTRACT[job.contractType] ?? job.contractType}` : ""}
-        </p>
-
-        <p>
-          {job.salary.disclosed ? (
-            <span className="font-mono text-lg font-semibold tabular">
-              {money(job.salary.min ?? job.salary.max ?? 0)}
-              {job.salary.max && job.salary.min && job.salary.max !== job.salary.min
-                ? ` – ${money(job.salary.max)}`
-                : ""}
-              <span className="ml-1.5 font-sans text-sm font-normal text-ink-3">pro Jahr</span>
-            </span>
-          ) : (
-            <span className="text-sm text-ink-3">
-              Gehalt nicht angegeben — das ist keine schlechte Angabe, sondern gar keine.
-            </span>
-          )}
-        </p>
-
-        <div className="flex flex-wrap gap-2.5">
-          <Button asChild variant="primary" size="sm">
-            <Link href={`/app/jobs/${job.id}`}>Vollständige Analyse</Link>
-          </Button>
-          <SaveJobButton
-            jobId={job.id}
-            initiallySaved={saved}
-            labels={{ save: labels.save, saved: labels.saved }}
-          />
-          {job.originalUrl && (
-            <Button asChild variant="ghost" size="sm">
-              <a href={job.originalUrl} target="_blank" rel="noopener noreferrer">
-                Original
-                <ExternalLink className="size-3.5" strokeWidth={1.8} />
-              </a>
-            </Button>
-          )}
-        </div>
-      </header>
-
-      <Separator soft />
-
-      {/* ── Passung ──────────────────────────────────────── */}
-      <section aria-labelledby="passung" className="grid gap-4">
-        <div className="flex items-end justify-between gap-6">
-          <div>
-            <h3 id="passung" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
-              {t("jobs.fit")}
-            </h3>
-            <p className="mt-1 flex items-baseline gap-2">
-              <span className="font-mono text-[2.25rem] font-semibold leading-none tabular">
-                {fit.score ?? "–"}
-              </span>
-              <span className="text-sm text-ink-2">{bandText}</span>
-            </p>
-          </div>
-          <div className="text-right">
-            <h3 className="font-mono text-2xs uppercase tracking-wider text-ink-3">
-              {t("jobs.confidence")}
-            </h3>
-            <p className="mt-2 flex items-center justify-end gap-2 text-sm text-ink-2">
-              <span aria-hidden className="flex gap-[3px]">
-                {[0, 1, 2].map((i) => (
-                  <span
-                    key={i}
-                    className={
-                      i < (confidence.level === "high" ? 3 : confidence.level === "medium" ? 2 : 1)
-                        ? confidence.level === "high"
-                          ? "h-1.5 w-4 rounded-full bg-positive"
-                          : confidence.level === "medium"
-                            ? "h-1.5 w-4 rounded-full bg-caution"
-                            : "h-1.5 w-4 rounded-full bg-critical"
-                        : "h-1.5 w-4 rounded-full bg-inset"
-                    }
-                  />
-                ))}
-              </span>
-              {confidence.level === "high" ? "hoch" : confidence.level === "medium" ? "mittel" : "niedrig"}
-            </p>
-          </div>
-        </div>
-
-        {/* Die Aufschlüsselung. Bekannte Faktoren mit Balken, unbekannte
-            ausdrücklich als unbekannt — nicht weggelassen. */}
-        <ul className="grid gap-3">
-          {fit.factors
-            .filter((f) => f.raw !== null)
-            .map((f) => (
-              <li key={f.key} className="grid gap-1.5">
-                <span className="flex items-baseline justify-between gap-3 text-sm">
-                  {f.label}
-                  <span className="font-mono text-xs text-ink-3 tabular">
-                    {Math.round((f.raw ?? 0) * 100)}
-                  </span>
-                </span>
-                <span aria-hidden className="h-1 overflow-hidden rounded-full bg-inset">
-                  <span
-                    className="signal-gradient block h-full rounded-full"
-                    style={{ width: `${Math.round((f.raw ?? 0) * 100)}%` }}
-                  />
-                </span>
-              </li>
-            ))}
-        </ul>
-
-        <div className="grid gap-2 rounded-(--radius-md) bg-inset px-4 py-3.5 text-sm leading-relaxed">
-          <p>
-            <span className="font-medium text-positive">Dafür spricht: </span>
-            <span className="text-ink-2">{fit.topReason}</span>
-          </p>
-          <p>
-            <span className="font-medium text-caution">Zu prüfen: </span>
-            <span className="text-ink-2">{fit.topReservation}</span>
-          </p>
-          {confidence.reducedBy.length > 0 && (
-            <p className="text-ink-3">
-              Sicherheit gemindert durch: {confidence.reducedBy.join(" ")}
-            </p>
-          )}
-        </div>
-
+      {/*
+        Der Abschnitt „Passung" ist entfallen — und mit ihm seine
+        Trennlinie.
+        
+        Er enthielt zuletzt nur noch Kommentare: Die Passung steht im
+        Kopf, ihre Erklärung in der Nina-Analyse, die Einzelachsen auf
+        der Einzelseite. Ein leerer Abschnitt nimmt keinen Platz, seine
+        Trennlinie schon — und drei Linien kurz hintereinander sahen aus
+        wie eine eigene Gestaltung.
+        
+        Der Hinweis auf ein verletztes Ausschlusskriterium bleibt. Er
+        ist kein Abschnitt, sondern eine Warnung, und steht deshalb
+        ohne Überschrift und ohne eigene Linie.
+      */}
         {constraints.overall === "blocked" && (
           <div
             role="note"
@@ -384,18 +470,27 @@ export function JobDetailPanel({
             </p>
           </div>
         )}
-      </section>
-
-      <Separator soft />
 
       {/* ── Die Rolle ────────────────────────────────────── */}
       <section aria-labelledby="rolle" className="grid gap-3.5">
-        <h3 id="rolle" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+        <h3 id="rolle" className="abschnitts-titel text-ink-3">
           Der Arbeitsalltag
         </h3>
+        {/*
+          Alle Aufgaben, nicht sechs.
+          
+          Hier stand `.slice(0, 6)` ohne jeden Hinweis darauf, dass
+          etwas fehlt. Eine Stelle mit neun Aufgaben sah damit aus wie
+          eine mit sechs — und wer sich danach richtet, richtet sich
+          nach einer Auswahl, die ein Deckel getroffen hat und niemand
+          sonst.
+          
+          Wenn eine Anzeige lang ist, ist sie lang. Die Fläche hier
+          rollt; ein Deckel spart keinen Platz, er verschweigt Inhalt.
+        */}
         {job.coreTasks.length > 0 ? (
           <ul className="grid gap-2">
-            {job.coreTasks.slice(0, 6).map((task) => (
+            {job.coreTasks.map((task) => (
               <li key={task} className="flex gap-2.5 text-sm leading-relaxed text-ink-2">
                 <span aria-hidden className="mt-[9px] size-1 shrink-0 rounded-full bg-ink-3" />
                 {task}
@@ -412,17 +507,25 @@ export function JobDetailPanel({
 
       {/* ── Anforderungen ────────────────────────────────── */}
       <section aria-labelledby="anforderungen" className="grid gap-3.5">
-        <h3 id="anforderungen" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+        <h3 id="anforderungen" className="abschnitts-titel text-ink-3">
           Anforderungen
         </h3>
         {musts.length === 0 && nices.length === 0 ? (
           <p className="text-sm text-ink-3">Die Anzeige nennt keine ausdrücklichen Anforderungen.</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
+            {/*
+              Auch hier standen Deckel — fünf Muss und fünf Wunsch.
+              
+              Bei Anforderungen wiegt das schwerer als bei Aufgaben: Wer
+              die sechste Muss-Anforderung nicht sieht, hält sich für
+              geeignet und ist es nicht. Das ist keine Kürzung, das ist
+              eine falsche Auskunft über die Stelle.
+            */}
             <div>
               <p className="text-sm font-medium">{t("jobDetail.mustHave")}</p>
               <ul className="mt-2 grid gap-1.5">
-                {musts.slice(0, 5).map((r) => (
+                {musts.map((r) => (
                   <li key={r.id} className="text-sm leading-relaxed text-ink-2">
                     {r.text}
                   </li>
@@ -433,7 +536,7 @@ export function JobDetailPanel({
             <div>
               <p className="text-sm font-medium">{t("jobDetail.niceToHave")}</p>
               <ul className="mt-2 grid gap-1.5">
-                {nices.slice(0, 5).map((r) => (
+                {nices.map((r) => (
                   <li key={r.id} className="text-sm leading-relaxed text-ink-2">
                     {r.text}
                   </li>
@@ -445,15 +548,178 @@ export function JobDetailPanel({
         )}
       </section>
 
-      {/* ── Jobqualität, knapp ───────────────────────────── */}
-      <section aria-labelledby="qualitaet" className="grid gap-2">
-        <h3 id="qualitaet" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
-          {t("jobs.jobQuality")}
+      {/*
+        ── Die beiden Rechner, abgesichert ───────────────────
+        
+        Was bleibt netto, und wie lange fahre ich. Sie standen einmal
+        hier, nahmen aber beim Scheitern die ganze rechte Spalte mit —
+        man sah nur noch die Liste links, und nichts sagte, warum.
+        
+        Jetzt liegt um jeden eine `Fehlergrenze`. Bricht einer, bleibt
+        die Stelle lesbar und ein Satz sagt, was fehlt. Dazu je eine
+        `Suspense`-Grenze: Der Arbeitsweg fragt beim ersten Mal einen
+        Geodienst, und ohne Grenze wartet der ganze Block auf diese
+        eine Antwort.
+        
+        Zwei verschiedene Ausfälle, zwei verschiedene Grenzen —
+        `Suspense` fängt Warten, `Fehlergrenze` fängt Werfen. Eine
+        allein reicht nicht, und genau daran ist der erste Versuch
+        gescheitert.
+      */}
+      {/*
+        Der Block erscheint auch ohne Wohnort.
+        
+        Vorher stand hier `{wohnort && …}` — und weil nur 88 von 1001
+        Konten einen Wohnort hinterlegt haben, war der Routenrechner
+        für fast alle schlicht nicht da. Kein Hinweis, keine Lücke,
+        nichts: Er sah aus, als gäbe es ihn nicht.
+        
+        Eine fehlende Angabe ist aber kein Grund zu schweigen, sondern
+        einer zu fragen. Der Satz sagt, was fehlt und wo man es
+        einträgt — und danach rechnet er.
+      */}
+      <section aria-labelledby="arbeitsweg-panel" className="grid gap-3.5">
+          {/*
+            Die Überschrift steht im `Arbeitswegblock`, nicht hier.
+            
+            Sie trägt ein Warnzeichen, wenn der Weg über der eigenen
+            Grenze liegt — und die Fahrzeit kennt nur der Block, weil
+            er sie berechnet. Sie hier ein zweites Mal auszurechnen,
+            nur um ein Dreieck zu zeigen, hiesse eine Routenabfrage
+            für ein Symbol.
+            
+            Ohne Wohnort steht die Überschrift weiterhin hier: Dann
+            gibt es keinen Block, aber sehr wohl etwas zu sagen.
+          */}
+          {!wohnort && (
+            <h3 id="arbeitsweg-panel" className="abschnitts-titel text-ink-3">
+              Dein Arbeitsweg
+            </h3>
+          )}
+          {!wohnort ? (
+            <p className="text-sm leading-relaxed text-ink-2">
+              Für die Fahrzeit brauche ich deinen Wohnort.{" "}
+              <Link
+                href="/app/settings/language-region"
+                className="text-accent-text underline underline-offset-[3px]"
+              >
+                Einmal eintragen
+              </Link>{" "}
+              — danach steht er bei jeder Stelle.
+            </p>
+          ) : (
+          <Fehlergrenze
+            name="Arbeitsweg"
+            ersatz={
+              <p className="text-sm text-ink-3">
+                Die Fahrzeit lässt sich gerade nicht berechnen. Die Angaben zur Stelle stehen
+                unverändert daneben.
+              </p>
+            }
+          >
+            <Suspense fallback={<p className="text-sm text-ink-3">Der Arbeitsweg wird berechnet …</p>}>
+              <Arbeitswegblock
+                job={job}
+                wohnort={wohnort}
+                /* Massstab für die Farbe der Fahrzeiten. Ohne
+                   hinterlegte Grenze bleiben sie neutral — das
+                   entscheidet der Baustein selbst. */
+                maxPendelzeit={maxPendelzeit ?? null}
+              />
+            </Suspense>
+          </Fehlergrenze>
+          )}
+        </section>
+
+      {(job.salary.min !== null || job.salary.max !== null) && (
+        <section
+          id="gehaltsrechner"
+          aria-labelledby="netto-panel"
+          /*
+           * Das Sprungziel hängt am ABSCHNITT, nicht am Rechner.
+           *
+           * Vorher trug der Rechner selbst die Kennung — und der wird
+           * nur gerendert, wenn Steuerangaben UND Lebenshaltungskosten
+           * hinterlegt sind. Wer beides noch nicht eingetragen hat,
+           * bekam einen Link „Mit deinen Angaben rechnen", der ins
+           * Leere zeigte: Der Browser fand die Kennung nicht und tat
+           * gar nichts.
+           *
+           * Jetzt gibt es den Abschnitt, sobald ein Gehalt dasteht.
+           * Fehlen die Angaben, führt der Link zu der Stelle, an der
+           * steht, welche fehlen — das ist die richtige Antwort auf
+           * „ich will mit meinen Angaben rechnen".
+           */
+          className="grid scroll-mt-4 gap-3.5"
+        >
+          <h3 id="netto-panel" className="abschnitts-titel text-ink-3">
+            Was bleibt dir netto
+          </h3>
+
+          {!(gehaltsangaben && lebenshaltung) && (
+            <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+              Für die Rechnung mit deinen Angaben brauche ich deine Steuerangaben und deine
+              monatlichen Fixkosten.{" "}
+              <Link
+                href="/app/settings/gehalt"
+                className="text-accent-text underline underline-offset-[3px]"
+              >
+                Angaben hinterlegen
+              </Link>
+            </p>
+          )}
+
+          {gehaltsangaben && lebenshaltung && (<>
+          <Fehlergrenze
+            name="Nettorechner"
+            ersatz={
+              <p className="text-sm text-ink-3">
+                Die Nettorechnung lässt sich gerade nicht anzeigen. Das Bruttogehalt steht oben.
+              </p>
+            }
+          >
+            <Nettorechner
+              bruttoVon={job.salary.min}
+              bruttoBis={job.salary.max}
+              waehrung={job.salary.currency}
+              zeitraum={job.salary.period}
+              land={job.country || "DE"}
+              angaben={gehaltsangaben}
+              kosten={lebenshaltung}
+              pendelkosten={null}
+            />
+          </Fehlergrenze>
+          </>)}
+        </section>
+      )}
+
+      {/* ── Rezensionen ──────────────────────────────────── */}
+      <section aria-labelledby="rezensionen" className="grid gap-2">
+        <h3 id="rezensionen" className="abschnitts-titel text-ink-3">
+          Rezensionen und Erfahrungen
         </h3>
-        <p className="text-sm leading-relaxed text-ink-2">
-          {jobQuality.insufficientData
-            ? "Nicht ausreichend beurteilbar. Das ist ausdrücklich kein schlechtes Ergebnis — es liegen zu wenige belastbare Angaben vor."
-            : `${jobQuality.score} von 100, aus ${jobQuality.dimensions.filter((d) => d.raw !== null).length} bewertbaren Dimensionen.`}
+        {/*
+          Hier stand die Jobqualität als Zahl. Sie ist jetzt oben im
+          Kopf als Leiste — an der Stelle, an der man sie mit der
+          Passung vergleicht.
+          
+          An ihrer Stelle das, wonach man an dieser Stelle sucht:
+          Erfahrungen anderer mit diesem Arbeitgeber.
+          
+          ── Warum hier nichts steht ─────────────────────────
+          
+          Die Tabellen `review_aggregates` und `review_themes` gibt es,
+          sie sind leer — null Zeilen. Es ist keine Bewertungsquelle
+          angebunden.
+          
+          Das auszusprechen ist die einzige zulässige Anzeige. Sterne
+          zu zeigen, die niemand vergeben hat, oder aus der
+          Anzeigenqualität eine Arbeitgeberbewertung zu machen, wäre
+          eine Erfindung über ein echtes Unternehmen.
+        */}
+        <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-3">
+          Zu {job.companyName} liegen mir keine Bewertungen vor. Es ist noch keine Bewertungsquelle
+          angebunden — ich zeige hier lieber nichts als Sterne, die niemand vergeben hat.
         </p>
       </section>
 
@@ -461,8 +727,30 @@ export function JobDetailPanel({
 
       {/* ── Nina ─────────────────────────────────────────── */}
       {/* Die Antwort erscheint hier, nicht auf einer anderen Seite.
-          Die Stelle bleibt sichtbar (§13.3). */}
-      <JobKurzfragen jobId={job.id} assistantName={assistantName} />
+          Die Stelle bleibt sichtbar (§13.3).
+
+          `scroll-mt-6`, damit der Block beim Sprung aus dem Kopf nicht
+          bündig an der Oberkante klebt — die Überschrift darüber soll
+          mitkommen, sonst weiss niemand, wo er gelandet ist. */}
+      <div id={`nina-zu-${job.id}`} className="scroll-mt-6">
+        <BerufsFragen
+          titel={job.title}
+          assistantName={assistantName}
+          lage={{
+            hatAufgaben: (job.coreTasks?.length ?? 0) > 0,
+            hatGehalt: job.salary.min !== null || job.salary.max !== null,
+            hatAnforderungen: scored.requirements.length > 0,
+            /* `shiftWork` ist dreiwertig: true, false oder unbekannt.
+               Unbekannt heisst NICHT Schichtarbeit — sonst fragt Nina
+               nach etwas, das die Anzeige nie erwähnt hat. */
+            schichtarbeit: job.shiftWork === true,
+            reiseanteil: job.travelPercent,
+            arbeitsmodell: job.workModel,
+            unternehmen: job.companyName,
+          }}
+        />
+      </div>
+
     </article>
   );
 }

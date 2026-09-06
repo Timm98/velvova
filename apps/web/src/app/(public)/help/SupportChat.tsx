@@ -134,7 +134,7 @@ export function SupportChat({
             }
           }}
           disabled={läuft}
-          placeholder="Zum Beispiel: Warum sehe ich so wenige Stellen?"
+          placeholder="Deine Frage"
           aria-label={`${assistantName} zur Hilfe fragen`}
           className="h-11 min-w-0 flex-1 bg-transparent text-base text-ink outline-none placeholder:text-ink-3 disabled:opacity-60"
         />

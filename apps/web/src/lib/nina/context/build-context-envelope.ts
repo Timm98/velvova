@@ -3,6 +3,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { loadGate } from "@/lib/gate";
 import { initialState, type WorkflowState } from "../workflow/state-machine.ts";
 import { ContextIntegrityError, type NinaContextEnvelope, type ScopedContext } from "./types.ts";
+import { zugangFür } from "@/lib/billing/zugang";
 
 /**
  * Den Kontext für einen Modellaufruf zusammenstellen.
@@ -32,7 +33,7 @@ export async function buildContextEnvelope(
 
   const db = await getDb();
 
-  const [profile, workflow, gate] = await Promise.all([
+  const [profile, workflow, gate, zugang] = await Promise.all([
     withUser(db, authenticatedUserId, async (tx) =>
       (
         await tx
@@ -51,6 +52,9 @@ export async function buildContextEnvelope(
     ),
     loadWorkflowState(authenticatedUserId),
     loadGate(authenticatedUserId),
+    // Der Plan gehört in den Umschlag, nicht in den Prompt-Text: er ist
+    // eine Tatsache über das Konto, keine Anweisung an das Modell.
+    zugangFür(authenticatedUserId),
   ]);
 
   return {
@@ -74,6 +78,9 @@ export async function buildContextEnvelope(
 
     selectedJobIds: workflow.selectedJobIds,
     relevantMemoryItemIds: [],
+
+    plan: zugang.plan,
+    berechtigungen: zugang.berechtigungen,
   };
 }
 

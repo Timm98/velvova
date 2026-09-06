@@ -1,6 +1,9 @@
-import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex, uuid,
+  smallint,
+} from "drizzle-orm/pg-core";
 import { applyMethodEnum, contractTypeEnum, experienceLevelEnum, jobSourceKindEnum,
   licenseStatusEnum, requirementKindEnum, reviewSourceKindEnum, salaryPeriodEnum,
+  salaryProvenanceEnum,
   sentimentEnum, workModelEnum } from "./enums.ts";
 import { users } from "./identity.ts";
 
@@ -33,6 +36,17 @@ export const companies = pgTable("companies", {
   registryVerified: boolean("registry_verified").notNull().default(false),
   registryRef: text("registry_ref"),
   isDemo: boolean("is_demo").notNull().default(false),
+  /**
+   * Wann zuletzt angereichert — „gefragt", nicht „gefunden".
+   *
+   * Die Anreicherung kostet: 14 Einheiten je Treffer, und nur 38 % der
+   * Firmen lassen sich zuordnen. Ohne diesen Vermerk versuchte jeder
+   * Lauf dieselben 62 % erneut.
+   */
+  angereichertAm: timestamp("angereichert_am", { withTimezone: true }),
+  /** Mitarbeiterzahl als Spanne — „10,001+" ist keine Zahl. */
+  mitarbeiter: text("mitarbeiter"),
+  gegruendet: integer("gegruendet"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -44,14 +58,57 @@ export const jobs = pgTable("jobs", {
   country: text("country").notNull().default("DE"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
+  /* ── Woher die Koordinate kommt (Migration 0087) ───────────
+   *
+   * `latitude`/`longitude` allein sagen nicht, ob sie aus einer
+   * vollständigen Adresse, aus einem Stadtmittelpunkt oder aus einem
+   * gleichnamigen Ort im falschen Bundesland stammen. Für eine
+   * Umkreisbedingung ist genau das der Unterschied. */
+  geoStadt: text("geo_stadt"),
+  geoPlz: text("geo_plz"),
+  geoRegion: text("geo_region"),
+  /** resolved_exact · resolved_city · ambiguous · not_found ·
+   *  not_applicable_remote · invalid_input */
+  geoStatus: text("geo_status"),
+  /** geonames_plz · geonames_ort · nominatim_cache · anbieter */
+  geoQuelle: text("geo_quelle"),
+  /** exact · plz · stadt · region */
+  geoGenauigkeit: text("geo_genauigkeit"),
+  geoAufgeloestAm: timestamp("geo_aufgeloest_am", { withTimezone: true }),
+  /** Steigt sie, gelten alle älteren Auflösungen als veraltet. */
+  geoFassung: integer("geo_fassung"),
+  /** Die Rohangabe, aus der aufgelöst wurde — Grundlage der Idempotenz. */
+  geoRohangabe: text("geo_rohangabe"),
   workModel: workModelEnum("work_model").notNull(),
   remotePercent: integer("remote_percent"),
-  salaryMin: integer("salary_min"),
-  salaryMax: integer("salary_max"),
+  /*
+   * Nachkommastellen, weil Stundenlöhne krumm sind.
+   *
+   * Als Ganzzahl scheiterte jede Anzeige mit „17,65 € je Stunde" beim
+   * Schreiben und fiel still aus dem Bestand. Siehe Migration 0034 für
+   * die Begründung, warum hier `double precision` steht und nicht
+   * `numeric`.
+   */
+  salaryMin: doublePrecision("salary_min"),
+  salaryMax: doublePrecision("salary_max"),
   salaryCurrency: text("salary_currency").notNull().default("EUR"),
   salaryPeriod: salaryPeriodEnum("salary_period").notNull().default("year"),
   /** false heisst: die Anzeige schweigt. Nie als 0 interpretieren. */
   salaryDisclosed: boolean("salary_disclosed").notNull().default(false),
+  /**
+   * Woher die Gehaltsangabe stammt.
+   *
+   * `provider` — der Anbieter hat ein Feld geliefert.
+   * `text` — aus der Beschreibung gelesen; belegt, aber nicht bestätigt.
+   * `null` — keine Angabe.
+   *
+   * Die Unterscheidung ist nicht kosmetisch: eine aus Fliesstext
+   * gelesene Zahl darf keine Stelle ausschliessen, ein bestätigtes
+   * Feld schon.
+   */
+  salaryProvenance: salaryProvenanceEnum("salary_provenance"),
+  /** Die Textstelle, aus der gelesen wurde. Macht die Angabe prüfbar. */
+  salaryEvidence: text("salary_evidence"),
   contractType: contractTypeEnum("contract_type"),
   weeklyHours: doublePrecision("weekly_hours"),
   shiftWork: boolean("shift_work"),
@@ -59,10 +116,41 @@ export const jobs = pgTable("jobs", {
   experienceLevel: experienceLevelEnum("experience_level"),
   industry: text("industry"),
   languageRequirements: jsonb("language_requirements").$type<Record<string, string>>().notNull().default({}),
+  /**
+   * Die Sprache, in der die Anzeige geschrieben ist.
+   *
+   * Deterministisch über Funktionswörter erkannt, nicht mit einem
+   * Modell: Bei 2,3 Mio. Anzeigen wäre ein Modellaufruf je Anzeige
+   * nicht bezahlbar, und Zählen ist prüfbar.
+   *
+   * `null` heisst „noch nicht geprüft", `"unbekannt"` heisst „geprüft
+   * und nicht entscheidbar". Der Unterschied bestimmt, ob die
+   * Nachtragung sie noch einmal ansieht.
+   */
+  originalLanguage: text("original_language"),
   requiredLicenses: jsonb("required_licenses").$type<string[]>().notNull().default([]),
   workPermitRequired: boolean("work_permit_required"),
   coreTasks: jsonb("core_tasks").$type<string[]>().notNull().default([]),
   description: text("description").notNull(),
+  /*
+   * Zwei Ableitungen der Beschreibung — beim Import gefüllt.
+   *
+   * Die Rangfolge braucht den Fliesstext nie: `overlap()` in fit.ts
+   * reduziert ihn auf eine Menge eindeutiger Wörter über drei Zeichen,
+   * und listingConfidence prüft nur die Länge. Wer beides vorhält,
+   * kann die 4,35 MB Beschreibungstext aus der Ranglistenabfrage
+   * herausnehmen, ohne einen einzigen Wert zu verändern.
+   */
+  /*
+   * Kein `.default()` — mit Absicht.
+   *
+   * Ein Standardwert erlaubt dem INSERT, die Spalte wegzulassen, und
+   * dann fehlt sie still. So verlangt Drizzle beide Felder bei jedem
+   * Schreibvorgang, und wer sie vergisst, erfährt es beim Übersetzen
+   * statt Wochen später an einer Rangfolge, die nicht stimmt.
+   */
+  descriptionTokens: text("description_tokens").notNull(),
+  descriptionLength: integer("description_length").notNull(),
   benefits: jsonb("benefits").$type<string[]>().notNull().default([]),
   applyMethod: applyMethodEnum("apply_method").notNull().default("unknown"),
   applyTarget: text("apply_target"),
@@ -75,6 +163,14 @@ export const jobs = pgTable("jobs", {
   sourceId: uuid("source_id").notNull().references(() => jobSources.id),
   /** Erkennt Reposts derselben Stelle über Quellen hinweg. */
   contentHash: text("content_hash").notNull(),
+  /**
+   * Die amtliche Berufskennung (KldB 2010) zu dieser Stelle.
+   *
+   * Steht hier und nicht nur in `beruf_zuordnung`, weil `berufsbild()`
+   * beim Rendern jeder Zeile läuft und synchron ist. Siehe Migration
+   * 0041 für die Begründung.
+   */
+  kldb: text("kldb"),
   /** Zeigt die Stelle als Demo-Datensatz aus, nie als Live-Angebot. */
   isDemo: boolean("is_demo").notNull().default(false),
 }, (t) => [
@@ -100,6 +196,27 @@ export const jobRequirements = pgTable("job_requirements", {
   text: text("text").notNull(),
   skillKey: text("skill_key"),
   category: text("category").notNull().default("other"),
+  /**
+   * Ob es ein Ausschlusskriterium ist.
+   *
+   * `kind` unterschied bisher „must" und „nice" aus der Anzeige. Das
+   * ist die Behauptung des Textes. Diese Spalte hält fest, was NACH
+   * der Prüfung gilt — und die beiden gehen auseinander: „SAP von
+   * Vorteil" steht unter Muss, ist aber keins.
+   */
+  zwingend: boolean("zwingend").notNull().default(false),
+  /**
+   * Ob sich die Lücke in der Einarbeitung schliessen liesse.
+   *
+   * Der Unterschied zwischen „passt nicht" und „passt noch nicht" —
+   * und die Grundlage für den späteren Skill-Gap-Plan.
+   */
+  erlernbar: boolean("erlernbar").notNull().default(false),
+  /** 0 bis 100, wie wichtig innerhalb ihrer Art. */
+  wichtigkeit: smallint("wichtigkeit").notNull().default(50),
+  konfidenz: smallint("konfidenz").notNull().default(70),
+  /** Der Satz aus der Anzeige, auf den sich das stützt. */
+  belegstelle: text("belegstelle"),
 }, (t) => [index("job_requirements_job_idx").on(t.jobId)]);
 
 export const companySources = pgTable("company_sources", {
@@ -281,4 +398,133 @@ export const matchFactors = pgTable("match_factors", {
   contribution: doublePrecision("contribution").notNull().default(0),
   explanation: text("explanation").notNull(),
   evidenceIds: jsonb("evidence_ids").$type<string[]>().notNull().default([]),
+  /**
+   * Was für eine Aussage das ist.
+   *
+   * positiv · neutral · fehlende_angabe · konflikt · blocker
+   *
+   * Bisher war jeder Faktor ein Wert mit Erklärung. Damit liess sich
+   * nicht unterscheiden zwischen „drei Remote-Tage erfüllen deine
+   * Bedingung" und „du willst höchstens 30 Minuten fahren, es sind
+   * 47". Beides sind Begründungen, aber nur eine ist ein Einwand.
+   */
+  art: text("art").notNull().default("neutral"),
+  /** 1 leicht bis 3 schwer — nur bei Konflikt und Blocker gesetzt. */
+  schwere: smallint("schwere"),
 }, (t) => [index("match_factors_match_idx").on(t.matchId, t.scoreKind)]);
+
+/**
+ * Beiträge: was gerade am Arbeitsmarkt passiert.
+ *
+ * Nicht als Nachrichtenportal, sondern weil die Zahlen in diesem
+ * Bestand Aussagen tragen, die sonst niemand macht. Jeder Beitrag
+ * trägt seinen Beleg — eine Aussage ohne nachvollziehbare Grundlage
+ * wäre eine Behauptung.
+ *
+ * Siehe Migration 0049.
+ */
+export const beitraege = pgTable("beitraege", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  titel: text("titel").notNull(),
+  /** Ein Satz. Er steht in der Übersicht und trägt die Aussage allein. */
+  kernaussage: text("kernaussage").notNull(),
+  text: text("text").notNull().default(""),
+  /** krise · markt · beruf · ratgeber */
+  art: text("art").notNull().default("markt"),
+  /** Kurzname aus der Fotobibliothek — kein Pfad. */
+  bildSlug: text("bild_slug"),
+  kldbHauptgruppe: text("kldb_hauptgruppe"),
+  /** Woraus die Aussage stammt. Lesbar, nicht ausführbar. */
+  beleg: text("beleg").notNull().default(""),
+  veroeffentlichtAm: timestamp("veroeffentlicht_am", { withTimezone: true }),
+  erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Übersetzte Fassungen einer Anzeige.
+ *
+ * ── Warum gespeichert und nicht bei jedem Aufruf erzeugt ──────
+ *
+ * Eine Übersetzung bei jedem Seitenaufruf neu zu erzeugen kostet bei
+ * jedem Leser dasselbe Geld für dasselbe Ergebnis — und sie wäre
+ * nicht reproduzierbar: Zwei Menschen sähen zwei verschiedene
+ * Fassungen derselben Anzeige.
+ *
+ * ── Warum das Original unangetastet bleibt ────────────────────
+ *
+ * Was hier steht, ist eine zusätzliche Fassung, keine Ersetzung. Die
+ * Oberfläche zeigt „Automatisch übersetzt" und bietet jederzeit das
+ * Original an. Wer sich auf eine Anzeige beruft, muss auf den Text
+ * zurückkommen können, den der Arbeitgeber geschrieben hat.
+ */
+export const jobUebersetzungen = pgTable(
+  "job_uebersetzungen",
+  {
+    jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    /** Zielsprache, zweistellig. */
+    sprache: text("sprache").notNull(),
+    titel: text("titel").notNull(),
+    beschreibung: text("beschreibung").notNull(),
+    /** Modell und Fassung — sonst lässt sich später nicht erklären,
+        warum eine Übersetzung so aussieht, wie sie aussieht. */
+    modell: text("modell").notNull(),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.jobId, t.sprache] })],
+);
+
+
+/**
+ * Die Ortsdatenbasis für die Umkreisprüfung.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Quelle und Lizenz
+ * ══════════════════════════════════════════════════════════════
+ *
+ *   GeoNames Postleitzahlen — https://download.geonames.org/export/zip/
+ *   Creative Commons Attribution 4.0, laut `readme.txt` der Quelle
+ *   (geprüft am 6. September 2026)
+ *
+ * Die Namensnennung gehört damit ins Produkt, wo Entfernungen gezeigt
+ * werden. Ein Datensatz mit Attributionspflicht, dessen Quelle niemand
+ * nennt, ist eine Lizenzverletzung mit Ansage.
+ *
+ * ── Warum offline und nicht per Anfrage ───────────────────────
+ *
+ * Nominatim untersagt Massenabfragen ausdrücklich. Der bestehende
+ * Zwischenspeicher `geo_orte` bleibt als zweite Quelle — seine
+ * Einträge sind bereits erfragt und werden nicht neu geholt.
+ */
+export const geoReferenz = pgTable(
+  "geo_referenz",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    land: text("land").notNull(),
+    /** Kleingeschrieben und normalisiert — der Suchschlüssel. */
+    nameNorm: text("name_norm").notNull(),
+    name: text("name").notNull(),
+    region: text("region"),
+    /**
+     * Der Landkreis, ohne das Wort “Landkreis”.
+     *
+     * Das Bundesland trennt gleichnamige Orte nicht: Es gibt Bernau in
+     * Brandenburg und Bernau in Baden-Württemberg, Moosburg in Bayern
+     * und Moosburg in Baden-Württemberg. Die Anzeige schreibt den
+     * Kreis dahinter — “Bernau bei Berlin, Barnim (Kreis)” — und erst
+     * damit ist der Ort eindeutig.
+     */
+    kreis: text("kreis"),
+    plz: text("plz"),
+    latitude: doublePrecision("latitude").notNull(),
+    longitude: doublePrecision("longitude").notNull(),
+    /** Wie viele Postleitzahlen zu diesem Ort gehören. */
+    plzAnzahl: integer("plz_anzahl").notNull().default(1),
+    quelle: text("quelle").notNull(),
+    quelleFassung: text("quelle_fassung").notNull(),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("geo_referenz_name_idx").on(t.land, t.nameNorm),
+    index("geo_referenz_plz_idx").on(t.land, t.plz),
+  ],
+);

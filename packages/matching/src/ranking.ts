@@ -3,6 +3,7 @@ import type {
   JobQualityResult, ListingConfidenceResult, OverallRanking,
 } from "@paycheck/domain";
 import { SCORING_VERSION } from "@paycheck/domain";
+import { fitGesamt } from "./fitgesamt.ts";
 import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
 /**
@@ -103,7 +104,34 @@ export interface RankableJob {
   jobId: string;
   overall: OverallRanking;
   fit: FitResult;
+  /**
+   * Wie belastbar die Einschätzung ist.
+   *
+   * Geht mit 20 Prozent in den Fit Score ein — deshalb steht sie hier
+   * und nicht nur in der Oberfläche: Sortierung und Anzeige müssen
+   * dieselbe Zahl benutzen, sonst steht oben eine Stelle mit einer
+   * kleineren Zahl als die darunter.
+   */
+  confidence: ConfidenceResult;
   jobQuality: JobQualityResult;
+  /**
+   * Die Anzeigenqualität — dieselbe Zahl, die in der Liste steht.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum nicht `jobQuality`, obwohl das danebensteht
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Weil es zwei verschiedene Zahlen sind. `jobQuality` bewertet den
+   * Arbeitgeber, `anzeige` die Vollständigkeit der Anzeige — und in
+   * der Zeile wird `anzeige` gezeigt.
+   *
+   * Sortiert wurde bis eben nach `jobQuality`. Damit stand die Liste
+   * in einer anderen Reihenfolge als die Zahlen, die sie anzeigte:
+   * oben eine 71, darunter eine 78. Genau der Fehler, den der
+   * Kommentar über `confidence` beschreibt — nur eine Zeile weiter
+   * unten und deshalb übersehen.
+   */
+  anzeige: { score: number | null };
   aiTransition: AiTransitionResult;
   constraints: ConstraintResult;
   salaryPerYear: number | null;
@@ -134,7 +162,29 @@ export function sortJobs(jobs: RankableJob[], key: SortKey): RankableJob[] {
     case "newest":
       out.sort((a, b) => cmpNullable(a.publishedAt?.getTime() ?? null, b.publishedAt?.getTime() ?? null)); break;
     case "best_overall":
-    default: out.sort((a, b) => cmpNullable(a.overall.score, b.overall.score)); break;
+    default:
+      /*
+       * Sortiert wird nach der Zahl, die auch angezeigt wird.
+       *
+       * Vorher ordnete `overall.score` — eine andere Formel als die,
+       * die in der Liste als Fit Score steht. Beide konnten
+       * auseinanderlaufen, und dann stand oben eine Stelle mit einer
+       * kleineren Zahl als die darunter. Das ist der Fehler, den
+       * niemand meldet und dem jeder misstraut.
+       *
+       * `fitGesamt` rechnet aus dem, was vorhanden ist: Fehlt die
+       * Passung, entscheiden Anzeigenqualität und Sicherheit. Die
+       * frühere Fallkette — Gesamtwert, sonst Jobqualität, sonst
+       * Vertrauen — ist damit im selben Ausdruck enthalten, statt als
+       * Reihe von Ausweichschritten.
+       */
+      out.sort((a, b) =>
+        cmpNullable(
+          fitGesamt(a.fit.score, a.anzeige.score, a.confidence.score),
+          fitGesamt(b.fit.score, b.anzeige.score, b.confidence.score),
+        ),
+      );
+      break;
   }
   // Blockierte Stellen erscheinen nie oben, egal nach welchem Kriterium.
   return out.sort((a, b) => Number(a.constraints.overall === "blocked") - Number(b.constraints.overall === "blocked"));

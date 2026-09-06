@@ -4,7 +4,7 @@ import type { TransformType } from "./decision-types.ts";
 /**
  * Feldgenaue Herkunft.
  *
- * Jede Tatsache, die Paycheck über eine Stelle anzeigt, muss sagen
+ * Jede Tatsache, die Velvova über eine Stelle anzeigt, muss sagen
  * können, woher sie kommt. Das ist keine Buchhaltung um ihrer selbst
  * willen: es ist die einzige Möglichkeit, „steht so in der Anzeige"
  * von „hat Nina daraus geschlossen" zu unterscheiden — und diese

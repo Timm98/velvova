@@ -54,7 +54,7 @@ export function NinaVisualFallback({
   size = "xl",
 }: {
   state: NinaVisualState;
-  size?: "lg" | "xl";
+  size?: "lg" | "xl" | "hero";
 }) {
   return (
     <div className="grid h-full w-full place-items-center">

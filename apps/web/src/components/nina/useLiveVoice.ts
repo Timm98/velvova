@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { START, weiter, type LiveEreignis, type LiveStand } from "@/lib/nina/live-voice";
+import { STILLE } from "@/lib/nina/stille";
+
 
 /**
  * Das Live-Gespräch, verkabelt.
@@ -65,7 +67,27 @@ export function useLiveVoice({
   const pc = useRef<RTCPeerConnection | null>(null);
   const kanal = useRef<RTCDataChannel | null>(null);
   const spur = useRef<MediaStream | null>(null);
+  /*
+   * EIN Audioelement für das ganze Gespräch — nicht eines je Antwort.
+   *
+   * Das ist der Kern der Reparatur. Safari und die mobilen Browser
+   * erlauben Tonwiedergabe nur, wenn sie aus einer Nutzerhandlung
+   * heraus beginnt. Vorher entstand für jede Antwort ein frisches
+   * `new Audio(url)`, und `play()` lief in einer asynchronen
+   * Fortsetzung — also lange nachdem der Klick vorbei war.
+   *
+   * Das Ergebnis war der stillste aller Fehler: `play()` lehnte mit
+   * `NotAllowedError` ab, der `catch` machte daraus „Ton zu Ende", die
+   * Zustandsmaschine ging weiter, als hätte Nina gesprochen. Nichts
+   * blinkte rot. Nina war einfach stumm.
+   *
+   * Ein einmal freigegebenes Element bleibt freigegeben: man darf ihm
+   * später eine neue Quelle geben und erneut abspielen, ohne dass eine
+   * weitere Geste nötig wäre. Deshalb entsteht es hier einmal, wird im
+   * Klick freigeschaltet und danach immer wiederverwendet.
+   */
   const audio = useRef<HTMLAudioElement | null>(null);
+  const freigeschaltet = useRef(false);
   const objektUrl = useRef<string | null>(null);
   const tonAbbruch = useRef<AbortController | null>(null);
   const gesprochen = useRef<string | null>(null);
@@ -86,8 +108,19 @@ export function useLiveVoice({
     tonAbbruch.current = null;
     if (audio.current) {
       audio.current.pause();
-      audio.current.src = "";
-      audio.current = null;
+      /*
+       * `removeAttribute("src")` statt `src = ""`, und das Element
+       * bleibt bestehen.
+       *
+       * `src = ""` setzt in manchen Browsern die Seiten-URL als Quelle
+       * und löst dann einen Ladefehler aus. Und das Element auf `null`
+       * zu setzen, wie vorher, würde beim nächsten Redebeitrag ein
+       * neues erzwingen — ein nicht freigegebenes. Genau das war der
+       * Grund, warum Nina nach der ersten Unterbrechung endgültig
+       * verstummte.
+       */
+      audio.current.removeAttribute("src");
+      audio.current.load();
     }
     if (objektUrl.current) {
       URL.revokeObjectURL(objektUrl.current);
@@ -125,8 +158,73 @@ export function useLiveVoice({
     [send, tonStoppen, schliessen],
   );
 
+  /**
+   * Den Ton freischalten — synchron, im Klick.
+   *
+   * Muss vor dem ersten `await` laufen. Danach ist die Nutzerhandlung
+   * für den Browser vorbei, und alles Weitere gilt als „von selbst
+   * angefangen".
+   *
+   * Abgespielt wird eine Zehntelsekunde Stille: ein winziges WAV als
+   * Daten-URL, 44 Byte Kopf und ein einzelnes stummes Sample. Es ist
+   * nicht zu hören und nicht zu sehen, aber der Browser verbucht es
+   * als „dieses Element hat auf Wunsch der Person Ton abgespielt" —
+   * und lässt es von da an gewähren.
+   */
+  const tonFreischalten = useCallback(() => {
+    if (!audio.current) {
+      const el = new Audio();
+      el.preload = "auto";
+      // Ohne das behandeln iOS-Browser die Wiedergabe wie ein Video und
+      // verlangen den Vollbildmodus.
+      el.setAttribute("playsinline", "");
+      audio.current = el;
+    }
+    if (freigeschaltet.current) return;
+
+    const el = audio.current;
+    el.muted = true;
+    el.src = STILLE;
+    const versuch = el.play();
+    if (versuch && typeof versuch.then === "function") {
+      void versuch
+        .then(() => {
+          freigeschaltet.current = true;
+          el.pause();
+          el.muted = false;
+          /*
+           * Die Stille stehen lassen.
+           *
+           * Ein Element ohne Quelle neu zu laden löst ein
+           * `error`-Ereignis aus — folgenlos, aber es steht als
+           * Ladefehler im Protokoll, und beim nächsten echten
+           * Sprachfehler hielte man ihn für die Ursache. Die 1,6
+           * Kilobyte werden ohnehin bei der ersten Antwort
+           * überschrieben.
+           */
+        })
+        .catch(() => {
+          /*
+           * Bleibt der Browser dabei, geht das Gespräch trotzdem
+           * weiter — geschrieben steht Ninas Antwort ja da. Gemerkt
+           * wird nur, dass die Freigabe fehlt, damit die Oberfläche
+           * es sagen kann statt still zu bleiben.
+           */
+          freigeschaltet.current = false;
+          el.muted = false;
+        });
+    } else {
+      freigeschaltet.current = true;
+      el.muted = false;
+    }
+  }, []);
+
   const starten = useCallback(() => {
     if (standRef.current.zustand !== "aus" && standRef.current.zustand !== "fehler") return;
+
+    // ZUERST. Alles darunter ist asynchron und damit ausserhalb der
+    // Nutzerhandlung.
+    tonFreischalten();
     melde({ art: "verbinden" });
 
     void (async () => {
@@ -277,18 +375,36 @@ export function useLiveVoice({
         }
         objektUrl.current = url;
 
-        const element = new Audio(url);
+        // Das im Klick freigegebene Element, nicht ein neues.
+        const element = audio.current ?? new Audio();
         audio.current = element;
         element.onended = () => melde({ art: "ton_endet", zug: meinZug });
         element.onerror = () => melde({ art: "ton_endet", zug: meinZug });
+        element.src = url;
 
         await element.play();
         melde({ art: "ton_beginnt", zug: meinZug });
       } catch (fehler) {
         if (fehler instanceof DOMException && fehler.name === "AbortError") return;
-        // Ohne Stimme geht das Gespräch weiter — geschrieben steht die
-        // Antwort ja da. Ein Abbruch wäre die schlechtere Antwort auf
-        // einen Tonfehler.
+        /*
+         * Eine verweigerte Wiedergabe ist kein Tonfehler, sondern eine
+         * Regel des Browsers — und sie darf nicht länger stumm
+         * durchgehen.
+         *
+         * Genau hier verschwand die Ursache vorher: `NotAllowedError`
+         * wurde wie ein zu Ende gespieltes Stück behandelt. Jetzt geht
+         * das Gespräch zwar weiter — Ninas Antwort steht geschrieben
+         * da —, aber die Oberfläche erfährt davon.
+         */
+        if (fehler instanceof DOMException && fehler.name === "NotAllowedError") {
+          freigeschaltet.current = false;
+          melde({
+            art: "ton_verweigert",
+            zug: meinZug,
+            text: "Dein Browser lässt Ton erst nach einer Berührung zu. Tipp einmal auf „Live sprechen“.",
+          });
+          return;
+        }
         melde({ art: "ton_endet", zug: meinZug });
       }
     })();

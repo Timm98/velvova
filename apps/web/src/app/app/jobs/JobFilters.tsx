@@ -24,8 +24,32 @@ const REMOTE = [
 const CONTRACT = [
   { value: "permanent", label: "Unbefristet" },
   { value: "fixed_term", label: "Befristet" },
-  { value: "working_student", label: "Werkstudium" },
-  { value: "internship", label: "Praktikum" },
+];
+
+/**
+ * Die Art der Stelle — aus dem Titel, nicht aus dem Vertragsfeld.
+ *
+ * ── Warum das nötig war ───────────────────────────────────────
+ *
+ * „Werkstudium" und „Praktikum" standen bisher bei der Vertragsart und
+ * filterten auf `contract_type`. Das Feld ist bei 48.647 von 80.486
+ * Stellen leer, und die Quellen füllen es kaum: Gemessen fand der
+ * Filter 119 Praktika und 99 Werkstudien. Aus den Titeln lesen sich
+ * 1.069 und 816 — also rund das Neunfache.
+ *
+ * Ausbildung und Minijob liessen sich gar nicht auswählen; das Feld
+ * kennt fünf `apprenticeship` im ganzen Bestand.
+ *
+ * Ein Filter, der ein Zehntel findet, ist schlimmer als keiner: Er
+ * sieht aus wie eine vollständige Antwort.
+ */
+const ART = [
+  { value: "regulaer", label: "Feste Stelle" },
+  { value: "praktikum", label: "Praktikum" },
+  { value: "werkstudium", label: "Werkstudium" },
+  { value: "ausbildung", label: "Ausbildung" },
+  { value: "minijob", label: "Minijob" },
+  { value: "trainee", label: "Trainee" },
 ];
 
 const FRESHNESS = [
@@ -85,7 +109,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
   }
 
 
-  const active = ["q", "remote", "contract", "since", "salary"].filter((k) => params.get(k));
+  const active = ["q", "art", "remote", "contract", "since", "salary"].filter((k) => params.get(k));
 
   return (
     <div className="grid gap-3.5">
@@ -145,6 +169,7 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
           ref={panelRef}
           className="grid gap-5 rounded-(--radius-lg) border border-line bg-raised p-5 shadow-sm animate-fade-in"
         >
+          <FilterRow legend="Art der Stelle" name="art" options={ART} params={params} onToggle={toggle} />
           <FilterRow legend="Arbeitsmodell" name="remote" options={REMOTE} params={params} onToggle={toggle} />
           <FilterRow legend="Vertragsart" name="contract" options={CONTRACT} params={params} onToggle={toggle} />
           <FilterRow legend="Aktualität" name="since" options={FRESHNESS} params={params} onToggle={toggle} />

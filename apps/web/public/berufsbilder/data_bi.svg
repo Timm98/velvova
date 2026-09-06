@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400" role="img"><defs><linearGradient id="v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f2fd"/><stop offset="1" stop-color="#b6dcec" stop-opacity=".85"/></linearGradient></defs><style>
+  .bg { fill: url(#v); }
+  .fl { fill: #ffffff; }
+  .li { fill: none; stroke: #2b2545; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; opacity: .82; }
+  .du { fill: #2b2545; opacity: .82; }
+  .ak { fill: #3f8fbf; }
+  .ak-l { fill: none; stroke: #3f8fbf; stroke-width: 3.5; stroke-linecap: round; }
+  .we { fill: #b6dcec; opacity: .5; }
+  .sc { fill: #2b2545; opacity: .07; }
+</style><rect width="800" height="400" class="bg"/><path d="M0 300h800" stroke="#2b2545" stroke-width="3.5" opacity=".2"/><rect x="200" y="200" width="52" height="90" rx="7" class="we"/><rect x="200" y="200" width="52" height="90" rx="7" class="li"/><rect x="278" y="150" width="52" height="140" rx="7" class="ak"/><rect x="278" y="150" width="52" height="140" rx="7" class="li"/><rect x="356" y="110" width="52" height="180" rx="7" class="we"/><rect x="356" y="110" width="52" height="180" rx="7" class="li"/><rect x="434" y="175" width="52" height="115" rx="7" class="ak"/><rect x="434" y="175" width="52" height="115" rx="7" class="li"/><rect x="512" y="230" width="52" height="60" rx="7" class="we"/><rect x="512" y="230" width="52" height="60" rx="7" class="li"/><path d="M226 178l52-42 52-38 52 58 52 48" class="ak-l"/></svg>

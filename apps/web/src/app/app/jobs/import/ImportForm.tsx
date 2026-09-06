@@ -17,6 +17,10 @@ interface Antwort {
   entscheidung?: string;
   grund?: string;
   url?: string;
+  /** Was aus der Adresse gelesen wurde — ohne sie abzurufen. */
+  linkModus?: "approved_source" | "canonical_employer_source" | "link_only" | "unknown_source";
+  erkannterTitel?: string | null;
+  erkannterArbeitgeber?: string | null;
 }
 
 /**
@@ -106,7 +110,7 @@ export function ImportForm({ assistantName }: { assistantName: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <Badge tone="caution">nichts abgerufen</Badge>
             {antwort.quelle && (
-              <span className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+              <span className="abschnitts-titel text-ink-3">
                 {antwort.quelle}
               </span>
             )}
@@ -118,6 +122,32 @@ export function ImportForm({ assistantName }: { assistantName: string }) {
             <p className="max-w-[var(--measure)] text-xs leading-relaxed text-ink-3">
               {antwort.grund}
             </p>
+          )}
+
+          {/*
+           * Was aus der Adresse gelesen wurde.
+           *
+           * Es steht hier, damit sichtbar ist, WORAUF sich der nächste
+           * Schritt bezieht — und woher es kommt. „Aus der Adresse
+           * gelesen" ist keine Floskel: es unterscheidet diese Angabe
+           * von allem, was ein Abruf ergeben hätte. Abgerufen wurde
+           * nichts.
+           */}
+          {(antwort.erkannterTitel || antwort.erkannterArbeitgeber) && (
+            <div className="grid gap-1 rounded-(--radius-md) bg-inset px-4 py-3">
+              <p className="abschnitts-titel text-ink-3">
+                Aus der Adresse gelesen
+              </p>
+              {antwort.erkannterTitel && (
+                <p className="text-sm font-medium text-ink">{antwort.erkannterTitel}</p>
+              )}
+              {antwort.erkannterArbeitgeber && (
+                <p className="text-sm text-ink-2">{antwort.erkannterArbeitgeber}</p>
+              )}
+              <p className="text-2xs leading-relaxed text-ink-3">
+                Aus dem Link selbst, nicht von der Seite — abgerufen wurde nichts.
+              </p>
+            </div>
           )}
 
           <div className="grid gap-2.5 pt-1">

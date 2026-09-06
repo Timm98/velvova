@@ -190,7 +190,7 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
           signal: options.signal,
           headers: {
             Accept: "application/json",
-            "User-Agent": "PaycheckJobConnector/1.0 (+kandidatenseitige Stellensuche)",
+            "User-Agent": "VelvovaJobConnector/1.0 (+kandidatenseitige Stellensuche)",
           },
         });
         if (response.ok) break;
@@ -262,6 +262,21 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
       originalUrl: j.url,
       publishedAt: new Date(j.created_at * 1000),
       raw: {
+        /*
+         * Die vollständige Antwort des Anbieters.
+         *
+         * Alles andere hier ist handverlesen: Felder, die jemand einmal
+         * gesehen und für wichtig gehalten hat. Genau daran ist die
+         * Gehaltsauswertung schon einmal gescheitert — die Bundesagentur
+         * schickt `gehaltsspanneVon`, und im Adapter stand ein Kommentar,
+         * sie sende „keinen Betrag". Der Kommentar war falsch, und
+         * niemand konnte es merken: Im Schnappschuss stand das Feld
+         * nicht.
+         *
+         * Ein Feld, das niemand kennt, findet man nur in der ganzen
+         * Antwort. `scripts/gehalt-rohdaten.mjs` sucht darin rekursiv.
+         */
+        rohantwort: j as unknown as Record<string, unknown>,
         slug: j.slug,
         tags: j.tags,
         job_types: j.job_types,

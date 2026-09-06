@@ -1,0 +1,18 @@
+-- Die Gehaltsherkunft bekommt einen dritten Wert.
+--
+-- Bisher gab es nur `provider` (der Anbieter hat einen Betrag geliefert)
+-- und `text` (wir haben ihn aus der Beschreibung gelesen). Dazwischen
+-- fehlte ein Fall, den es in echten Daten gibt: Die Plattform selbst
+-- SCHÄTZT ein Gehalt und sagt das auch dazu.
+--
+-- Adzuna markiert solche Werte mit `salary_is_predicted`. Der Adapter
+-- warf sie bisher weg — mit einem Kommentar, der behauptete, sie
+-- „wandert in die Rohdaten und wird in der Oberfläche als solche
+-- ausgewiesen". Beides gab es nicht: keine Rohdatenspalte, kein
+-- Anzeigepfad. Die Angabe war schlicht verloren.
+--
+-- Wegwerfen war die falsche Antwort, ungekennzeichnet übernehmen wäre
+-- die schlimmere. Eine Plattformschätzung ist eine brauchbare
+-- Grössenordnung und keine Zusage des Arbeitgebers — beides muss die
+-- Person unterscheiden können, bevor sie damit verhandelt.
+ALTER TYPE salary_provenance ADD VALUE IF NOT EXISTS 'board_estimate';

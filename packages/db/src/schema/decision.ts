@@ -260,7 +260,7 @@ export const jobSourceTiming = pgTable("job_source_timing", {
   jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
   sourceId: uuid("source_id").references(() => jobSources.id, { onDelete: "set null" }),
   firstSeenAtSource: timestamp("first_seen_at_source", { withTimezone: true }),
-  firstSeenByPaycheck: timestamp("first_seen_by_paycheck", { withTimezone: true }).notNull().defaultNow(),
+  firstSeenByVelvova: timestamp("first_seen_by_paycheck", { withTimezone: true }).notNull().defaultNow(),
   firstSeenAtAggregator: timestamp("first_seen_at_aggregator", { withTimezone: true }),
   sourceDelayHours: doublePrecision("source_delay_hours"),
   confidence: doublePrecision("confidence").notNull().default(0.5),

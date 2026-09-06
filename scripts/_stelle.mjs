@@ -1,0 +1,11 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb, schema } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const r = await db.select().from(schema.currentEmployment).limit(5);
+console.log(`  Zeilen in current_employment: ${r.length}`);
+for (const z of r) console.log(`    brutto=${z.grossAmount} zeitraum=${z.salaryPeriod} weg=${z.commuteMinutes}`);
+const k = await db.select().from(schema.livingCosts).limit(3);
+console.log(`  Zeilen in living_costs: ${k.length}`);
+process.exit(0);

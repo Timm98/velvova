@@ -38,7 +38,49 @@ export const contractTypeEnum = pgEnum("contract_type", [
 export const experienceLevelEnum = pgEnum("experience_level", ["entry", "junior", "mid", "senior", "lead"]);
 export const requirementKindEnum = pgEnum("requirement_kind", ["must", "nice"]);
 export const salaryPeriodEnum = pgEnum("salary_period", ["year", "month", "hour"]);
-export const applyMethodEnum = pgEnum("apply_method", ["email", "portal", "form", "unknown"]);
+
+/**
+ * Woher eine Gehaltsangabe stammt.
+ *
+ * Kein Vertrauensmass, sondern eine Herkunftsangabe — und deshalb
+ * zwei getrennte Werte statt einer Zahl zwischen 0 und 1: „aus dem
+ * Text gelesen" ist eine andere Art von Wissen als „vom Anbieter
+ * geliefert", nicht dasselbe Wissen mit weniger Sicherheit.
+ */
+/*
+ * Woher der Gehaltsbetrag stammt.
+ *
+ *   provider        — der Anbieter hat ein Gehaltsfeld geliefert
+ *   board_estimate  — die Plattform SCHÄTZT und sagt das dazu
+ *   text            — wir haben ihn aus der Beschreibung gelesen
+ *
+ * `board_estimate` kam später dazu. Adzuna markiert geschätzte Werte
+ * mit `salary_is_predicted`; der Adapter warf sie weg, weil es keinen
+ * Zustand für sie gab. Eine Plattformschätzung ist eine brauchbare
+ * Grössenordnung und keine Zusage des Arbeitgebers — wer damit
+ * verhandelt, muss den Unterschied sehen.
+ */
+export const salaryProvenanceEnum = pgEnum("salary_provenance", [
+  "provider",
+  "board_estimate",
+  "text",
+  /**
+   * Vom Arbeitgeber selbst eingetragen.
+   *
+   * Die verlässlichste Herkunft im Index: Die Zahl kommt von dem, der
+   * sie zahlt. Ohne eigenen Wert wäre sie von der Angabe eines Portals
+   * nicht zu unterscheiden.
+   */
+  "employer",
+]);
+export const applyMethodEnum = pgEnum("apply_method", [
+  "email",
+  "portal",
+  "form",
+  "unknown",
+  /** Bewerbung bleibt hier — nur bei selbst eingestellten Stellen. */
+  "internal",
+]);
 
 export const jobSourceKindEnum = pgEnum("job_source_kind", [
   "licensed_api", "employer_feed", "partner", "user_url", "user_text", "seed",
@@ -60,7 +102,7 @@ export const applicationEventTypeEnum = pgEnum("application_event_type", [
   "job_viewed", "job_saved", "application_started", "application_sent",
   "acknowledged", "response_received", "interview_scheduled", "interview_held",
   "offer_received", "rejected", "withdrawn", "accepted",
-  "fit_check_30", "fit_check_60", "fit_check_90",
+  "fit_check_30", "fit_check_60", "fit_check_90", "fit_check_180",
 ]);
 export const artifactKindEnum = pgEnum("artifact_kind", [
   "cv_ats", "cv_designed", "cover_letter", "application_email",
@@ -71,6 +113,18 @@ export const claimStatusEnum = pgEnum("claim_status", ["supported", "unsupported
 export const consentKindEnum = pgEnum("consent_kind", [
   "career_profile", "document_analysis", "voice_input", "transcript_storage",
   "external_ai_processing", "model_training", "partner_sharing",
+  /*
+   * Der Suchauftrag, in drei getrennten Entscheidungen (Migration 0082).
+   *
+   *   background_search   im Hintergrund weitersuchen
+   *   behaviour_signals   dafür Gesprächs- und Verhaltenssignale auswerten
+   *   job_digest_email    Ergebnisse per E-Mail bekommen
+   *
+   * Getrennt, weil die Suche mit ausdrücklich bestätigten Angaben
+   * allein funktionieren muss. Wer nur das erste will, soll das zweite
+   * nicht mitgeben müssen — und das dritte schon gar nicht.
+   */
+  "background_search", "behaviour_signals", "job_digest_email",
 ]);
 export const privacyRequestKindEnum = pgEnum("privacy_request_kind", ["export", "delete_item", "delete_account", "withdraw_consent"]);
 export const privacyRequestStatusEnum = pgEnum("privacy_request_status", ["open", "processing", "done", "failed"]);

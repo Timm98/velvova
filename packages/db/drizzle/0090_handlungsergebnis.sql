@@ -1,0 +1,11 @@
+-- Was eine automatische Handlung hervorgebracht hat.
+--
+-- Ein vorbereiteter Vergleich und eine Liste offener Fragen sind
+-- Ergebnisse, keine Nebenwirkungen. Sie an der Handlung zu fuehren
+-- heisst: Wer die Handlung zuruecknimmt, nimmt auch ihr Ergebnis
+-- zurueck -- ohne dass jemand daran denken muss.
+--
+-- Eine eigene Tabelle waere sauberer getrennt und haette eine zweite
+-- Stelle geschaffen, an der die Rechteprüfung und das
+-- Rueckgaengigmachen haengen. Zwei Stellen sind eine zu viel.
+ALTER TABLE "nina_handlungen" ADD COLUMN IF NOT EXISTS "ergebnis" jsonb

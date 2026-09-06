@@ -3,6 +3,8 @@ import { pgliteOwner, resolveDataDir } from "@paycheck/db";
 import { runRetention } from "./tasks/retention.ts";
 import { markExpired, runLinkCheck } from "./tasks/linkCheck.ts";
 import { createCheckInReminders, createFollowUpReminders } from "./tasks/reminders.ts";
+import { runEntgeltReferenz } from "./tasks/entgeltreferenz.ts";
+import { runProfilsynthese } from "./tasks/profilsynthese.ts";
 
 /**
  * Der Worker.
@@ -27,9 +29,19 @@ async function runAll(): Promise<void> {
     markExpired(),
     createFollowUpReminders(),
     createCheckInReminders(),
+    runEntgeltReferenz(),
+    /*
+     * Die Profilsynthese steht zuletzt.
+     *
+     * Sie ist die einzige Aufgabe hier, die Geld kostet — und die
+     * einzige, die von einem fremden Dienst abhängt. Was vor ihr
+     * steht, läuft auch dann durch, wenn der Anbieter gerade nicht
+     * antwortet.
+     */
+    runProfilsynthese(),
   ]);
 
-  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins"];
+  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins", "Gehalts-Referenz", "Profilsynthese"];
   results.forEach((r, i) => {
     if (r.status === "fulfilled") {
       console.log(`  ${names[i]}: ${JSON.stringify(r.value)}`);

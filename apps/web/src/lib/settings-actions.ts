@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { requireUser } from "./auth";
+import { currentUser, requireUser } from "./auth";
 
 /**
  * Einstellungen speichern.
@@ -46,11 +46,39 @@ async function patch(userId: string, werte: Record<string, unknown>): Promise<vo
 
 const ThemeSchema = z.enum(["light", "dark", "system"]);
 
+/**
+ * Die Darstellung merken — für Angemeldete zusätzlich in der Datenbank.
+ *
+ * ── Warum hier kein `requireUser` steht ───────────────────────
+ *
+ * Es stand hier, und es war ein Fehler mit sichtbarer Folge: Der
+ * Umschalter sitzt im Fuss jeder Seite, auch der öffentlichen. Wer
+ * abgemeldet auf „dunkel" klickte, löste damit `requireUser()` aus —
+ * und das leitet auf die Anmeldung um. Aus einer Farbwahl wurde ein
+ * Seitenwechsel.
+ *
+ * Aufgefallen ist es erst, seit die öffentlichen Seiten das Thema
+ * nicht mehr fest auf hell stellen. Vorher tat der Umschalter dort
+ * ohnehin nichts Sichtbares, und niemand drückte ihn.
+ *
+ * Die Wahl geht an zwei Orte, und nur einer davon braucht ein Konto:
+ *
+ *   **Cookie** — setzt der Browser selbst, bevor diese Aktion
+ *   überhaupt läuft. Er allein trägt die Wahl schon vollständig; der
+ *   Server liest ihn beim nächsten Aufruf im ersten Byte.
+ *
+ *   **Datenbank** — damit die Wahl einen Gerätewechsel überlebt. Das
+ *   setzt eine Person voraus, der sie gehört. Gibt es keine, ist
+ *   nichts zu speichern — und das ist kein Fehler, sondern der
+ *   Normalfall auf einer öffentlichen Seite.
+ */
 export async function saveTheme(value: string): Promise<{ ok: boolean }> {
   const parsed = ThemeSchema.safeParse(value);
   if (!parsed.success) return { ok: false };
 
-  const user = await requireUser();
+  const user = await currentUser();
+  if (!user) return { ok: true };
+
   await patch(user.id, { theme: parsed.data });
   return { ok: true };
 }
@@ -157,6 +185,39 @@ export async function saveNotifications(input: {
 
   await patch(user.id, werte);
   revalidatePath("/app/settings/notifications");
+  return { ok: true };
+}
+
+/* ── Auffindbarkeit ────────────────────────────────────────────── */
+
+/**
+ * Ob Arbeitgeber über {@link import("@paycheck/db").stellenMatches}
+ * Vorschläge zu dieser Person bekommen dürfen.
+ *
+ * ── Warum das eine eigene Einwilligung ist ────────────────────
+ *
+ * Es ist keine Sichtbarkeitseinstellung wie „Profil öffentlich". Wer
+ * sie einschaltet, erlaubt einem System, ihn Unternehmen vorzuschlagen,
+ * die er nicht kennt, für Stellen, die er nie gesehen hat. Das ist
+ * eine andere Entscheidung als „ich suche Arbeit", und sie muss
+ * einzeln getroffen werden.
+ *
+ * Voreingestellt ist sie aus — siehe die Spalte im Schema. Wer sie
+ * abschaltet, verschwindet nicht rückwirkend aus laufenden
+ * Vorschlägen: Dafür gibt es den Widerruf am einzelnen Vorschlag, und
+ * der ist die genauere Handlung. Hier steht nur, ob NEUE entstehen
+ * dürfen.
+ */
+export async function saveAuffindbar(an: boolean): Promise<{ ok: boolean }> {
+  const user = await requireUser();
+  await patch(user.id, {
+    auffindbar: an,
+    /* Der Zeitpunkt der Zustimmung, nicht der letzten Änderung. Beim
+       Abschalten bleibt er stehen — er belegt, seit wann eine
+       Einwilligung bestand, und das gehört nicht gelöscht. */
+    ...(an ? { auffindbarSeit: new Date() } : {}),
+  });
+  revalidatePath("/app/settings/privacy");
   return { ok: true };
 }
 

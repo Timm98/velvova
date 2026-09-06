@@ -5,7 +5,19 @@ import { usePathname } from "next/navigation";
 import { CreditCard, Globe, LifeBuoy, Palette, ShieldCheck, User } from "lucide-react";
 import { CommandPalette } from "./CommandPalette.tsx";
 import { AccountMenu } from "./AccountMenu.tsx";
+import { kontoEintraege } from "./kontoeintraege.ts";
 import { BottomNav, TopNav } from "./TopNav.tsx";
+import { AppHinweisleiste } from "./AppHinweisleiste.tsx";
+import { VelvovaFooter } from "./VelvovaFooter.tsx";
+import type { Landzeile } from "@/lib/jobs/laenderbestand";
+
+/**
+ * Seiten, die eine Arbeitsfläche sind und keinen Fussbereich wollen.
+ *
+ * Wer gerade eine Bewerbung schreibt oder mit Nina spricht, scrollt
+ * nicht nach unten, um Impressum und Berufsfelder zu finden.
+ */
+const ARBEITSFLAECHEN = ["/app/nina", "/app/applications/"];
 import { cn } from "@/lib/cn";
 
 /**
@@ -58,6 +70,13 @@ export function AppShell({
   unreadCount,
   onLogout,
   children,
+  land,
+  laender,
+  stellenzahl,
+  stellenGenau,
+  proSekunde,
+  gespraechBegonnen,
+  bildKennung,
 }: {
   labels: NavLabels;
   brandName: string;
@@ -66,7 +85,29 @@ export function AppShell({
   userName: string | null;
   unreadCount: number;
   onLogout: React.ReactNode;
+  /* Märkte für das Länderraster im Fuss. Serverseitig geladen und
+     durchgereicht: AppShell ist eine Client-Komponente und darf die
+     Datenbank nicht anfassen. */
+  laender?: Landzeile[];
+  /* Bestandsgrösse für die Beschriftung der Kopfsuche. */
+  stellenzahl?: string;
+  /**
+   * Der genaue Stand und die gemessene Rate.
+   *
+   * Ohne sie steht die Zahl in der Kopfzeile still, während sie auf
+   * Startseite, Marketingseiten und im Arbeitgeberbereich läuft — auf
+   * derselben Sitzung, beim Wechsel zwischen zwei Seiten sichtbar.
+   */
+  stellenGenau?: number;
+  proSekunde?: number;
+  /* Ob schon ein Gespräch läuft — entscheidet über die Beschriftung
+     im Nina-Streifen. */
+  gespraechBegonnen?: boolean;
+  /* Ob ein Profilbild hinterlegt ist — für das Kontomenü. */
+  bildKennung?: string | null;
   children: React.ReactNode;
+  /** Der eingestellte Jobmarkt — für die Regionsauswahl im Fussbereich. */
+  land: string;
 }) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const pathname = usePathname();
@@ -82,14 +123,7 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const accountItems = [
-    { href: "/app/settings", label: labels.settings, icon: User },
-    { href: "/app/settings/abo", label: "Abo & Zahlung", icon: CreditCard },
-    { href: "/app/settings/language-region", label: labels.languageRegion, icon: Globe },
-    { href: "/app/settings/appearance", label: labels.appearance, icon: Palette },
-    { href: "/app/settings/privacy", label: labels.privacy, icon: ShieldCheck },
-    { href: "/help", label: labels.help, icon: LifeBuoy },
-  ];
+  const accountItems = kontoEintraege(labels);
 
   /*
    * Seiten, die exakt das Fenster füllen und selbst scrollen.
@@ -101,34 +135,75 @@ export function AppShell({
    */
   const fülltFenster = pathname === "/app/nina";
 
+  /*
+   * Wieder dieselbe Breite wie überall.
+   *
+   * Die Stellenseite lief zweimal auf mehr als 1200 Pixel — einmal auf
+   * 1600 bei zwei Spalten, einmal auf 1920 bei drei. Beide Male war
+   * das Ergebnis schlechter als der Ausgangszustand, und beide Male
+   * aus demselben Grund: Die zusätzliche Breite landet dort, wo sie
+   * nicht gebraucht wird, und die Spalten geraten aus dem Verhältnis.
+   *
+   * 1200 ist die Breite, auf die alles andere abgestimmt ist. Wer das
+   * erneut ändern will, misst vorher — `tests/e2e/seitenbreite.spec.ts`
+   * ist der Ort dafür.
+   */
+  const breiteArbeitsflaeche = false;
+
   return (
     <div className={cn("flex min-h-dvh flex-col bg-page", fülltFenster && "overflow-hidden")}>
       <a href="#inhalt" className="skip-link">
         {labels.skipToContent}
       </a>
 
+      {/*
+        * Die App-Leiste über der Navigation — ausser dort, wo das
+        * Fenster ganz gefüllt wird.
+        *
+        * Im Gespräch mit Nina zählt jede Zeile Höhe. Ein Hinweis auf
+        * eine App, die es noch nicht gibt, ist es nicht wert, dort
+        * dreissig Pixel zu kosten.
+        */}
+      {!fülltFenster && <AppHinweisleiste />}
+
       <TopNav
         brandName={brandName}
-        assistantName={assistantName}
         userName={userName}
         userEmail={userEmail}
         unreadCount={unreadCount}
         onOpenSearch={() => setPaletteOpen(true)}
+        stellenzahl={stellenzahl}
+        stellenGenau={stellenGenau}
+        proSekunde={proSekunde}
         accountMenu={
           <AccountMenu
             userName={userName}
             userEmail={userEmail}
             items={accountItems}
             onLogout={onLogout}
+            bildKennung={bildKennung}
           />
         }
       />
+
+      {/*
+       * Hier lag der Nina-Streifen mit „Willkommen zurück".
+       *
+       * Er stand über jeder Seite und begrüsste denselben Menschen ein
+       * zweites Mal — die Startseite tut das bereits, mit Namen. Zwei
+       * Begrüssungen sind keine Freundlichkeit, sondern eine Zeile, die
+       * man wegliest.
+       *
+       * Nina steht jetzt auf der Startseite in voller Grösse, und das
+       * Dock liegt weiterhin auf jeder Seite.
+       */}
 
       <main
         id="inhalt"
         data-fuellt-fenster={fülltFenster ? "" : undefined}
         className={cn(
-          "mx-auto w-full max-w-[1400px] px-4 md:px-8",
+          "mx-auto w-full px-5 md:px-8",
+          breiteArbeitsflaeche ? "max-w-[1600px]" : "max-w-(--breite-inhalt)",
           fülltFenster
             ? /*
                * Genau der Rest des Fensters, keine Zeile mehr.
@@ -178,6 +253,19 @@ export function AppShell({
       >
         {children}
       </main>
+
+      {/*
+        * Der grosse Fussbereich — nicht überall.
+        *
+        * Die Vorgabe sagt es genau: auf Übersichts- und Inhaltsseiten
+        * ja, im Gespräch, im Sprachmodus und im Bewerbungseditor
+        * nicht. Dort ist die Seite eine Arbeitsfläche, und ein
+        * Fussbereich mit dreissig Links darunter stört bei jedem
+        * Scrollen.
+        */}
+      {!fülltFenster && !ARBEITSFLAECHEN.some((p) => pathname.startsWith(p)) && (
+        <VelvovaFooter land={land} laender={laender} />
+      )}
 
       <BottomNav />
 

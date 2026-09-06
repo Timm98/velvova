@@ -37,7 +37,7 @@ const env = (name: string): string | null => {
 export const company = {
   /** Vollständiger Firmenname inklusive Rechtsform. */
   legalName: env("NEXT_PUBLIC_COMPANY_LEGAL_NAME"),
-  tradeName: "Paycheck",
+  tradeName: "Velvova",
   address: {
     street: env("NEXT_PUBLIC_COMPANY_STREET"),
     postalCode: env("NEXT_PUBLIC_COMPANY_POSTAL_CODE"),
@@ -75,7 +75,7 @@ export const team: TeamMember[] = [
     name: "Tim Enseling",
     role: "Gesellschafter und Geschäftsführer",
     focus: "Produkt & Technologie",
-    bio: "Tim verantwortet die Produktentwicklung, technische Architektur und Umsetzung von Paycheck.",
+    bio: "Tim verantwortet die Produktentwicklung, technische Architektur und Umsetzung von Velvova.",
     email: env("NEXT_PUBLIC_TIM_CONTACT_EMAIL"),
     // Bleibt false, bis die genaue rechtliche Bezeichnung bestätigt ist.
     // Eine falsche Rollenangabe im Impressum ist ein Rechtsfehler,

@@ -7,14 +7,8 @@ import { updateSettings } from "@/lib/privacy";
 import { Card, Field, Input, Select, Separator } from "@/components/ui";
 import { ChipGroup, ChoiceGroup, SaveButton, Toggle } from "../SettingsForm";
 import { speicherbareSprachen, nochNichtSpeicherbar } from "@/lib/i18n/speicherbare-sprachen";
-import {
-  alleSprachstände,
-  länder,
-  währungName,
-  währungen,
-  zeitzoneMitVersatz,
-  zeitzonen,
-} from "@paycheck/i18n";
+import { alleSprachstände, landName, währungName, zeitzoneMitVersatz } from "@paycheck/i18n";
+import { LandFeld, WaehrungFeld, ZeitzoneFeld } from "./RegionFelder";
 
 export const metadata: Metadata = { title: "Sprache & Region" };
 export const dynamic = "force-dynamic";
@@ -65,6 +59,22 @@ export default async function LanguageRegionPage() {
     )[0],
   );
 
+  /*
+   * Was gerade gilt — gewählt oder abgeleitet.
+   *
+   * ── Warum hier nicht mehr „de" steht ────────────────────────
+   *
+   * Weil die Spalten seit Migration 0097 `null` sein dürfen und das
+   * „nicht gesagt" heisst. Hier „de" einzusetzen zeigte im Auswahlfeld
+   * Deutsch an, obwohl die Seite gerade englisch ausgeliefert wird —
+   * eine Einstellung, die etwas anderes behauptet als das, was man
+   * sieht.
+   *
+   * `user.locale` trägt bereits die Auflösung: gewählt, sonst aus der
+   * Anfrage abgeleitet.
+   */
+  const sprache = settings?.locale ?? user.locale;
+
   return (
     <form action={updateSettings} className="grid gap-6">
       <Card className="grid gap-6">
@@ -93,7 +103,7 @@ export default async function LanguageRegionPage() {
               übersetzte Oberfläche taucht als „Beta" auf, eine leere
               gar nicht.
             */}
-            <Select id="locale" name="locale" defaultValue={settings?.locale ?? "de"}>
+            <Select id="locale" name="locale" defaultValue={sprache}>
               {alleSprachstände()
                 .filter((s) => s.zustand !== "geplant")
                 .map((s) => (
@@ -118,7 +128,7 @@ export default async function LanguageRegionPage() {
             <Select
               id="assistantLocale"
               name="assistantLocale"
-              defaultValue={settings?.assistantLocale ?? "de"}
+              defaultValue={settings?.assistantLocale ?? sprache}
             >
               {gesprächsSprachen.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -132,7 +142,7 @@ export default async function LanguageRegionPage() {
             <Select
               id="documentLocale"
               name="documentLocale"
-              defaultValue={settings?.documentLocale ?? "de"}
+              defaultValue={settings?.documentLocale ?? sprache}
             >
               {gesprächsSprachen.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -155,27 +165,23 @@ export default async function LanguageRegionPage() {
 
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Wohnsitzland" htmlFor="country">
-            <Select id="country" name="country" defaultValue={settings?.country ?? "DE"}>
-              {länder(settings?.locale ?? "de").map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+            <LandFeld
+              id="country"
+              name="country"
+              wert={settings?.country ?? "DE"}
+              anzeige={landName(settings?.country ?? "DE", sprache)}
+              sprache={sprache}
+            />
           </Field>
 
           <Field label="Jobmarkt" htmlFor="jobMarketCountry">
-            <Select
+            <LandFeld
               id="jobMarketCountry"
               name="jobMarketCountry"
-              defaultValue={settings?.jobMarketCountry ?? "DE"}
-            >
-              {länder(settings?.locale ?? "de").map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
+              wert={settings?.jobMarketCountry ?? "DE"}
+              anzeige={landName(settings?.jobMarketCountry ?? "DE", sprache)}
+              sprache={sprache}
+            />
           </Field>
 
           <Field label="Wohnort" htmlFor="baseLocation" hint="Stadt oder Postleitzahl">
@@ -216,23 +222,23 @@ export default async function LanguageRegionPage() {
           </Field>
 
           <Field label="Zeitzone" htmlFor="timezone">
-            <Select id="timezone" name="timezone" defaultValue={settings?.timezone ?? "Europe/Berlin"}>
-              {zeitzonen().map((tz) => (
-                <option key={tz} value={tz}>
-                  {zeitzoneMitVersatz(tz, settings?.locale ?? "de", jetzt)}
-                </option>
-              ))}
-            </Select>
+            <ZeitzoneFeld
+              id="timezone"
+              name="timezone"
+              wert={settings?.timezone ?? "Europe/Berlin"}
+              anzeige={zeitzoneMitVersatz(settings?.timezone ?? "Europe/Berlin", sprache, jetzt)}
+              sprache={sprache}
+            />
           </Field>
 
           <Field label="Währung" htmlFor="currency">
-            <Select id="currency" name="currency" defaultValue={settings?.currency ?? "EUR"}>
-              {währungen().map((c) => (
-                <option key={c} value={c}>
-                  {währungName(c, settings?.locale ?? "de")}
-                </option>
-              ))}
-            </Select>
+            <WaehrungFeld
+              id="currency"
+              name="currency"
+              wert={settings?.currency ?? "EUR"}
+              anzeige={währungName(settings?.currency ?? "EUR", sprache)}
+              sprache={sprache}
+            />
           </Field>
 
           <Field label="Entfernungen" htmlFor="distanceUnit">

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -19,9 +20,20 @@ export function AccountMenu({
   userEmail,
   items,
   onLogout,
+  bildKennung = null,
 }: {
   userName: string | null;
   userEmail: string;
+  /** Ob ein Profilbild hinterlegt ist. Ohne bleibt der Anfangsbuchstabe. */
+  /**
+   * Die Kennung des Bildes — nicht nur, DASS eines da ist.
+   *
+   * Sie steht im Adressanhang und ist der einzige Grund, warum ein
+   * gewechseltes Bild überhaupt sichtbar wird: Ohne sie hat jedes
+   * Bild dieselbe Adresse, und der Browser holt sie ein Jahr lang
+   * nicht neu. Siehe `lib/profilbild-kennung.ts`.
+   */
+  bildKennung?: string | null;
   items: { href: string; label: string; icon: LucideIcon }[];
   onLogout: React.ReactNode;
 }) {
@@ -62,12 +74,56 @@ export function AccountMenu({
         aria-haspopup="menu"
         aria-label="Kontomenü"
         className={cn(
-          "grid size-11 place-items-center rounded-(--radius-full) text-sm font-medium transition-colors",
-          "bg-inset text-ink-2 hover:bg-line-2",
+          "relative grid size-11 place-items-center rounded-(--radius-full) text-sm font-medium transition-colors",
+          bildKennung ? "border border-line" : "bg-inset text-ink-2 hover:bg-line-2",
           open && "ring-2 ring-brand/40",
         )}
       >
-        {initials}
+        {/*
+          Ein kleiner Pfeil unten rechts sagt, dass sich hier etwas
+          aufklappt. Ohne ihn sieht der Kreis aus wie ein Bild, nicht
+          wie ein Knopf — und niemand klickt auf ein Bild, um zu den
+          Einstellungen zu kommen.
+        */}
+        {/*
+          Der Pfeil ist dunkel auf hellem Grund, nicht umgekehrt.
+
+          Vorher war das Abzeichen selbst schwarz und der Pfeil darin
+          weiss — neben einem Profilbild sass damit ein zweiter
+          dunkler Kreis am Rand, und der las sich als Teil des Bildes
+          statt als Bedienhinweis. Ein dunkler Pfeil auf einem hellen
+          Plättchen ist als Zeichen erkennbar und als Bild nicht.
+
+          `border-line` statt `border-page`: Auf hellem Grund braucht
+          ein helles Plättchen eine Kante, sonst verschwindet es.
+        */}
+        <span
+          aria-hidden
+          className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border border-line bg-page text-ink"
+        >
+          <ChevronDown className="size-2.5" strokeWidth={3} />
+        </span>
+        {bildKennung ? (
+          /*
+            Kein `next/image`: Die Route liefert das Bild des
+            angemeldeten Nutzers und ist ohne Sitzung nicht abrufbar —
+            der Bildoptimierer holt sie serverseitig ohne Cookie und
+            bekäme eine 404.
+
+            `alt=""` und `aria-hidden` sind richtig, weil der Knopf
+            bereits „Kontomenü" heisst: Ein zweiter Name daneben wäre
+            für ein Vorlesegerät eine Wiederholung.
+          */
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/app/profilbild?v=${bildKennung}`}
+            alt=""
+            aria-hidden
+            className="size-full rounded-full object-cover"
+          />
+        ) : (
+          initials
+        )}
       </button>
 
       {open && (

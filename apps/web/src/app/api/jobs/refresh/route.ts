@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loadRuntimeConfig } from "@paycheck/config";
-import { adapterByKey, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
+import { activeAdapters, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
+import { suchbegriffeAusProfilen } from "@/lib/jobs/suchbegriffe";
 import { currentUser } from "@/lib/auth";
 import { decideForProvider } from "@paycheck/sources";
 import { ATS_BOARDS, loadRegistrations, setBoardRegistrations } from "@paycheck/jobs";
@@ -57,17 +58,55 @@ export async function POST(request: Request) {
     setBoardRegistrations(board, await loadRegistrations(board));
   }
 
-  const adapters = cfg.jobs.sources
-    .filter((key) => key !== "user_private_import" && key !== "seed")
-    .map((key) => adapterByKey(key))
-    .filter((a): a is NonNullable<typeof a> => a !== undefined);
+  /*
+   * Dieselbe Liste wie im Kommandozeilenlauf.
+   *
+   * Hier stand `cfg.jobs.sources` — die Aufzählung aus `JOB_SOURCES`.
+   * Genau die Falle, die aus der Registry entfernt wurde, steckte damit
+   * weiter in diesem Pfad: `JOB_SOURCES=arbeitnow` stand in der
+   * Konfiguration, und ein Zeitplan, der diesen Endpunkt aufruft, hätte
+   * für immer nur eine einzige Quelle abgerufen — ohne Fehler, ohne
+   * Hinweis, mit einem Bericht, der „erfolgreich" meldet.
+   *
+   * Zwei Wege in denselben Abruf brauchen dieselbe Antwort auf die
+   * Frage, welche Quellen laufen. `activeAdapters()` ist diese
+   * Antwort: eingerichtet, lizenziert, nicht ausdrücklich abgeschaltet.
+   */
+  /*
+   * Wonach gesucht wird, kommt aus den Profilen im System.
+   *
+   * Bis hierher fragte die Bundesagentur mit fünf fest eingetragenen
+   * Begriffen. Der Bestand wuchs deshalb in genau fünf Richtungen —
+   * und wer in eine sechste wollte, fand dort nichts. Nicht weil es
+   * nichts gibt, sondern weil nie jemand danach gefragt hatte.
+   *
+   * Die Begriffe ERGÄNZEN die Grundausstattung, sie ersetzen sie nicht:
+   * Über 63 Konten mit Belegen überschritten nur drei abgeleitete
+   * Richtungen die Schwelle. Ein Austausch hätte verengt statt
+   * erweitert.
+   *
+   * Schlägt die Ableitung fehl, läuft der Abruf mit der
+   * Grundausstattung weiter. Ein Abruf, der wegen der Suchbegriffe gar
+   * nichts holt, wäre schlimmer als einer mit den alten.
+   */
+  let ausProfilen: string[] = [];
+  try {
+    ausProfilen = (await suchbegriffeAusProfilen()).map((b) => b.begriff);
+  } catch {
+    ausProfilen = [];
+  }
+
+  const adapters = activeAdapters(cfg, { abfragen: ausProfilen }).filter(
+    (a) => a.key !== "user_private_import" && a.key !== "seed",
+  );
 
   if (adapters.length === 0) {
     return NextResponse.json(
       {
         error:
-          "Es ist keine abrufbare Stellenquelle aktiv. Trage sie in JOB_SOURCES ein — " +
-          "zum Beispiel JOB_SOURCES=arbeitnow.",
+          "Es ist keine abrufbare Stellenquelle eingerichtet. Eine Quelle läuft, sobald " +
+          "ihre Zugangsdaten hinterlegt sind und ihr Eintrag im Quellenverzeichnis " +
+          "freigegeben ist. Den Stand zeigt `node scripts/provider-status.mjs`.",
       },
       { status: 409 },
     );

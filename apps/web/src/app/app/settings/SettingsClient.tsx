@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { deleteAccount, exportData, setConsent, signOutDevice } from "@/lib/privacy";
+import { saveAuffindbar } from "@/lib/settings-actions";
 import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
 /** Einwilligungen einzeln schalten. Der Widerruf wirkt sofort. */
@@ -58,6 +59,71 @@ export function ConsentToggles({
         );
       })}
     </ul>
+  );
+}
+
+/**
+ * Ob Arbeitgeber Vorschläge zu dieser Person erhalten dürfen.
+ *
+ * ── Warum getrennt von den übrigen Einwilligungen ─────────────
+ *
+ * Die anderen betreffen, was mit vorhandenen Daten geschieht. Diese
+ * betrifft, ob überhaupt jemand von einem erfährt: Sie erlaubt einem
+ * System, einen Unternehmen vorzuschlagen, die man nicht kennt, für
+ * Stellen, die man nie gesehen hat.
+ *
+ * Deshalb steht sie in einem eigenen Kasten mit einer eigenen
+ * Erklärung — und nicht als sechster Haken in einer Liste, in der die
+ * anderen fünf harmloser sind.
+ */
+export function AuffindbarSchalter({ an, seit }: { an: boolean; seit: Date | null }) {
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const [wert, setWert] = useState(an);
+
+  return (
+    <label
+      htmlFor="auffindbar"
+      style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "var(--space-3)", cursor: "pointer", alignItems: "start" }}
+    >
+      <input
+        id="auffindbar"
+        type="checkbox"
+        checked={wert}
+        disabled={pending}
+        onChange={(e) => {
+          const next = e.target.checked;
+          setWert(next);
+          startTransition(async () => {
+            await saveAuffindbar(next);
+            router.refresh();
+          });
+        }}
+        style={{ width: 20, height: 20, marginTop: 3 }}
+      />
+      <div>
+        <span style={{ fontWeight: 500, display: "flex", gap: "var(--space-2)", alignItems: "center", flexWrap: "wrap" }}>
+          Von Unternehmen gefunden werden
+          {wert ? <Badge tone="positive">an</Badge> : <Badge tone="neutral">aus</Badge>}
+          {pending && <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>…</span>}
+        </span>
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: 2 }}>
+          Nina darf dich Unternehmen als möglichen Treffer vorschlagen — anonym. Name und
+          Kontaktdaten bleiben verborgen, bis du eine Anfrage einzeln freigibst und beide Seiten
+          Interesse gezeigt haben.
+        </p>
+        {wert && seit && (
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: 4 }}>
+            Erteilt am {new Intl.DateTimeFormat("de-DE", { dateStyle: "long" }).format(seit)}.
+          </p>
+        )}
+        {!wert && (
+          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", marginTop: 4 }}>
+            Aus heisst: keine neuen Vorschläge. Laufende Anfragen widerrufst du einzeln.
+          </p>
+        )}
+      </div>
+    </label>
   );
 }
 

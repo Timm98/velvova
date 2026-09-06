@@ -2,7 +2,25 @@ node_modules/
 .pnpm-store/
 dist/
 build/
-.next/
+# Alle Build-Verzeichnisse von Next, als Muster.
+#
+# Es gibt mehrere: `.next` für die Entwicklung, daneben eigene für
+# Testreihe und Messungen, damit ein Produktionsbuild niemals den
+# laufenden Entwicklungsserver überschreibt (siehe next.config.ts,
+# `distDir`, und NEXT_DIST_DIR).
+#
+# Bewusst ein Muster und keine Aufzählung. Hier standen drei Namen
+# einzeln, und ein vierter — `.next-build` — fiel durch: Tailwind
+# durchsucht den Quellbaum automatisch und hält sich dabei an diese
+# Datei. Ein unbekanntes Build-Verzeichnis las es deshalb als Quelltext,
+# fand in einer Turbopack-Cachedatei Bytes wie `text-[1.062\x07!]`,
+# schrieb daraus eine Regel — und die gesamte Anwendung antwortete mit
+# 500, weil das erzeugte CSS nicht mehr geparst werden konnte.
+#
+# Ein Build, der die Anwendung unbenutzbar macht, ohne dass jemand Code
+# geändert hat, ist teuer zu finden. Das Muster verhindert die ganze
+# Klasse.
+.next*/
 out/
 .turbo/
 coverage/

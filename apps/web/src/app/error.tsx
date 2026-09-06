@@ -30,6 +30,36 @@ export default function ErrorBoundary({
     console.error("Unbehandelter Fehler:", error.digest ?? "ohne Kennung", error.message);
   }, [error]);
 
+  /*
+   * Nicht jeder Fehler lässt sich an derselben Stelle noch einmal
+   * versuchen.
+   *
+   * `reset()` rendert den abgestürzten Abschnitt neu — richtig für
+   * alles, was einmalig schiefging: eine Abfrage, die zurückkam, ein
+   * Netzweg, der aussetzte.
+   *
+   * Falsch dagegen, wenn ein Codeteil selbst fehlt. Kann der Browser
+   * einen Chunk nicht laden — weil die Anwendung neu ausgeliefert wurde
+   * und die Datei unter dem alten Namen nicht mehr existiert —, dann
+   * zeigt die Seite auf etwas, das es nicht mehr gibt. `reset()` zeigt
+   * danach auf dasselbe Nichts, beliebig oft. Für die Person ist das
+   * ein Knopf, der nichts tut.
+   *
+   * Hier hilft nur neu laden: das neue HTML nennt die neuen Dateinamen.
+   */
+  const chunkFehlt =
+    /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed/i.test(
+      `${error.name} ${error.message}`,
+    );
+
+  function erneutVersuchen() {
+    if (chunkFehlt) {
+      window.location.reload();
+      return;
+    }
+    reset();
+  }
+
   return (
     <div className="grid min-h-[60vh] place-items-center px-5 py-16">
       <div className="grid max-w-[46ch] gap-5">
@@ -38,18 +68,19 @@ export default function ErrorBoundary({
         </h1>
 
         <p className="leading-relaxed text-ink-2">
-          Der Fehler liegt bei uns, nicht bei dir. Deine Angaben sind gespeichert — es ist nichts
-          verloren gegangen.
+          {chunkFehlt
+            ? "Velvova wurde gerade aktualisiert, während diese Seite offen war. Ein Neuladen holt die neue Fassung."
+            : "Der Fehler liegt bei uns, nicht bei dir. Deine Angaben sind gespeichert — es ist nichts verloren gegangen."}
         </p>
 
         <div className="flex flex-wrap items-center gap-4 pt-1">
           <button
             type="button"
-            onClick={reset}
+            onClick={erneutVersuchen}
             className="inline-flex min-h-10 items-center gap-2 rounded-(--radius-full) bg-accent px-5 text-sm font-medium text-accent-on"
           >
             <RotateCw className="size-4" strokeWidth={1.9} />
-            Erneut versuchen
+            {chunkFehlt ? "Seite neu laden" : "Erneut versuchen"}
           </button>
 
           <a

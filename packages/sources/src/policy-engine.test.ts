@@ -98,13 +98,50 @@ describe("Freigegebene Quellen", () => {
     }
   });
 
-  it("sperrt Jooble und Adzuna, solange kein Schlüssel hinterlegt ist", () => {
-    // enabled=false heisst: es gibt keinen Zugang. Der Verweis bleibt.
-    for (const key of ["jooble_de", "adzuna_de"]) {
-      const decision = decideForProvider(key);
-      expect(decision.decision).toBe("link_only");
-      expect(decision.reasonCode).toBe("provider_disabled");
-      expect(isAllowed(decision, "FetchDetails")).toBe(false);
+  it("sperrt jede Quelle, deren Eintrag abgeschaltet ist", () => {
+    /*
+     * Die Aussage ist unverändert: `enabled: false` heisst kein Abruf,
+     * der Verweis bleibt. Das Beispiel ist ein anderes.
+     *
+     * Vorher standen hier Jooble und Adzuna, weil ihnen die
+     * Zugangsdaten fehlten. Die liegen inzwischen vor, und ihre
+     * Einträge sind freigegeben — ein Test, der sie weiterhin als
+     * gesperrt erwartet, hätte den Fortschritt zum Fehler erklärt.
+     *
+     * Geprüft wird jetzt die REGEL statt einer Momentaufnahme: was
+     * immer im Verzeichnis abgeschaltet ist, darf nicht abgerufen
+     * werden. Damit gilt der Test auch für die nächste Quelle, die
+     * jemand hinzufügt.
+     */
+    const abgeschaltet = SOURCE_REGISTRY.filter((e) => !e.enabled);
+    expect(abgeschaltet.length, "es gibt abgeschaltete Quellen zum Prüfen").toBeGreaterThan(0);
+
+    for (const entry of abgeschaltet) {
+      const decision = decideForProvider(entry.providerKey);
+      expect(isAllowed(decision, "Search"), entry.providerKey).toBe(false);
+      expect(isAllowed(decision, "FetchDetails"), entry.providerKey).toBe(false);
+    }
+  });
+
+  it("nennt bei jeder abgeschalteten Quelle einen Grund", () => {
+    /*
+     * Ohne Grund ist eine Sperre nicht auflösbar: niemand weiss, was
+     * zu tun wäre, und irgendwann setzt jemand `enabled: true`, um
+     * weiterzukommen. Der Grund ist das, was diese Entscheidung
+     * überprüfbar hält.
+     */
+    for (const entry of SOURCE_REGISTRY.filter((e) => !e.enabled)) {
+      expect(entry.killSwitchReason, entry.providerKey).toBeTruthy();
+      expect(entry.killSwitchReason!.length, entry.providerKey).toBeGreaterThan(20);
+    }
+  });
+
+  it("gibt eine Quelle erst frei, wenn ihre Rechtsgrundlage benannt ist", () => {
+    // `enabled: true` ohne dokumentierte Grundlage wäre der stille Weg
+    // an diesem Verzeichnis vorbei.
+    for (const entry of SOURCE_REGISTRY.filter((e) => e.enabled)) {
+      expect(entry.legalBasis, entry.providerKey).toBeTruthy();
+      expect(entry.termsUrl ?? entry.note, entry.providerKey).toBeTruthy();
     }
   });
 

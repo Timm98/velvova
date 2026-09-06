@@ -86,6 +86,37 @@ export const ToolSchemas = {
   }),
 
   /** Einen Profilentwurf erzeugen. Er gilt erst nach Bestätigung. */
+  /**
+   * Eine Tiefenanalyse anfordern — für Chat und Sprache dasselbe.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum das ein Werkzeug ist und keine Modellwahl
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Im Sprachmodus antwortet Nina über das Realtime-Modell. Das ist
+   * schnell und für ein Gespräch richtig — für eine Karriereanalyse
+   * ist es das falsche Werkzeug.
+   *
+   * Statt das Sprachmodell tiefer denken zu lassen, fordert es die
+   * Analyse an, wartet, und erzählt dann das Ergebnis. Der Mensch
+   * hört währenddessen, dass gerechnet wird, statt eine flache
+   * Antwort in Echtzeit zu bekommen.
+   *
+   * Dasselbe Werkzeug im Chat: Ein Weg, eine Regel. Zwei Wege hiessen
+   * früher oder später zwei verschiedene Antworten auf dieselbe Frage.
+   */
+  request_career_analysis: z.object({
+    /** Worum es geht — für das Protokoll, nicht für das Modell. */
+    anlass: z.string().min(4).max(200),
+    /**
+     * Ob die Person ausdrücklich um Gründlichkeit gebeten hat.
+     *
+     * Das ist keine Heuristik, sondern eine Aussage — und deshalb
+     * darf das Sprachmodell sie melden, aber nicht erfinden.
+     */
+    ausdruecklichGruendlich: z.boolean().default(false),
+  }),
+
   generate_career_profile_draft: z.object({
     careerCompass: z.string().min(20).max(800),
     roleClusters: z
@@ -168,6 +199,11 @@ export const TOOL_DESCRIPTIONS: Record<ToolName, string> = {
     "Legt eine abgeleitete Aussage an. Sie gilt als unbestätigt, bis die Person sie bestätigt.",
   update_user_preference:
     "Ändert eine Suchbedingung. Nur nach ausdrücklicher Aussage der Person, nie aus einer Vermutung.",
+  request_career_analysis:
+    "Fordert eine gründliche Karriereanalyse an. Nutze das, wenn die Person vor einer " +
+    "beruflichen Entscheidung steht oder ausdrücklich um eine ausführliche Einschätzung bittet. " +
+    "Die Analyse dauert einige Sekunden — sag der Person, dass du kurz nachdenkst.",
+
   generate_career_profile_draft:
     "Erzeugt einen Profilentwurf mit Rollenclustern. Er wird der Person zur Prüfung vorgelegt.",
   confirm_profile_item:

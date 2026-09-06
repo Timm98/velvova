@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Check, Mic, Square, X } from "lucide-react";
+import { ArrowUp, Check, Mic, Square, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { DokumentKnopf } from "./DokumentKnopf";
 
 /**
  * Der Composer.
@@ -68,6 +69,7 @@ export function Composer({
   skipLabel,
   className,
   onListeningChange,
+  dokumenteFür,
 }: {
   onSend: (text: string, options?: { fromVoice?: boolean }) => void;
   busy: boolean;
@@ -77,11 +79,39 @@ export function Composer({
   onSkip?: () => void;
   skipLabel?: string;
   className?: string;
+  /**
+   * Ninas Name — schaltet den Dokumentknopf frei.
+   *
+   * Bewusst nicht überall: der Composer steht auch im Interview, wo
+   * gerade eine bestimmte Frage beantwortet wird. Eine Büroklammer
+   * daneben lädt dazu ein, an der Frage vorbei etwas hochzuladen.
+   */
+  dokumenteFür?: string;
   /** Meldet, ob das Mikrofon gerade zuhört. */
   onListeningChange?: (listening: boolean) => void;
 }) {
   const [text, setText] = useState("");
   const [hört, setHört] = useState(false);
+
+  /*
+   * Die laufende Aufnahmezeit.
+   *
+   * Sie ist der Teil, an dem man eine Sprachnachricht erkennt — und
+   * die einzige Rückmeldung, die tatsächlich etwas misst. Sekunden
+   * genügen; Zehntel machen die Zeile unruhig, ohne etwas zu sagen.
+   */
+  const [sekunden, setSekunden] = useState(0);
+
+  useEffect(() => {
+    if (!hört) {
+      setSekunden(0);
+      return;
+    }
+    const t = setInterval(() => setSekunden((s) => s + 1), 1000);
+    return () => clearInterval(t);
+  }, [hört]);
+
+  const dauerText = `${Math.floor(sekunden / 60)}:${String(sekunden % 60).padStart(2, "0")}`;
   const [transkript, setTranskript] = useState("");
   const [stimmeMöglich, setStimmeMöglich] = useState(false);
 
@@ -191,53 +221,103 @@ export function Composer({
          * Höhe. Es braucht also keine Umschaltung, die man vergessen
          * könnte.
          */
-        "rounded-(--radius-pill) bg-raised p-2.5 shadow-lg transition-[box-shadow] duration-(--duration-base)",
-        "focus-within:shadow-[0_0_0_2px_var(--primary),0_12px_40px_rgba(98,92,255,0.14)]",
+        /*
+         * Ruhiger Grundschatten, zurückgenommener Schein beim Fokus.
+         *
+         * Vorher: `shadow-lg` als Grundzustand und beim Tippen ein
+         * 40 Pixel weiter Schein mit 14 Prozent Deckkraft. Zusammen
+         * lag um das Feld eine deutlich sichtbare Wolke — auf einer
+         * hellen Fläche wirkt das wie ein Leuchten, das etwas
+         * ankündigt, und angekündigt wird nichts.
+         *
+         * Jetzt `shadow-md` und ein Schein von 26 Pixeln bei 8
+         * Prozent. Der Ring von zwei Pixeln bleibt unverändert: Er ist
+         * die Fokusanzeige und muss für Tastaturbedienung deutlich
+         * bleiben — ihn mit abzuschwächen wäre keine Zurückhaltung,
+         * sondern ein Zugänglichkeitsfehler.
+         */
+        "rounded-(--radius-pill) bg-raised p-2.5 shadow-md transition-[box-shadow] duration-(--duration-base)",
+        "focus-within:shadow-[0_0_0_2px_var(--primary),0_8px_26px_rgba(98,92,255,0.08)]",
         className,
       )}
     >
-      {/* Das Live-Transkript. Teil derselben Fläche, kein eigener Kasten. */}
+      {/*
+        ── Aufnahme wie eine Sprachnachricht ──────────────────
+        
+        Vorher: ein Block mit Überschrift „Ich höre zu", dem
+        Transkript darunter und drei beschrifteten Knöpfen —
+        Übernehmen, Pause, Verwerfen. Das ist ein Formular mit einem
+        Mikrofon davor.
+        
+        Eine Sprachnachricht sieht anders aus, und jeder kennt sie:
+        eine Zeile, links das Verwerfen, in der Mitte eine laufende
+        Zeit mit Ausschlag, rechts das Senden. Kein Text, der erklärt,
+        was gerade passiert — man sieht es.
+        
+        Das Transkript steht darunter, klein und ohne Überschrift. Es
+        ist die Kontrolle, ob richtig verstanden wurde, nicht der
+        Inhalt der Zeile.
+      */}
       {hört && (
-        <div className="grid gap-3 px-3 pb-3 pt-2">
-          <div className="flex items-center gap-2.5">
-            <span className="relative flex size-2.5">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-accent opacity-60 motion-reduce:hidden" />
-              <span className="relative inline-flex size-2.5 rounded-full bg-accent" />
-            </span>
-            <span className="text-sm font-medium">Ich höre zu</span>
-          </div>
-          <p
-            aria-live="polite"
-            className="min-h-6 text-[15px] leading-relaxed text-ink-2"
-          >
-            {transkript || <span className="text-ink-3">…</span>}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={übernehmen}
-              className="inline-flex h-9 items-center gap-2 rounded-(--radius-control) bg-accent px-4 text-sm font-medium text-accent-on transition-colors hover:bg-accent-hover"
-            >
-              <Check className="size-4" strokeWidth={2} />
-              Übernehmen
-            </button>
-            <button
-              type="button"
-              onClick={diktatStoppen}
-              className="inline-flex h-9 items-center gap-2 rounded-(--radius-control) bg-soft px-4 text-sm transition-colors hover:bg-soft-hover"
-            >
-              <Square className="size-3.5" strokeWidth={2} />
-              Pause
-            </button>
+        <div className="grid gap-1.5 px-1.5 pb-1.5 pt-1">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={verwerfen}
-              className="inline-flex h-9 items-center gap-2 rounded-(--radius-control) px-4 text-sm text-ink-2 transition-colors hover:bg-soft"
+              aria-label="Aufnahme verwerfen"
+              className="grid size-9 shrink-0 place-items-center rounded-full text-ink-3 transition-colors hover:bg-soft hover:text-critical"
             >
-              <X className="size-4" strokeWidth={1.8} />
-              Verwerfen
+              <Trash2 className="size-4" strokeWidth={1.9} />
+            </button>
+
+            {/*
+              Der Ausschlag ist eine Anzeige, keine Messung.
+              
+              Er zeigt, DASS aufgenommen wird — die tatsächliche
+              Lautstärke abzugreifen bräuchte einen zweiten Zugriff auf
+              dasselbe Mikrofon, und dafür ist die Auskunft zu klein.
+              Die Balken laufen deshalb gleichmässig, mit versetzten
+              Verzögerungen, damit es nicht wie ein Ladebalken wirkt.
+            */}
+            <span aria-hidden className="flex flex-1 items-center gap-[3px] overflow-hidden">
+              {Array.from({ length: 24 }, (_, i) => (
+                <span
+                  key={i}
+                  className="w-[3px] shrink-0 rounded-full bg-accent/70 motion-safe:animate-[welle_1100ms_ease-in-out_infinite]"
+                  style={{
+                    height: `${6 + ((i * 7) % 13)}px`,
+                    animationDelay: `${(i % 8) * 90}ms`,
+                  }}
+                />
+              ))}
+            </span>
+
+            <span className="shrink-0 font-mono text-sm tabular text-ink-2">{dauerText}</span>
+
+            <button
+              type="button"
+              onClick={diktatStoppen}
+              aria-label="Aufnahme pausieren"
+              className="grid size-9 shrink-0 place-items-center rounded-full text-ink-3 transition-colors hover:bg-soft hover:text-ink"
+            >
+              <Square className="size-3.5" strokeWidth={2} />
+            </button>
+
+            <button
+              type="button"
+              onClick={übernehmen}
+              aria-label="Aufnahme senden"
+              className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-accent-on transition-opacity hover:opacity-90"
+            >
+              <Check className="size-4" strokeWidth={2} />
             </button>
           </div>
+
+          {/* Die Kontrolle, ob richtig verstanden wurde. Ohne
+              Überschrift: Was da steht, erklärt sich. */}
+          <p aria-live="polite" className="min-h-5 px-1 text-sm leading-relaxed text-ink-3">
+            {transkript || "…"}
+          </p>
         </div>
       )}
 
@@ -272,6 +352,16 @@ export function Composer({
           >
             {skipLabel}
           </button>
+        )}
+
+        {dokumenteFür && (
+          <DokumentKnopf
+            assistantName={dokumenteFür}
+            // Was Nina gelesen hat, gehört ins Gespräch — sonst passiert
+            // es unsichtbar in einem Aufklappfeld und niemand weiss,
+            // worauf sich ihre nächste Antwort stützt.
+            onFertig={(zusammenfassung) => onSend(zusammenfassung)}
+          />
         )}
 
         {stimmeMöglich && !hört && (

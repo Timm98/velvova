@@ -133,7 +133,9 @@ export function entryRoute(state: {
   careerInterviewStatus: InterviewStatus;
   lastActiveRoute: string | null;
 }): string {
-  if (!state.onboardingComplete) return "/setup";
+  /* Früher `/setup`. Die Seite ist Ninas Einrichtung geworden; sie
+     schickt selbst weiter, sobald sie einmal abgeschlossen ist. */
+  if (!state.onboardingComplete) return "/nina-einrichten";
 
   switch (state.careerInterviewStatus) {
     case "not_started":

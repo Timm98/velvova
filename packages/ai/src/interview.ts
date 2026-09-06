@@ -5,6 +5,8 @@ import {
   type InterviewSession,
   type InterviewStage,
 } from "@paycheck/domain";
+import { offeneAchsenTreffer } from "./dimensionslesen.ts";
+import type { Arbeitsdimension } from "@paycheck/domain";
 import { QUESTIONS_BY_STAGE, STAGE_LABELS, followUpText, questionText, type Question } from "./questions.ts";
 
 /**
@@ -27,6 +29,15 @@ export interface InterviewState {
   askedKeys: string[];
   /** Fragen, die der Mensch übersprungen hat. Werden nicht wiederholt. */
   skippedKeys: string[];
+  /**
+   * Achsen des Career Twin, zu denen noch nichts vorliegt.
+   *
+   * Steuert nur die Reihenfolge INNERHALB eines Themas — die Themen
+   * selbst bleiben in ihrer Ordnung, sie tragen den roten Faden.
+   *
+   * Fehlt die Angabe, verhält sich alles wie vorher.
+   */
+  offeneAchsen?: readonly Arbeitsdimension[];
 }
 
 export interface NextStep {
@@ -114,7 +125,31 @@ export function nextStep(state: InterviewState): NextStep {
     if (handled.has(stage)) continue;
 
     const pool = QUESTIONS_BY_STAGE[stage] ?? [];
-    const open = pool.filter((q) => !state.askedKeys.includes(q.key) && !state.skippedKeys.includes(q.key));
+    const open = pool
+      .filter((q) => !state.askedKeys.includes(q.key) && !state.skippedKeys.includes(q.key))
+      /*
+       * Innerhalb eines Themas zuerst, was noch fehlt.
+       *
+       * ── Warum das etwas ändert ────────────────────────────
+       *
+       * Der Career Twin entscheidet über Passung, Alltagsvergleich und
+       * Rollenkarte. Nina konnte ihn bisher nur zufällig füllen: Sie
+       * nahm die erste offene Frage des Themas, unabhängig davon, ob
+       * deren Antwort überhaupt eine Achse trifft — und ob die Achse
+       * schon beantwortet war.
+       *
+       * Jetzt kommt die Frage zuerst, die die meisten noch offenen
+       * Achsen treffen kann. Die Reihenfolge der THEMEN bleibt
+       * unverändert; sie trägt den roten Faden des Gesprächs.
+       *
+       * Ohne `offeneAchsen` verhält sich alles wie vorher — die
+       * Sortierung ist dann für alle Fragen null.
+       */
+      .sort(
+        (a, b) =>
+          offeneAchsenTreffer(b.key, state.offeneAchsen ?? []) -
+          offeneAchsenTreffer(a.key, state.offeneAchsen ?? []),
+      );
 
     if (open.length === 0) {
       // Alle Fragen des Themas gestellt. Reicht das Ergebnis?

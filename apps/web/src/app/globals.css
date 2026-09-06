@@ -115,18 +115,56 @@
   --shadow-xl: var(--shadow-xl);
   --shadow-glow: var(--shadow-glow);
 
+  /* Schriften — die Aufgabenteilung steht bei den Token darunter. */
   /*
-   * Drei Schriften mit klar getrennten Aufgaben.
+   * Eine Textschrift für alles.
    *
-   * Manrope trägt Überschriften: geometrisch, offen, mit Charakter in
-   * großen Graden. Geist trägt die Oberfläche: eng laufend, ruhig,
-   * hervorragend in kleinen Größen. Geist Mono trägt Zahlen — Scores
-   * und Metadaten brauchen gleich breite Ziffern, sonst springt eine
-   * Liste bei jedem Wert.
+   * ── Warum die Display-Schrift verschwindet ────────────────
+   *
+   * Manrope trug die Überschriften, Geist die Oberfläche, Inter die
+   * redaktionelle Fläche — drei Schriften auf einer Seite. Auf einem
+   * Jobportal ist das kein Charakter, sondern Unruhe: Der Nutzer
+   * vergleicht Titel, Gehälter und Orte über Dutzende Karten hinweg,
+   * und jede Schriftwechsel kostet ihn einen Moment.
+   *
+   * Inter trägt jetzt alles. Sie ist für Bildschirmtext gebaut, hat
+   * eine geschlossene Ziffernzeichnung und läuft von 13 bis 48 Pixeln
+   * ruhig durch.
+   *
+   * ── Warum `--font-display` bleibt ─────────────────────────
+   *
+   * Die Klasse `font-display` steht an 89 Stellen in 46 Dateien. Sie
+   * dort überall zu entfernen wäre reine Änderung ohne Gewinn — und
+   * jede davon eine Gelegenheit, etwas kaputtzumachen. Das Token
+   * zeigt jetzt auf dieselbe Schrift; es bezeichnet damit nur noch
+   * eine Überschriftenrolle, keine eigene Schrift.
    */
-  --font-display: var(--font-manrope), "Inter Tight", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-inter), var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, sans-serif;
+  /*
+   * Die Variable heisst weiterhin `--font-inter`.
+   *
+   * Sie wird in `layout.tsx` gesetzt und an drei Stellen gelesen. Sie
+   * umzubenennen wäre reine Änderung; was sie enthält, ist jetzt
+   * Source Sans 3.
+   */
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica,
+    Arial, sans-serif;
+  --font-display: var(--font-sans);
+  /*
+   * Instrument Sans für Stellentitel.
+   *
+   * Eigene Variable statt Umbiegen von `--font-display`: Die Klasse
+   * `font-display` steht an neunzig Stellen quer durch die Anwendung,
+   * und was dort passiert, ist ungeprüft. Diese hier gilt für die
+   * Titel, für die sie ausgesucht wurde.
+   */
+  --font-titel: var(--font-titel-raw), var(--font-sans);
+  /*
+   * Nur für Technisches: Kennungen, Zeitstempel, Code.
+   *
+   * Ziffern in Tabellen bekommen `font-variant-numeric: tabular-nums`
+   * statt einer eigenen Schrift — gleich breite Ziffern ohne den
+   * technischen Anmutungswechsel mitten in einer Jobkarte.
+   */
   --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
 
   /*
@@ -149,16 +187,26 @@
    * Große Schrift bekommt negativen Laufweitenausgleich, sonst fällt
    * sie auseinander.
    */
+  /*
+   * Die beiden untersten Stufen liegen bewusst gleichauf.
+   *
+   * 14 Pixel sind die Untergrenze für alles, was eine Information
+   * trägt. Die neue Vorgabe setzt Fließtext auf 15–16 und
+   * Seitentitel auf höchstens 36 — damit rutscht die ganze Skala
+   * nach unten, und zwischen 14 und 16 bleibt kein Platz für zwei
+   * getrennte Stufen. Sie unter 14 zu drücken, um die Skala hübsch
+   * zu halten, wäre die falsche Reihenfolge.
+   */
   --text-2xs: 0.875rem; /* 14px — Eyebrow, Label. Die Untergrenze. */
-  --text-xs: 0.9375rem; /* 15px — Metadaten in dichten Listen */
-  --text-sm: 1rem; /* 16px — UI-Standard, Buttons */
-  --text-base: 1.0625rem; /* 17px — Fließtext */
-  --text-lg: 1.1875rem; /* 19px — Jobtitel in der Liste */
+  --text-xs: 0.875rem; /* 14px — Metadaten in dichten Listen */
+  --text-sm: 0.9375rem; /* 15px — UI-Standard, Buttons */
+  --text-base: 1rem; /* 16px — Fließtext und Ninas Antworten */
+  --text-lg: 1.125rem; /* 18px — Jobtitel in der Liste */
   --text-xl: 1.375rem; /* 22px — Abschnittsüberschrift */
-  --text-2xl: 1.75rem; /* 28px — Abschnittsüberschrift groß */
-  --text-3xl: 2.25rem; /* 36px — Jobtitel im Detail */
-  --text-4xl: 2.625rem; /* 42px — Seitentitel */
-  --text-5xl: 3rem; /* 48px — Seitentitel groß */
+  --text-2xl: 1.625rem; /* 26px — Abschnittsüberschrift groß */
+  --text-3xl: 2rem; /* 32px — Jobtitel im Detail */
+  --text-4xl: 2.25rem; /* 36px — Seitentitel, Obergrenze im Produkt */
+  --text-5xl: 3rem; /* 48px — nur Landingpage */
   --text-6xl: 4.5rem; /* 72px — Headline Landingpage */
   --text-7xl: 5.5rem; /* 88px */
 
@@ -166,6 +214,19 @@
      hier und nicht in der Komponente, weil zwei Stellen sie brauchen:
      die Leiste selbst und der Freiraum darunter im Inhalt. */
   --nav-bottom-h: 64px;
+
+  /*
+   * Die Breite, auf der Inhalt steht.
+   *
+   * Vorher 1400 Pixel, an zwei Stellen fest eingetragen. Auf einem
+   * breiten Bildschirm liefen Zeilen dadurch sehr lang, und die
+   * Navigation stand weiter aussen als alles darunter.
+   *
+   * 1200 ist die Obergrenze aus der Gestaltungsvorgabe. Für die
+   * geteilte Stellenansicht bleiben damit rund 480 und 720 Pixel —
+   * beides genug, und die Verhältnisse stimmen weiterhin.
+   */
+  --breite-inhalt: 1200px;
 
   /* Höhe des globalen Headers. V7 §8.1 rechnet ausdrücklich damit:
      `height: calc(100dvh - var(--app-header-height))`. Sie steht
@@ -244,7 +305,20 @@
   .tabular {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.01em;
+  }
+
+  /*
+   * Die Laufweite leicht zurücknehmen.
+   *
+   * Jede Festbreitenschrift läuft neben einer proportionalen breiter,
+   * weil auch das schmale 1 die volle Zelle bekommt. Anderthalb
+   * Hundertstel gleichen das aus, ohne die Zellen zu verletzen:
+   * `font-variant-numeric` bleibt, Beträge untereinander fluchten
+   * weiterhin.
+   */
+  .tabular,
+  .font-mono {
+    letter-spacing: -0.015em;
   }
 }
 
@@ -416,3 +490,405 @@
 
 .animate-fade-up { animation: fade-up var(--duration-slow) var(--ease-out) both; }
 .animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out) both; }
+
+/* ══ Nina Core ═══════════════════════════════════════════════
+ *
+ * Die Bewegung des Hero-Bildes. Sie liegt hier und nicht in der
+ * Komponente, weil Keyframes global sein müssen — und weil die
+ * Ausnahme für `prefers-reduced-motion` genau daneben stehen soll.
+ *
+ * Grundsatz: Das Markup ist der Endzustand. Jede Regel hier fügt
+ * Bewegung HINZU und nimmt nie etwas weg. Ohne CSS, ohne JavaScript
+ * oder mit abgeschalteter Bewegung steht dasselbe Bild da.
+ */
+
+@keyframes nina-atmen {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.045); }
+}
+
+@keyframes nina-schein {
+  0%, 100% { opacity: .68; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.07); }
+}
+
+/* Ein kurzes Segment wandert die Bahn entlang. Kein Element bewegt
+   sich — es ist dieselbe Linie mit wandernder Lücke. */
+@keyframes nina-fluss {
+  0%   { stroke-dasharray: 0 100;  stroke-dashoffset: 0;    opacity: 0; }
+  12%  { opacity: .9; }
+  60%  { stroke-dasharray: 14 100; stroke-dashoffset: -100; opacity: .9; }
+  75%  { opacity: 0; }
+  100% { stroke-dasharray: 14 100; stroke-dashoffset: -100; opacity: 0; }
+}
+
+/* Ein Signal hebt sich kurz an, wenn es „ankommt". Sehr klein: 3
+   Pixel. Alles darüber liest sich als Sprung. */
+@keyframes nina-anheben {
+  0%, 55%, 100% { transform: translateY(0); }
+  62%           { transform: translateY(-3px); }
+}
+
+.nina-core__orb   { animation: nina-atmen 6.5s ease-in-out infinite; }
+.nina-core__glow  { animation: nina-schein 6.5s ease-in-out infinite; }
+.nina-core__puls  { animation: nina-fluss 5.7s cubic-bezier(.4,0,.2,1) infinite; }
+.nina-core__signal,
+.nina-core__treffer { animation: nina-anheben 5.7s ease-in-out infinite; }
+
+/*
+ * Stillstand, wenn jemand ihn eingestellt hat.
+ *
+ * Ein pulsierender Kreis ist für Menschen mit vestibulären Störungen
+ * kein Gestaltungsdetail, sondern ein körperliches Problem. Die
+ * Bahnsegmente bleiben dabei sichtbar — `stroke-dasharray` würde sie
+ * sonst auf Länge null einfrieren und die Bahn verschwände.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .nina-core__orb,
+  .nina-core__glow,
+  .nina-core__signal,
+  .nina-core__treffer { animation: none; }
+  .nina-core__puls    { animation: none; stroke-dasharray: none; opacity: .55; }
+}
+
+/* ── Zahlungsarten-Badges ──────────────────────────────────────
+ *
+ * Der Kasten kommt ausschliesslich von hier. In den Bilddateien
+ * steht nur das freigestellte Logo mit Alphakanal — ein Logo mit
+ * eingebranntem Hintergrund würde in einem der beiden Farbschemata
+ * immer als Fremdkörper sitzen.
+ *
+ * Einheitliche Höhe entsteht über die feste Badge-Höhe und
+ * `object-fit: contain`: Jedes Logo bekommt denselben Innenraum und
+ * füllt ihn so weit, wie es sein Seitenverhältnis zulässt. Deshalb
+ * sind die Dateien eng zugeschnitten — jede mitgeschleppte
+ * durchsichtige Aussenfläche liesse ein Logo kleiner erscheinen.
+ */
+.zahlungsarten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.zahlungsbadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Kleiner als zuerst gebaut: 42 Pixel liessen die Leiste im Fuss
+     wie eine Reihe Knöpfe wirken. Zahlungsarten sind eine Angabe, kein
+     Angebot — sie dürfen zurücktreten. */
+  height: 34px;
+  min-width: 58px;
+  padding: 7px 11px;
+  border-radius: 10px;
+  /*
+   * Hell ein ruhiges Grau, dunkel echtes Schwarz.
+   *
+   * Ein durchgehend schwarzer Kasten sass im hellen Modus wie ein
+   * Fremdkörper im Fuss — fünf dunkle Blöcke unter einer hellen Seite.
+   * Grau trägt die farbigen Zeichen genauso und bleibt Teil der Fläche.
+   *
+   * Der Preis ist die zweite Fassung der weissen Logos: AMEX und die
+   * Überweisung brauchen auf Grau ihre dunkle Variante. Die gibt es,
+   * und die Umschaltung steht weiter unten.
+   */
+  background: #ffffff;
+  border: 1px solid rgb(11 14 22 / 0.12);
+  box-shadow: none;
+}
+
+.zahlungsbadge img {
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Auf kleinen Geräten etwas kompakter, damit vier Badges nebeneinander
+   passen, statt einzeln umzubrechen. */
+@media (max-width: 480px) {
+  .zahlungsbadge { height: 30px; min-width: 52px; padding: 6px 9px; }
+  .zahlungsarten { gap: 8px; }
+}
+
+/*
+ * AMEX und die Überweisung sind weisse Logos: auf dunklem Grund
+ * richtig, auf hellem unsichtbar. Deshalb liegt von beiden eine
+ * zweite, dunkle Fassung bereit, und es wird umgeschaltet — nach
+ * derselben Dreizustandslogik wie die Farbtokens: Vorgabe hell,
+ * Systemwunsch dunkel sofern nicht ausdrücklich hell gewählt,
+ * ausdrückliche Wahl gewinnt in beiden Richtungen.
+ */
+/*
+ * AMEX und die Überweisung sind weisse Zeichen: auf schwarzem Grund
+ * richtig, auf grauem unsichtbar. Von beiden liegt deshalb eine dunkle
+ * Fassung bereit.
+ *
+ * Umgeschaltet wird nach derselben Dreizustandslogik wie die
+ * Farbtokens: Vorgabe hell, Systemwunsch dunkel sofern nicht
+ * ausdrücklich hell gewählt, ausdrückliche Wahl gewinnt in beide
+ * Richtungen. Eine Regel, die nur in der Medienabfrage stünde, griffe
+ * beim Umschalten über den Schalter nicht.
+ *
+ * Ausdrücklich `:root` und nicht irgendein Vorfahr mit `data-theme`:
+ * Die Fusszeile setzt das Attribut selbst, um dauerhaft dunkelblau zu
+ * bleiben. Ein Nachfahrenselektor hätte die Badges dort immer schwarz
+ * gemacht — auch im hellen Modus, wo sie weiss sein sollen.
+ */
+.zahlungsbadge .fuer-dunkel { display: none; }
+.zahlungsbadge .fuer-hell { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .zahlungsbadge {
+    background: #0b0d12;
+    border-color: rgb(255 255 255 / 0.14);
+  }
+  :root:not([data-theme="light"]) .zahlungsbadge .fuer-dunkel { display: block; }
+  :root:not([data-theme="light"]) .zahlungsbadge .fuer-hell { display: none; }
+}
+
+:root[data-theme="dark"] .zahlungsbadge {
+  background: #0b0d12;
+  border-color: rgb(255 255 255 / 0.14);
+}
+:root[data-theme="dark"] .zahlungsbadge .fuer-dunkel { display: block; }
+:root[data-theme="dark"] .zahlungsbadge .fuer-hell { display: none; }
+
+/* ── Aufmerksamkeit ohne Lärm ─────────────────────────────────
+ *
+ * Zwei Elemente sollen auffallen, ohne zu blinken: die Suche im Kopf
+ * und der Knopf „Sprich weiter mit Nina".
+ *
+ * Beide atmen — eine langsame Bewegung von acht beziehungsweise
+ * dreieinhalb Sekunden. Ein echtes Blinken zieht den Blick weg von
+ * dem, was man gerade liest, und lässt sich nicht ignorieren; ein
+ * Atmen bemerkt man am Rand des Blickfelds und kann es überhören.
+ *
+ * `prefers-reduced-motion` schaltet beides ab. Wer Bewegung abbestellt
+ * hat, hat sie abbestellt — auch die dezente.
+ */
+@keyframes velvova-atmen-rand {
+  0%, 100% { border-color: var(--color-line); box-shadow: 0 0 0 0 rgb(from var(--color-accent) r g b / 0); }
+  50%      { border-color: rgb(from var(--color-accent) r g b / 0.45);
+             box-shadow: 0 0 0 3px rgb(from var(--color-accent) r g b / 0.09); }
+}
+
+@keyframes velvova-atmen-flaeche {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(from var(--color-accent) r g b / 0);
+             filter: brightness(1); }
+  50%      { box-shadow: 0 0 0 5px rgb(from var(--color-accent) r g b / 0.14);
+             filter: brightness(1.09); }
+}
+
+.kopfsuche input {
+  animation: velvova-atmen-rand 8s ease-in-out infinite;
+}
+/* Beim Tippen hört das Atmen auf: Wer das Feld benutzt, muss nicht
+   mehr darauf hingewiesen werden. */
+.kopfsuche input:focus,
+.kopfsuche input:hover {
+  animation: none;
+  border-color: rgb(from var(--color-accent) r g b / 0.5);
+}
+
+.nina-streifen__knopf {
+  animation: velvova-atmen-flaeche 3.5s ease-in-out infinite;
+}
+.nina-streifen__knopf:hover,
+.nina-streifen__knopf:focus-visible {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kopfsuche input,
+  .nina-streifen__knopf { animation: none; }
+}
+
+/* ── Der Rand hinter der Seite ────────────────────────────────
+ *
+ * Beim Weiterscrollen über das Dokumentende hinaus zeigt der Browser
+ * die Fläche des `html`-Elements. Die war nicht gesetzt, also
+ * schimmerte im hellen Modus unter der dunkelblauen Fusszeile ein
+ * heller Streifen durch — sichtbar nur für einen Moment, aber genau
+ * dort, wo die Seite aufhört und deshalb auffällig.
+ *
+ * Dieselbe Farbe wie Ankündigungsleiste und Fusszeile: Beide Enden
+ * des Dokuments sind dunkelblau, also passt sie oben wie unten.
+ */
+html {
+  background-color: #0f1c33;
+}
+
+/* ── Kein Überscrollen ────────────────────────────────────────
+ *
+ * Am oberen und unteren Ende liess sich die Seite noch ein Stück
+ * weiterziehen, und dahinter blitzte die Fläche des Dokuments auf.
+ * Die Farbe ist inzwischen dieselbe wie an beiden Enden, aber die
+ * Bewegung selbst wirkt wie ein Wackeln in einer Seite, die zu Ende
+ * ist.
+ *
+ * `contain` statt `none`: Es unterbindet das Gummiband und die
+ * Weitergabe der Scrollbewegung an das Fenster, lässt aber
+ * Ziehen-zum-Aktualisieren auf dem Telefon unangetastet — eine
+ * Geste, die Menschen erwarten und die niemand hier neu erfinden
+ * muss.
+ */
+html {
+  overscroll-behavior-y: contain;
+}
+
+/*
+ * AMEX trägt seinen eigenen blauen Kasten — in beiden Farbschemata
+ * derselbe. Das Zeichen ist weiss und stammt so vom Herausgeber; auf
+ * dem weissen Badge wäre es unsichtbar, auf dem schwarzen fremd.
+ *
+ * `!important` steht hier nicht: Die Regel kommt nach der allgemeinen
+ * `.zahlungsbadge` und nach den beiden Themenblöcken, und die
+ * doppelte Klasse gewinnt ohnehin über die einfache.
+ */
+.zahlungsbadge.zahlungsbadge--blau,
+:root[data-theme="dark"] .zahlungsbadge.zahlungsbadge--blau,
+:root:not([data-theme="light"]) .zahlungsbadge.zahlungsbadge--blau {
+  background: var(--color-accent);
+  border-color: rgb(255 255 255 / 0.2);
+}
+.zahlungsbadge--blau .fuer-dunkel { display: block; }
+.zahlungsbadge--blau .fuer-hell { display: none; }
+
+/* ── Das laufende Band der Nutzererfahrungen ──────────────────
+ *
+ * Zwei identische Reihen laufen nebeneinander nach links. Sobald die
+ * erste vollständig hinausgeschoben ist — also bei −50 % der Spur —
+ * springt die Bewegung zurück auf null. Weil die zweite Reihe dann
+ * exakt dort steht, wo die erste begann, ist der Sprung unsichtbar.
+ *
+ * 28 Sekunden für einen vollen Durchlauf. Bei 46 lief das Band so
+ * langsam, dass man die Bewegung eher vermutete als sah; deutlich
+ * schneller wird es zur Laufschrift, die man nicht mehr mitliest.
+ */
+.stimmenband {
+  overflow: hidden;
+  /* Weiche Kanten statt harter Schnitte: Karten tauchen auf und
+     verschwinden, statt abgehackt zu werden. */
+  mask-image: linear-gradient(90deg, transparent, #000 4rem, #000 calc(100% - 4rem), transparent);
+}
+
+.stimmenband__spur {
+  display: flex;
+  width: max-content;
+  gap: 0.75rem;
+  animation: stimmen-lauf 28s linear infinite;
+}
+
+.stimmenband__reihe {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Anhalten, sobald jemand hinsieht oder mit der Tastatur hineingeht. */
+.stimmenband:hover .stimmenband__spur,
+.stimmenband:focus-within .stimmenband__spur {
+  animation-play-state: paused;
+}
+
+@keyframes stimmen-lauf {
+  from { transform: translateX(0); }
+  /* −50 % der Spur = genau eine der beiden Reihen. */
+  to   { transform: translateX(calc(-50% - 0.375rem)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stimmenband__spur { animation: none; }
+  .stimmenband { overflow-x: auto; mask-image: none; }
+}
+
+/* Das Laufband trägt keinen sichtbaren Rollbalken — die Pfeile und die
+   weichen Kanten sagen bereits, dass es weitergeht. Gescrollt wird
+   trotzdem: mit Finger, Rad, Pfeilen und Tastatur. */
+.laufband {
+  scrollbar-width: none;
+  mask-image: linear-gradient(90deg, transparent, #000 3rem, #000 calc(100% - 3rem), transparent);
+}
+.laufband::-webkit-scrollbar { display: none; }
+
+/*
+ * Senkrecht rollen ohne sichtbaren Balken.
+ *
+ * Für den Gesprächsverlauf: Dort sagt schon der wachsende Text, dass
+ * es weitergeht, und der Balken stand als graue Kante mitten in einer
+ * ruhigen Spalte. Gescrollt wird unverändert — mit Rad, Finger,
+ * Pfeiltasten und Bild-auf/ab.
+ *
+ * Kein `mask-image` wie beim Laufband: Das blendet die Ränder aus und
+ * würde hier die oberste und unterste Nachricht anschneiden.
+ */
+.ohne-rollbalken {
+  scrollbar-width: none;
+}
+.ohne-rollbalken::-webkit-scrollbar { display: none; }
+
+
+/*
+ * Der kurze Ring um die Nina-Blase, wenn ein Knopf dorthin führt.
+ *
+ * Nur Deckkraft und ein Hauch Grösse — kein Springen, kein Farbwechsel.
+ * Der Ring soll sagen „hier bin ich", nicht „sieh mich an".
+ *
+ * `motion-safe` steht am Aufrufer: Wer Bewegung abgeschaltet hat,
+ * bekommt den Ring, aber ohne Pulsieren.
+ */
+@keyframes puls-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(98, 92, 255, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(98, 92, 255, 0); }
+}
+
+/*
+ * Der Ausschlag während einer Sprachaufnahme.
+ *
+ * Er zeigt, DASS aufgenommen wird — nicht wie laut. Die tatsächliche
+ * Lautstärke abzugreifen bräuchte einen zweiten Zugriff auf dasselbe
+ * Mikrofon, und dafür ist die Auskunft zu klein.
+ *
+ * Nur die Höhe ändert sich, und zwar wenig: Ein Balken, der von 20 auf
+ * 100 Prozent springt, wirkt wie eine Fortschrittsanzeige. Die
+ * versetzten Verzögerungen am Aufrufer machen daraus eine Welle.
+ */
+@keyframes welle {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1); }
+}
+
+/*
+ * Die kleine Überschrift über einem Block.
+ *
+ * „NINA — ANALYSE", „GEHALT", „ANFORDERUNGEN": gesperrte Versalien in
+ * kleiner Schrift, die einen Abschnitt benennen.
+ *
+ * ── Warum nicht mehr Laufschrift ──────────────────────────────
+ *
+ * Sie standen in `font-mono`. Die Laufschrift ist für Zahlen gedacht,
+ * die untereinander stehen — gleiche Zeichenbreite, damit Spalten
+ * nicht springen. Eine Überschrift steht in keiner Spalte, und in
+ * Monospace liest sie sich wie eine Feldbezeichnung aus einer
+ * Datenbank.
+ *
+ * ── Warum als Klasse und nicht 82-mal ersetzt ─────────────────
+ *
+ * Das Muster steht an 82 Stellen in 43 Dateien. Es einzeln zu ersetzen
+ * hiesse, beim nächsten Feinschliff wieder 82 Stellen zu suchen — und
+ * eine davon zu vergessen. Jetzt ist es eine Entscheidung an einem
+ * Ort.
+ *
+ * Die Zahlen bleiben unverändert bei `font-mono`; dort ist sie richtig.
+ */
+@utility abschnitts-titel {
+  font-family: var(--font-titel);
+  font-size: 11px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

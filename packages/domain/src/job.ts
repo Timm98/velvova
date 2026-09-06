@@ -19,12 +19,55 @@ export const JobRequirementSchema = z.object({
 export type JobRequirement = z.infer<typeof JobRequirementSchema>;
 
 export const SalarySchema = z.object({
-  min: z.number().int().nonnegative().nullable(),
-  max: z.number().int().nonnegative().nullable(),
+  /*
+   * Ohne `.int()`, seit Stundenlöhne durchkommen.
+   *
+   * „17,65 € je Stunde" ist keine krumme Ausnahme, sondern der
+   * Normalfall: Der gesetzliche Mindestlohn ist 12,82 €, Tariflöhne
+   * sind selten ganzzahlig. Mit `.int()` fiel jede solche Anzeige
+   * durch die Prüfung — und zwar leise, weil ein fehlendes Gehalt
+   * genauso aussieht wie ein nicht angegebenes.
+   */
+  min: z.number().nonnegative().nullable(),
+  max: z.number().nonnegative().nullable(),
   currency: z.string().length(3).default("EUR"),
   period: z.enum(["year", "month", "hour"]).default("year"),
   /** true, wenn die Anzeige gar nichts angibt. Nie als 0 behandeln. */
   disclosed: z.boolean(),
+  /**
+   * Woher die Zahl stammt.
+   *
+   * `provider` — ein Feld, das der Anbieter geliefert hat.
+   * `text` — aus der Beschreibung gelesen. Belegt, aber nicht bestätigt.
+   * `null` — keine Angabe.
+   *
+   * Die Unterscheidung entscheidet, was mit der Zahl geschehen darf:
+   * ein bestätigtes Feld kann eine Stelle ausschliessen, eine aus
+   * Fliesstext gelesene Zahl nie. Sie kann sich auf ein Budget, einen
+   * Umsatz oder ein Beispiel beziehen, und eine ausgeblendete Stelle
+   * fällt niemandem auf.
+   */
+  /*
+   * Woher der Betrag stammt.
+   *
+   *   provider        — Gehaltsfeld des Anbieters
+   *   board_estimate  — die Plattform schätzt und sagt es dazu
+   *   text            — aus der Stellenbeschreibung gelesen
+   *
+   * Eine Plattformschätzung ist eine brauchbare Grössenordnung und
+   * keine Zusage des Arbeitgebers. Wer damit verhandelt, muss den
+   * Unterschied sehen — deshalb ein eigener Wert und keine Fussnote.
+   */
+  /**
+   * Woher die Zahl kommt.
+   *
+   * `employer` ist die verlässlichste: eingetragen von dem, der zahlt.
+   * `provider` stammt aus dem Feld eines Portals, `board_estimate` ist
+   * dessen Schätzung, `text` haben wir aus der Beschreibung gelesen.
+   */
+  provenance: z.enum(["provider", "board_estimate", "text", "employer"]).nullable().default(null),
+  /** Die Textstelle, aus der gelesen wurde. Macht die Angabe prüfbar. */
+  evidence: z.string().nullable().default(null),
 });
 export type Salary = z.infer<typeof SalarySchema>;
 
@@ -51,9 +94,35 @@ export const JobSchema = z.object({
   workPermitRequired: z.boolean().nullable(),
   /** Was die Rolle tatsächlich tut - Grundlage des AI Transition Radar. */
   coreTasks: z.array(z.string()).default([]),
-  description: z.string(),
+  /**
+   * Der Beschreibungstext — oder `null`, wenn er nicht geladen wurde.
+   *
+   * Die Ranglistenabfrage lässt ihn bewusst weg: 4,35 MB für 994
+   * Stellen, von denen die Liste keine einzige Beschreibung anzeigt.
+   * Was die Bewertung davon braucht, steht in den beiden Feldern
+   * darunter und ist dort bereits vorverdaut.
+   *
+   * `null` heisst „nicht geladen", nicht „leer". Der Unterschied steht
+   * absichtlich im Typ: eine leere Zeichenkette hätte jeden Leser still
+   * mit einem falschen Wert bedient. So zeigt der Typprüfer die Stellen,
+   * die den vollen Text wirklich brauchen — und die laden ihn dann für
+   * die eine Stelle nach, um die es geht.
+   */
+  description: z.string().nullable(),
+  /**
+   * Die eindeutigen Wörter der Beschreibung über drei Zeichen, sortiert.
+   *
+   * Genau das, was `overlap()` aus dem Fliesstext macht. Der
+   * Passungswert ist damit bitgleich zu dem aus dem vollen Text — es
+   * ist keine Näherung, sondern dieselbe Rechnung mit vorweggenommener
+   * Normalisierung.
+   */
+  descriptionTokens: z.string().default(""),
+  /** Die Länge des Fliesstexts. Mehr braucht listingConfidence nicht. */
+  descriptionLength: z.number().int().nonnegative().default(0),
   benefits: z.array(z.string()).default([]),
-  applyMethod: z.enum(["email", "portal", "form", "unknown"]).default("unknown"),
+  /** `internal`: Die Bewerbung bleibt hier — nur bei selbst eingestellten Stellen. */
+  applyMethod: z.enum(["email", "portal", "form", "unknown", "internal"]).default("unknown"),
   applyTarget: z.string().nullable(),
   publishedAt: z.date().nullable(),
   expiresAt: z.date().nullable(),
@@ -65,6 +134,18 @@ export const JobSchema = z.object({
   sourceId: z.string(),
   /** Inhaltshash zur Erkennung von Reposts derselben Stelle. */
   contentHash: z.string(),
+  /**
+   * Die amtliche Berufskennung nach KldB 2010, wo sie vorliegt.
+   *
+   * Sie kommt nicht aus der Anzeige, sondern aus der Zuordnung des
+   * Titels zu einer amtlichen Bezeichnung. Sie wählt das Titelbild
+   * genauer als das aus dem Titel geratene Berufsfeld: Unsere fünfzehn
+   * Felder fassen „Gesundheit und Pflege" zusammen, die amtliche
+   * Klassifikation trennt Pflege, Zahnmedizin und Rettungsdienst.
+   *
+   * `null`, solange keine Zuordnung gefunden wurde. Geraten wird nicht.
+   */
+  kldb: z.string().nullable().default(null),
   isDemo: z.boolean().default(false),
 });
 export type Job = z.infer<typeof JobSchema>;

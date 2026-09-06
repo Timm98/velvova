@@ -159,7 +159,7 @@ export const en: Messages = {
     hasAccount: "Already have an account?",
     errorInvalid: "That email address or password is not right.",
     errorEmailTaken: "An account already exists for this address.",
-    errorPasswordShort: "That password is too short. It needs at least twelve characters.",
+    errorPasswordShort: "That password is too short. It needs at least eight characters.",
     errorEmailInvalid: "That email address does not look complete.",
   },
 
@@ -274,7 +274,7 @@ export const en: Messages = {
     fitHigh: "strong fit",
     fitMedium: "moderate fit",
     fitExploratory: "exploratory",
-    fitInsufficient: "not enough data",
+    fitInsufficient: "fit still open",
     confidence: "Confidence",
     confidenceHigh: "high",
     confidenceMedium: "medium",

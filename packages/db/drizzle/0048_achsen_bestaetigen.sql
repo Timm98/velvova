@@ -1,0 +1,22 @@
+-- Was Nina aus einer Antwort gelesen hat, muss bestätigt werden können.
+--
+-- ── Warum das fehlte ─────────────────────────────────────────
+--
+-- Bei den Erkenntnissen macht Nina es längst richtig: Eine abgeleitete
+-- Aussage steht als unbestätigt da, bis der Mensch sie bestätigt oder
+-- ablehnt. Bei den Achsen fehlte das — der Leser schrieb seinen Wert
+-- direkt ins Profil.
+--
+-- Das ist ein Unterschied ums Ganze. „Du willst wenig Kundenkontakt"
+-- ist eine Aussage über einen Menschen, die seine Stellenauswahl
+-- verändert. Wer sie aus einem Nebensatz ableitet und nicht nachfragt,
+-- behauptet etwas über ihn, das er nie gesagt hat.
+--
+-- `null` heisst „noch nicht gefragt" und ist NICHT dasselbe wie
+-- `false`. Eine nicht gestellte Frage ist keine Ablehnung.
+alter table arbeitsprofil add column if not exists bestaetigt boolean;
+--> statement-breakpoint
+-- Selbst eingestellte und beobachtete Werte brauchen keine Bestätigung:
+-- Wer einen Regler bewegt, hat bereits geantwortet, und ein Check-in
+-- ist die Antwort selbst.
+update arbeitsprofil set bestaetigt = true where herkunft in ('selbstauskunft', 'beobachtet', 'probe');

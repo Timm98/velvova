@@ -1,15 +1,24 @@
 import type { EvidenceItem, Job, JobRequirement, JobSource, UserConstraints } from "@paycheck/domain";
+import { beschreibungsTokens } from "./fit.ts";
 
 /** Testbausteine. Ausschließlich synthetisch, keine realen Firmen. */
 
 const T0 = new Date("2026-08-01T00:00:00Z");
 
 export function makeJob(over: Partial<Job> = {}): Job {
-  return {
+  /*
+   * Die abgeleiteten Felder werden abgeleitet, nicht mitgeschrieben.
+   *
+   * Ein Test, der `description` überschreibt und `descriptionTokens`
+   * vergisst, würde sonst gegen eine Stelle prüfen, die es so nie
+   * gibt: einen Text ohne die dazugehörige Wortmenge. Im Betrieb füllt
+   * der Import beides zusammen — hier tut es der Baustein.
+   */
+  const basis: Job = {
     id: "job-1", title: "Customer Success Manager", companyId: "co-1",
     companyName: "Demo Nordlicht GmbH", location: "Hamburg", country: "DE",
-    latitude: null, longitude: null, workModel: "hybrid", remotePercent: 50,
-    salary: { min: 44000, max: 52000, currency: "EUR", period: "year", disclosed: true },
+    latitude: null, longitude: null, workModel: "hybrid", remotePercent: 50, kldb: null,
+    salary: { min: 44000, max: 52000, currency: "EUR", period: "year", disclosed: true, provenance: null, evidence: null },
     contractType: "permanent", weeklyHours: 40, shiftWork: false, travelPercent: 10,
     experienceLevel: "junior", industry: "Software", languageRequirements: { de: "C1" },
     requiredLicenses: [], workPermitRequired: false,
@@ -30,7 +39,14 @@ export function makeJob(over: Partial<Job> = {}): Job {
     lastLinkCheckAt: new Date("2026-08-28T00:00:00Z"), lastLinkCheckOk: true,
     originalUrl: "https://demo.invalid/jobs/1", sourceId: "src-seed",
     contentHash: "hash-1", isDemo: true,
+    descriptionTokens: "", descriptionLength: 0,
     ...over,
+  };
+  const text = basis.description ?? "";
+  return {
+    ...basis,
+    descriptionTokens: over.descriptionTokens ?? beschreibungsTokens(text),
+    descriptionLength: over.descriptionLength ?? text.length,
   };
 }
 
@@ -80,6 +96,13 @@ export function makeConstraints(over: Partial<UserConstraints> = {}): UserConstr
     languages: { de: "C2", en: "B2" }, licenses: [], workPermitCountries: ["DE"],
     needsVisaSponsorship: false, earliestStartDate: null,
     hardNoGos: ["reine Kaltakquise"],
+    /*
+     * Die Voreinstellung der Testdaten ist dieselbe wie im Schema.
+     *
+     * Dieselbe wie im Schema. Ein Test, der eine Sonderkonfiguration
+     * annimmt, prüft nicht mehr das Verhalten der Anwendung.
+     */
+    unklaresBehandeln: "mitzeigen",
     ...over,
   };
 }

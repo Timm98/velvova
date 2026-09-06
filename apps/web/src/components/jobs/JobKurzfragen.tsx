@@ -78,7 +78,7 @@ export function JobKurzfragen({
 
   return (
     <section aria-labelledby="nina-fragen" className="grid gap-2.5">
-      <h3 id="nina-fragen" className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+      <h3 id="nina-fragen" className="abschnitts-titel text-ink-3">
         {assistantName} zu dieser Stelle
       </h3>
 

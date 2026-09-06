@@ -41,7 +41,7 @@ export function SpeakButton({
       aria-pressed={aktiv}
       className={cn(
         "inline-flex h-9 items-center gap-1.5 rounded-(--radius-pill) px-3 text-xs transition-colors",
-        aktiv ? "bg-lavender text-ink" : "text-ink-3 hover:bg-soft hover:text-ink-2",
+        aktiv ? "bg-accent-soft text-ink" : "text-ink-3 hover:bg-soft hover:text-ink-2",
         className,
       )}
     >

@@ -1,4 +1,5 @@
-import { berufsgruppe, verlaufFür, type BerufsgruppeKey } from "./visuals.ts";
+import { berufsgruppe, verlaufFür, zahlAus, type BerufsgruppeKey } from "./visuals.ts";
+import { fotosDerGruppe, fotosZuKldb } from "../fotos.ts";
 
 /**
  * Ein Titelbild je Berufsgruppe — nicht je Stelle.
@@ -8,21 +9,52 @@ import { berufsgruppe, verlaufFür, type BerufsgruppeKey } from "./visuals.ts";
  * Einspielung wieder. Zehn Gruppen decken das Feld ab, und ein gutes
  * Bild je Gruppe ist bezahlbar und wiederverwendbar.
  *
- * Die Bilder sind eigene SVG-Kompositionen: abstrakte Motive in der
- * Markenfamilie, die eine Arbeitswelt andeuten, ohne einen Arbeitsplatz
- * zu behaupten. Ein Foto eines Grossraumbüros neben einer Anzeige liest
- * sich als „so sieht es dort aus" — und das wissen wir nicht.
+ * Die Bilder sind eigene SVG-Kompositionen: fünfzehn Motive in EINER
+ * Bildsprache — gleicher Horizont, gleiche Strichstärke, gleiche
+ * Palette, je Gruppe ein eigener Gegenstand. Sie liegen als Dateien
+ * unter `public/berufsbilder/` und entstehen aus
+ * `scripts/illustrationen-bauen.mjs`.
+ *
+ * Vorher standen hier Formen mit 14 bis 24 Prozent Deckkraft —
+ * überschneidende Kreise, versetzte Blöcke. In der Liste, wo das Bild
+ * 48 Pixel hoch ist, war davon nichts zu erkennen: ein blasser Fleck,
+ * bei jeder Gruppe ungefähr derselbe. Ein Bild, das man nicht
+ * unterscheiden kann, ist Dekoration und keine Information.
+ *
+ * Kein Foto, keine Menschen, keine Räume: Ein Foto eines Großraumbüros
+ * neben einer Anzeige liest sich als „so sieht es dort aus", und das
+ * wissen wir nicht.
  *
  * Ohne erkennbare Gruppe bleibt der gerechnete Verlauf. Lieber eine
  * ehrliche Fläche als ein Motiv, das die falsche Arbeit zeigt.
  */
 
 export interface Berufsbild {
-  /** Inline-SVG als data-URI. Kein Netzaufruf, kein Layoutsprung. */
+  /** Das Zeichen der Gruppe als Datei. Kein Layoutsprung. */
   bild: string;
   /** Was zu sehen ist — für Vorlesegeräte und als Kennzeichnung. */
   altText: string;
   gruppe: BerufsgruppeKey | null;
+  /**
+   * Das Foto zum Berufsfeld, wo es eines gibt.
+   *
+   * ── Warum es das jetzt gibt ───────────────────────────────
+   *
+   * Bis hierher zeigte jede Stelle ein abstraktes Zeichen. Die
+   * Begründung stand in `JobBild.tsx` und gilt weiter: Ein Foto neben
+   * einer Anzeige liest sich als „so sieht es dort aus".
+   *
+   * Dagegen steht, dass eine Liste aus fünfzehn wiederkehrenden
+   * Piktogrammen keinen Charakter hat. Beides lässt sich haben: Das
+   * Foto zeigt das FELD, und das Etikett auf dem Bild sagt
+   * „Symbolbild" statt „Illustration". Wer es sieht, liest, dass es
+   * kein Bild dieses Arbeitgebers ist.
+   *
+   * `null`, wenn die Gruppe unbekannt ist oder für sie kein Motiv
+   * vorliegt — dann bleibt es beim Zeichen und beim Verlauf. Ein
+   * beliebiges Foto wäre genau die Behauptung, die wir vermeiden.
+   */
+  foto: { gross: string; klein: string; alt: string } | null;
 }
 
 /*
@@ -32,90 +64,120 @@ export interface Berufsbild {
  * ruhig bleibt. Grün und Rot bedeuten im Produkt etwas — bestätigt,
  * Konflikt — und dürfen nicht dekorativ auftreten.
  */
-const MOTIVE: Record<BerufsgruppeKey, { von: string; bis: string; form: string; alt: string }> = {
-  customer_success: {
-    von: "#EDF6FF", bis: "#E4ECFF",
-    // Zwei Kreise, die sich überschneiden: ein Gespräch.
-    form: '<circle cx="150" cy="110" r="58" fill="#655DFF" opacity=".16"/><circle cx="215" cy="130" r="46" fill="#8B84FF" opacity=".22"/>',
-    alt: "Abstrakte Darstellung zweier sich überschneidender Kreise als Sinnbild für Kundenkontakt",
-  },
-  software_data: {
-    von: "#F0EEFF", bis: "#E7E4FF",
-    form: '<rect x="120" y="70" width="46" height="46" rx="12" fill="#655DFF" opacity=".18"/><rect x="176" y="96" width="46" height="46" rx="12" fill="#8B84FF" opacity=".24"/><rect x="232" y="70" width="46" height="46" rx="12" fill="#655DFF" opacity=".14"/>',
-    alt: "Abstrakte Darstellung versetzter Blöcke als Sinnbild für Software und Daten",
-  },
-  finance: {
-    von: "#EDF6FF", bis: "#E8EEFF",
-    form: '<rect x="130" y="130" width="26" height="44" rx="9" fill="#655DFF" opacity=".18"/><rect x="166" y="100" width="26" height="74" rx="9" fill="#8B84FF" opacity=".24"/><rect x="202" y="76" width="26" height="98" rx="9" fill="#655DFF" opacity=".16"/>',
-    alt: "Abstrakte Darstellung aufsteigender Balken als Sinnbild für Zahlen und Finanzen",
-  },
-  healthcare: {
-    von: "#F0EEFF", bis: "#EAF2FF",
-    form: '<path d="M200 160c-30-22-52-38-52-62a30 30 0 0 1 52-20 30 30 0 0 1 52 20c0 24-22 40-52 62z" fill="#8B84FF" opacity=".22"/>',
-    alt: "Abstrakte weiche Form als Sinnbild für Pflege und Gesundheit",
-  },
-  education: {
-    von: "#EDF6FF", bis: "#E9EDFF",
-    form: '<path d="M140 120l60-30 60 30-60 30z" fill="#655DFF" opacity=".18"/><path d="M170 138v28c0 8 60 8 60 0v-28" stroke="#8B84FF" stroke-width="6" fill="none" opacity=".3"/>',
-    alt: "Abstrakte Darstellung als Sinnbild für Bildung und Weitergabe von Wissen",
-  },
-  skilled_trades: {
-    von: "#F1F3F8", bis: "#E9ECF7",
-    form: '<rect x="132" y="104" width="120" height="16" rx="8" fill="#655DFF" opacity=".2" transform="rotate(-18 192 112)"/><circle cx="238" cy="142" r="22" fill="#8B84FF" opacity=".24"/>',
-    alt: "Abstrakte Darstellung von Werkzeugformen als Sinnbild für handwerkliche Arbeit",
-  },
-  operations: {
-    von: "#EDF6FF", bis: "#E6EDFB",
-    form: '<rect x="128" y="96" width="52" height="52" rx="14" fill="#655DFF" opacity=".16"/><rect x="196" y="96" width="52" height="52" rx="14" fill="#8B84FF" opacity=".2"/><rect x="162" y="150" width="52" height="30" rx="12" fill="#655DFF" opacity=".12"/>',
-    alt: "Abstrakte Darstellung geordneter Flächen als Sinnbild für Abläufe und Logistik",
-  },
-  sales: {
-    von: "#F0EEFF", bis: "#E6E2FF",
-    form: '<path d="M126 168l44-44 34 26 62-62" stroke="#655DFF" stroke-width="9" stroke-linecap="round" fill="none" opacity=".3"/><circle cx="266" cy="88" r="16" fill="#8B84FF" opacity=".3"/>',
-    alt: "Abstrakte aufsteigende Linie als Sinnbild für Vertrieb und Wachstum",
-  },
-  design: {
-    von: "#F0EEFF", bis: "#EDF6FF",
-    form: '<circle cx="166" cy="120" r="44" fill="#655DFF" opacity=".16"/><rect x="196" y="96" width="72" height="72" rx="24" fill="#8B84FF" opacity=".22"/>',
-    alt: "Abstrakte Überlagerung von Kreis und Fläche als Sinnbild für Gestaltung",
-  },
-  administration: {
-    von: "#F1F3F8", bis: "#EAEEF9",
-    form: '<rect x="140" y="82" width="104" height="20" rx="10" fill="#655DFF" opacity=".18"/><rect x="140" y="116" width="76" height="20" rx="10" fill="#8B84FF" opacity=".2"/><rect x="140" y="150" width="92" height="20" rx="10" fill="#655DFF" opacity=".12"/>',
-    alt: "Abstrakte gestapelte Zeilen als Sinnbild für Verwaltung und Organisation",
-  },
+/*
+ * Was auf dem jeweiligen Bild zu sehen ist.
+ *
+ * Diese Texte MÜSSEN mit den Motiven in
+ * `scripts/illustrationen-bauen.mjs` übereinstimmen. Sie beschrieben
+ * einmal die Vorgängerfassung — überschneidende Kreise, versetzte
+ * Blöcke — und blieben stehen, als die Motive ersetzt wurden. Ein
+ * Vorlesegerät schilderte danach ein Bild, das es nicht mehr gab; das
+ * ist schlimmer als gar kein Alternativtext, weil es niemandem
+ * auffällt, der sehen kann.
+ *
+ * Jeder Text nennt zuerst, dass es eine Illustration ist. Das Bild
+ * zeigt eine Berufsgruppe und nicht diesen Arbeitgeber.
+ */
+const ALT: Record<BerufsgruppeKey, string> = {
+  customer_success: "Illustration: zwei Sprechblasen als Sinnbild für Kundenkontakt",
+  software_data: "Illustration: ein Codefenster als Sinnbild für Softwarearbeit",
+  data_bi: "Illustration: ein Balkendiagramm mit Verlaufslinie als Sinnbild für Datenauswertung",
+  finance: "Illustration: gestapelte Münzen neben einem Beleg als Sinnbild für Finanzarbeit",
+  healthcare: "Illustration: ein Kreuz mit Pulslinie als Sinnbild für Pflege und Gesundheit",
+  education: "Illustration: ein aufgeschlagenes Buch und ein Absolventenhut als Sinnbild für Bildung",
+  skilled_trades: "Illustration: ein Schutzhelm und ein Hammer als Sinnbild für handwerkliche Arbeit",
+  operations: "Illustration: ineinandergreifende Zahnräder als Sinnbild für Produktion und Prozesse",
+  logistics: "Illustration: gestapelte Kisten als Sinnbild für Logistik und Lager",
+  sales: "Illustration: eine steigende Kurve und ein Preisschild als Sinnbild für Vertrieb",
+  design: "Illustration: eine Malpalette und ein Stift als Sinnbild für Gestaltung",
+  administration: "Illustration: eine Aktenmappe als Sinnbild für Verwaltung",
+  hr: "Illustration: zwei Ausweiskarten als Sinnbild für Personalarbeit",
+  marketing: "Illustration: ein Megafon mit Schallwellen als Sinnbild für Marketing",
+  research: "Illustration: ein Erlenmeyerkolben als Sinnbild für Forschung und Labor",
 };
-
-function alsDataUri(von: string, bis: string, form: string): string {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 200" width="400" height="200">` +
-    `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
-    `<stop offset="0" stop-color="${von}"/><stop offset="1" stop-color="${bis}"/>` +
-    `</linearGradient></defs>` +
-    `<rect width="400" height="200" fill="url(#g)"/>${form}</svg>`;
-  /*
-   * Als data-URI und nicht als Datei: das Bild ist unter einem
-   * Kilobyte, kommt mit dem HTML mit und braucht keinen zweiten
-   * Netzaufruf. Für zehn Motive lohnt sich kein Bilderdienst.
-   */
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
 
 export function berufsbild(job: {
   id: string;
   title: string;
   coreTasks?: string[];
+  /**
+   * Die amtliche Berufskennung, wo sie an der Stelle steht.
+   *
+   * Sie geht dem aus dem Titel geratenen Feld vor — sie ist die
+   * Auskunft der Bundesagentur, das Feld ist unsere Vermutung aus
+   * einer Zeichenkette.
+   */
+  kldb?: string | null;
 }): Berufsbild {
-  const gruppe = berufsgruppe(job.title, job.coreTasks ?? []);
+  /*
+   * Die amtliche Kennung entscheidet auch über die GRUPPE.
+   *
+   * ── Was hier falsch war ───────────────────────────────────
+   *
+   * Die Gruppe kam allein aus dem Titel; die Kennung wurde erst
+   * dreissig Zeilen später herangezogen, und nur für die Auswahl des
+   * Fotos. Ergebnis: Bei einem Lieferfahrer, dessen Titel auf ein
+   * falsches Feld passte, stand das Motiv dieses falschen Feldes
+   * daneben — und in einem Fall das Bild eines Softwareentwicklers.
+   *
+   * Der Kommentar weiter unten behauptete bereits „Erst die Kennung,
+   * dann das Feld". Gemacht hat es der Code nicht.
+   *
+   * Jetzt zuerst: Wo eine Kennung an der Stelle steht, kommen Gruppe
+   * UND Motiv aus derselben Quelle. Der Titel ist der Rückfall.
+   */
+  const ausKldb = fotosZuKldb(job.kldb);
+  const gruppe = ausKldb[0]?.gruppe ?? berufsgruppe(job.title, job.coreTasks ?? []);
   if (!gruppe) {
     return {
       bild: "",
       altText: "Farbfläche als Platzhalter",
       gruppe: null,
+      foto: null,
     };
   }
-  const m = MOTIVE[gruppe];
-  return { bild: alsDataUri(m.von, m.bis, m.form), altText: m.alt, gruppe };
+  /*
+   * Eine Datei statt eines data-URI.
+   *
+   * Vorher wanderte das SVG in die HTML-Antwort. Bei 25 Stellen je
+   * Seite waren das 25 Kopien von im Schnitt anderthalb Kilobyte,
+   * obwohl sich die Motive über die Liste hinweg wiederholen — acht
+   * verschiedene Gruppen auf 25 Anzeigen sind normal.
+   *
+   * Als Datei lädt der Browser jedes Motiv einmal und nimmt es danach
+   * aus dem Zwischenspeicher, auch über Seitenwechsel hinweg. Das HTML
+   * bleibt klein, und die Bilder liegen an einer Stelle, an der man sie
+   * ansehen kann, ohne den Code zu lesen.
+   */
+  /*
+   * Gestreut über die Stellenkennung, nicht über die Gruppe.
+   *
+   * Sonst zeigten die 5.521 Handwerksstellen einer Stichprobe alle
+   * dasselbe Foto. Über die Kennung verteilen sich die Motive einer
+   * Gruppe, und dieselbe Stelle behält ihres — auch nach dem Neuladen
+   * und im zweiten Server-Rendering.
+   */
+  /*
+   * Erst die Kennung, dann das Feld.
+   *
+   * Die fünfzehn Felder sind grob: „Gesundheit und Pflege" enthält
+   * Pflegekraft, Zahnärztin, Rettungssanitäter, Tierärztin und
+   * Physiotherapeutin. Eine Pflegestelle bekam so ein Bild vom
+   * Rettungswagen — richtig im Feld, falsch im Beruf.
+   *
+   * Die KldB trennt feiner. Wo sie an der Stelle steht, entscheidet
+   * sie; wo nicht, bleibt es beim Feld. Kein Rückschritt, nur eine
+   * genauere Stufe davor.
+   */
+  const motive = ausKldb.length > 0 ? ausKldb : fotosDerGruppe(gruppe);
+  const gewaehlt = motive.length > 0 ? motive[zahlAus(job.id) % motive.length]! : null;
+
+  return {
+    bild: `/berufsbilder/${gruppe}.svg`,
+    altText: ALT[gruppe],
+    gruppe,
+    foto: gewaehlt ? { gross: gewaehlt.pfad, klein: gewaehlt.klein, alt: gewaehlt.alt } : null,
+  };
 }
 
 /** Der Verlauf für Stellen ohne erkennbare Gruppe. */

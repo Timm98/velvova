@@ -16,15 +16,46 @@ import {
   type ToolName,
 } from "@paycheck/ai";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { completedGroups, looksLikeJobRequest, PROGRESS_GROUPS, STAGE_STATUS_DE } from "@paycheck/ai";
-import { bestandAufnehmen, extrahieren, zugAnwenden, zustimmungVermerken } from "@/lib/nina/engine";
+import {
+  completedGroups,
+  gespraechstiefe,
+  KARRIEREANALYSE_ANWEISUNG,
+  KARRIEREANALYSE_FASSUNG,
+  KarriereanalyseSchema,
+  looksLikeJobRequest,
+  modellFuer,
+  PROGRESS_GROUPS,
+  STAGE_STATUS_DE,
+  ultraVerfuegbar,
+  vergleichen,
+} from "@paycheck/ai";
+import { karriereanalyse } from "@paycheck/jobs";
+import { loadRuntimeConfig } from "@paycheck/config";
+import {
+  bestandAufnehmen,
+  extrahieren,
+  verdichten,
+  zugAnwenden,
+  zustimmungVermerken,
+} from "@/lib/nina/engine";
 import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
 import { buildPageContext } from "@/lib/nina/page-context";
-import { appendMessage, ensureConversation, loadModelContext } from "@/lib/nina/conversations";
-import { markInterviewProgress, rememberRoute, updateWorkflowState } from "@/lib/nina/workflow-state";
+import {
+  appendMessage,
+  ensureConversation,
+  loadModelContext,
+  verdichtungsbedarf,
+} from "@/lib/nina/conversations";
+import {
+  markInterviewCompleted,
+  markInterviewProgress,
+  rememberRoute,
+  updateWorkflowState,
+} from "@/lib/nina/workflow-state";
 import { recordInterviewAnswer } from "@/lib/nina/interview-progress";
 import { requireUser } from "@/lib/auth";
+import { antwortVerbuchen, intelligenzstand } from "@/lib/nina/intelligenz";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -92,6 +123,7 @@ const IMPLEMENTED_TOOLS = [
    * Unwahrheit über eine Arbeit zu erzählen, die schon getan war.
    */
   "create_or_update_evidence",
+  "request_career_analysis",
   "search_jobs",
   "save_job",
   "create_application",
@@ -110,6 +142,7 @@ const RUNNING_LABEL: Record<ToolName, string> = {
   create_application: "Bewerbung wird angelegt",
   generate_document_draft: "Entwurf entsteht",
   schedule_follow_up: "Erinnerung wird angelegt",
+  request_career_analysis: "Ich denke gründlich darüber nach",
 };
 
 export async function POST(request: Request) {
@@ -162,6 +195,47 @@ export async function POST(request: Request) {
     fromVoice: eingabe.fromVoice,
   });
 
+  /*
+   * Verstehen, bevor geantwortet wird.
+   *
+   * `verarbeite` erkennt die Absicht, liest bei einer Angabe die
+   * Bedingungen heraus und legt sie nach der Regel aus
+   * `faktenregeln.ts` ab — ohne einen bestätigten Wert zu
+   * überschreiben.
+   *
+   * Die Reihenfolge ist der Punkt: Was gerade gesagt wurde, muss im
+   * Profil stehen, BEVOR Nina antwortet. Sonst antwortet sie auf
+   * einen Stand, den sie im selben Zug überholt hat.
+   *
+   * Scheitert es, geht das Gespräch weiter. Eine Extraktion ist eine
+   * Verbesserung der Antwort, keine Bedingung für sie — und ein
+   * Gespräch, das an einer Nebenleistung abbricht, ist schlechter als
+   * eines ohne sie.
+   */
+  /*
+   * Die Verarbeitung läuft NEBEN dem Rest, nicht davor.
+   *
+   * Sie stand hier als `await` — mit dem Argument, was gerade gesagt
+   * wurde, müsse im Profil stehen, BEVOR Nina antwortet. Das Argument
+   * gilt weiterhin für das Profil; für die ANTWORTZEIT war es teuer:
+   * Bei einer Angabe kostet die Verarbeitung einen eigenen
+   * Modellaufruf, und der lag vor allen anderen Vorbereitungen.
+   *
+   * Gemessen an der Reihenfolge im Code: sieben Datenbankrunden
+   * nacheinander, bevor das Modell überhaupt anfing. Bei einer Frage
+   * wie „Wie sieht der Arbeitsalltag aus?" ist die Verarbeitung
+   * ausserdem ein Leerlauf — sie steigt sofort wieder aus.
+   *
+   * Jetzt startet sie hier und wird erst gebraucht, wenn die Rückfragen
+   * in den Kontext gehen. Bis dahin ist sie meistens fertig.
+   */
+  const verstandenLaeuft = import("@/lib/nina/orchestrator")
+    .then((m) => m.verarbeite(user.id, eingabe.message))
+    .catch((fehler) => {
+      console.warn("[nina] Verarbeitung fehlgeschlagen:", fehler);
+      return null;
+    });
+
   await Promise.all([
     rememberRoute(user.id, eingabe.route, {
       jobId: eingabe.jobId ?? undefined,
@@ -195,6 +269,36 @@ export async function POST(request: Request) {
    */
   const jobAnfrage = looksLikeJobRequest(eingabe.message);
   const bestand = await bestandAufnehmen(user.id, { userAskedForJobs: jobAnfrage });
+
+  /*
+   * Den Abschluss vermerken, sobald er erreicht ist.
+   *
+   * ── Was hier gefehlt hat ──────────────────────────────────────
+   *
+   * `evaluateReadiness` rechnet seit dem ersten Entwurf aus, wann
+   * genug verstanden ist — und `markInterviewCompleted` steht fertig
+   * daneben, mit Kommentar, ohne einen einzigen Aufrufer. Der Zustand
+   * blieb deshalb bei jedem auf `in_progress` stehen.
+   *
+   * Gemessen im Bestand: 61 Menschen haben angefangen, ein einziger
+   * steht auf `completed`. `entryRoute` schickt alle anderen bei jedem
+   * Besuch zurück ins Gespräch, obwohl Nina längst genug weiss.
+   *
+   * ── Warum `ready` und nicht „genug Fragen" ────────────────────
+   *
+   * `ready` heisst: 70 Punkte UND die Mindestangaben stehen. Das ist
+   * dieselbe Schwelle, ab der Stellen überhaupt sinnvoll sortiert
+   * werden — es wäre widersprüchlich, jemandem eine belastbare Liste
+   * zu zeigen und ihn gleichzeitig als „mitten im Interview" zu
+   * führen.
+   *
+   * `markInterviewProgress` oben überschreibt einen einmal erreichten
+   * Abschluss nicht, und `updateWorkflowState` ist idempotent: Wer
+   * weiterredet, verliert ihn nicht.
+   */
+  if (bestand.readiness.state === "ready") {
+    await markInterviewCompleted(user.id).catch(() => {});
+  }
 
   const [envelope, seite, verlauf] = await Promise.all([
     buildContextEnvelope(user.id, {
@@ -232,6 +336,10 @@ export async function POST(request: Request) {
     ...verlauf.turns,
   ];
 
+  /* Hier wird das Ergebnis der Verarbeitung zum ersten Mal gebraucht.
+     Alles davor lief parallel dazu. */
+  const verstanden = await verstandenLaeuft;
+
   const systemPrompt = buildNinaSystemPrompt({
     locale: user.locale,
     confirmedFacts: scoped.confirmedFacts,
@@ -245,7 +353,25 @@ export async function POST(request: Request) {
       missing: bestand.readiness.missing,
     },
     userName: user.displayName,
-    pageBriefing: seite.briefing || undefined,
+    /*
+     * Die offene Rückfrage kommt in die Seitenlage.
+     *
+     * Wenn die gerade gelesene Angabe einer bestätigten widerspricht,
+     * darf Nina nicht so tun, als sei nichts gewesen — und sie darf
+     * auch nicht einfach überschreiben. Sie fragt.
+     *
+     * Der Satz steht bewusst hier und nicht als eigene Nachricht: Nina
+     * soll ihn in ihre Antwort einweben, nicht als Formular
+     * dazwischenschieben.
+     */
+    pageBriefing: [
+      seite.briefing || "",
+      ...(verstanden?.rueckfragen ?? []).map(
+        (f) => `Offene Rückfrage aus dem letzten Satz — stell sie beiläufig: ${f}`,
+      ),
+    ]
+      .filter(Boolean)
+      .join("\n") || undefined,
     externalProviderActive: true,
   });
 
@@ -276,9 +402,55 @@ export async function POST(request: Request) {
    * Der Regelfall ist DEFAULT. Die tiefe Stufe wird gezielt eskaliert,
    * nicht standardmäßig benutzt.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die Eskalation, die hier gefehlt hat
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Der Kommentar darüber stand seit dem ersten Entwurf und stimmte
+   * zur Hälfte: DEFAULT war der Regelfall, und eskaliert wurde nie.
+   * Jede Frage lief über dasselbe Modell — „Hallo" genauso wie „soll
+   * ich mit vier Jahren Einzelhandel in die IT wechseln".
+   *
+   * `gespraechstiefe` liest die Form der Frage, nicht einzelne
+   * Wörter: Wägt sie ab? Nennt sie eine Lebensentscheidung? Bittet
+   * jemand ausdrücklich um Gründlichkeit? Kein Modellaufruf — der
+   * würde die Wartezeit jeder Nachricht verdoppeln, um zu klären,
+   * welcher Aufruf folgt.
+   *
+   * Das Interview behält seine eigene Aufgabe: Dort ist der Zweck
+   * bekannt und muss nicht aus dem Satz erschlossen werden.
+   */
+  const tiefe = gespraechstiefe(eingabe.message ?? "");
   const routing = routeTask(
-    eingabe.kind === "career_interview" ? "career_interview" : "conversation",
+    eingabe.kind === "career_interview" ? "career_interview" : tiefe.aufgabe,
   );
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Hat die Person gerade eine Frage von Nina beantwortet?
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Wenn ja, wird die Antwort ein Beleg — und die Klärung schliesst
+   * sich. Ohne diesen Schritt fragte Nina dieselbe Sache in zehn
+   * Minuten noch einmal, und für die Person sähe es aus, als käme
+   * ihre Antwort nirgends an.
+   *
+   * Es läuft NEBEN der Antwort, nicht davor: Die Person soll auf
+   * ihren Satz eine Antwort bekommen und nicht auf eine
+   * Datenbankrunde warten. Der neue Beleg wirkt sich erst auf die
+   * nächste Synthese aus, und die läuft ohnehin im Hintergrund.
+   *
+   * Eine Bedienfrage („wie lösche ich mein Konto") zählt nicht als
+   * Antwort. Sie als Aussage über die eigene Arbeitszeit abzulegen
+   * wäre ein erfundener Beleg.
+   */
+  const antwortLaeuft = antwortVerbuchen(user.id, eingabe.message ?? "", {
+    istBedienfrage: tiefe.merkmale.includes("Bedienfrage"),
+  }).catch((fehler) => {
+    console.warn("[nina] Klärungsantwort fehlgeschlagen:", fehler);
+    return null;
+  });
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -460,6 +632,21 @@ export async function POST(request: Request) {
               purpose: eingabe.kind,
               taskType: routing.task,
               tier: routing.tier,
+              /*
+               * Warum diese Stufe — nicht nur welche.
+               *
+               * Ohne die Merkmale wäre später nicht zu klären, warum
+               * eine Nachricht das teure Modell bekam und die
+               * nächste nicht. „tier: DEEP" allein ist die Sorte
+               * Protokollzeile, die man liest und danach genauso
+               * ratlos ist.
+               *
+               * Keine Nutzertexte — nur die Namen der Merkmale.
+               */
+              rationale:
+                tiefe.merkmale.length > 0
+                  ? `${tiefe.tiefe}: ${tiefe.merkmale.join(", ")}`
+                  : tiefe.tiefe,
               provider: "openai",
               model: modell,
               promptKey: NINA_PROMPT_KEY,
@@ -527,6 +714,27 @@ export async function POST(request: Request) {
            * Nachrichten stehen, es fehlt nur die Auswertung — und die
            * holt der nächste Zug nach.
            */
+          /*
+           * Das Gespräch verdichten, wenn es lang geworden ist.
+           *
+           * Ohne diesen Aufruf sah Nina nur die letzten zwölf Züge und
+           * nichts davor — die Zusammenfassung, die das auffangen
+           * soll, wurde nie geschrieben. Gemessen: 181 Gespräche, null
+           * Zusammenfassungen, das längste 47 Nachrichten.
+           *
+           * Läuft nach dem sichtbaren Text und meistens gar nicht: nur
+           * wenn seit der letzten Verdichtung genug dazugekommen ist.
+           */
+          const bedarf = await verdichtungsbedarf(user.id, gespräch.id).catch(() => null);
+          if (bedarf) {
+            await verdichten({
+              userId: user.id,
+              locale: user.locale,
+              conversationId: gespräch.id,
+              ...bedarf,
+            }).catch(() => {});
+          }
+
           const turn = await extrahieren({
             userId: user.id,
             locale: user.locale,
@@ -601,6 +809,45 @@ export async function POST(request: Request) {
           }
         }
 
+        /*
+         * ══════════════════════════════════════════════════════════
+         * Was Nina weiss, geht mit hinaus
+         * ══════════════════════════════════════════════════════════
+         *
+         * Synthese, Karriereanalyse, offene Frage, Widersprüche,
+         * harte Konflikte und höchstens ein proaktiver Hinweis. Keine
+         * Oberfläche zeigt das heute an — es steht trotzdem hier,
+         * damit der Bildschirm später nicht das Feld erfindet, das
+         * gerade ins Layout passt.
+         *
+         * ── Warum der Moment mitentscheidet ─────────────────────
+         *
+         * Eine Bedienfrage ist der falsche Anlass für eine Rückfrage
+         * zum Berufsweg. „Wie lösche ich mein Konto" mit „Was musst
+         * du mindestens verdienen?" zu beantworten wäre ein Produkt,
+         * das nicht zuhört. Der Hinweis geht dann nicht verloren — er
+         * wird nur nicht als gezeigt vermerkt und kommt beim nächsten
+         * Mal.
+         */
+        const antwort_klaerung = await antwortLaeuft;
+        const momentPasst =
+          !tiefe.merkmale.includes("Bedienfrage") && antwort.trim().length > 0;
+
+        const stand = await intelligenzstand(user.id, { momentPasst }).catch((fehler) => {
+          console.warn("[nina] Intelligenzstand fehlgeschlagen:", fehler);
+          return null;
+        });
+
+        if (stand) {
+          send({
+            type: "intelligenz",
+            ...stand,
+            /* Ob diese Nachricht eine offene Klärung geschlossen hat. */
+            klaerungBeantwortet: antwort_klaerung?.schluessel ?? null,
+            syntheseFaellig: antwort_klaerung?.faelligkeit.faellig ?? false,
+          });
+        }
+
         send({ type: "done", model: modell, latencyMs: latenz });
         offen = false;
         controller.close();
@@ -633,6 +880,69 @@ async function runTool(
 
   try {
     switch (name) {
+      /*
+       * ══════════════════════════════════════════════════════════
+       * Die Tiefenanalyse als Werkzeug
+       * ══════════════════════════════════════════════════════════
+       *
+       * Dasselbe Werkzeug für Chat und Sprache. Im Sprachmodus
+       * antwortet Nina über das Realtime-Modell — schnell und für ein
+       * Gespräch richtig, für eine Karriereanalyse das falsche
+       * Werkzeug. Statt es tiefer denken zu lassen, fordert es die
+       * Analyse an und erzählt danach das Ergebnis.
+       *
+       * Zwei Wege hiessen früher oder später zwei verschiedene
+       * Antworten auf dieselbe Frage.
+       */
+      case "request_career_analysis": {
+        const data = input as z.infer<(typeof ToolSchemas)["request_career_analysis"]>;
+        const cfg = loadRuntimeConfig();
+        const provider = await selectProvider(cfg);
+        const ultra = modellFuer(cfg, "ULTRA");
+
+        const rufer = (modell?: string) => async (fakten: string) => {
+          const a = await provider.structuredGenerate({
+            system: KARRIEREANALYSE_ANWEISUNG,
+            schema: KarriereanalyseSchema,
+            schemaName: "karriereanalyse",
+            messages: [{ role: "user", content: fakten }],
+            tier: "deep",
+            temperature: 0,
+            ...(modell ? { modell } : {}),
+          });
+          return { ergebnis: a.data as Record<string, unknown>, modell: a.usage.model, konfidenz: a.data.confidence };
+        };
+
+        const befund = await karriereanalyse(db, {
+          userId,
+          rufer: rufer(),
+          zweitrufer: async (f) => {
+            const r = await rufer(ultra.modell)(f);
+            return { ergebnis: r.ergebnis, modell: r.modell };
+          },
+          zweitmeinungMoeglich: ultraVerfuegbar(cfg),
+          vergleichen: (a, b) => vergleichen(a, b),
+          promptFassung: KARRIEREANALYSE_FASSUNG,
+          /* Eine ausdrückliche Bitte umgeht den Zwischenspeicher. */
+          frisch: data.ausdruecklichGruendlich,
+        });
+
+        /*
+         * Was zurückgeht, ist das Ergebnis — und der Hinweis, falls
+         * zwei Durchgänge auseinandergingen. Welches Modell was
+         * gesagt hat, gehört nicht ins Gespräch.
+         */
+        return {
+          ok: true,
+          output: {
+            analyse: befund.analyse,
+            hinweis: befund.hinweis,
+            naechsteFrage: befund.naechsteFrage,
+            grund: befund.analyse === null ? befund.grund : null,
+          },
+        };
+      }
+
       case "create_or_update_evidence": {
         const data = input as z.infer<(typeof ToolSchemas)["create_or_update_evidence"]>;
         // Was das Modell ableitet, ist unbestätigt. Auf "bestätigt"

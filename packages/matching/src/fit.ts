@@ -99,9 +99,38 @@ export interface FitInput {
 
 /** Sehr einfache Wortüberlappung. Ersetzt kein semantisches Modell,
  *  reicht aber für eine nachvollziehbare Grundbewertung ohne Netzzugriff. */
+/**
+ * Die Normalisierung, auf die sich alles stützt.
+ *
+ * Kleinschreiben, alles ausser Buchstaben und Ziffern zu Leerzeichen,
+ * Wörter über drei Zeichen, jedes einmal. Kurze Wörter fallen heraus,
+ * weil „und", „für", „mit" in jeder Anzeige stehen und deshalb nichts
+ * über Passung aussagen — sie würden jeden Wert nach oben ziehen.
+ */
+function wortmenge(s: string): Set<string> {
+  return new Set(
+    s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((w) => w.length > 3),
+  );
+}
+
+/**
+ * Eine Beschreibung auf das eindampfen, was die Bewertung von ihr liest.
+ *
+ * Beim Import einmal aufgerufen, in `jobs.description_tokens` abgelegt.
+ * Weil `overlap()` ohnehin nur `wortmenge()` sieht, ist die Bewertung
+ * über den Tokens bitgleich zu der über dem Fliesstext — die Sortierung
+ * dient allein der Lesbarkeit beim Nachschauen in der Datenbank.
+ *
+ * Der Gewinn steht in der Abfrage: 4,35 MB Fliesstext werden zu 2,42 MB
+ * Wortmengen, und die Ranglistenabfrage wird messbar schneller, ohne
+ * dass sich ein einziger Wert verschiebt.
+ */
+export function beschreibungsTokens(beschreibung: string): string {
+  return [...wortmenge(beschreibung)].sort().join(" ");
+}
+
 function overlap(a: string, b: string): number {
-  const norm = (s: string) =>
-    new Set(s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((w) => w.length > 3));
+  const norm = wortmenge;
   const sa = norm(a);
   const sb = norm(b);
   if (sa.size === 0 || sb.size === 0) return 0;
@@ -162,7 +191,18 @@ export function computeFit(input: FitInput): FitResult {
   // --- Arbeitsweise und Umfeld ---
   let styleRaw: number | null = null;
   if (input.workStylePreferences.length > 0) {
-    const haystack = [input.job.description, ...input.job.coreTasks, ...input.job.benefits].join(" ");
+    /*
+     * `descriptionTokens` statt `description` — und das ist kein
+     * Kompromiss.
+     *
+     * `overlap()` normalisiert beide Seiten zu einer MENGE eindeutiger
+     * Wörter über drei Zeichen. Was vom Fliesstext im Wert ankommt, ist
+     * also weder Reihenfolge noch Häufigkeit noch Grammatik, sondern
+     * genau diese Menge. Sie einmal beim Import zu bilden statt bei
+     * jedem Aufruf für tausend Stellen ergibt denselben Wert — Ziffer
+     * für Ziffer. Geprüft in fit.tokens.test.ts.
+     */
+    const haystack = [input.job.descriptionTokens, ...input.job.coreTasks, ...input.job.benefits].join(" ");
     const hits = input.workStylePreferences.map((p) => overlap(p, haystack));
     styleRaw = hits.reduce((a, b) => a + b, 0) / hits.length;
   }
@@ -170,7 +210,7 @@ export function computeFit(input: FitInput): FitResult {
   // --- Werte und Motive ---
   let valuesRaw: number | null = null;
   if (input.rankedValues.length > 0 && input.job.benefits.length > 0) {
-    const haystack = [...input.job.benefits, input.job.description].join(" ");
+    const haystack = [...input.job.benefits, input.job.descriptionTokens].join(" ");
     // Früh genannte Werte wiegen mehr.
     let sum = 0, wsum = 0;
     input.rankedValues.forEach((v, i) => {
@@ -208,7 +248,14 @@ export function computeFit(input: FitInput): FitResult {
     { key: "proven_skills", label: "Belegte Fähigkeiten und Qualifikationen", raw: skillRaw,
       weight: w.provenSkills, evidenceIds: [...new Set(skillEvidenceIds)],
       explanation: skillRaw === null
-        ? "Es liegen noch keine bestätigten Belege vor, an denen sich die Anforderungen messen liessen."
+        /*
+         * In der Sprache der Person, nicht in unserer.
+         *
+         * „Bestätigte Belege, an denen sich Anforderungen messen
+         * liessen" ist präzise und liest sich wie ein Prüfbericht.
+         * Gemeint ist etwas Einfaches, und so soll es auch dastehen.
+         */
+        ? "Nina weiss noch nicht, was du kannst — dafür fehlt das Gespräch."
         : `${mustCovered} von ${musts.length} Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.` },
     { key: "preferred_tasks", label: "Tätigkeiten, die dir Energie geben", raw: taskRaw,
       weight: w.preferredTasks,
@@ -263,13 +310,30 @@ export function computeFit(input: FitInput): FitResult {
 
   const topReason = known[0]
     ? `${known[0].label}: ${known[0].explanation}`
-    : "Es liegen noch zu wenige bestätigte Angaben vor, um eine Passung zu begründen.";
+    /*
+     * Kurz, weil es im Kopf der Detailseite steht.
+     *
+     * Hier stand „Es liegen noch zu wenige bestätigte Angaben vor, um
+     * eine Passung zu begründen." — wahr, aber als Antwort auf „warum
+     * sehe ich diese Stelle?" eine Nichtauskunft in Satzlänge. Was
+     * fehlt und wie man es behebt, steht ohnehin eine Zeile darunter
+     * im Hinweis auf das Profil.
+     */
+    /*
+     * Der Satz, der unter jeder einzelnen Stelle stand.
+     *
+     * Fünfundzwanzigmal untereinander, in unseren Begriffen („belegte
+     * Passung", „bestätigte Angaben"), und er las sich wie ein Mangel
+     * der Stelle statt wie eine Lücke bei uns. Der neue sagt dasselbe
+     * und klingt wie ein Mensch.
+     */
+    : "Sieht interessant aus — für eine belastbare Einschätzung kennt Nina dich noch nicht gut genug.";
 
   const topReservation = unknown[0]
     ? `${unknown[0].label} ist unbekannt. ${unknown[0].explanation}`
     : weakest
-      ? `Am schwaechsten fällt aus: ${weakest.label.toLowerCase()}. ${weakest.explanation}`
-      : "Kein einzelner Vorbehalt sticht heraus - prüfe die Anforderungen dennoch selbst.";
+      ? `Am schwächsten: ${weakest.label.toLowerCase()}. ${weakest.explanation}`
+      : "Kein einzelner Vorbehalt sticht heraus — prüf die Anforderungen trotzdem selbst.";
 
   return {
     score: showNumber ? toScore100(value) : null,

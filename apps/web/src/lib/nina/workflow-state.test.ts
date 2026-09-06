@@ -17,7 +17,7 @@ describe("entryRoute", () => {
   };
 
   it("schickt ohne abgeschlossenes Onboarding ins Setup", () => {
-    expect(entryRoute({ ...basis, onboardingComplete: false })).toBe("/setup");
+    expect(entryRoute({ ...basis, onboardingComplete: false })).toBe("/nina-einrichten");
   });
 
   it("beginnt das Gespräch, wenn es noch nie lief", () => {

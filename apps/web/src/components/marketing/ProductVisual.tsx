@@ -99,41 +99,127 @@ export function HeroVisual({ assistantName }: { assistantName: string }) {
         </Flaeche>
 
         <div className="grid gap-4">
-          {/* Das Profil */}
+          {/*
+           * Beispielinhalt statt grauer Balken.
+           *
+           * Hier standen `<Zeile>`-Platzhalter — abgerundete graue
+           * Streifen, wie man sie in einem Ladezustand verwendet. Auf
+           * der Startseite lesen sie sich aber nicht als „hier stünde
+           * etwas", sondern als „hier steht nichts": ein Produkt, das
+           * sich selbst noch nicht zeigen kann.
+           *
+           * Der Inhalt unten ist ein Beispiel und keine Behauptung über
+           * eine bestimmte Person. Deshalb steht darunter auch
+           * ausdrücklich „Beispiel" — eine Startseite darf zeigen, wie
+           * das Produkt aussieht, aber keine Nutzerdaten erfinden.
+           */}
           <Flaeche tone="lavender">
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-3">
               Dein Profil
             </p>
-            <div className="mt-4 grid gap-2.5">
-              <Zeile w="88%" />
-              <Zeile w="64%" />
-              <Zeile w="76%" dim />
-            </div>
-            <div className="mt-5 flex items-center gap-2">
+            <ul className="mt-4 flex flex-wrap gap-1.5">
+              {["Kundenkontakt", "Schichtplanung", "Organisation", "weniger körperlich"].map((t) => (
+                <li
+                  key={t}
+                  className="rounded-(--radius-chip) bg-raised px-2.5 py-1 text-2xs text-ink-2"
+                >
+                  {t}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 flex items-center gap-2">
               <span className="size-2 rounded-full bg-positive" />
               <span className="text-xs text-ink-2">4 von 6 Bereichen klar</span>
             </div>
           </Flaeche>
 
-          {/* Drei Stellen */}
           <Flaeche tone="ice">
             <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-3">
               Passende Stellen
             </p>
             <ul className="mt-4 grid gap-3">
-              {["sehr gut", "gut", "gut"].map((band, i) => (
-                <li key={i} className="flex items-center gap-3">
-                  <span className="size-8 shrink-0 rounded-full bg-raised" />
-                  <span className="grid flex-1 gap-1.5">
-                    <Zeile w={["82%", "68%", "74%"][i]!} />
-                    <Zeile w="44%" dim />
+              {[
+                {
+                  titel: "Operations Coordinator",
+                  ort: "Karlsruhe · Hybrid",
+                  geld: "53.000–59.000 €",
+                  band: "Starker Fit",
+                  stark: true,
+                },
+                {
+                  titel: "Disponent Logistik",
+                  ort: "Karlsruhe · Vor Ort",
+                  geld: "48.000–52.000 €",
+                  band: "Interessant",
+                },
+                {
+                  titel: "Customer Operations",
+                  ort: "Remote",
+                  geld: "Gehalt nicht angegeben",
+                  band: "Zu prüfen",
+                },
+              ].map((j) => (
+                /*
+                 * Zwei Zeilen, nicht eine.
+                 *
+                 * Der erste Anlauf stellte Bild, Titel, Ort, Gehalt und
+                 * Passung nebeneinander. In einer Spalte von etwa 230
+                 * Pixeln reicht das für nichts: Der Titel brach auf zwei
+                 * Zeilen um, der Ort auf drei, und die Passungsmarke
+                 * legte sich über die Überschrift.
+                 *
+                 * Titel oben, darunter Gehalt und Passung — das passt in
+                 * die Breite und bleibt lesbar. Der Ort entfällt hier;
+                 * in einer Vorschau ist er das Verzichtbarste.
+                 */
+                <li key={j.titel} className="grid gap-1">
+                  <span className="truncate text-sm font-semibold leading-tight text-ink">
+                    {j.titel}
                   </span>
-                  <span className="rounded-(--radius-chip) bg-raised px-2.5 py-1 text-2xs text-ink-2">
-                    {band}
+                  <span className="flex items-center justify-between gap-2">
+                    <span
+                      className={
+                        j.geld.includes("€")
+                          ? "text-2xs font-semibold text-positive"
+                          : "text-2xs italic text-ink-3"
+                      }
+                    >
+                      {j.geld.replace("Gehalt nicht angegeben", "ohne Angabe")}
+                    </span>
+                    <span
+                      className={
+                        "shrink-0 rounded-(--radius-chip) px-2 py-0.5 text-2xs " +
+                        /*
+                       * Die Klassen des Gestaltungssystems, keine
+                       * eigenen.
+                       *
+                       * Hier stand `bg-accent/12 text-accent`: zwölf
+                       * Prozent der Akzentfarbe, gemischt mit dem
+                       * bläulichen Grund der Karte — und darauf die
+                       * ROHE Akzentfarbe statt der textsicheren
+                       * Variante. Ergebnis 3,64:1, gefordert sind 4,5.
+                       *
+                       * axe hat es auf allen fünf Breiten gemeldet,
+                       * zehn Fehlschläge. Gesehen habe ich es nicht,
+                       * weil ich Typprüfung, Unit-Tests und
+                       * Bildschirmfotos hatte — aber die
+                       * Barrierefreiheitsreihe nie laufen liess.
+                       *
+                       * `bg-accent-soft` mit `text-accent-text` ist die
+                       * dafür vorgesehene Paarung und misst 5,20:1.
+                       */
+                      (j.stark
+                        ? "bg-accent-soft font-medium text-accent-text"
+                        : "bg-raised text-ink-2")
+                      }
+                    >
+                      {j.band}
+                    </span>
                   </span>
                 </li>
               ))}
             </ul>
+            <p className="mt-4 text-2xs text-ink-3">Beispiel — so sieht eine Trefferliste aus.</p>
           </Flaeche>
         </div>
       </div>

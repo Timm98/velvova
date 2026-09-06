@@ -29,7 +29,19 @@ export const CLIP_FÜR_ZUSTAND: Record<NinaVisualState, string> = {
   error: "CALM",
 };
 
-const ÜBERBLENDUNG = 0.3;
+/*
+ * 0,9 Sekunden statt 0,3.
+ *
+ * Bei drei Zehnteln war der Wechsel zwischen den Clips ein Schnitt mit
+ * weichem Rand — man sah, dass etwas umgeschaltet wurde. Neun Zehntel
+ * lassen die eine Bewegung in die andere übergehen, ohne dass ein
+ * Zeitpunkt erkennbar wäre.
+ *
+ * Mehr wäre zu viel: Die Clips selbst sind wenige Sekunden lang, und
+ * eine Überblendung, die einen Grossteil davon einnimmt, zeigt nur
+ * noch Mischbilder statt der Bewegungen.
+ */
+const ÜBERBLENDUNG = 0.9;
 
 /**
  * Der Animationsmischer.

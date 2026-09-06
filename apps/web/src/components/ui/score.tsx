@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { BEFUNDTON, befundAusSicherheit } from "@/lib/jobs/befundton";
 
 /**
  * Die Darstellung der Bewertungen.
@@ -99,8 +100,15 @@ export function ConfidenceMeter({
   reason?: string;
 }) {
   const filled = level === "high" ? 3 : level === "medium" ? 2 : 1;
-  const tone =
-    level === "high" ? "bg-positive" : level === "medium" ? "bg-caution" : "bg-critical";
+  /*
+   * Niedrige Sicherheit ist nicht rot.
+   *
+   * Hier stand `bg-critical`. Rot heisst für jeden Menschen „hier
+   * stimmt etwas nicht" — die Aussage ist aber „wir wissen noch zu
+   * wenig". Das ist keine Eigenschaft der Stelle, sondern unserer
+   * Datenlage, und die Stelle soll dafür nicht angeklagt werden.
+   */
+  const tone = BEFUNDTON[befundAusSicherheit(level)].fuellung;
   const text = level === "high" ? "hoch" : level === "medium" ? "mittel" : "niedrig";
 
   return (

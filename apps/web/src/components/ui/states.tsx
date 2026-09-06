@@ -112,7 +112,7 @@ export function SourceNote({
   retrievedAt,
   kind,
   extra,
-  openLabel = "Im Original öffnen",
+  openLabel = "Zur Quelle",
 }: {
   sourceName: string;
   sourceUrl?: string | null;
@@ -148,12 +148,27 @@ export function PageHeader({
   eyebrow,
   title,
   lead,
+  leadClassName,
   actions,
   className,
 }: {
   eyebrow?: string;
   title: string;
   lead?: string;
+  /**
+   * Zusatzklassen für den Vorspann.
+   *
+   * Es gibt Seiten, auf denen der Vorspann auf schmalen Geräten im Weg
+   * steht: Er erklärt etwas, das weiter unten ohnehin genauer steht,
+   * und schiebt dabei den eigentlichen Inhalt aus dem ersten Bild. Auf
+   * der Jobseite standen so drei Zeilen Erklärung vor der ersten
+   * Stelle — auf einer Seite, die „Jobs" heißt.
+   *
+   * Deshalb hier eine Klasse und kein `hidden`-Schalter: Die Seite
+   * entscheidet, ab welcher Breite ihr Vorspann trägt. Der Kopf legt
+   * das nicht für alle fest.
+   */
+  leadClassName?: string;
   actions?: ReactNode;
   className?: string;
 }) {
@@ -202,7 +217,7 @@ export function PageHeader({
         <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] break-words sm:text-4xl">
           {title}
         </h1>
-        {lead && <p className="max-w-[var(--measure)] text-base text-ink-2">{lead}</p>}
+        {lead && <p className={cn("max-w-[var(--measure)] text-base text-ink-2", leadClassName)}>{lead}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2.5">{actions}</div>}
     </header>

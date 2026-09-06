@@ -103,6 +103,18 @@ export async function selectProvider(
       modelDeep: cfg.ai.modelDeep,
       modelFast: cfg.ai.modelFast,
       modelEmbed: cfg.ai.modelEmbed,
+      /*
+       * Die Ersatzmodelle bis hierher durchreichen.
+       *
+       * Ohne diese vier Zeilen stünde die Ersatzlogik im Anbieter da
+       * und bekäme nie ein Modell zu sehen — gebaut, geprüft, nie
+       * angeschlossen. Dieselbe Sorte Fehler, die `job_alarme` und
+       * `ai_runs` monatelang leer liess.
+       */
+      modelInteractiveFallback: cfg.ai.modelInteractiveFallback,
+      modelDeepFallback: cfg.ai.modelDeepFallback,
+      modelFastFallback: cfg.ai.modelFastFallback,
+      modelEmbedFallback: cfg.ai.modelEmbedFallback,
       maxTokens: cfg.ai.maxTokensPerRun,
       timeoutMs: cfg.ai.timeoutMs,
       transcribeModel: cfg.ai.modelTranscribe,

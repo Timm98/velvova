@@ -5,6 +5,8 @@ import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "./auth";
 import { recordEvent } from "./matching";
+import { rueckmeldungSchreiben } from "./nina/rueckmeldung";
+import { ABLEHNUNGSGRUENDE } from "./nina/musterregeln";
 
 /** Aktionen an einer Stelle: merken, verwerfen, Bewerbung anlegen. */
 
@@ -102,4 +104,54 @@ export async function updateApplicationStage(
 
   revalidatePath("/app/applications");
   revalidatePath(`/app/applications/${applicationId}`);
+}
+
+/**
+ * Eine Stelle ablegen — mit Grund, wenn die Person einen nennt.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum der Grund freiwillig ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Ein Pflichtfeld hier hiesse: Wer schnell durch eine Liste geht, muss
+ * bei jeder Stelle eine Begründung anklicken. Das ist die zuverlässigste
+ * Art, schlechte Daten zu bekommen — Leute klicken irgendetwas, und
+ * Nina lernt daraus ein Muster, das es nie gab.
+ *
+ * Ohne Grund wird die Ablehnung trotzdem festgehalten. Sie zählt nur
+ * nicht für die Mustererkennung, und das ist richtig so.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Was mit einem erkannten Muster passiert
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Nichts Automatisches. Die Rückgabe enthält die Frage, die Nina
+ * stellen soll — nicht eine Regel, die sie gesetzt hat. Aus sieben
+ * Ablehnungen einen stillen Filter zu machen, hiesse Stellen
+ * verschwinden zu lassen, ohne dass jemand das entschieden hat.
+ */
+export async function stelleAblehnen(
+  jobId: string,
+  grund?: string | null,
+): Promise<{ frage: string | null }> {
+  const user = await requireUser();
+
+  /*
+   * Nur bekannte Gründe.
+   *
+   * Der Wert kommt aus dem Browser und ist damit alles, was jemand
+   * schicken will. Ein unbekannter Grund landete sonst in der Tabelle
+   * und wäre für die Mustererkennung ein Schlüssel ohne Frage — ein
+   * Muster, zu dem Nina nichts sagen kann.
+   */
+  const geprueft = grund && grund in ABLEHNUNGSGRUENDE ? grund : null;
+
+  const { muster } = await rueckmeldungSchreiben(user.id, {
+    jobId,
+    art: "abgelehnt",
+    grund: geprueft,
+  });
+
+  revalidatePath("/app/jobs");
+  return { frage: muster?.frage ?? null };
 }

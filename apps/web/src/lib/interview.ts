@@ -2,12 +2,15 @@
 
 import { getDb, schema, withUser } from "@paycheck/db";
 import { buildNinaSystemPrompt, checkOutput, minimiseForExternalProvider, route, selectProvider } from "@paycheck/ai";
-import { QUESTIONS, nextStep, progressView } from "@paycheck/ai";
-import { isConfirmedFact, type InterviewStage } from "@paycheck/domain";
+import { dimensionenAusAntwort, QUESTIONS, nextStep, progressView } from "@paycheck/ai";
+import { ARBEITSDIMENSIONEN, isConfirmedFact, type InterviewStage } from "@paycheck/domain";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { toInterviewSession } from "./rows";
 import { requireUser } from "./auth";
+import { angabeErfassen, twinLaden } from "./arbeitsprofil";
+import { offeneErkenntnisse } from "./nina/erkenntnisse";
+
 
 /**
  * Der Ablauf des Karrieregesprächs auf der Serverseite.
@@ -105,12 +108,27 @@ export async function loadInterview(): Promise<InterviewView> {
     deletedAt: e.deletedAt,
   }));
 
+  /*
+   * Welche Achsen des Career Twin noch fehlen.
+   *
+   * Sie steuern die Reihenfolge der Fragen innerhalb eines Themas:
+   * zuerst die, die eine offene Achse treffen kann. Ohne das füllte
+   * Nina den Twin nur zufällig — sie stellte die erste offene Frage,
+   * unabhängig davon, ob deren Antwort überhaupt etwas hergibt.
+   *
+   * Bei einem Fehler bleibt die Liste leer, und alles verhält sich wie
+   * vorher. Ein Gespräch darf daran nicht scheitern.
+   */
+  const twin = await twinLaden(user.id).catch(() => new Map() as Awaited<ReturnType<typeof twinLaden>>);
+  const offeneAchsen = ARBEITSDIMENSIONEN.filter((d) => !twin.has(d));
+
   const state = {
     session,
     evidence: domainEvidence,
     locale: session.locale,
     askedKeys: turns.filter((t) => t.questionKey).map((t) => t.questionKey!),
     skippedKeys: [],
+    offeneAchsen,
   };
 
   const step = nextStep(state);
@@ -129,9 +147,24 @@ export async function loadInterview(): Promise<InterviewView> {
     confirmedFacts: domainEvidence
       .filter(isConfirmedFact)
       .map((e) => ({ id: e.id, statement: e.statement })),
-    openHypotheses: domainEvidence
-      .filter((e) => !e.userConfirmed && !e.userRejected)
-      .map((e) => ({ id: e.id, statement: e.statement })),
+    /*
+     * Offene Erkenntnisse — und was NICHT mehr dazugehört.
+     *
+     * Drei Filter, jeder für einen Weg, den ein Mensch gewählt haben
+     * kann:
+     *
+     *   bestätigt  → steht jetzt unter den belegten Fakten.
+     *   abgelehnt  → wurde bestritten.
+     *   verworfen  → wurde weggelegt, ohne Urteil.
+     *
+     * Der vierte Filter ist der wichtigste und war der Fehler: eine
+     * Aussage, deren INHALT schon einmal abgelehnt oder weggelegt
+     * wurde, kommt nicht wieder — auch wenn Nina sie zwei Sätze später
+     * erneut ableitet und dabei eine neue Zeile anlegt. Vorher hing die
+     * Entscheidung an der Kennung, und die neue Zeile war unbelastet.
+     * Für den Menschen sah das aus, als bewirke das Wegklicken nichts.
+     */
+    openHypotheses: offeneErkenntnisse(evidence),
     voiceAvailable: cfg.voice.provider !== "none",
   };
 }
@@ -210,6 +243,34 @@ export async function submitAnswer(
       .set({ completedStages: [...completed], updatedAt: new Date() })
       .where(eq(schema.interviewSessions.id, sessionRow.id));
   });
+
+  /*
+   * Die Antwort füllt auch den Career Twin.
+   *
+   * ── Warum das hier hängt und nicht im Profil ──────────────
+   *
+   * Der Twin entscheidet über Passung, Alltagsvergleich und
+   * Rollenkarte — und war leer, bis jemand von Hand zehn Regler
+   * bewegte. Nina stellt die Fragen längst („Welche Entscheidungen
+   * möchtest du selbst treffen dürfen?"); die Antworten wurden nur
+   * nie zu etwas, womit sich rechnen liess.
+   *
+   * ── Warum nach der Transaktion ────────────────────────────
+   *
+   * Die Antwort ist gespeichert, bevor hier irgendetwas passiert.
+   * Scheitert das Lesen, fehlt eine Achse — die Antwort des Menschen
+   * ist trotzdem da.
+   */
+  try {
+    /* Ohne Frage kein Leser: Derselbe Satz heisst je nach Frage
+       etwas anderes, und ohne sie hiesse er gar nichts. */
+    const gelesen = questionKey ? dimensionenAusAntwort(questionKey, trimmed) : [];
+    for (const g of gelesen) {
+      await angabeErfassen(user.id, g.dimension, g.wert, "gespraech", g.beleg);
+    }
+  } catch (e) {
+    console.error("[interview] Achsen nicht gelesen:", e);
+  }
 
   return { ok: true };
 }

@@ -97,6 +97,20 @@ export function middleware(request: NextRequest): NextResponse {
   headers.set("x-nonce", nonce);
   headers.set("Content-Security-Policy", csp);
 
+  /*
+   * Der angefragte Pfad wandert mit, damit `requireUser` weiss, wohin
+   * der Besucher wollte.
+   *
+   * Ohne ihn landet jeder, der ohne Anmeldung auf eine Stelle klickt,
+   * nach dem Login auf der Übersicht — und die Stelle, wegen der er
+   * gekommen ist, ist weg. Serverkomponenten kennen ihren eigenen Pfad
+   * nicht; er ist nur hier verfügbar.
+   *
+   * Die Suchparameter gehören mit dazu: eine Stellensuche ohne ihre
+   * Filter ist nicht dieselbe Seite.
+   */
+  headers.set("x-pfad", request.nextUrl.pathname + request.nextUrl.search);
+
   const response = NextResponse.next({ request: { headers } });
   response.headers.set("Content-Security-Policy", csp);
   return response;

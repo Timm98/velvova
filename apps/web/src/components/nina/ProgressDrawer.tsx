@@ -108,7 +108,7 @@ export function ProgressDrawer({
            * Der Ring zeigt dasselbe, ohne ein Versprechen über die
            * Restlänge zu machen.
            */}
-          <div className="flex items-center gap-5 rounded-(--radius-surface) bg-lavender px-6 py-5">
+          <div className="flex items-center gap-5 rounded-(--radius-surface) bg-accent-soft px-6 py-5">
             <div className="relative grid size-16 shrink-0 place-items-center">
               <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90" aria-hidden>
                 <circle cx="20" cy="20" r="17" fill="none" stroke="var(--surface-1)" strokeWidth="4" />

@@ -17,6 +17,15 @@ import { decideForUrl, findByUrl } from "@paycheck/sources";
  */
 
 export type ApplyMode =
+  /**
+   * Die Stelle wurde hier eingestellt — die Bewerbung bleibt hier.
+   *
+   * Der einzige Fall, in dem wir wirklich wissen, was mit einer
+   * Bewerbung passiert: Der Arbeitgeber liest sie in seinem Bereich in
+   * diesem Produkt. Kein fremdes Portal, kein Weiterleiten, keine
+   * Vermutung über den Verbleib.
+   */
+  | "paycheck_apply"
   | "native_apply"
   | "embedded_partner_apply"
   | "prepared_redirect"
@@ -43,6 +52,9 @@ export interface ApplyCapability {
 }
 
 const MODUS_TEXT: Record<ApplyMode, string> = {
+  paycheck_apply:
+    "Diese Stelle hat der Arbeitgeber hier eingestellt. Deine Bewerbung geht direkt an ihn — du " +
+    "siehst vorher, was übermittelt wird, und kannst sie jederzeit zurückziehen.",
   native_apply:
     "Die Bewerbung geht über eine autorisierte Schnittstelle des Arbeitgebers — nach deiner " +
     "ausdrücklichen Bestätigung und mit vollständiger Vorschau.",
@@ -93,6 +105,25 @@ export function capabilityForJob(input: {
     userConfirmationRequired: true as const,
     autoSubmitAllowed: false as const,
   };
+
+  /*
+   * Der eigene Weg zuerst.
+   *
+   * Für eine hier eingestellte Stelle ist `applyTarget` ein Pfad in
+   * diesem Produkt und keine fremde Adresse. Liefe er durch die
+   * Portalerkennung darunter, würde er als unbekannte Domain behandelt
+   * und die Person bekäme „wir können dich nirgendwohin führen“ zu
+   * lesen — für eine Bewerbung, die zwei Klicks entfernt ist.
+   */
+  if (input.applyMethod === "internal" && input.applyTarget) {
+    return {
+      ...basis,
+      mode: "paycheck_apply",
+      authorization: "authorized",
+      explanation: MODUS_TEXT.paycheck_apply,
+      missingForBetterMode: null,
+    };
+  }
 
   // Ohne Weg zum Original bleibt nur das Paket in der Hand der Person.
   if (!url) {

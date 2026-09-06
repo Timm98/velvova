@@ -1,0 +1,26 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const z = async (name, q) => {
+  const r = (await db.execute(q)).rows[0];
+  console.log(`  ${name.padEnd(44)} ${String(Object.values(r)[0]).padStart(10)}`);
+};
+console.log("Was tatsächlich Daten hat");
+await z("Stellen gesamt", sql`select count(*)::int from jobs where is_demo=false`);
+await z("davon mit KldB-Kennung", sql`select count(kldb)::int from jobs where is_demo=false`);
+await z("davon mit Gehaltsangabe", sql`select count(*)::int from jobs where is_demo=false and salary_disclosed`);
+await z("davon mit Aufgabenliste", sql`select count(*)::int from jobs where is_demo=false and jsonb_array_length(core_tasks) > 0`);
+await z("Berufe mit amtlichem Median", sql`select count(*)::int from beruf_entgelt`);
+await z("Arbeitsproben", sql`select count(*)::int from aufgabenproben where aktiv`);
+await z("Probendurchläufe", sql`select count(*)::int from probendurchlaeufe`);
+await z("Career-Twin-Angaben", sql`select count(*)::int from arbeitsprofil`);
+await z("Role Truth Cards (Arbeitgeberangaben)", sql`select count(*)::int from rollen_aussagen`);
+await z("Mitarbeiterbestätigungen", sql`select count(*)::int from rollen_bestaetigungen`);
+await z("Eingefrorene Empfehlungen", sql`select count(*)::int from empfehlungs_ergebnisse`);
+await z("Check-ins", sql`select count(*)::int from check_ins`);
+await z("Firmen mit angereicherten Daten", sql`select count(*)::int from companies where industry is not null`);
+await z("Stellen mit Koordinaten", sql`select count(latitude)::int from jobs where is_demo=false`);
+await z("Quellenverknüpfungen", sql`select count(*)::int from job_source_links`);
+process.exit(0);

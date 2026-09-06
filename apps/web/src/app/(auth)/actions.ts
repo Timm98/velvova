@@ -2,7 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { zielNachLogin } from "@/lib/auth/ziel";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { loadRuntimeConfig } from "@paycheck/config";
 import { and, eq } from "drizzle-orm";
 import {
   authenticate,
@@ -15,8 +17,13 @@ import {
 import {
   ensureWorkflowState,
   entryRoute,
+  sanitiseRoute as sichereRoute,
   updateWorkflowState,
 } from "@/lib/nina/workflow-state";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { ausSupabaseNutzer, verknuepfeIdentitaet } from "@/lib/auth/fremdanmeldung";
+import { lesbarerFehler, protokolliereFehler } from "@/lib/auth/fehlertexte";
 
 /**
  * Server Actions für Anmeldung und Registrierung.
@@ -42,7 +49,18 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   }
 
   const h = await headers();
-  await createSession(userId, h.get("user-agent") ?? undefined);
+  /*
+   * „Eingeloggt bleiben" ist abwählbar, und zwar mit Folgen.
+   *
+   * Ohne Häkchen bekommt der Browser ein Sitzungscookie: Beim
+   * Schliessen ist die Anmeldung weg. Das ist der Fall, für den es das
+   * Kästchen gibt — ein fremder oder geteilter Rechner.
+   *
+   * Voreingestellt ist es angehakt. Wer das Formular abschickt, ohne
+   * hinzusehen, soll nicht bei jedem Start neu tippen müssen.
+   */
+  const bleiben = formData.get("bleiben") !== null;
+  await createSession(userId, h.get("user-agent") ?? undefined, bleiben);
 
   /*
    * Wohin nach dem Login?
@@ -54,14 +72,34 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
    * ein abgeschlossenes Interview begann bei jedem Login von vorn.
    */
   const state = await ensureWorkflowState(userId);
-  redirect(entryRoute(state));
+
+  /*
+   * Ein mitgegebenes Ziel geht vor — aber nur für fertige Konten.
+   *
+   * `sicheresZiel` gab es bisher nur bei der Registrierung. Damit
+   * verlor jeder, der aus der öffentlichen Stellensuche auf eine
+   * Anzeige klickte und sich anmeldete, genau diese Anzeige: der
+   * Login schickte ihn auf seine Liste.
+   *
+   * Wer mitten im Setup steckt, wird trotzdem dorthin geführt. Ein
+   * unfertiges Profil auf eine Stellenseite zu schicken, hiesse ihm
+   * eine Bewertung zu zeigen, für die die Grundlage fehlt.
+   */
+  redirect(zielNachLogin(entryRoute(state), sicheresZiel(formData.get("weiter"))));
 }
 
 export async function registerAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
 
-  const result = await registerUser(email, password);
+  /*
+   * Das Kästchen ist angehakt, wenn es mitgeschickt wird — so
+   * funktionieren Kontrollkästchen in Formularen. Fehlt es, hat es
+   * jemand abgewählt.
+   */
+  const benachrichtigen = formData.get("benachrichtigen") !== null;
+
+  const result = await registerUser(email, password, benachrichtigen);
   if (!result.ok) {
     return { error: result.error, values: { email } };
   }
@@ -71,29 +109,138 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   // Ein neues Konto geht immer durch das Setup. Der Zustand wird hier
   // angelegt, damit die Weiterleitung ab jetzt eine Grundlage hat.
   await ensureWorkflowState(result.userId);
-  redirect("/setup");
+  redirect(sicheresZiel(formData.get("weiter")) ?? "/nina-einrichten");
+}
+
+/**
+ * Ein Ziel aus dem Formular — oder nichts.
+ *
+ * Wer über „Unternehmen registrieren" kommt, soll nach der Anmeldung im
+ * Arbeitgeberbereich landen und nicht in der Jobsuche. Die Absicht
+ * reist deshalb als verstecktes Feld mit.
+ *
+ * Geprüft wird streng, denn ein durchgereichtes Ziel ist die klassische
+ * offene Weiterleitung: Ein Link auf die eigene Registrierung, der
+ * danach auf eine fremde Seite führt, ist ein fertiger Phishing-Bauplan.
+ * Erlaubt ist deshalb NUR ein Pfad auf dieser Anwendung — beginnend mit
+ * einem einzelnen Schrägstrich, ohne Schema, ohne Host, ohne
+ * Backslash-Trick.
+ */
+function sicheresZiel(wert: FormDataEntryValue | null): string | null {
+  if (typeof wert !== "string") return null;
+  const z = wert.trim();
+  if (!z.startsWith("/")) return null;
+  if (z.startsWith("//") || z.startsWith("/\\")) return null;
+  if (/[\r\n]/.test(z)) return null;
+  return z.slice(0, 200);
 }
 
 export async function magicLinkAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get("email") ?? "");
   const token = await createMagicLink(email);
 
-  // In der Entwicklung ohne verbundenen Mailversand wird der Link
-  // ausgegeben, damit der Weg überhaupt begehbar ist. Das steht auch so
-  // in der Oberfläche - er wird nicht als versendet ausgegeben.
-  if (token && process.env.NODE_ENV !== "production") {
-    return {
-      notice: "sent",
-      values: { email },
-      error: undefined,
-    };
+  /*
+   * ── Was hier gefehlt hat ──────────────────────────────────────
+   *
+   * Der Kommentar an dieser Stelle sagte, in der Entwicklung werde der
+   * Link ausgegeben, „damit der Weg überhaupt begehbar ist". Der Code
+   * darunter gab nichts aus: derselbe `notice: "sent"` wie im
+   * Produktivfall. Der Weg war nirgends begehbar — es gab bis eben
+   * nicht einmal eine Route, die ein Token einlösen konnte.
+   *
+   * ── Warum der Link NICHT in die Oberfläche geht ───────────────
+   *
+   * Ein Anmeldelink im Browser wäre eine Anmeldung ohne Passwort für
+   * jeden, der eine fremde Adresse in das Formular tippt — gegen eine
+   * Datenbank mit echten Konten. Deshalb geht er auf die
+   * Serverkonsole, die nur sieht, wer den Server betreibt.
+   *
+   * Die Antwort an den Browser bleibt in jedem Fall dieselbe: Sie darf
+   * nicht verraten, ob es die Adresse gibt.
+   */
+  if (token && loadRuntimeConfig().mail.provider === "draft") {
+    const ziel = new URL("/magic", loadRuntimeConfig().appUrl);
+    ziel.searchParams.set("token", token);
+    console.info(`[anmeldelink] ${email}: ${ziel.toString()}`);
   }
 
   return { notice: "sent", values: { email } };
 }
 
+/**
+ * Die SMS ist bestätigt — jetzt die eigene Sitzung.
+ *
+ * ── Warum das hier und nicht im Browser passiert ──────────────
+ *
+ * Nach `verifyOtp` hat der Browser eine Supabase-Sitzung. Damit ist
+ * bewiesen, dass die SMS angekommen ist — mehr nicht. Die Anmeldung
+ * an dieser Anwendung ist ein eigener Vorgang: Sie legt eine Zeile in
+ * `sessions` an, und daran hängen die Zeilenrechte jeder Abfrage.
+ *
+ * Diese Aktion liest die Supabase-Sitzung aus den Cookies, prüft sie
+ * **beim Server von Supabase** und stellt danach unsere aus. Der
+ * Unterschied ist wichtig: `getUser()` fragt nach, `getSession()`
+ * liest nur das mitgeschickte Token. Ein Token, das der Browser
+ * geschickt hat, ist eine Behauptung, bis jemand sie prüft — und auf
+ * einer Anmeldung darf man das nicht auslassen.
+ *
+ * Danach wird die Supabase-Sitzung beendet: zwei Sitzungen
+ * nebeneinander sind eine zu viel, und die zweite überlebte jedes
+ * Abmelden.
+ */
+export async function telefonAnmeldungAbschliessen(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  if (!isSupabaseConfigured()) {
+    return { error: "Die Anmeldung per Telefonnummer ist gerade nicht verfügbar." };
+  }
+
+  let userId: string;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      protokolliereFehler("telefon:getUser", error);
+      return { error: "Die Bestätigung ist abgelaufen. Bitte fordere einen neuen Code an." };
+    }
+
+    ({ userId } = await verknuepfeIdentitaet(ausSupabaseNutzer(data.user)));
+    await createSession(userId, (await headers()).get("user-agent") ?? undefined, true);
+    await supabase.auth.signOut().catch(() => undefined);
+  } catch (fehler) {
+    protokolliereFehler("telefon:abschluss", fehler);
+    return { error: lesbarerFehler(fehler) };
+  }
+
+  const state = await ensureWorkflowState(userId);
+  redirect(zielNachLogin(entryRoute(state), sichereRoute(String(formData.get("weiter") ?? ""))));
+}
+
 export async function logoutAction(): Promise<void> {
   await destroySession();
+
+  /*
+   * Auch die Supabase-Sitzung beenden — falls doch eine dasteht.
+   *
+   * Im Normalfall gibt es keine: Google- und SMS-Anmeldung beenden
+   * sie sofort nach dem Ausstellen unserer eigenen. Bleibt eine
+   * übrig — ein abgebrochener Rückweg, ein Fehler zwischen den
+   * beiden Schritten —, dann läge im Browser ein Cookie, das sich
+   * selbst auffrischt und ein Abmelden überlebt.
+   *
+   * Ein Fehlschlag darf das Abmelden nicht aufhalten: Unsere Sitzung
+   * ist zu diesem Zeitpunkt bereits weg, und genau darauf kommt es an.
+   */
+  if (isSupabaseConfigured()) {
+    try {
+      const supabase = await createSupabaseServerClient();
+      await supabase.auth.signOut();
+    } catch (fehler) {
+      protokolliereFehler("logout:supabase", fehler);
+    }
+  }
+
   redirect("/");
 }
 

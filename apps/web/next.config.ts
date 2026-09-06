@@ -60,6 +60,27 @@ loadEnvFile(".env.local", ausDatei);
 process.env.PAYCHECK_REPO_ROOT ??= repoRoot;
 
 const config: NextConfig = {
+  /**
+   * Wohin der Build schreibt — und warum das einstellbar sein muss.
+   *
+   * `next dev` und `next build` benutzen beide `.next`. Solange nur
+   * eines von beidem läuft, fällt das nie auf. Läuft ein Dev-Server und
+   * jemand baut nebenher für eine Messung, überschreibt der Build die
+   * gemeinsamen Manifeste — und der Dev-Server liefert danach Seiten
+   * aus, die auf Chunks zeigen, die er selbst nicht kennt.
+   *
+   * Das Ergebnis ist bösartig, weil es nicht nach einem Build-Problem
+   * aussieht: das CSS kommt als 404 zurück, ein Chunk lässt sich nicht
+   * laden, der Client wirft — und die Person sieht „Da ist etwas
+   * schiefgegangen". Gesucht wird dann im Anwendungscode, wo nichts
+   * kaputt ist.
+   *
+   * Mit `NEXT_DIST_DIR` bekommt jeder Build sein eigenes Verzeichnis.
+   * Der Dev-Server behält `.next` für sich, und die Kollision ist nicht
+   * mehr möglich — nicht seltener, sondern ausgeschlossen.
+   */
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
+
   // Die Workspace-Pakete werden als TypeScript-Quelle eingebunden, nicht
   // als gebauter Code. Das haelt den Entwicklungsweg kurz.
   transpilePackages: [
@@ -95,7 +116,44 @@ const config: NextConfig = {
     return [
       { source: "/settings", destination: "/app/settings", permanent: true },
       { source: "/settings/:pfad*", destination: "/app/settings/:pfad*", permanent: true },
-      { source: "/jobs", destination: "/app/jobs", permanent: true },
+      /*
+       * `/jobs` leitet nicht mehr um — dort liegt jetzt die
+       * öffentliche Stellensuche.
+       *
+       * Ein Hinweis für später: Diese Weiterleitung war `permanent`,
+       * also eine 308. Browser merken sich die unbefristet. Wer
+       * `/jobs` vor dieser Änderung aufgerufen hat, landet weiterhin
+       * auf `/app/jobs`, bis sein Zwischenspeicher geleert ist — die
+       * öffentliche Suche sieht er nicht. Genau deshalb sind
+       * dauerhafte Weiterleitungen auf Adressen, die man später noch
+       * brauchen könnte, ein schlechtes Geschäft.
+       *
+       * Für angemeldete Nutzer ist es unkritisch: `/app/jobs` ist die
+       * Seite, die sie ohnehin wollen.
+       */
+      /*
+       * `/app` ist keine Seite mehr.
+       *
+       * Dort lag „Heute" — ein Dashboard, das für Angemeldete eine
+       * zweite Startseite war. Es gibt jetzt eine Startseite; wer
+       * angemeldet ist, sieht dort seinen Namen über der Zahl.
+       *
+       * Die Weiterleitung steht hier und nicht als `redirect()` in
+       * einer Seite: Über der Seite liegt `app/layout.tsx` mit
+       * `requireUser()`. Ein Abgemeldeter wäre also erst auf die
+       * Anmeldung geschickt worden, um danach auf einer öffentlichen
+       * Seite zu landen. Eine Weiterleitung in der Konfiguration
+       * greift vor der Anmeldung.
+       *
+       * `permanent: false` — eine 308 auf `/app` merkt sich der
+       * Browser unbefristet, und diese Adresse könnte später wieder
+       * gebraucht werden. Genau der Fehler, der oben bei `/jobs`
+       * schon einmal gemacht wurde.
+       *
+       * Nur die Wurzel: `/app/nina`, `/app/jobs` und die übrigen
+       * Unterseiten bleiben unberührt.
+       */
+      { source: "/app", destination: "/", permanent: false },
       { source: "/nina", destination: "/app/nina", permanent: true },
       { source: "/profile", destination: "/app/profile", permanent: true },
       { source: "/applications", destination: "/app/applications", permanent: true },

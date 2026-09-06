@@ -7,7 +7,7 @@
  * anderes als die Seite daneben.
  *
  * Der Zuschnitt folgt V7 §24.3: das hier ist **Produktwissen**, kein
- * Karrierewissen. Nina darf im Supportchat erklären, wie Paycheck
+ * Karrierewissen. Nina darf im Supportchat erklären, wie Velvova
  * arbeitet und was mit den Daten geschieht. Sie darf dort nicht auf das
  * Karriereprofil zugreifen — das ist eine Zugriffsentscheidung, keine
  * Frage des Tonfalls, und sie steht deshalb in der Gesprächsart
@@ -35,9 +35,9 @@ export const HILFE: HilfeEintrag[] = [
   {
     id: "was-ist-paycheck",
     bereich: "Erste Schritte",
-    frage: "Was macht Paycheck anders als eine Jobbörse?",
+    frage: "Was macht Velvova anders als eine Jobbörse?",
     antwort:
-      "Eine Jobbörse beginnt mit einem Suchbegriff. Paycheck beginnt mit dir: Nina führt ein " +
+      "Eine Jobbörse beginnt mit einem Suchbegriff. Velvova beginnt mit dir: Nina führt ein " +
       "Gespräch über deine Erfahrungen, Stärken und Bedingungen und leitet daraus ab, welche " +
       "Stellen wirklich passen. Die Reihenfolge entsteht aus begründeter Passung, nicht aus " +
       "Werbebudget. Was Nina nicht belegen kann, sagt sie als unbelegt.",
@@ -70,7 +70,7 @@ export const HILFE: HilfeEintrag[] = [
     bereich: "Stellen und Passung",
     frage: "Was heißt „Passung nicht berechenbar“?",
     antwort:
-      "Dass zu wenige bestätigte Angaben vorliegen, um eine Passung zu begründen. Paycheck " +
+      "Dass zu wenige bestätigte Angaben vorliegen, um eine Passung zu begründen. Velvova " +
       "zeigt dann keine Zahl, statt eine zu erfinden. Sobald im Gespräch belegte Erfahrungen " +
       "dazukommen, wird aus „nicht berechenbar“ eine begründete Einschätzung mit Angabe der " +
       "Unsicherheit.",
@@ -113,7 +113,7 @@ export const HILFE: HilfeEintrag[] = [
   {
     id: "keine-auto-bewerbung",
     bereich: "Bewerbungen",
-    frage: "Bewirbt Paycheck sich automatisch für mich?",
+    frage: "Bewirbt Velvova sich automatisch für mich?",
     antwort:
       "Nein. Es gibt keine automatische Bewerbung. Jede Bewerbung wird von dir ausgelöst und " +
       "vorher von dir freigegeben. Unterlagen entstehen aus belegten Angaben — was nicht " +

@@ -150,3 +150,75 @@ describe("Live-Gespräch", () => {
     expect(aus.wirkung.brichAb).toBeUndefined();
   });
 });
+
+describe("Verweigerte Tonwiedergabe", () => {
+  /*
+   * Der Fehler, den man nicht hört.
+   *
+   * Safari erlaubt Ton nur nach einer Nutzerhandlung. Wurde `play()`
+   * abgelehnt, lief das vorher als „ton_endet" durch die Maschine — sie
+   * ging in „hört" und sah damit exakt so aus, als hätte Nina
+   * gesprochen und ausgeredet. Kein Zustand, kein Text, nichts
+   * unterschied den stummen Fall vom gelungenen.
+   *
+   * Diese Prüfungen halten die beiden Fälle auseinander.
+   */
+  function bisSpricht() {
+    let stand = START;
+    for (const e of [
+      { art: "verbinden" },
+      { art: "verbunden" },
+      { art: "sprache_beginnt" },
+      { art: "redebeitrag_fertig", text: "Hallo" },
+      { art: "antwort_fertig", zug: 0 },
+      { art: "ton_beginnt", zug: 0 },
+    ] as LiveEreignis[]) {
+      stand = weiter(stand, e).stand;
+    }
+    return stand;
+  }
+
+  it("kehrt ins Zuhören zurück, statt das Gespräch abzubrechen", () => {
+    const spricht = bisSpricht();
+    expect(spricht.zustand).toBe("spricht");
+
+    const { stand, wirkung } = weiter(spricht, {
+      art: "ton_verweigert",
+      zug: spricht.zug,
+      text: "Dein Browser lässt Ton erst nach einer Berührung zu.",
+    });
+
+    expect(stand.zustand).toBe("hört");
+    // Kein Abbruch, kein Schliessen: das Mikrofon bleibt an, nur der
+    // Lautsprecher schwieg.
+    expect(wirkung.brichAb).toBeFalsy();
+    expect(wirkung.schliesse).toBeFalsy();
+  });
+
+  it("hinterlässt einen Hinweis — anders als ein normal beendeter Ton", () => {
+    const spricht = bisSpricht();
+
+    const normal = weiter(spricht, { art: "ton_endet", zug: spricht.zug }).stand;
+    const stumm = weiter(spricht, {
+      art: "ton_verweigert",
+      zug: spricht.zug,
+      text: "Dein Browser lässt Ton erst nach einer Berührung zu.",
+    }).stand;
+
+    // Beide landen im selben Zustand — der Unterschied MUSS woanders
+    // sichtbar sein, sonst ist er wieder unsichtbar.
+    expect(normal.zustand).toBe(stumm.zustand);
+    expect(normal.fehler).toBeNull();
+    expect(stumm.fehler).toContain("Berührung");
+  });
+
+  it("ignoriert eine Verweigerung aus einem überholten Redebeitrag", () => {
+    const spricht = bisSpricht();
+    const { stand } = weiter(spricht, {
+      art: "ton_verweigert",
+      zug: spricht.zug - 1,
+      text: "veraltet",
+    });
+    expect(stand).toEqual(spricht);
+  });
+});

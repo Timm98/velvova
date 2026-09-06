@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, CreditCard, Globe, Mic, Palette, Plug, ShieldCheck, User } from "lucide-react";
+import { Bell, CreditCard, Globe, Mic, Palette, Plug, ShieldCheck, SlidersHorizontal, User, Calculator, Wallet } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const ITEMS = [
   { href: "/app/settings", label: "Konto", icon: User, exact: true },
-  { href: "/app/settings/abo", label: "Abo & Zahlung", icon: CreditCard },
+  { href: "/app/settings/abo", label: "Plan & Abrechnung", icon: CreditCard },
+  { href: "/app/settings/gehalt", label: "Gehalt & Steuern", icon: Calculator },
+  { href: "/app/settings/lebenshaltung", label: "Lebenshaltung", icon: Wallet },
+  { href: "/app/settings/matching", label: "Abgleich & Bedingungen", icon: SlidersHorizontal },
   { href: "/app/settings/language-region", label: "Sprache & Region", icon: Globe },
   { href: "/app/settings/appearance", label: "Erscheinungsbild", icon: Palette },
   { href: "/app/settings/voice", label: "Stimme & Gespräch", icon: Mic },

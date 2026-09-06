@@ -1,0 +1,16 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const ALT = /\b(werkstudent|werkstudierend|praktik|internship|intern\b|ausbildung|auszubildend|azubi|dual(?:es)? studium|trainee|aushilfe|minijob|geringf[üu]gig|bachelor|master|thesis|abschlussarbeit|schüler|ferienjob|volontariat|volontär)/i;
+const NEU = /(werkstudent|werkstudium|werkstudierend|working\s+student|praktikum|praktikant|\bpraktika\b|\binternship\b|\bintern\b|\bausbildung\b|ausbildungsplatz|ausbildungsstelle|ausbildungs-|\bauszubildend|\bazubi\b|dual(?:es)? studium|bachelorstudium|masterstudium|trainee|\baushilfe\b|\bminijob\b|geringf[üu]gig|bachelorand|masterand|bachelorarbeit|masterarbeit|(?:bachelor|master)[-\s]?thesis|\bthesis\b|abschlussarbeit|\bschüler|\bferienjob\b|volontariat|volontär)/i;
+const r = (await db.execute(sql`select title from jobs`)).rows.map(x => String(x.title ?? ""));
+const nurAlt = r.filter(t => ALT.test(t) && !NEU.test(t));
+const nurNeu = r.filter(t => !ALT.test(t) && NEU.test(t));
+console.log(`alt: ${r.filter(t=>ALT.test(t)).length}  neu: ${r.filter(t=>NEU.test(t)).length}`);
+console.log(`\nNeu FREIGEGEBEN (${nurAlt.length}) — dürfen jetzt eine Spanne bekommen:`);
+for (const t of [...new Set(nurAlt)].slice(0, 10)) console.log("   ", t.slice(0, 72));
+console.log(`\nNeu GESPERRT (${nurNeu.length}) — bekamen bisher zu Unrecht eine Vollzeitspanne:`);
+for (const t of [...new Set(nurNeu)].slice(0, 12)) console.log("   ", t.slice(0, 72));
+process.exit(0);

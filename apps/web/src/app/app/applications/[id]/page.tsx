@@ -6,6 +6,7 @@ import { loadStudio } from "@/lib/studio";
 import { Studio } from "./Studio";
 import { StageControl } from "./StageControl";
 import { Badge, Card, PageHeader, Stack } from "@/components/ui";
+import { Notizen } from "@/components/applications/Notizen";
 import { NinaScope } from "@/components/nina/NinaScope";
 
 export const metadata: Metadata = { title: "Bewerbung" };
@@ -91,9 +92,10 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
       <Card>
         <Stack gap={3}>
           <h2 style={{ fontSize: "var(--text-base)" }}>{t("applications.notes")}</h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>
-            {view.application.notes || "Noch keine Notizen."}
-          </p>
+          <Notizen
+            applicationId={view.application.id}
+            anfang={view.application.notes ?? ""}
+          />
         </Stack>
       </Card>
     </Stack>

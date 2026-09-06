@@ -1,0 +1,13 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch();
+const s = await b.newPage({ viewport: { width: 1280, height: 1100 } });
+await s.goto("http://localhost:3000/", { waitUntil: "domcontentloaded", timeout: 120000 });
+await s.waitForTimeout(2500);
+const f = s.locator("figure").first();
+await f.scrollIntoViewIfNeeded();
+await s.waitForTimeout(1200);
+await s.evaluate(() => window.scrollBy(0, -140));
+await s.waitForTimeout(600);
+await s.screenshot({ path: "/tmp/studie.png", clip: { x: 0, y: 0, width: 1280, height: 1050 } });
+console.log("Bild erzeugt");
+await b.close();

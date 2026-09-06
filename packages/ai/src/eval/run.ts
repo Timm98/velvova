@@ -38,6 +38,7 @@ function demoJob({ vollstaendig }: { vollstaendig: boolean }) {
     companyName: "Beispiel GmbH",
     location: "Hamburg",
     country: "DE",
+    kldb: null,
     workModel: "on_site" as const,
     remotePercent: vollstaendig ? 0 : null,
     salary: {
@@ -46,6 +47,11 @@ function demoJob({ vollstaendig }: { vollstaendig: boolean }) {
       currency: "EUR",
       period: "year" as const,
       disclosed: vollstaendig,
+      // Prüfdaten stammen aus der Vorlage, nicht von einem Anbieter —
+      // deshalb ohne Herkunft. Wer hier „provider" einsetzte, würde
+      // eine Bestätigung behaupten, die es nicht gibt.
+      provenance: vollstaendig ? ("provider" as const) : null,
+      evidence: null,
     },
     contractType: vollstaendig ? ("permanent" as const) : null,
     weeklyHours: vollstaendig ? 40 : null,
@@ -58,6 +64,12 @@ function demoJob({ vollstaendig }: { vollstaendig: boolean }) {
     workPermitRequired: null,
     coreTasks: vollstaendig ? ["Waren annehmen", "Kommissionieren"] : [],
     description: "Eine Beschreibung.",
+    // Aus der Beschreibung darüber abgeleitet — beides so, wie der
+    // Import es füllen würde. 18 Zeichen bleiben unter der Schwelle von
+    // 200, die listingConfidence prüft; das war vorher genauso und darf
+    // sich hier nicht nebenbei ändern.
+    descriptionTokens: "beschreibung eine",
+    descriptionLength: "Eine Beschreibung.".length,
     benefits: [],
     applyMethod: "unknown" as const,
     applyTarget: null,

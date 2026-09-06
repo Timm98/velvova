@@ -1,0 +1,13 @@
+-- Wer welchen Beleg zeigt, entscheidet der Mensch.
+--
+-- ── Warum je Beleg und nicht je Profil ───────────────────────
+--
+-- Ein Beleg kann etwas Unangenehmes sagen: „Hat Vertriebsaufgaben
+-- dreimal versucht, jedes Mal Energieverlust berichtet." Für die
+-- Person selbst ist das die wertvollste Auskunft im ganzen Profil —
+-- gegenüber einem Arbeitgeber ist es ihre Entscheidung, nicht unsere.
+--
+-- Voreinstellung ist NICHT geteilt. Wie bei der Passungsfreigabe:
+-- Schweigen darf keinen Nachteil bringen, sonst wäre die Einwilligung
+-- keine.
+alter table evidence_items add column if not exists geteilt boolean not null default false;

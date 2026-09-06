@@ -1,0 +1,10 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const [c] = (await db.execute(sql`select count(*)::int n, count(veroeffentlicht_am)::int v from beitraege`)).rows;
+console.log(`Beiträge gesamt ${c.n}, davon veröffentlicht ${c.v}`);
+const r = (await db.execute(sql`select titel, veroeffentlicht_am from beitraege where veroeffentlicht_am is not null order by veroeffentlicht_am desc limit 4`)).rows;
+for (const x of r) console.log("  -", x.titel);
+process.exit(0);

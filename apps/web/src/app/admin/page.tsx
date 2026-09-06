@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
@@ -59,6 +60,36 @@ export default async function AdminPage() {
           title="Betrieb"
           lead="Zustand der Quellen, Fassungen und Datenschutzanfragen. Keine Nutzerinhalte."
         />
+
+        {/*
+         * Die Unterseiten waren nur über die Adresszeile erreichbar.
+         *
+         * Vier Betriebsseiten, verlinkt von nirgendwo — man musste
+         * wissen, dass es sie gibt. Das ist die stille Variante von
+         * „existiert nicht": Der Code läuft, die Seite rendert, nur
+         * kommt niemand hin.
+         */}
+        <nav aria-label="Betriebsseiten">
+          <ul className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+            {(
+              [
+                ["/admin/organisationen", "Arbeitgeberkonten"],
+                ["/admin/providers", "Job-Anbieter"],
+                ["/admin/sources", "Quellen"],
+                ["/admin/reviews", "Bewertungen"],
+              ] as const
+            ).map(([href, text]) => (
+              <li key={href}>
+                <Link
+                  href={href}
+                  className="text-accent-text underline underline-offset-[3px]"
+                >
+                  {text}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
         <Card style={{ background: "var(--caution-subtle)", borderColor: "var(--caution)" }}>
           <p style={{ fontSize: "var(--text-sm)" }}>
@@ -133,8 +164,86 @@ export default async function AdminPage() {
           </h2>
           <Metric label="Doppelte Inhalte" value={duplicates.rows.length} hint="Gleicher Inhaltshash, mögliche Reposts" />
           <Metric label="Veraltete Anzeigen" value={stale.rows[0]?.anzahl ?? 0} hint="Frist abgelaufen oder älter als 60 Tage" />
-          <Metric label="Importläufe" value={ingestion.length} hint="Zuletzt erfasste Durchläufe" />
+          <Metric
+            label="Importläufe"
+            value={ingestion.length}
+            hint={
+              ingestion.length === 0
+                ? "Noch kein Lauf protokolliert"
+                : `zuletzt ${ingestion[0]!.startedAt.toLocaleString("de-DE")}`
+            }
+          />
         </section>
+
+        {/*
+         * Die letzten Läufe als Zeilen, nicht als Zahl.
+         *
+         * „Importläufe: 10" beantwortet keine Frage, die jemand hat.
+         * Gefragt wird: hat der Abruf heute Nacht funktioniert, welche
+         * Quelle hakt, und seit wann. Dafür braucht es Zeitpunkt,
+         * Quelle und Ergebnis nebeneinander.
+         *
+         * Die Kennzahl stand hier ein Jahr lang auf null, weil niemand
+         * in die Tabelle schrieb — eine Null, die aussah wie eine
+         * Messung. Jetzt steht dabei, wann zuletzt etwas passiert ist;
+         * eine leere Liste ist damit als leer erkennbar und nicht als
+         * „alles ruhig".
+         */}
+        {ingestion.length > 0 && (
+          <section aria-labelledby="laeufe" className="grid gap-3">
+            <h2 id="laeufe" className="text-lg font-semibold">
+              Letzte Stellenabrufe
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[38rem] text-sm">
+                <thead>
+                  <tr className="text-left text-ink-3">
+                    <th className="py-2 pr-4 font-medium">Zeitpunkt</th>
+                    <th className="py-2 pr-4 font-medium">Quelle</th>
+                    <th className="py-2 pr-4 font-medium">geholt</th>
+                    <th className="py-2 pr-4 font-medium">neu</th>
+                    <th className="py-2 pr-4 font-medium">zusammengeführt</th>
+                    <th className="py-2 pr-4 font-medium">Dauer</th>
+                    <th className="py-2 font-medium">Ergebnis</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {ingestion.map((l) => (
+                    <tr key={l.id} className="border-t border-line">
+                      <td className="py-2 pr-4 whitespace-nowrap text-ink-2">
+                        {l.startedAt.toLocaleString("de-DE")}
+                      </td>
+                      <td className="py-2 pr-4">{l.sourceKey}</td>
+                      <td className="py-2 pr-4">{l.fetched}</td>
+                      <td className="py-2 pr-4">{l.created}</td>
+                      <td className="py-2 pr-4">{l.deduplicated}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap text-ink-3">
+                        {l.durationMs === null ? "—" : `${Math.round(l.durationMs)} ms`}
+                      </td>
+                      <td className="py-2">
+                        {l.failed === 0 ? (
+                          <span className="text-ink-2">ohne Fehler</span>
+                        ) : (
+                          /*
+                           * Der Fehlertext steht dabei, gekürzt.
+                           *
+                           * „3 Fehler" schickt jemanden in die
+                           * Serverprotokolle. „HTTP 403" beantwortet
+                           * die Frage auf der Stelle.
+                           */
+                          <span className="text-caution">
+                            {l.failed} {l.failed === 1 ? "Fehler" : "Fehler"}
+                            {l.errorSummary ? ` · ${l.errorSummary.slice(0, 90)}` : ""}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         <section aria-labelledby="ki">
           <h2 id="ki" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>

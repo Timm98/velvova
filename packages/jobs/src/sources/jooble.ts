@@ -1,4 +1,5 @@
 import type { ProviderCapabilities } from "../adapter.ts";
+import { envWert } from "../net.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -89,10 +90,24 @@ export function parseSalary(raw: string | undefined): {
 export const JOOBLE_COUNTRIES = ["de", "ch", "at"] as const;
 export type JoobleCountry = (typeof JOOBLE_COUNTRIES)[number];
 
-const LAND: Record<JoobleCountry, { name: string; code: string; standardOrt: string }> = {
-  de: { name: "Deutschland", code: "DE", standardOrt: "Deutschland" },
-  ch: { name: "Schweiz", code: "CH", standardOrt: "Schweiz" },
-  at: { name: "Österreich", code: "AT", standardOrt: "Österreich" },
+/*
+ * Der Host gehört zum Schlüssel, nicht zur Bequemlichkeit.
+ *
+ * Gemessen am 4.9.2026 mit demselben DE-Schlüssel, von derselben
+ * Leitung, in derselben Minute:
+ *   POST https://jooble.org/api/<schluessel>     -> 403 (Cloudflare, HTML)
+ *   POST https://de.jooble.org/api/<schluessel>  -> 200, totalCount 68.358
+ *
+ * Die 403 kam also nie von einem Bot-Schutz gegen unsere Adresse,
+ * sondern davon, dass ein länderspezifischer Schlüssel gegen den
+ * länderlosen Host lief. Ein Schlüssel für DE gilt nur auf de., einer
+ * für AT nur auf at. — deshalb steht der Host hier neben dem Land und
+ * nicht als Konstante an der Abrufstelle.
+ */
+const LAND: Record<JoobleCountry, { name: string; code: string; standardOrt: string; host: string }> = {
+  de: { name: "Deutschland", code: "DE", standardOrt: "Deutschland", host: "de.jooble.org" },
+  ch: { name: "Schweiz", code: "CH", standardOrt: "Schweiz", host: "ch.jooble.org" },
+  at: { name: "Österreich", code: "AT", standardOrt: "Österreich", host: "at.jooble.org" },
 };
 
 export class JoobleAdapter implements JobSourceAdapter {
@@ -122,15 +137,35 @@ export class JoobleAdapter implements JobSourceAdapter {
     // ausdrücklich NICHT auf den deutschen Schlüssel zurückgefallen.
     this.apiKey =
       options.apiKey ??
-      process.env[`JOOBLE_API_KEY_${this.country.toUpperCase()}`] ??
+      /*
+       * Der Name wird zusammengesetzt: JOOBLE_API_KEY_DE,
+       * JOOBLE_API_KEY_AT, JOOBLE_API_KEY_CH. Jooble vergibt den
+       * Schlüssel je Land, ein gemeinsamer funktioniert nicht.
+       *
+       * Die drei Namen stehen hier ausgeschrieben, weil sie sonst
+       * nirgends im Quelltext vorkommen — und eine Umgebungsvariable,
+       * die man nur findet, wenn man die Zusammensetzung im Kopf
+       * nachvollzieht, ist praktisch undokumentiert. Der Wächtertest
+       * über `.env.example` prüft genau das.
+       */
+      envWert(`JOOBLE_API_KEY_${this.country.toUpperCase()}`) ??
       // Ältere Schreibweise ohne Land, nur für Deutschland. Sie stand
       // in bestehenden .env-Dateien, während .env.example schon die
       // Länderfassung dokumentierte — eine Drift, die niemand bemerkt,
       // weil sie sich als "nicht eingerichtet" tarnt.
-      (this.country === "de" ? process.env.JOOBLE_API_KEY : undefined);
+      (this.country === "de" ? envWert("JOOBLE_API_KEY") : undefined);
     this.fetchImpl = options.fetchImpl ?? fetch;
-    this.keywords = options.keywords ?? process.env.JOOBLE_KEYWORDS ?? "";
-    this.location = options.location ?? process.env.JOOBLE_LOCATION ?? land.standardOrt;
+    this.keywords = options.keywords ??
+      envWert("JOOBLE_KEYWORDS") ??
+      /*
+       * Ein Suchbegriff muss sein.
+       *
+       * Jooble braucht `keywords`; leer zu senden ist keine Anfrage
+       * „alles", sondern eine unvollständige Anfrage. Diese Vorgabe ist
+       * der Ausgangsbestand für den Bestandsabruf und bewusst breit.
+       */
+      "Kundenbetreuung Sachbearbeitung Vertrieb Logistik";
+    this.location = options.location ?? envWert("JOOBLE_LOCATION") ?? land.standardOrt;
   }
 
   /**
@@ -161,7 +196,7 @@ export class JoobleAdapter implements JobSourceAdapter {
       );
     }
 
-    const response = await this.fetchImpl(`https://jooble.org/api/${this.apiKey}`, {
+    const response = await this.fetchImpl(`https://${LAND[this.country].host}/api/${this.apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: options.signal,
@@ -173,8 +208,32 @@ export class JoobleAdapter implements JobSourceAdapter {
     });
 
     if (!response.ok) {
+      /*
+       * Eine 403 von Jooble heisst „falscher Host", nicht „falscher
+       * Schlüssel" und nicht „gesperrte Adresse".
+       *
+       * Die frühere Fassung rief jooble.org ohne Länderpräfix ab und
+       * bekam eine HTML-Sperrseite von Cloudflare. Daraus wurde erst
+       * auf einen abgelaufenen Zugang geschlossen — ein neuer
+       * Schlüssel wurde beschafft und änderte nichts — und dann auf
+       * eine Adresssperre, die Jooble hätte aufheben müssen. Beides
+       * war falsch: derselbe Schlüssel liefert auf de.jooble.org
+       * sofort 200. Ein länderspezifischer Schlüssel gilt nur auf dem
+       * Host seines Landes.
+       *
+       * Deshalb nennt die Meldung jetzt den tatsächlich verwendeten
+       * Host. Eine Meldung, die den Adressaten des Problems verfehlt,
+       * kostet mehr Zeit als gar keine.
+       */
+      const koerper = await response.text().catch(() => "");
+      const sperrseite = /^\s*<(!doctype|html)/i.test(koerper);
       throw new Error(
-        `Jooble antwortete mit ${response.status}. Es werden keine Stellen übernommen.`,
+        sperrseite
+          ? `Jooble: ${response.status} als HTML-Sperrseite von ${LAND[this.country].host} ` +
+            `(${response.headers.get("server") ?? "unbekannter Dienst"}). ` +
+            `Ein Schlüssel für ${LAND[this.country].code} gilt nur auf diesem Host — ` +
+            `prüfe, ob JOOBLE_API_KEY_${this.country.toUpperCase()} zum Land passt.`
+          : `Jooble (${LAND[this.country].host}) antwortete mit ${response.status}. Es werden keine Stellen übernommen.`,
       );
     }
 

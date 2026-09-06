@@ -65,7 +65,7 @@ async function getJson(url: string): Promise<unknown> {
         accept: "application/json",
         // Ehrlich sagen, wer anfragt. Ein getarnter User-Agent wäre der
         // erste Schritt zu dem Verhalten, das dieses Produkt ablehnt.
-        "user-agent": "PaycheckJobs/1.0 (+https://paycheck.example/bot)",
+        "user-agent": "VelvovaJobs/1.0 (+https://paycheck.example/bot)",
       },
     });
     if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);

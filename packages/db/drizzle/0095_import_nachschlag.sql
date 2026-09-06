@@ -1,0 +1,38 @@
+-- Der Nachschlag, den jeder Import je Stelle einmal macht.
+--
+-- ══════════════════════════════════════════════════════════════
+-- Was ohne diesen Index passiert
+-- ══════════════════════════════════════════════════════════════
+--
+-- `ingest.ts` fragt vor jedem Schreiben: Kenne ich diese Adresse bei
+-- dieser Quelle schon?
+--
+--   select id, content_hash, salary_min, salary_max from jobs
+--    where original_url = $1 and source_id = $2
+--
+-- Auf `original_url` gab es keinen Index. Jede dieser Abfragen las
+-- damit die ganze Tabelle -- gemessen am 6. September 2026: 2.599.863
+-- Zeilen, 3,9 GB, und sechs bis neun solcher Abfragen gleichzeitig,
+-- jede ueber hundert Sekunden im Warten auf die Platte.
+--
+-- Die Folge traf nicht nur den Import. Die Datenbank war dauerhaft
+-- IO-gesaettigt, und die Stellenseite -- deren eigene Abfragen sauber
+-- indiziert sind und einen guten Plan haben -- brauchte 68 bis 134
+-- Sekunden fuer 2.000 Kandidaten.
+--
+-- Das ist die unangenehmste Sorte Fehler: Er sieht aus wie ein
+-- Problem der Seite, die man gerade offen hat, und sitzt woanders.
+--
+-- ══════════════════════════════════════════════════════════════
+-- Warum beide Spalten
+-- ══════════════════════════════════════════════════════════════
+--
+-- Dieselbe Anzeige erscheint bei mehreren Anbietern unter derselben
+-- Adresse. Die Abfrage prueft beides mit Gleichheit; ein Index auf
+-- `original_url` allein wuerde bei populaeren Adressen mehrere Zeilen
+-- liefern und danach in der Tabelle nachsehen muessen.
+--
+-- Auf einer bestehenden Datenbank mit CONCURRENTLY anlegen
+-- (scripts/volltext-indizes.mjs) -- hier fuer frische Umgebungen.
+create index if not exists jobs_url_quelle_idx
+  on jobs (original_url, source_id);

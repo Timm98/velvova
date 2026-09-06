@@ -64,6 +64,15 @@ export type NinaVisualState =
 /** Ändert sich nie. Deshalb rendert niemand deswegen neu. */
 interface NinaActions {
   setOpen: (open: boolean) => void;
+  /**
+   * Die Blase kurz hervorheben.
+   *
+   * Für Knöpfe an anderer Stelle, die zu Nina führen: Sie öffnen die
+   * Fläche und lassen gleichzeitig das Sprechsymbol blinken. Ohne das
+   * springt die Fläche irgendwo am Rand auf, und wer den Knopf oben
+   * gedrückt hat, sucht sie.
+   */
+  pulsAnstossen: () => void;
   send: (text: string, options?: { fromVoice?: boolean }) => Promise<void>;
   reset: () => void;
   loadConversation: (id: string) => Promise<void>;
@@ -84,6 +93,20 @@ interface NinaActions {
 /** Ändert sich oft — beim Streamen bei jedem Zeichen. */
 interface NinaState {
   open: boolean;
+  /** Läuft gerade die kurze Hervorhebung? */
+  puls: boolean;
+  /**
+   * Wie oft in dieser Sitzung etwas gesendet wurde.
+   *
+   * Die Fläche unten rechts zeigt nur, was auf DIESER Seite gefragt
+   * wurde. Sie hat sich das bisher selbst gemerkt — und bekam davon
+   * nichts mit, wenn eine Frage von woanders kam, etwa aus den
+   * Berufsfragen der Stellenanzeige. Die Antwort lief dann, war aber
+   * unsichtbar.
+   *
+   * Der Zähler steht deshalb hier, wo jedes `send` vorbeikommt.
+   */
+  sendezaehler: number;
   messages: NinaMessage[];
   busy: boolean;
   error: string | null;
@@ -213,12 +236,49 @@ export function NinaProvider({
   const pathname = usePathname();
 
   const [open, setOpen] = useState(false);
+  const [puls, setPuls] = useState(false);
+  const [sendezaehler, setSendezaehler] = useState(0);
+
+  /*
+   * Der Puls läuft 2,4 Sekunden und schaltet sich selbst ab.
+   *
+   * Ein Zustand, den der Auslöser wieder zurücksetzen müsste, bleibt
+   * irgendwann hängen — beim Seitenwechsel, bei einem Fehler, bei
+   * einem zweiten Klick. Er beendet sich deshalb selbst.
+   */
+  const pulsAnstossen = useCallback(() => {
+    setOpen(true);
+    setPuls(true);
+  }, []);
+
+  useEffect(() => {
+    if (!puls) return;
+    const t = setTimeout(() => setPuls(false), 2400);
+    return () => clearTimeout(t);
+  }, [puls]);
   const [messages, setMessages] = useState<NinaMessage[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversationId, setConversationId] = useState<string | null>(
-    initialConversationId ?? null,
-  );
+  /*
+   * Eine Kennung JE GESPRÄCHSART, nicht eine für alles.
+   *
+   * Vorher stand hier ein einzelner Wert. Die Art wechselte mit dem
+   * Pfad, die Kennung nicht — wer im Karrieregespräch war und danach
+   * auf dem Radar etwas fragte, schickte `kind: "assistant"` mit der
+   * Kennung des Interviews. Der Server nahm die Kennung, und die Frage
+   * zur Schlagzeile landete mitten im Karrieregespräch.
+   *
+   * Der Server verwirft eine unpassende Kennung inzwischen (siehe
+   * `ensureConversation`). Das allein genügte aber nicht: der Client
+   * hätte weiterhin die falsche Kennung geschickt und beim Zurückgehen
+   * die neu erhaltene Kennung über die alte geschrieben — das
+   * Karrieregespräch wäre nach jedem Ausflug verloren gewesen.
+   *
+   * Mit einer Kennung je Art behält jeder Faden seine eigene.
+   */
+  const [kennungen, setKennungen] = useState<Record<string, string | null>>(() => ({
+    career_interview: initialConversationId ?? null,
+  }));
   const [scopeLabel, setScopeLabel] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [stage, setStage] = useState<string | null>(null);
@@ -367,6 +427,17 @@ export function NinaProvider({
     [stimme],
   );
 
+  /*
+   * Welcher Faden gerade gilt.
+   *
+   * Der Pfad entscheidet: unter /app/nina läuft das Karrieregespräch,
+   * überall sonst die schwebende Nina. Eine Frage auf dem Radar gehört
+   * nicht ins Interview — und umgekehrt.
+   */
+  const art: "career_interview" | "assistant" = pathname.startsWith("/app/nina")
+    ? "career_interview"
+    : "assistant";
+
   const send = useCallback(
     async (text: string, options: { fromVoice?: boolean } = {}) => {
       const inhalt = text.trim();
@@ -374,12 +445,22 @@ export function NinaProvider({
 
       setError(null);
       setBusy(true);
+      /* Jedes Senden zählt — egal von wo. Die Fläche unten rechts
+         entscheidet daran, ob sie etwas anzeigen darf. */
+      setSendezaehler((n) => n + 1);
       // Eine neue Frage unterbricht die laufende Antwort. Sonst redet
       // Nina über die eigene nächste Antwort hinweg.
       stimme.stoppen();
 
       const eigeneId = `lokal-${Date.now()}`;
-      const antwortId = `${eigeneId}-antwort`;
+      /*
+       * Veränderlich, weil die Kennung mitten im Strom wechselt.
+       *
+       * Bis zum Speichern trägt die Antwort eine Behelfskennung; danach
+       * schickt der Server die echte, und ab da müssen alle weiteren
+       * Änderungen an dieser Nachricht die neue treffen.
+       */
+      let antwortId = `${eigeneId}-antwort`;
       setMessages((m) => [
         ...m,
         { id: eigeneId, role: "user", content: inhalt },
@@ -396,8 +477,8 @@ export function NinaProvider({
           signal: controller.signal,
           body: JSON.stringify({
             message: inhalt,
-            conversationId,
-            kind: pathname.startsWith("/app/nina") ? "career_interview" : "assistant",
+            conversationId: kennungen[art] ?? null,
+            kind: art,
             route: pathname,
             jobId: scope.jobId ?? null,
             applicationId: scope.applicationId ?? null,
@@ -451,7 +532,9 @@ export function NinaProvider({
 
             if (ereignis.type === "meta") {
               if (typeof ereignis.conversationId === "string") {
-                setConversationId(ereignis.conversationId);
+                // Nur den Faden dieser Art fortschreiben.
+                const neueKennung = ereignis.conversationId;
+                setKennungen((k) => (k[art] === neueKennung ? k : { ...k, [art]: neueKennung }));
               }
               setScopeLabel((ereignis.scopeLabel as string | null) ?? null);
               setSuggestions((ereignis.suggestions as string[]) ?? []);
@@ -533,7 +616,35 @@ export function NinaProvider({
               continue;
             }
 
-            if (ereignis.type === "saved" && autoSpeak && typeof ereignis.messageId === "string") {
+            if (ereignis.type === "saved" && typeof ereignis.messageId === "string") {
+              const echteId = ereignis.messageId;
+
+              /*
+               * Die lokale Kennung gegen die echte tauschen.
+               *
+               * Genau das fehlte, und die Folge war unsichtbar und
+               * total: der Vorlesen-Knopf erschien NIE.
+               *
+               * Während des Streams trägt die Antwort eine
+               * Behelfskennung `lokal-…`. `SpeakButton` blendet sich
+               * dafür bewusst aus — die Sprachroute liest nur
+               * gespeicherte Nachrichten, für eine Behelfskennung gäbe
+               * es serverseitig nichts abzuholen. Nach dem Speichern
+               * schickt der Server die echte Kennung, aber sie wurde
+               * hier nur fürs automatische Vorlesen benutzt und nie an
+               * die Nachricht geschrieben.
+               *
+               * Also blieb `lokal-…` stehen, `SpeakButton` gab für
+               * immer `null` zurück, und die Sprachausgabe war über die
+               * Oberfläche nicht erreichbar. Nichts warf, nichts sah
+               * kaputt aus — es fehlte einfach ein Knopf, den niemand
+               * vermisste, weil er nie da gewesen war.
+               */
+              setMessages((m) =>
+                m.map((n) => (n.id === antwortId ? { ...n, id: echteId } : n)),
+              );
+              antwortId = echteId;
+
               /*
                * Erst wenn die Nachricht gespeichert ist.
                *
@@ -541,7 +652,7 @@ export function NinaProvider({
                * ausschließlich gespeicherte Nachrichten vor — sie nimmt
                * keinen Text vom Client entgegen.
                */
-              void stimme.vorlesen(ereignis.messageId as string);
+              if (autoSpeak) void stimme.vorlesen(echteId);
               continue;
             }
 
@@ -564,7 +675,7 @@ export function NinaProvider({
         abbruch.current = null;
       }
     },
-    [busy, conversationId, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak],
+    [busy, art, kennungen, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak],
   );
 
   const loadConversation = useCallback(async (id: string) => {
@@ -578,7 +689,8 @@ export function NinaProvider({
       const daten = (await antwort.json()) as {
         messages: { id: string; role: string; content: string }[];
       };
-      setConversationId(id);
+      // Ein geöffnetes Gespräch gehört zum gerade sichtbaren Faden.
+      setKennungen((k) => ({ ...k, [art]: id }));
       setMessages(
         daten.messages
           .filter((m) => m.role === "user" || m.role === "assistant")
@@ -587,7 +699,7 @@ export function NinaProvider({
     } catch {
       setError("Das Gespräch konnte nicht geladen werden.");
     }
-  }, []);
+  }, [art]);
 
   const hydrate = useCallback(
     (
@@ -595,19 +707,27 @@ export function NinaProvider({
       vorhandene: { id: string; role: "user" | "assistant"; content: string }[],
     ) => {
       setMessages((m) => (m.length > 0 ? m : vorhandene));
-      setConversationId((v) => v ?? id);
+      setKennungen((k) => (k[art] ? k : { ...k, [art]: id }));
     },
-    [],
+    [art],
   );
 
   const reset = useCallback(() => {
     abbruch.current?.abort();
     setMessages([]);
-    setConversationId(null);
+    /*
+     * Nur den aktuellen Faden zurücksetzen.
+     *
+     * Vorher fiel die eine Kennung auf `null` — und damit auch die des
+     * Karrieregesprächs, selbst wenn man gerade nur die schwebende
+     * Nina geleert hat. Beim nächsten Öffnen begann das Interview von
+     * vorn, obwohl es weiterlief.
+     */
+    setKennungen((k) => ({ ...k, [art]: null }));
     setError(null);
     setBusy(false);
     setJobs([]);
-  }, []);
+  }, [art]);
 
   /*
    * Die Handlungen sind stabil — deshalb der leere Abhängigkeitsblock.
@@ -620,6 +740,7 @@ export function NinaProvider({
   const handlungen = useMemo<NinaActions>(
     () => ({
       setOpen,
+      pulsAnstossen,
       send,
       reset,
       loadConversation,
@@ -631,6 +752,7 @@ export function NinaProvider({
       setListening,
     }),
     [
+      pulsAnstossen,
       send,
       reset,
       loadConversation,
@@ -649,7 +771,9 @@ export function NinaProvider({
       messages,
       busy,
       error,
-      conversationId,
+      // Nach aussen die Kennung des aktuellen Fadens — wer sie liest,
+      // meint immer das Gespräch, das gerade sichtbar ist.
+      conversationId: kennungen[art] ?? null,
       scopeLabel,
       suggestions,
       stage,
@@ -662,6 +786,8 @@ export function NinaProvider({
       speakingMessageId: stimme.aktiveNachricht,
       isSpeaking: stimme.zustand === "spricht",
       isListening,
+      puls,
+      sendezaehler,
       voiceError: stimme.fehler,
       /*
        * Die Reihenfolge ist die Rangfolge.
@@ -684,7 +810,8 @@ export function NinaProvider({
       messages,
       busy,
       error,
-      conversationId,
+      art,
+      kennungen,
       scopeLabel,
       suggestions,
       stage,
@@ -698,6 +825,8 @@ export function NinaProvider({
       stimme.zustand,
       stimme.fehler,
       isListening,
+      puls,
+      sendezaehler,
     ],
   );
 

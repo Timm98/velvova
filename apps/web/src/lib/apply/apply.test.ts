@@ -193,3 +193,45 @@ describe("Nach der Übergabe", () => {
     expect(statusAfterHandoff("aborted")).toBe("abandoned");
   });
 });
+
+describe("Stellen, die hier eingestellt wurden", () => {
+  /*
+   * Der einzige Fall, in dem wir wissen, was mit einer Bewerbung
+   * passiert. Ohne eigenen Zweig liefe der Pfad `/app/jobs/bewerben/…`
+   * durch die Portalerkennung, würde als unbekannte Domain behandelt und
+   * die Person bekäme „wir können dich nirgendwohin führen“ zu lesen —
+   * für eine Bewerbung, die zwei Klicks entfernt ist.
+   */
+  it("bleibt im Produkt statt weiterzuleiten", () => {
+    const c = capabilityForJob({
+      originalUrl: null,
+      applyMethod: "internal",
+      applyTarget: "/app/jobs/bewerben/abc",
+    });
+    expect(c.mode).toBe("paycheck_apply");
+    expect(c.authorization).toBe("authorized");
+    expect(c.missingForBetterMode).toBeNull();
+  });
+
+  it("ändert nichts an den beiden festen Regeln", () => {
+    // Auch der eigene Weg schickt nichts ohne Bestätigung ab.
+    const c = capabilityForJob({
+      originalUrl: null,
+      applyMethod: "internal",
+      applyTarget: "/app/jobs/bewerben/abc",
+    });
+    expect(c.userConfirmationRequired).toBe(true);
+    expect(c.autoSubmitAllowed).toBe(false);
+  });
+
+  it("gilt nicht ohne Ziel", () => {
+    // `internal` ohne Pfad wäre ein Datenfehler — dann lieber der
+    // ehrliche Standard als ein Knopf, der ins Leere führt.
+    const c = capabilityForJob({
+      originalUrl: null,
+      applyMethod: "internal",
+      applyTarget: null,
+    });
+    expect(c.mode).not.toBe("paycheck_apply");
+  });
+});

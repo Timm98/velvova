@@ -40,7 +40,7 @@ export interface JobVorschlag {
 
 const BAND_TON: Record<string, string> = {
   "sehr gut": "bg-positive-soft text-positive",
-  gut: "bg-lavender text-accent-text",
+  gut: "bg-accent-soft text-accent-text",
   teilweise: "bg-soft text-ink-2",
 };
 

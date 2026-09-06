@@ -1,0 +1,40 @@
+-- Umkreissuche für die Kandidatenauswahl.
+--
+-- ══════════════════════════════════════════════════════════════
+-- Warum es diesen Index braucht
+-- ══════════════════════════════════════════════════════════════
+--
+-- Die Kandidatenauswahl zog bisher die 2.000 neuesten Stellen eines
+-- Landes. Bei 1,02 Millionen deutschen Anzeigen heisst das: aus ganz
+-- Deutschland. Gemessen an einem echten Konto mit Wohnort Karlsruhe
+-- lagen von diesen 2.000 genau zwei in erreichbarer Nähe.
+--
+-- Die Ortsprüfung selbst gab es schon — sie lief nur zu spät, nach
+-- der Auswahl. Sie warf also 1.998 Stellen weg, die nie hätten
+-- gezogen werden dürfen, und übrig blieb eine Liste, die sich wie
+-- Zufall las.
+--
+-- Ein Rechteck um den Wohnort direkt in der Auswahl behebt das. Ohne
+-- Index ist das ein vollständiger Durchlauf über 678.000 Zeilen mit
+-- Koordinaten; gemessen lief die Abfrage in eine Zeitüberschreitung
+-- jenseits von vier Minuten.
+--
+-- ══════════════════════════════════════════════════════════════
+-- Warum genau diese Spaltenfolge
+-- ══════════════════════════════════════════════════════════════
+--
+-- `country` zuerst, weil es Gleichheit ist und den Baum sofort auf ein
+-- Land eingrenzt. Danach `latitude` als Bereich — Postgres kann in
+-- einem zusammengesetzten Btree nur die erste Bereichsspalte zum
+-- Suchen nutzen, die zweite dient dann noch dem Filtern ohne
+-- Zeilenzugriff.
+--
+-- Breite vor Länge, weil Deutschland von Nord nach Süd (47°–55°)
+-- weiter reicht als von West nach Ost gerechnet in Grad — die
+-- Breitenbedingung ist damit die trennschärfere von beiden.
+--
+-- Der Teilindex spart, was ohnehin nie gesucht wird: Demo-Stellen und
+-- Anzeigen ohne Koordinaten. Das sind rund zwei Drittel der Tabelle.
+CREATE INDEX IF NOT EXISTS "jobs_umkreis_idx"
+  ON "jobs" ("country", "latitude", "longitude")
+  WHERE "is_demo" = false AND "latitude" IS NOT NULL;

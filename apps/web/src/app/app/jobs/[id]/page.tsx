@@ -1,3 +1,4 @@
+import { herkunftAusArt, linkTextMitZiel } from "@paycheck/domain";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,15 +8,48 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { coverLetterAdvisable } from "@paycheck/documents";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { loadScoredJob } from "@/lib/matching";
+import { after } from "next/server";
+import { loadScoredJob, persistMatch } from "@/lib/matching";
 import { Badge, Card, Disclosure, Separator } from "@/components/ui";
-import { ConfidenceMeter, MetricValue, ScoreRing } from "@/components/ui/score";
+import { MetricValue, ScoreRing } from "@/components/ui/score";
 import { SourceNote } from "@/components/ui/states";
 import { BlockedNotice, FactorBreakdown } from "@/components/scores";
 import { JobActions } from "./JobActions";
 import { JobKurzfragen } from "@/components/jobs/JobKurzfragen";
 import { ViewTracker } from "./ViewTracker";
 import { NinaScope } from "@/components/nina/NinaScope";
+import { JobKopf } from "@/components/jobs/JobKopf";
+import { Passungsbefund } from "@/components/jobs/Passungsbefund";
+import { twinLaden } from "@/lib/arbeitsprofil";
+import { Rollenkarte } from "@/components/jobs/Rollenkarte";
+import { PromiseKeptBlock } from "@/components/jobs/PromiseKeptBlock";
+import { Realitaetsblock } from "@/components/jobs/Realitaetsblock";
+import { Antwortblock } from "@/components/jobs/Antwortblock";
+import { antwortquoteFuerFirma } from "@/lib/antwortquote";
+import { angeboteFuerStelle, realitaetsbild } from "@/lib/realitaetsproben";
+import { promiseKeptFuerFirma } from "@/lib/zusagen";
+import { rollenkarteLaden } from "@/lib/rollenwahrheit";
+import { standzeitLaden } from "@/lib/jobs/standzeit";
+import { volltextErlaubt } from "@paycheck/sources";
+import { Standzeitblock } from "@/components/jobs/Standzeitblock";
+import { Anzeigentext } from "@/components/jobs/Anzeigentext";
+import { Uebersetzungshinweis } from "@/components/jobs/Uebersetzungshinweis";
+import { uebersetzungAusSpeicher, uebersetzungErzeugen } from "@/lib/jobs/uebersetzung";
+import { Zukunftsblock } from "@/components/jobs/Zukunftsblock";
+import { Passungsgruende } from "@/components/jobs/Passungsgruende";
+import { zukunftLaden } from "@/lib/jobs/zukunft";
+import { anzeigenklartext } from "@paycheck/domain";
+import { dimensionenVergleichen, stellenDimensionen } from "@paycheck/matching";
+import { betrag } from "@/lib/jobs/geld";
+import { anzeigenqualitaet } from "@/lib/lebenswert/luecken";
+import { BEFUNDTON } from "@/lib/jobs/befundton";
+import { Leistungen } from "@/components/jobs/Leistungen";
+import { Arbeitswegblock } from "@/components/jobs/Arbeitswegblock";
+import { LifeFitBlock } from "@/components/jobs/LifeFitBlock";
+import { Nettorechner } from "@/components/jobs/Nettorechner";
+import { ladeGehaltsangaben } from "@/lib/payroll/einstellungen";
+import { ladeLebenshaltung } from "@/lib/lebenswert/speicher";
+import { vergleichswert } from "@/lib/jobs/gehaltsvergleich";
 
 export const dynamic = "force-dynamic";
 
@@ -81,8 +115,106 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const user = await requireUser();
   const { t, brand } = await getPageContext();
 
+  /*
+   * Was die Stelle nicht braucht, wartet nicht auf sie.
+   *
+   * Fünf dieser Ladevorgänge hängen allein an der Nutzer- oder der
+   * Stellenkennung — beide stehen im Aufruf. Sie standen trotzdem
+   * hinter `loadScoredJob`, das mit Profil, Bewertung und Beschreibung
+   * knapp vierhundert Millisekunden braucht.
+   *
+   * Jetzt laufen sie daneben. Die zwei, die den bewerteten Datensatz
+   * wirklich brauchen — Vergleichswert und Rollenkarte — stehen
+   * darunter.
+   */
+  const db = await getDb();
+  const nebenherLaeuft = Promise.all([
+    withUser(db, user.id, (tx) =>
+      tx
+        .select({ baseLocation: schema.userSettings.baseLocation })
+        .from(schema.userSettings)
+        .where(eq(schema.userSettings.userId, user.id))
+        .limit(1),
+    ).catch(() => [] as { baseLocation: string | null }[]),
+    ladeGehaltsangaben(),
+    ladeLebenshaltung(),
+    twinLaden(user.id).catch(() => new Map() as Awaited<ReturnType<typeof twinLaden>>),
+    withUser(db, user.id, (tx) =>
+      tx
+        .select({ jobId: schema.savedJobs.jobId })
+        .from(schema.savedJobs)
+        .where(and(eq(schema.savedJobs.userId, user.id), eq(schema.savedJobs.jobId, id)))
+        .limit(1),
+    ).catch(() => [] as { jobId: string }[]),
+  ]);
+
   const scored = await loadScoredJob(user.id, id);
   if (!scored) notFound();
+
+  /*
+   * Die gezeigte Bewertung festhalten — nach der Antwort, nicht davor.
+   *
+   * ── Was hier gefehlt hat ──────────────────────────────────────
+   *
+   * `persistMatch` stand seit dem ersten Entwurf im Code, exportiert,
+   * mit Kommentar — und wurde nirgends aufgerufen. `job_matches` hatte
+   * deshalb null Zeilen, und drei Dinge liefen ins Leere:
+   *
+   *   1. `vorhersageFesthalten` findet nichts und gibt still auf. Die
+   *      30/90/180-Schleife kann nie beginnen, weil es keine
+   *      eingefrorene Vorhersage gibt, gegen die man prüfen könnte.
+   *   2. Der Arbeitgeber sieht bei jeder Bewerbung ein leeres Fit-Band.
+   *   3. Nina weiss nicht, wie die Stelle bewertet wurde, über die
+   *      gerade gesprochen wird.
+   *
+   * ── Warum `after` und nicht davor ─────────────────────────────
+   *
+   * Das Schreiben kostet einen Rundlauf zur Datenbank, und die Stelle
+   * ist bereits fertig berechnet. Vor der Antwort zu schreiben hiesse,
+   * jede Seitenansicht um diesen Rundlauf zu verlängern, damit später
+   * jemand eine Auswertung machen kann. `after` läuft, nachdem die
+   * Antwort raus ist.
+   *
+   * Ein Fehlschlag bleibt folgenlos: Die Seite steht dann trotzdem,
+   * und beim nächsten Aufruf wird es erneut versucht.
+   */
+  after(async () => {
+    await persistMatch(user.id, scored).catch(() => {});
+
+    /*
+     * Die Übersetzung nach der Antwort erzeugen.
+     *
+     * Der erste Besucher sieht das Original, der nächste die
+     * Übersetzung. Das ist der ehrliche Handel: Niemand wartet zwei
+     * Minuten auf eine Seite, und niemand bekommt eine erfundene
+     * Fassung, während er wartet.
+     */
+    /*
+     * Nur übersetzen, was auch gezeigt werden darf.
+     *
+     * ── Was hier falsch war ───────────────────────────────
+     *
+     * Die Erzeugung lief für jede fremdsprachige Anzeige — auch für
+     * die 26 von 28 Quellen, deren Volltext wir nicht wiedergeben
+     * dürfen. Das kostete einen Modellaufruf für einen Text, der
+     * niemals erscheinen kann.
+     *
+     * Und es wäre auch rechtlich verkehrt gewesen: Eine Übersetzung
+     * eines Textes, den wir nicht wiedergeben dürfen, ist ebenfalls
+     * eine Wiedergabe.
+     */
+    if (uebersetzt === null && scored.originalLanguage && volltextErlaubt(source?.key)) {
+      await uebersetzungErzeugen(
+        {
+          id: job.id,
+          title: job.title,
+          description: job.description ?? "",
+          originalLanguage: scored.originalLanguage,
+        },
+        user.locale ?? "de",
+      ).catch(() => {});
+    }
+  });
 
   const {
     job,
@@ -98,14 +230,82 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
     source,
   } = scored;
 
-  const db = await getDb();
-  const savedRow = await withUser(db, user.id, (tx) =>
-    tx
-      .select({ jobId: schema.savedJobs.jobId })
-      .from(schema.savedJobs)
-      .where(and(eq(schema.savedJobs.userId, user.id), eq(schema.savedJobs.jobId, job.id)))
-      .limit(1),
-  );
+  /*
+   * Was die neuen Abschnitte brauchen, in einem Zug.
+   *
+   * Wohnort, Steuerangaben und Fixkosten liegen in drei Tabellen.
+   * Nacheinander geladen wären es drei Netzrunden zu Supabase, bevor die
+   * Seite überhaupt anfängt zu zeichnen.
+   */
+  /*
+   * Alles gleichzeitig, was nicht voneinander abhängt.
+   *
+   * ── Warum das so viel ausmacht ────────────────────────────
+   *
+   * Diese Seite bezahlt keine Rechenzeit, sondern Netzrunden. Gemessen
+   * gegen die Datenbank: eine Abfrage 43 ms, ein `withUser` mit einer
+   * Abfrage 174 ms (BEGIN, Rolle, Abfrage, COMMIT), drei Abfragen
+   * nebeneinander zusammen 46 ms.
+   *
+   * Hier standen vier Blöcke NACHEINANDER: Einstellungen, dann der
+   * Career Twin, dann die Rollenkarte, dann die gemerkte Stelle. Vier
+   * Transaktionen, über 600 Millisekunden, in denen nichts gerechnet
+   * wird — die Verbindung wartet.
+   *
+   * Keiner davon braucht das Ergebnis eines anderen. Nebeneinander
+   * kosten sie so viel wie der langsamste.
+   */
+  const [[einstellungen, gehaltsangaben, lebenshaltung, twin, savedRow], vergleich, rollenkarte, promiseKeptScore, realBild, realAngebote, antwort, standzeitAngabe, zukunft, uebersetzt] =
+    await Promise.all([
+      nebenherLaeuft,
+      /*
+       * Nur wo die Anzeige selbst nichts nennt.
+       *
+       * Neben einer echten Zahl wäre ein Vergleichswert Lärm — und
+       * schlimmer: Er lädt dazu ein, beide zu verwechseln.
+       */
+      job.salary.min === null && job.salary.max === null
+        ? vergleichswert(job.title, job.coreTasks, job.kldb ?? null)
+        : Promise.resolve(null),
+      rollenkarteLaden(job).catch(() => null),
+      /* Hält dieser Arbeitgeber, was er zusagt? Die Frage gehört vor
+         die Entscheidung, nicht hinter sie. */
+      promiseKeptFuerFirma(job.companyId).catch(() => null),
+      /* Mit Bezug: erst die Stelle, dann derselbe Beruf beim selben
+         Arbeitgeber, dann die Berufsgruppe. Ohne ihn stünde fast
+         immer nichts da, obwohl über den Beruf etwas bekannt ist. */
+      realitaetsbild(job.id, { companyId: job.companyId, kldb: job.kldb }).catch(() => null),
+      angeboteFuerStelle(job.id).catch(() => []),
+      /* Antwortet dieser Arbeitgeber überhaupt? Die Frage kostet den
+         Suchenden sonst eine Stunde je Bewerbung. */
+      antwortquoteFuerFirma(job.companyId).catch(() => null),
+      /*
+       * Steht diese Anzeige seit zehn Monaten?
+       *
+       * Ein Nachschlag in einer Tabelle mit 36 Zeilen — er läuft in
+       * derselben Runde wie alles andere und kostet damit keinen
+       * eigenen Rundlauf.
+       */
+      standzeitLaden(job.kldb ?? null, job.publishedAt ?? null).catch(() => null),
+      /* Ein Nachschlag über 436 Zeilen, gruppiert — in derselben Runde. */
+      zukunftLaden(job.kldb ?? null).catch(() => null),
+      /*
+       * Nur ein Nachschlag, kein Modellaufruf.
+       *
+       * Beides in einem hatte die Seite über zwei Minuten blockiert:
+       * Ein Modellaufruf im Renderpfad hält die ganze Antwort an, für
+       * jeden, der die Seite öffnet. Erzeugt wird unten in `after`.
+       */
+      uebersetzungAusSpeicher(
+        { id: job.id, originalLanguage: scored.originalLanguage ?? null },
+        user.locale ?? "de",
+      ).catch(() => null),
+    ]);
+
+  const ctxWohnort = einstellungen[0]?.baseLocation ?? null;
+  /* Rein rechnerisch — ein Dutzend reguläre Ausdrücke über Text, der
+     ohnehin geladen ist. Kein zusätzlicher Netzaufruf. */
+  const alltag = dimensionenVergleichen(twin, stellenDimensionen(job));
 
   const musts = requirements.filter((r) => r.kind === "must");
   const nices = requirements.filter((r) => r.kind === "nice");
@@ -122,12 +322,8 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           ? t("jobs.fitExploratory")
           : t("jobs.fitInsufficient");
 
-  const money = (value: number) =>
-    new Intl.NumberFormat("de-DE", {
-      style: "currency",
-      currency: job.salary.currency,
-      maximumFractionDigits: 0,
-    }).format(value);
+  // Dieselbe Formatierung wie in der Liste — aus `geld.ts`.
+  const money = (value: number) => betrag(value, job.salary.currency);
 
   return (
     <div className="grid gap-8">
@@ -145,84 +341,174 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
         </Link>
       </p>
 
-      {/* ══ Kopf ══════════════════════════════════════════════ */}
-      <header className="grid gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge tone="outline">Quelle: {source?.displayName ?? "unbekannt"}</Badge>
-          {listingConfidence.possiblyStale && (
-            <Badge tone="caution">{t("jobDetail.staleWarning")}</Badge>
-          )}
-          {constraints.overall === "blocked" && <Badge tone="critical">Ausschlusskriterium</Badge>}
-        </div>
-
-        {/* Aus der Skala statt aus freien Pixelwerten: 36 und 42px, beide
-            in der Spanne 34–44 für Jobtitel im Detail. Der alte Wert
-            2.1rem lag mit 33,6px knapp darunter. */}
-        <h1 className="max-w-[24ch] font-display text-3xl font-medium leading-[1.1] tracking-[-0.02em] lg:text-4xl">
-          {job.title}
-        </h1>
-
-        <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-2">
-          <li className="flex items-center gap-1.5">
-            <Building2 className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.8} />
-            {job.companyName}
-          </li>
-          <li className="flex items-center gap-1.5">
-            <MapPin className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.8} />
-            {job.location} · {WORK_MODEL[job.workModel] ?? job.workModel}
-            {job.remotePercent !== null && ` (${job.remotePercent} % remote)`}
-          </li>
-          {job.contractType && <li>{CONTRACT[job.contractType] ?? job.contractType}</li>}
-          <li className="flex items-center gap-1.5">
-            <Clock className="size-3.5 shrink-0 text-ink-3" strokeWidth={1.8} />
-            {job.publishedAt
-              ? `veröffentlicht ${new Intl.DateTimeFormat("de-DE").format(job.publishedAt)}`
-              : "Veröffentlichungsdatum nicht angegeben"}
-          </li>
-        </ul>
-
-        <p className="text-lg">
-          {job.salary.disclosed ? (
-            <span className="font-semibold">
-              {money(job.salary.min ?? job.salary.max ?? 0)}
-              {job.salary.max && job.salary.min && job.salary.max !== job.salary.min
-                ? ` – ${money(job.salary.max)}`
-                : ""}
-              <span className="text-sm font-normal text-ink-3"> pro Jahr</span>
-            </span>
-          ) : (
-            <span className="text-base text-ink-3">
-              Gehalt nicht angegeben — das ist keine schlechte Angabe, sondern gar keine.
-            </span>
-          )}
-        </p>
-      </header>
+      {/*
+       * ══ Kopf ══════════════════════════════════════════════
+       *
+       * Derselbe Kopf wie in der geteilten Ansicht — ein Bauteil, zwei
+       * Routen.
+       *
+       * Hier standen bis eben 75 eigene Zeilen: andere Reihenfolge,
+       * kein Bild, kein Netto, und das alte Gehalt-Wording. Ein Umbau
+       * der Spalte liess diese Seite unberührt, und im Browser stand
+       * dann mal das Neue und mal das Alte — je nachdem, über welchen
+       * Weg jemand hergekommen war.
+       */}
+      <JobKopf
+        titelAls="h1"
+        assistantName={brand.assistantName}
+        daten={{
+          job,
+          firma: scored.firma ?? null,
+          quelle: source?.displayName ?? null,
+          herkunft: source ? herkunftAusArt(source.kind) : null,
+          bedingungen: scored.constraints,
+          veraltet: listingConfidence.possiblyStale,
+          score: fit.score,
+          bandText: bandText,
+          grund: fit.topReason || null,
+          vorbehalt: fit.topReservation || null,
+          empfehlung: null,
+          gesperrt: constraints.overall === "blocked",
+          vergleich,
+        }}
+      />
 
       <BlockedNotice constraints={constraints} t={t} />
 
       {/* ══ Zwei Spalten ═════════════════════════════════════ */}
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-10">
         <div className="grid min-w-0 gap-8">
-          {/* Warum diese Stelle */}
+          {/*
+            Warum diese Stelle — zwei Sätze, nicht fünf.
+            
+            Hier standen zusätzlich „Was dagegen spricht" und „Warum die
+            Sicherheit nicht höher ist" in voller Länge. Drei technische
+            Absätze noch vor den Aufgaben, und alle drei sagten bei einem
+            frischen Konto dasselbe: wir wissen zu wenig. Der Vorbehalt
+            steht jetzt weiter unten bei „Was noch unklar ist", wo er
+            hingehört.
+          */}
           <Card className="border-assistant-border bg-assistant-soft">
             <Badge tone="assistant">{t("jobDetail.whyShown")}</Badge>
             <p className="mt-4 max-w-[var(--measure)] leading-relaxed">{fit.topReason}</p>
-            <p className="mt-3 max-w-[var(--measure)] leading-relaxed text-ink-2">
-              <span className="font-medium text-ink">Was dagegen spricht: </span>
-              {fit.topReservation}
-            </p>
-            {confidence.reducedBy.length > 0 && (
-              <>
-                <div className="my-4">
-                  <Separator soft />
-                </div>
-                <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-                  <span className="font-medium text-ink">Warum die Sicherheit nicht höher ist: </span>
-                  {confidence.reducedBy.join(" ")}
-                </p>
-              </>
-            )}
           </Card>
+
+          {/*
+           * Der Befund im Einzelnen.
+           *
+           * Ein Satz „warum wir sie zeigen" beantwortet die Frage nach
+           * dem Grund. Er beantwortet nicht, ob die formalen
+           * Anforderungen erfüllt sind, ob die Tätigkeit zu den
+           * Fähigkeiten passt, ob der Alltag zur Lebenssituation passt
+           * und wie sicher das alles ist. Das sind vier Fragen, und
+           * gerechnet werden sie längst getrennt.
+           */}
+          <Card>
+            <Passungsbefund fit={fit} confidence={confidence} bedingungen={constraints} alltag={alltag} />
+            {/*
+              * Die ausführliche Begründung unter der Einstufung.
+              *
+              * `Passungsbefund` zeigt die Stufen — formale
+              * Anforderungen, Fähigkeiten, Alltag, Sicherheit. Hier
+              * steht, WORAN es liegt: jede Achse, die deutlich dafür
+              * oder dagegen spricht, mit ihrem eigenen Satz. Und die
+              * dritte Liste, die es vorher nirgends gab: was schlicht
+              * nicht in der Anzeige steht.
+              */}
+            <Passungsgruende factors={fit.factors} />
+          </Card>
+
+          {/*
+           * Die Arbeitsrealität vor allem anderen inhaltlichen.
+           *
+           * Wer wissen will, ob eine Stelle zu ihm passt, fragt zuerst
+           * „was mache ich den ganzen Tag" — nicht „welche
+           * Anforderungen gibt es". Die Anforderungsliste steht
+           * weiterhin darunter.
+           */}
+          {rollenkarte && <Rollenkarte karte={rollenkarte} />}
+          {(promiseKeptScore || antwort) && (
+            <Card>
+              <div className="grid gap-5">
+                {promiseKeptScore && (
+                  <PromiseKeptBlock score={promiseKeptScore} firma={job.companyName} />
+                )}
+                {antwort && <Antwortblock quote={antwort} firma={job.companyName} />}
+              </div>
+            </Card>
+          )}
+          {realBild && <Realitaetsblock bild={realBild} angebote={realAngebote} jobId={job.id} />}
+          {standzeitAngabe && <Standzeitblock angabe={standzeitAngabe} />}
+
+            {/*
+              * Die beiden Rechner, mit dieser Stelle im Gepäck.
+              *
+              * Beide öffnen sich vorbelegt und sagen, woher die Zahl
+              * kommt — und beide haben einen Weg zurück ins Leere. Ohne
+              * Kennzeichnung bliebe die Zahl kleben, und die nächste
+              * Rechnung gälte heimlich für diese Stelle.
+              */}
+            <Card>
+              <div className="grid gap-2">
+                <h2 className="abschnitts-titel text-ink-3">
+                  Selbst nachrechnen
+                </h2>
+                <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+                  <Link
+                    href={`/app/tools/gehalt?jobId=${job.id}`}
+                    className="text-accent-text underline underline-offset-[3px]"
+                  >
+                    Was bleibt mir bei diesem Gehalt übrig?
+                  </Link>
+                  {" · "}
+                  <Link
+                    href={`/app/tools/route?jobId=${job.id}`}
+                    className="text-accent-text underline underline-offset-[3px]"
+                  >
+                    Was kostet mich der Weg?
+                  </Link>
+                </p>
+              </div>
+            </Card>
+
+          {/* ══ Was der Job für dein Leben bedeutet ═══════════ */}
+          <section aria-labelledby="lifefit" className="grid gap-4">
+            <h2 id="lifefit" className="text-xl font-semibold">
+              Was bedeutet der Job für deinen Alltag?
+            </h2>
+            <Card>
+              <LifeFitBlock job={job} wohnort={ctxWohnort} />
+            </Card>
+          </section>
+
+          {/* ══ Arbeitsweg ═══════════════════════════════════ */}
+          <section aria-labelledby="arbeitsweg" className="grid gap-4">
+            <h2 id="arbeitsweg" className="text-xl font-semibold">
+              Dein Arbeitsweg
+            </h2>
+            <Card>
+              <Arbeitswegblock job={job} wohnort={ctxWohnort} />
+            </Card>
+          </section>
+
+          {/* ══ Was bleibt netto ═════════════════════════════ */}
+          <section aria-labelledby="netto" className="grid gap-4">
+            <h2 id="netto" className="text-xl font-semibold">
+              Was bleibt dir netto?
+            </h2>
+            <Card>
+              <Nettorechner
+                bruttoVon={job.salary.min}
+                bruttoBis={job.salary.max}
+                waehrung={job.salary.currency}
+                zeitraum={job.salary.period}
+                land={job.country || "DE"}
+                angaben={gehaltsangaben}
+                kosten={lebenshaltung}
+                pendelkosten={null}
+              />
+            </Card>
+          </section>
 
           {/* Aufgaben */}
           <section aria-labelledby="alltag" className="grid gap-4">
@@ -234,10 +520,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               <Card>
                 <h3 className="text-base font-semibold">{t("jobDetail.coreTasks")}</h3>
                 <ul className="mt-3.5 grid gap-2.5">
+                  {/*
+                    * Auch hier durch den Normalisierer.
+                    *
+                    * 6,6 Prozent der Aufgabenlisten im Bestand tragen
+                    * Markup — „**Ihre Aufgaben:**" steht als eigener
+                    * Aufgabenpunkt darin. Der Import säubert das seit
+                    * heute; die 1,7 Millionen Zeilen davor nicht.
+                    */}
                   {job.coreTasks.map((task) => (
                     <li key={task} className="flex gap-2.5 text-sm leading-relaxed">
                       <span aria-hidden className="mt-[9px] size-1 shrink-0 rounded-full bg-ink-3" />
-                      <span className="text-ink-2">{task}</span>
+                      <span className="text-ink-2">{anzeigenklartext(task)}</span>
                     </li>
                   ))}
                 </ul>
@@ -252,11 +546,46 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
               </Card>
             )}
 
-            <Disclosure summary="Vollständige Stellenbeschreibung">
-              <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-2">
-                {job.description}
+            {/*
+              * Der Anzeigentext — nur wo die Quelle ihn hergibt.
+              *
+              * Die Quellenregistrierung sagt bei 26 von 28 Quellen
+              * ausdrücklich das Gegenteil: erlaubt sind Metadaten und
+              * eine Zusammenfassung, nicht der Text selbst. Hier stand
+              * er trotzdem, für jede Quelle gleich.
+              *
+              * Was bleibt, ist das Abgeleitete darüber — Aufgaben,
+              * Anforderungen, Bewertung. Auswerten ist erlaubt,
+              * wörtlich wiedergeben nicht.
+              */}
+            {volltextErlaubt(source?.key) ? (
+              <Disclosure summary="Vollständige Stellenbeschreibung">
+                {uebersetzt ? (
+                  <Uebersetzungshinweis
+                    uebersetzt={uebersetzt.beschreibung}
+                    original={job.description ?? ""}
+                    ausSprache={uebersetzt.ausSprache}
+                  />
+                ) : (
+                  <Anzeigentext text={job.description} />
+                )}
+              </Disclosure>
+            ) : (
+              <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-3">
+                Den vollständigen Anzeigentext dürfen wir von dieser Quelle nicht wiedergeben — was
+                oben steht, ist daraus abgeleitet.{" "}
+                {job.originalUrl && (
+                  <a
+                    href={job.originalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                    className="text-accent-text underline underline-offset-[3px]"
+                  >
+                    Zur Originalanzeige
+                  </a>
+                )}
               </p>
-            </Disclosure>
+            )}
           </section>
 
           {/* Anforderungen */}
@@ -298,6 +627,21 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 )}
               </Card>
             </div>
+
+            {/*
+             * Leistungen direkt nach den Anforderungen.
+             *
+             * Die Anzeige stellt hier ihre Forderungen; unmittelbar
+             * danach steht, was sie im Gegenzug nennt. Weiter unten
+             * zwischen Passung und Unternehmen ginge die Beziehung
+             * zwischen beidem verloren.
+             */}
+            <Card>
+              <h3 className="text-base font-semibold">Was die Anzeige bietet</h3>
+              <div className="mt-4">
+                <Leistungen beschreibung={job.description} />
+              </div>
+            </Card>
 
             <Card>
               <FactorBreakdown factors={fit.factors} title="Woraus die Passung entsteht" />
@@ -360,6 +704,18 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             <h2 id="zukunft" className="text-xl font-semibold">
               {t("jobDetail.tabFuture")}
             </h2>
+
+            {/*
+              * Was über die Berufsgruppe bekannt ist — vor der
+              * Einschätzung zu dieser einen Anzeige.
+              *
+              * Der Abschnitt darunter bewertet die Aufgaben dieser
+              * Rolle. Beides zusammen ist die ehrliche Antwort: was
+              * die Studienlage zur Gruppe sagt, und was in dieser
+              * Anzeige steht. Fehlt die Berufskennung, steht der
+              * erste Teil nicht da statt zu raten.
+              */}
+            {zukunft && <Zukunftsblock angabe={zukunft} />}
 
             <Card>
               <p className="max-w-[var(--measure)] leading-relaxed text-ink-2">
@@ -536,10 +892,21 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             </h2>
             <Card>
               <p className="text-sm leading-relaxed text-ink-2">
-                Diese Fragen leiten sich aus dem ab, was in der Anzeige fehlt oder unklar bleibt.
+                Diese Fragen leiten sich aus dem ab, was in der Anzeige fehlt oder unklar bleibt.{" "}
+                {(() => {
+                  /*
+                   * Wie viel die Anzeige überhaupt hergibt — in Worten.
+                   *
+                   * Bewusst keine Prozentzahl: „73 % gegen 68 %" lädt zum
+                   * Vergleichen zwischen Arbeitgebern ein, und dafür sind
+                   * sechs geprüfte Felder keine Grundlage.
+                   */
+                  const q = anzeigenqualitaet(job, requirements.length);
+                  return `Von ${q.vollstaendigkeit.moeglich} Grundangaben stehen ${q.vollstaendigkeit.von} in dieser Anzeige.`;
+                })()}
               </p>
               <ul className="mt-4 grid gap-3">
-                {buildQuestions(scored).map((q) => (
+                {buildQuestions(scored, requirements.length).map((q) => (
                   <li key={q} className="flex gap-2.5 text-sm leading-relaxed">
                     <HelpCircle className="mt-[3px] size-3.5 shrink-0 text-accent" strokeWidth={2} />
                     {q}
@@ -592,17 +959,26 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 <ul className="mt-3.5 grid gap-2.5">
                   {listingConfidence.signals.map((s) => (
                     <li key={s.key} className="flex gap-2.5 text-sm leading-relaxed">
+                      {/*
+                        Diese Signale sagen, was WIR über die Anzeige
+                        wissen — nicht, was mit ihr nicht stimmt.
+
+                        „Arbeitgeber nachvollziehbar: nein" heisst, dass
+                        die Anzeige über einen Sammeldienst kam und wir
+                        den Arbeitgeber nicht direkt bestätigen können.
+                        Das war rot mit einem ✕ — und stand damit als
+                        Vorwurf gegen ein Unternehmen, das nichts
+                        gemacht hat.
+
+                        Nicht bestätigt ist offen, nicht falsch.
+                      */}
                       <span
                         aria-hidden
                         className={
-                          s.ok === true
-                            ? "text-positive"
-                            : s.ok === false
-                              ? "text-critical"
-                              : "text-ink-3"
+                          BEFUNDTON[s.ok === true ? "positiv" : "offen"].text
                         }
                       >
-                        {s.ok === true ? "✓" : s.ok === false ? "✕" : "?"}
+                        {s.ok === true ? "✓" : "?"}
                       </span>
                       <span>
                         <span className="font-medium">{s.label}: </span>
@@ -628,7 +1004,14 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           <Card className="grid gap-5">
             <div className="grid gap-4">
               <ScoreRing value={fit.score} label={t("jobs.fit")} band={bandText} size="lg" />
-              <ConfidenceMeter level={confidence.level} label={t("jobs.confidence")} />
+              {/*
+                Die drei Striche für die Sicherheit sind weg.
+                
+                Sie waren eine eigene Anzeigeart für eine Grösse, die
+                anderswo als Zahl und als Leiste steht — drei Formen für
+                dasselbe. `Passungsbefund` weiter unten auf dieser Seite
+                nennt die Sicherheit mit eigener Zeile und Begründung.
+              */}
             </div>
 
             <Separator soft />
@@ -677,7 +1060,16 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 text-sm text-accent-text underline underline-offset-[3px]"
               >
-                {t("common.openOriginal")}
+                {/*
+                  Dieselbe Regel wie oben im Kopf: der Link nennt sein
+                  Ziel. `common.openOriginal` lautete „Im Original
+                  öffnen" und stand hier über einem Link zu einer
+                  Sammelstelle — dieselbe Falschaussage, nur an zweiter
+                  Stelle. Zwei Beschriftungen für einen Link laufen
+                  ohnehin auseinander; jetzt kommen beide aus
+                  `linkText`.
+                */}
+                {linkTextMitZiel(source ? herkunftAusArt(source.kind) : "aggregator", source?.displayName ?? null, job.originalUrl)}
                 <ExternalLink className="size-3.5" strokeWidth={1.9} />
               </a>
             )}
@@ -708,23 +1100,35 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 /** Fragen aus dem, was fehlt. Nicht aus einer allgemeinen Liste. */
-function buildQuestions(scored: Awaited<ReturnType<typeof loadScoredJob>>): string[] {
+function buildQuestions(
+  scored: Awaited<ReturnType<typeof loadScoredJob>>,
+  anzahlAnforderungen = 0,
+): string[] {
   if (!scored) return [];
   const questions: string[] = [];
   const { job, constraints, jobQuality, aiTransition, themes } = scored;
 
-  if (!job.salary.disclosed) {
-    questions.push("In welchem Rahmen bewegt sich das Gehalt für diese Position?");
+  /*
+   * Die Fragen nach fehlenden Angaben kommen aus `anzeigenqualitaet`.
+   *
+   * Sie standen hier einmal ausgeschrieben, und zwar in einer Fassung,
+   * die zwei Fehler hatte:
+   *
+   *   Sie fragte nach dem Gehalt, sobald `disclosed` falsch war. Seit
+   *   „disclosed" die HERKUNFT bezeichnet und nicht die Sichtbarkeit,
+   *   heisst das auch bei einer Anzeige, in deren Text eine Spanne
+   *   steht und die sie oben gross zeigt. Eine Frage nach etwas, das
+   *   zwei Absätze weiter oben steht, untergräbt jede weitere.
+   *
+   *   Und sie prüfte weder das Arbeitsmodell noch, ob überhaupt
+   *   Anforderungen extrahiert wurden.
+   *
+   * Beides steht jetzt an einer Stelle, mit Tests daneben.
+   */
+  for (const l of anzeigenqualitaet(job, anzahlAnforderungen).luecken) {
+    questions.push(l.frage);
   }
-  if (job.coreTasks.length === 0) {
-    questions.push("Wie sieht ein typischer Arbeitstag in dieser Rolle aus?");
-  }
-  if (job.weeklyHours === null) {
-    questions.push("Wie viele Wochenstunden sind vorgesehen, und wie flexibel sind sie?");
-  }
-  if (job.contractType === null) {
-    questions.push("Ist die Stelle unbefristet, und gibt es eine Probezeitregelung?");
-  }
+
   for (const c of constraints.checks.filter((c) => c.verdict === "uncertain")) {
     if (c.key === "commute") questions.push("Wie oft ist Anwesenheit vor Ort erwartet?");
     if (c.key === "travel") questions.push("Wie hoch ist der Reiseanteil tatsächlich?");

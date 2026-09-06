@@ -80,7 +80,10 @@ export function ThemeToggle({
         <label
           key={value}
           className={cn(
-            "flex min-h-11 cursor-pointer items-center gap-2 rounded-(--radius-control) px-4 text-sm transition-colors duration-(--duration-fast)",
+            /* `px-3` statt `px-4` und `min-w-0`: Drei Wahlmöglichkeiten mit je
+             16 Pixeln Innenabstand standen bei 320 Pixeln Fensterbreite
+             sechs Pixel über den Rand. */
+            "flex min-h-11 min-w-0 cursor-pointer items-center justify-center gap-1.5 rounded-(--radius-control) px-3 text-sm transition-colors duration-(--duration-fast)",
             "has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent",
             theme === value
               ? "bg-raised font-medium text-ink shadow-sm"

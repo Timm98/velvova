@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import {
-  boolean, doublePrecision, index, integer, jsonb, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid,
+  boolean, doublePrecision, index, integer, jsonb, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid,
 } from "drizzle-orm/pg-core";
 import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum,
   privacyRequestKindEnum, privacyRequestStatusEnum, userRoleEnum } from "./enums.ts";
@@ -14,8 +14,21 @@ import { consentKindEnum, integrationKindEnum, integrationStatusEnum, localeEnum
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
-  email: text("email").notNull(),
+  /*
+   * Optional, seit es die Anmeldung per Telefonnummer gibt.
+   *
+   * Der bequeme Ausweg wäre eine erfundene Adresse gewesen —
+   * "+491701234567@telefon.velvova.de". Eine Adresse, an die niemand
+   * schreiben kann, fällt spätestens beim ersten Versand auf.
+   *
+   * Die Datenbank stellt über `users_kennung_vorhanden` sicher, dass
+   * mindestens eines von beiden dasteht.
+   */
+  email: text("email"),
   emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  /** Immer im E.164-Format: +491701234567. Eindeutig. */
+  phone: text("phone"),
+  phoneVerifiedAt: timestamp("phone_verified_at", { withTimezone: true }),
   /** Argon2id- oder Scrypt-Hash. Niemals das Passwort selbst. */
   passwordHash: text("password_hash"),
   role: userRoleEnum("role").notNull().default("candidate"),
@@ -24,7 +37,10 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   /** Soft Delete. Der harte Löschlauf räumt später kontrolliert auf. */
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
-}, (t) => [uniqueIndex("users_email_unique").on(t.email)]);
+}, (t) => [
+  uniqueIndex("users_email_unique").on(t.email),
+  uniqueIndex("users_phone_unique").on(t.phone),
+]);
 
 export const authAccounts = pgTable("auth_accounts", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -58,6 +74,59 @@ export const magicLinks = pgTable("magic_links", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("magic_links_token_unique").on(t.tokenHash)]);
 
+/**
+ * Der sechsstellige Bestätigungscode.
+ *
+ * ── Warum nicht über `magicLinks` ─────────────────────────────
+ *
+ * Ein Anmeldelink trägt 43 zufällige Zeichen. Ein Code trägt sechs
+ * Ziffern — eine Million Möglichkeiten, und die durchprobiert ein
+ * Skript in Minuten. Dieser Code braucht deshalb, was ein Link nicht
+ * braucht: einen Versuchszähler und eine kurze Gültigkeit.
+ *
+ * Gespeichert wird nur der Hash. Wer die Datenbank liest, kann sich
+ * damit nichts bestätigen.
+ */
+export const bestaetigungscodes = pgTable(
+  "bestaetigungscodes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /**
+     * Die Adresse, an die gesendet wurde.
+     *
+     * Sie kann von `users.email` abweichen: Wer im zweiten Schritt
+     * seine Adresse korrigiert, bestätigt die neue, bevor sie ins
+     * Konto wandert.
+     */
+    email: text("email").notNull(),
+    codeHash: text("code_hash").notNull(),
+    zweck: text("zweck").notNull().default("business_email"),
+    versuche: smallint("versuche").notNull().default(0),
+    /**
+     * Bis wann die Eingabe gesperrt ist.
+     *
+     * Die Sperre gilt der Person, nicht dem Code. Vorher war ein Code
+     * nach fünf Fehlversuchen verbraucht — wer riet, forderte einfach
+     * den nächsten an und hatte wieder fünf.
+     */
+    gesperrtBis: timestamp("gesperrt_bis", { withTimezone: true }),
+    /**
+     * Der Hash der anfragenden IP.
+     *
+     * Eine Begrenzung nur nach Adresse hilft gegen den Tippfehler,
+     * nicht gegen den Angriff: Wer raten will, nimmt tausend Adressen.
+     * Gespeichert wird der Hash — für „wie viele Anfragen kamen von
+     * hier" reicht er, und mehr braucht diese Tabelle nicht zu wissen.
+     */
+    ipHash: text("ip_hash"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("bestaetigungscodes_offen_idx").on(t.userId, t.zweck, t.createdAt)],
+);
+
 export const userSettings = pgTable("user_settings", {
   userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
 
@@ -66,9 +135,26 @@ export const userSettings = pgTable("user_settings", {
      Jemand kann die Oberfläche auf Deutsch wollen, mit der Assistenz
      lieber auf Türkisch sprechen und die Bewerbung auf Englisch
      schreiben. Ein einziges Feld würde alle drei aneinanderketten. */
-  locale: localeEnum("locale").notNull().default("de"),
-  assistantLocale: localeEnum("assistant_locale").notNull().default("de"),
-  documentLocale: localeEnum("document_locale").notNull().default("de"),
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * `null` heisst: nicht gesagt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Sie standen auf `notNull().default("de")`. Beim Anlegen eines
+   * Kontos entsteht die Zeile mit dieser Vorgabe — und danach ist
+   * nicht mehr zu erkennen, ob jemand deutsch GEWÄHLT hat oder ob es
+   * nie zur Sprache kam.
+   *
+   * Gemessen am 7. September 2026: 1.001 Zeilen, alle mit
+   * `locale = 'de'`. Es hatte also praktisch niemand etwas gewählt —
+   * und alle bekamen deutsch, auch wer aus Zürich oder London kam.
+   *
+   * Wer nichts gesagt hat, bekommt jetzt die Sprache aus seiner
+   * Anfrage. Wer etwas gewählt hat, behält sie — auch im Urlaub.
+   */
+  locale: localeEnum("locale"),
+  assistantLocale: localeEnum("assistant_locale"),
+  documentLocale: localeEnum("document_locale"),
 
   /* ---- Ort und Markt ----
      Wohnort und Jobmarkt sind nicht dasselbe: wer in Basel wohnt, kann
@@ -101,6 +187,39 @@ export const userSettings = pgTable("user_settings", {
   /* ---- Stimme und Gespräch ---- */
   microphoneEnabled: boolean("microphone_enabled").notNull().default(false),
   voiceAutoplay: boolean("voice_autoplay").notNull().default(false),
+
+  /**
+   * Der Pfad zum Profilbild in der Ablage — nicht das Bild selbst.
+   *
+   * Bilder gehören nicht in die Datenbank: Jede Abfrage auf
+   * `user_settings` schleppte sie dann mit, auch wenn nur die Region
+   * gebraucht wird. Der Pfad zeigt in denselben Ablagemechanismus, der
+   * schon die Bewerbungsunterlagen trägt.
+   *
+   * `null` heisst „kein Bild" — dann steht der Anfangsbuchstabe da,
+   * wie bisher.
+   */
+  avatarPfad: text("avatar_pfad"),
+  /*
+   * Das Bild eines Fremdanbieters, als Adresse.
+   *
+   * Ein hochgeladenes Bild (`avatarPfad`) hat Vorrang: Es ist die
+   * Wahl der Person, das hier nur das, was Google mitgeschickt hat.
+   */
+  avatarUrl: text("avatar_url"),
+
+  /*
+   * Ob Nina diese Person Arbeitgebern vorschlagen darf.
+   *
+   * Voreingestellt aus, und das ist die wichtigste Voreinstellung im
+   * Schema. Ein Vorschlag ist etwas anderes als eine Bewerbung: Bei
+   * der Bewerbung hat sich ein Mensch entschieden, beim Vorschlag
+   * entscheidet ein System über ihn. Wer davon erfasst wird, muss
+   * vorher zugestimmt haben — sonst ist die Einwilligungskette
+   * dahinter eine Formalie auf einer Annahme.
+   */
+  auffindbar: boolean("auffindbar").notNull().default(false),
+  auffindbarSeit: timestamp("auffindbar_seit", { withTimezone: true }),
   voiceCaptions: boolean("voice_captions").notNull().default(true),
   voiceSpeed: doublePrecision("voice_speed").notNull().default(1),
   /** Aufnahme nach dem Abtippen löschen. Voreinstellung: ja. */
@@ -134,7 +253,47 @@ export const consents = pgTable("consents", {
 export const organizations = pgTable("organizations", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
+  /** institution · employer */
   kind: text("kind").notNull().default("institution"),
+  slug: text("slug"),
+  website: text("website"),
+  /** Das Unternehmen im Stellenindex, sobald zugeordnet. */
+  companyId: uuid("company_id"),
+  /**
+   * Wann die Zugehörigkeit zum Unternehmen geprüft wurde.
+   *
+   * Ungeprüfte Konten dürfen keine Stellen veröffentlichen. Sonst stünde
+   * im Index eine Anzeige im Namen eines Unternehmens, das nichts davon
+   * weiss — und die Person, die sich darauf bewirbt, schickt ihre Daten
+   * an jemanden, den sie für diesen Arbeitgeber hält.
+   */
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+
+  /* Die Angaben aus der Registrierung. */
+  rechtsname: text("rechtsname"),
+  domain: text("domain"),
+  branche: text("branche"),
+  groesse: text("groesse"),
+  hauptsitz: text("hauptsitz"),
+  handelsregister: text("handelsregister"),
+  ustId: text("ust_id"),
+
+  /*
+   * Woran die Prüfung gerade hängt.
+   *
+   * `verifiedAt` beantwortet eine Ja-Nein-Frage. Dazwischen liegen
+   * aber Tage, in denen jemand wissen will, woran es liegt — läuft die
+   * Domainprüfung, wartet eine E-Mail, sieht ein Mensch drauf, fehlt
+   * eine Angabe. „Noch nicht bestätigt" ist für jemanden, der seit
+   * drei Tagen wartet, keine Auskunft.
+   *
+   * domain_pruefung · bestaetigung_gesendet · manuelle_pruefung ·
+   * bestaetigt · angaben_fehlen
+   */
+  pruefstand: text("pruefstand").notNull().default("angaben_fehlen"),
+  pruefstandSeit: timestamp("pruefstand_seit", { withTimezone: true }),
+
+  createdBy: uuid("created_by"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -143,6 +302,15 @@ export const memberships = pgTable("memberships", {
   organizationId: uuid("organization_id").notNull().references(() => organizations.id, { onDelete: "cascade" }),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: text("role").notNull().default("member"),
+  /*
+   * Die Funktion im Unternehmen — nicht die Berechtigung.
+   *
+   * `role` sagt, was jemand DARF. `funktion` sagt, was jemand IST:
+   * Geschäftsführung, Personalabteilung, Fachbereich. Beides in eine
+   * Spalte zu legen hiesse, dass eine Beförderung Rechte ändert und
+   * eine Rechteänderung eine Beförderung behauptet.
+   */
+  funktion: text("funktion"),
   /** Standardmäßig sieht ein Partner ausschließlich aggregierte Daten. */
   canSeeIndividualProfiles: boolean("can_see_individual_profiles").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -196,7 +364,15 @@ export const usersRelations = relations(users, ({ many, one }) => ({
    des jeweiligen Zahlungsdienstes. Zahlungsdaten selbst — Kartennummer,
    IBAN, Prüfziffer — stehen hier NIRGENDS. Sie gehören zum Anbieter. */
 
-export const planKeyEnum = pgEnum("plan_key", ["free", "premium"]);
+/*
+ * Drei Pläne.
+ *
+ * `max` ist nicht „Premium mit höheren Zahlen", sondern ein anderer
+ * Umgang: Nina beobachtet dort laufend, vergleicht Stellen und begleitet
+ * Bewerbungen. Deshalb steht er als eigener Wert und nicht als Merkmal
+ * an einem Premium-Abo.
+ */
+export const planKeyEnum = pgEnum("plan_key", ["free", "premium", "max"]);
 export const subscriptionStatusEnum = pgEnum("subscription_status", [
   "active", "trialing", "past_due", "canceled", "incomplete",
 ]);
@@ -208,8 +384,12 @@ export const subscriptions = pgTable("subscriptions", {
   plan: planKeyEnum("plan").notNull().default("free"),
   status: subscriptionStatusEnum("status").notNull().default("active"),
   interval: billingIntervalEnum("interval"),
+  /** Seit wann der laufende Zeitraum läuft — Grundlage jeder anteiligen Rechnung. */
+  currentPeriodStart: timestamp("current_period_start", { withTimezone: true }),
   /** Bis wann bezahlt ist. Danach fällt der Zugang von selbst auf free. */
   currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+  /** Ende einer Testphase. Eigener Vorgang, kein Abrechnungszeitraum. */
+  trialEnd: timestamp("trial_end", { withTimezone: true }),
   cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
   provider: text("provider"),
   providerRef: text("provider_ref"),
@@ -251,3 +431,141 @@ export const invoices = pgTable("invoices", {
   provider: text("provider"),
   providerRef: text("provider_ref"),
 });
+
+/* ══════════════════════════════════════════════════════════════
+   Ninas Einrichtung
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Was jemand Nina einmalig erlaubt hat.
+ *
+ * ── Warum eine eigene Tabelle und nicht `user_settings` ───────
+ *
+ * `user_settings` ist eine Sammlung von Vorlieben: Sprache, Thema,
+ * Radius. Was hier steht, ist etwas anderes — eine Einwilligung mit
+ * Zeitpunkt, Textfassung und Widerrufsstand. Beides in derselben
+ * Zeile hiesse, dass ein Wechsel des Farbschemas dieselbe Zeile
+ * anfasst wie eine Berechtigung, und dass ein `updated_at` für beides
+ * steht.
+ *
+ * ── Warum der Kontotyp mitgespeichert wird ────────────────────
+ *
+ * Er liesse sich aus `memberships` ableiten. Aber die Zustimmung galt
+ * dem Text, der zum damaligen Kontotyp gehörte: Ein Arbeitnehmer hat
+ * etwas anderes gelesen als ein Unternehmen. Wer später eine
+ * Organisation anlegt, hat den Unternehmenstext nie gesehen — und
+ * genau das muss hier ablesbar bleiben.
+ */
+export const ninaEinrichtung = pgTable("nina_einrichtung", {
+  userId: uuid("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  /** arbeitnehmer · unternehmen */
+  kontotyp: text("kontotyp").notNull(),
+  abgeschlossen: boolean("abgeschlossen").notNull().default(false),
+  abgeschlossenAm: timestamp("abgeschlossen_am", { withTimezone: true }),
+
+  /** sprache · text — null, solange nichts gewählt wurde. */
+  bedienart: text("bedienart"),
+  /**
+   * nur_bestaetigte · transkript
+   *
+   * Die datenschutzfreundliche Fassung ist der Standard, und zwar in
+   * der Spalte selbst. Stünde sie nur im Formular, entstünde bei jedem
+   * Weg, der am Formular vorbeigeht, eine Zeile ohne Entscheidung —
+   * und die läse sich später wie eine Zustimmung zum Mitschreiben.
+   */
+  sprachspeicherung: text("sprachspeicherung").notNull().default("nur_bestaetigte"),
+
+  /** manual · observe_and_save · prepare_and_connect */
+  stufe: text("stufe"),
+
+  briefingAktiv: boolean("briefing_aktiv").notNull().default(false),
+  /** taeglich · werktags · woechentlich */
+  briefingRhythmus: text("briefing_rhythmus").notNull().default("werktags"),
+  /** „08:00" — Ortszeit in der Zeitzone daneben. */
+  briefingZeit: text("briefing_zeit").notNull().default("08:00"),
+  zeitzone: text("zeitzone").notNull().default("Europe/Berlin"),
+  /** in_app · email · push */
+  kanaele: jsonb("kanaele").$type<string[]>().notNull().default(["in_app"]),
+
+  /** Die Fassung des Textes, dem zugestimmt wurde. */
+  textfassung: text("textfassung"),
+  zugestimmtAm: timestamp("zugestimmt_am", { withTimezone: true }),
+  widerrufenAm: timestamp("widerrufen_am", { withTimezone: true }),
+
+  /**
+   * Was Nina je Handlung darf.
+   *
+   * ── Warum hier und nicht in einer eigenen Tabelle ──────────
+   *
+   * `nina_einrichtung` hält bereits die Stufe (`manual` /
+   * `observe_and_save` / `prepare_and_connect`) und den
+   * Widerrufsstand. Eine zweite Tabelle daneben hiesse: zwei Orte,
+   * an denen steht, was Nina darf — und irgendwann widersprechen sie
+   * sich.
+   *
+   * Die Stufe bleibt die grobe Einstellung. Diese Karte ist die
+   * feine: je Handlung `denied`, `ask_every_time` oder `allowed`.
+   *
+   * ── Die Vorbelegung ist das Entscheidende ─────────────────
+   *
+   * Suchen und Speichern dürfen von selbst laufen. Alles, was nach
+   * aussen geht — bewerben, Nachrichten senden, Profil teilen,
+   * Unternehmen kontaktieren — steht auf `ask_every_time` oder
+   * `denied`, und zwar unabhängig von der Stufe. Eine Stufe, die
+   * solche Handlungen freischaltet, wäre eine Einwilligung, deren
+   * Umfang niemand gelesen hat.
+   *
+   * Fehlt ein Schlüssel, gilt `denied`. Nicht `ask_every_time`: Eine
+   * unbekannte Handlung ist keine, für die eine Erlaubnis erteilt
+   * wurde.
+   */
+  berechtigungen: jsonb("berechtigungen")
+    .$type<Record<string, "denied" | "ask_every_time" | "allowed">>()
+    .notNull()
+    .default({
+      search_jobs: "allowed",
+      save_jobs: "allowed",
+      prepare_application: "ask_every_time",
+      send_application: "denied",
+      prepare_message: "ask_every_time",
+      send_message: "denied",
+      share_profile: "ask_every_time",
+      contact_company: "denied",
+    }),
+
+  erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Was wann entschieden wurde.
+ *
+ * ── Warum getrennt von der Tabelle darüber ────────────────────
+ *
+ * Die Zeile oben sagt, was JETZT gilt. Sie wird überschrieben. Eine
+ * Einwilligung, die sich überschreiben lässt, ohne dass die vorherige
+ * nachweisbar bleibt, ist keine — bei einer Rückfrage liesse sich
+ * nicht mehr zeigen, wann jemand was erlaubt und wann er es
+ * zurückgenommen hat.
+ *
+ * ── Was hier NICHT hineingehört ──────────────────────────────
+ *
+ * Keine Audioinhalte, keine Transkripte, keine Profildaten. Nur die
+ * Entscheidung selbst: was, wann, in welcher Textfassung. Ein
+ * Protokoll, das Inhalte mitschreibt, wird zur zweiten Datenbank —
+ * einer, die niemand beim Löschen mitdenkt.
+ */
+export const ninaEinrichtungProtokoll = pgTable(
+  "nina_einrichtung_protokoll",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** bedienart · sprachspeicherung · stufe · briefing · kanaele · widerruf · abschluss */
+    ereignis: text("ereignis").notNull(),
+    vorher: text("vorher"),
+    nachher: text("nachher"),
+    textfassung: text("textfassung"),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("nina_protokoll_user_idx").on(t.userId, t.erstelltAm)],
+);

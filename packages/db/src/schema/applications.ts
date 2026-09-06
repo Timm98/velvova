@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { applicationEventTypeEnum, applicationStageEnum, artifactKindEnum,
   claimStatusEnum, localeEnum } from "./enums.ts";
 import { users } from "./identity.ts";
@@ -193,3 +193,111 @@ export const notifications = pgTable("notifications", {
   dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * Die eingefrorene Vorhersage und was daraus wurde.
+ *
+ * ── Warum getrennt von `job_matches` ──────────────────────────
+ *
+ * `job_matches` zeigt den aktuellen Stand und wird bei jeder
+ * Neuberechnung überschrieben. Das ist für die Anzeige richtig und für
+ * die Auswertung wertlos: Trifft ein Ergebnis Monate später ein, steht
+ * dort längst eine andere Zahl.
+ *
+ * Hier stehen die Vorhersagefelder ein einziges Mal. Sie werden nie
+ * aktualisiert — wer das täte, zerstörte genau den Vergleich, für den
+ * die Tabelle da ist. Siehe Migration 0043.
+ */
+export const empfehlungsErgebnisse = pgTable("empfehlungs_ergebnisse", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+  applicationId: uuid("application_id").references(() => applications.id, { onDelete: "set null" }),
+
+  /* ── Unveränderlich ab dem ersten Schreiben ── */
+  fitScore: integer("fit_score"),
+  fitBand: text("fit_band").notNull(),
+  fitCoverage: doublePrecision("fit_coverage").notNull().default(0),
+  confidenceScore: integer("confidence_score").notNull().default(0),
+  constraintVerdict: text("constraint_verdict").notNull(),
+  overallScore: integer("overall_score"),
+  topReason: text("top_reason").notNull().default(""),
+  topReservation: text("top_reservation").notNull().default(""),
+  /** Ohne die Fassung wäre ein Vergleich über Zeit nicht deutbar. */
+  scoringVersion: text("scoring_version").notNull(),
+  vorhergesagtAm: timestamp("vorhergesagt_am", { withTimezone: true }).notNull().defaultNow(),
+
+  /* ── Wächst mit der Zeit ── */
+  beworbenAm: timestamp("beworben_am", { withTimezone: true }),
+  antwortAm: timestamp("antwort_am", { withTimezone: true }),
+  interviewAm: timestamp("interview_am", { withTimezone: true }),
+  angebotAm: timestamp("angebot_am", { withTimezone: true }),
+  angenommenAm: timestamp("angenommen_am", { withTimezone: true }),
+  abgelehntAm: timestamp("abgelehnt_am", { withTimezone: true }),
+
+  /** `null` heisst „noch nicht gefragt", nie „unzufrieden". */
+  zufriedenheit30: integer("zufriedenheit_30"),
+  zufriedenheit90: integer("zufriedenheit_90"),
+  zufriedenheit180: integer("zufriedenheit_180"),
+
+  aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [
+  uniqueIndex("empfehlungs_ergebnisse_unique").on(t.userId, t.jobId),
+  index("empfehlungs_ergebnisse_band_idx").on(t.fitBand, t.scoringVersion),
+]);
+
+/**
+ * Der Promise Lock — was zugesagt wurde.
+ *
+ * Die meisten schlechten Jobentscheidungen entstehen nicht, weil der
+ * Beruf falsch war, sondern weil die Arbeit nicht dem entsprach, was im
+ * Bewerbungsprozess versprochen wurde.
+ *
+ * `check_ins.promise_vs_reality` fragte nach genau diesem Vergleich —
+ * und hielt nie fest, womit verglichen werden sollte. Siehe Migration
+ * 0050.
+ */
+export const zusagen = pgTable("zusagen", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  applicationId: uuid("application_id").notNull().references(() => applications.id, { onDelete: "cascade" }),
+  /** aufgaben · homeoffice · arbeitszeit · einarbeitung · vorgesetzter · gehalt · … */
+  punkt: text("punkt").notNull(),
+  /** Was genau zugesagt wurde — in den Worten des Menschen. */
+  zusage: text("zusage").notNull(),
+  /**
+   * anzeige · gespraech · vertrag · arbeitgeber_bestaetigt
+   *
+   * Was in der Anzeige steht, ist eine Werbeaussage; was der
+   * Arbeitgeber auf Nachfrage bestätigt hat, ist eine Zusage.
+   */
+  herkunft: text("herkunft").notNull().default("gespraech"),
+  /** Die Fundstelle: Zitat aus der Anzeige, Datum des Gesprächs. */
+  beleg: text("beleg").notNull().default(""),
+  erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [index("zusagen_bewerbung_idx").on(t.applicationId)]);
+
+/**
+ * Ob eine Zusage gehalten wurde — je Zeitpunkt.
+ *
+ * Getrennt von der Zusage, weil dieselbe Zusage nach 14 Tagen anders
+ * dasteht als nach 90: Eine fehlende Einarbeitung in der ersten Woche
+ * ist ein Anlaufproblem, nach drei Monaten ein Bruch.
+ */
+export const zusagenPruefungen = pgTable("zusagen_pruefungen", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  zusageId: uuid("zusage_id").notNull().references(() => zusagen.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** 14, 30 oder 90 */
+  tagesmarke: integer("tagesmarke").notNull(),
+  /**
+   * gehalten · teilweise · gebrochen · zu_frueh
+   *
+   * `zu_frueh` ist kein Ausweichen: „Zwei Homeoffice-Tage nach dem
+   * ersten Monat" lässt sich nach 14 Tagen nicht beurteilen, und ein
+   * „gebrochen" wäre dort schlicht falsch.
+   */
+  stand: text("stand").notNull(),
+  notiz: text("notiz").notNull().default(""),
+  erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+}, (t) => [uniqueIndex("zusagen_pruefungen_unique").on(t.zusageId, t.tagesmarke)]);

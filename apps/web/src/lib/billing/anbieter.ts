@@ -36,7 +36,7 @@ export const ZAHLART_TEXT: Record<Zahlart, string> = {
 
 export interface KassengangEingabe {
   userId: string;
-  plan: "premium";
+  plan: "premium" | "max";
   interval: "month" | "year";
   /** Wohin nach erfolgreicher Zahlung. */
   erfolgUrl: string;
@@ -77,9 +77,19 @@ class KeinAnbieter implements Zahlungsanbieter {
 /*
  * Die geplanten Zahlarten.
  *
- * Sie stehen hier, damit die Preisseite sie nennen kann, bevor der
- * Anbieter angeschlossen ist — als Absicht, klar als solche
+ * Sie stehen hier, damit der Abrechnungsbereich sie nennen kann, bevor
+ * der Anbieter angeschlossen ist — als Absicht, klar als solche
  * gekennzeichnet, nicht als Versprechen eines fertigen Knopfes.
+ *
+ * Ohne Überweisung, und das ist kein Versehen. Kartenzahlung, PayPal,
+ * Apple Pay, Google Pay und SEPA-Lastschrift melden dem Anbieter von
+ * selbst, ob sie funktioniert haben; eine Überweisung tut das nicht.
+ * Sie kommt Tage später auf einem Konto an und muss einer Person
+ * zugeordnet werden — ohne Abgleich beim Anbieter heisst das, jemand
+ * überweist und wartet, ob etwas passiert.
+ *
+ * Sie kommt dazu, wenn der gewählte Anbieter sie meldet — dann steht
+ * sie in dessen `zahlarten` und wird von dort gelesen, nicht von hier.
  */
 export const GEPLANTE_ZAHLARTEN: Zahlart[] = [
   "card",
@@ -87,7 +97,6 @@ export const GEPLANTE_ZAHLARTEN: Zahlart[] = [
   "apple_pay",
   "google_pay",
   "sepa_debit",
-  "bank_transfer",
 ];
 
 let gemerkt: Zahlungsanbieter | null = null;

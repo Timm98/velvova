@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_TASKS, fallbackRoute, route, type ModelTier } from "./router.ts";
+import { ALL_TASKS, fallbackRoute, route, type ModelTier, eskalieren } from "./router.ts";
 
 /**
  * Der Router entscheidet, wie viel Rechenzeit eine Aufgabe bekommt. Das
@@ -80,5 +80,59 @@ describe("Modell-Router", () => {
       expect(d.reason).not.toMatch(verdaechtig);
       expect(d.tier as ModelTier).not.toMatch(verdaechtig);
     }
+  });
+});
+
+describe("Eskalation zur höchsten Stufe", () => {
+  const tief = route("career_transition_analysis");
+
+  it("bleibt bei einer gewöhnlichen Analyse auf DEEP", () => {
+    expect(eskalieren(tief, { optionen: 2, konfidenz: 0.8 }).tier).toBe("DEEP");
+  });
+
+  it("lässt ein einzelnes Merkmal nicht genügen", () => {
+    /*
+     * Vier Optionen sind bei einer Karriereberatung normal. Vier
+     * Optionen UND eine unsichere Vorabanalyse sind es nicht.
+     */
+    const b = eskalieren(tief, { optionen: 5 });
+    expect(b.eskaliert).toBe(false);
+    expect(b.grund).toMatch(/nur ein Merkmal/);
+  });
+
+  it("eskaliert bei zwei zusammentreffenden Merkmalen", () => {
+    const b = eskalieren(tief, { optionen: 5, konfidenz: 0.3 });
+    expect(b.tier).toBe("ULTRA");
+    expect(b.grund).toContain("Optionen");
+    expect(b.grund).toContain("unsicher");
+  });
+
+  it("folgt einer ausdrücklichen Bitte sofort", () => {
+    /* Das ist keine Heuristik, sondern eine Aussage der Person. */
+    expect(eskalieren(tief, { ausdruecklichGruendlich: true }).tier).toBe("ULTRA");
+  });
+
+  it("eskaliert ein Gespräch niemals", () => {
+    /*
+     * „Hallo Nina" darf die teuerste Stufe nie erreichen — auch nicht,
+     * wenn im Hintergrund zwanzig Stellen liegen.
+     */
+    const gespraech = route("nina_chat");
+    const b = eskalieren(gespraech, {
+      optionen: 9,
+      konfidenz: 0.1,
+      widersprueche: 5,
+      stellen: 30,
+      ausdruecklichGruendlich: true,
+    });
+    expect(b.tier).toBe(gespraech.tier);
+    expect(b.eskaliert).toBe(false);
+  });
+
+  it("eskaliert eine Extraktion niemals", () => {
+    /* Eine Extraktion wird nicht schwer, weil viele Stellen im Spiel
+       sind — sie bleibt eine Extraktion. */
+    const b = eskalieren(route("evidence_extraction"), { stellen: 50, optionen: 9, konfidenz: 0.1 });
+    expect(b.eskaliert).toBe(false);
   });
 });

@@ -6,6 +6,7 @@ import { confirmEvidence, deleteEvidence, editEvidence, rejectEvidence } from "@
 import { Check, Pencil, Trash2, X } from "lucide-react";
 import { Badge, Button, Card, Textarea } from "@/components/ui";
 import { cn } from "@/lib/cn";
+import { BELEGSTUFENTEXT, belegstufe, type Belegstufe } from "@paycheck/domain";
 
 /**
  * Eine Liste von Evidenz-Einträgen.
@@ -36,6 +37,24 @@ const SOURCE_LABEL: Record<string, { text: string; tone: "positive" | "assistant
   work_sample: { text: "aus einer Kurzaufgabe", tone: "neutral" },
 };
 
+/**
+ * Wie stark der Beleg trägt — als zweites Etikett neben der Herkunft.
+ *
+ * ── Warum die Herkunft dafür nicht reicht ─────────────────────
+ *
+ * Die Herkunft sagt, WOHER eine Aussage kommt. Sie sagt nicht, was
+ * sie wert ist. „aus einer Kurzaufgabe" stand hier in demselben
+ * neutralen Ton wie „von dir gesagt" — dabei ist das eine beobachtet
+ * und das andere behauptet. Wer beides gleich darstellt, macht die
+ * Unterscheidung wieder zunichte, für die es die Arbeitsproben gibt.
+ */
+const STUFENTON: Record<Belegstufe, "positive" | "assistant" | "neutral" | "caution"> = {
+  beobachtet: "positive",
+  bestaetigt: "positive",
+  berichtet: "assistant",
+  behauptet: "neutral",
+};
+
 export function EvidenceList({ items, showConfirm = false }: { items: EvidenceView[]; showConfirm?: boolean }) {
   if (items.length === 0) return null;
   return (
@@ -54,6 +73,7 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
   const [draft, setDraft] = useState(item.statement);
 
   const source = SOURCE_LABEL[item.sourceType] ?? { text: item.sourceType, tone: "neutral" as const };
+  const stufe = belegstufe(item.sourceType, item.userConfirmed, item.sourceRef);
 
   function run(fn: () => Promise<void>) {
     startTransition(async () => {
@@ -81,6 +101,7 @@ function EvidenceRow({ item, showConfirm }: { item: EvidenceView; showConfirm: b
     >
       <div className="grid gap-3">
         <div className="flex flex-wrap items-center gap-2">
+          <Badge tone={STUFENTON[stufe]}>{BELEGSTUFENTEXT[stufe].wort}</Badge>
           <Badge tone={source.tone}>{source.text}</Badge>
           {item.userConfirmed && <Badge tone="positive">bestätigt</Badge>}
           {item.userRejected && <Badge tone="neutral">abgelehnt</Badge>}

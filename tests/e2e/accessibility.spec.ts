@@ -10,8 +10,81 @@ import { demoPersonaVerfuegbar, loginAsDemo, setTheme } from "./helpers.ts";
  * Fokusreihenfolge, Sprungmarke, Bedienbarkeit ohne Maus.
  */
 
-const PUBLIC_PAGES = ["/", "/how-it-works", "/methodology", "/security", "/privacy", "/login", "/register"];
-const APP_PAGES = ["/app", "/app/nina", "/app/career", "/app/jobs", "/app/applications", "/app/settings"];
+const PUBLIC_PAGES = [
+  "/",
+  "/how-it-works",
+  "/methodology",
+  "/security",
+  "/privacy",
+  "/login",
+  "/register",
+  /*
+   * Die zweite Landingpage und die Kontowahl.
+   *
+   * `/for-business` trägt eigene Kopfzeile, eigene Farbflächen und
+   * einen dunklen Abschnitt — also drei eigene Wege, Kontrast zu
+   * verfehlen. Und `?absicht=unternehmen` schaltet auf der
+   * Registrierung eine Weiche frei, die es sonst nicht gibt.
+   */
+  "/for-business",
+  "/register?absicht=unternehmen",
+];
+
+/*
+ * Das Länderband wird eigens geprüft.
+ *
+ * Es erscheint nur mit gesetzter Länderkopfzeile — die Seiten oben
+ * sehen es also nie. Es hat aber eigene Farben auf lavendelfarbenem
+ * Grund und ist damit eine eigene Gelegenheit, Kontrast zu verfehlen.
+ */
+const APP_PAGES = [
+  "/app",
+  "/app/nina",
+  "/app/career",
+  "/app/jobs",
+  "/app/applications",
+  "/app/settings",
+  /*
+   * Die Seiten, auf denen mit Geld gerechnet wird.
+   *
+   * Sie kamen später dazu und standen deshalb nicht in dieser Liste —
+   * ein Kontrastfehler auf der Lebenshaltungsseite wäre unbemerkt
+   * geblieben, obwohl die Prüfung nebenan lief. Der Vergleich ist eine
+   * echte Tabelle mit Zeilenköpfen; gerade dort entscheidet die
+   * Auszeichnung darüber, ob eine Zahl überhaupt zuzuordnen ist.
+   */
+  /*
+   * Die Belegseite trägt vier Etiketten mit eigenen Farbtönen —
+   * `beobachtet` auf grünem, `berichtet` auf lavendelfarbenem Grund.
+   * Kleine Grossbuchstaben auf getöntem Grund sind genau die Stelle,
+   * an der Kontrast verfehlt wird.
+   */
+  "/app/belege",
+  /*
+   * Die stellengebundene Probe.
+   *
+   * Sie hat eigene Antwortknöpfe mit `aria-pressed` und einen
+   * Energie-Fieldset — beides Stellen, an denen ein Zustand leicht nur
+   * über Farbe erkennbar wird.
+   */
+  "/app/proben",
+  "/app/settings/gehalt",
+  "/app/settings/lebenshaltung",
+  "/app/jobs/vergleich",
+  /*
+   * Der Arbeitgeberbereich.
+   *
+   * Eigener Bereich, eigene Kopfzeile, eigene Formulare — und damit
+   * eigene Wege, Kontrast und Beschriftung zu verfehlen. Ohne diese
+   * Zeilen liefe die Prüfung an der halben Anwendung vorbei.
+   *
+   * `/business` leitet ohne Arbeitgeberkonto auf `/business/einrichten`
+   * um; geprüft wird also die Seite, die ein neues Konto tatsächlich zu
+   * sehen bekommt.
+   */
+  "/business",
+  "/business/einrichten",
+];
 
 test.describe("axe: oeffentliche Seiten", () => {
   for (const path of PUBLIC_PAGES) {
@@ -49,6 +122,25 @@ test.describe("axe: App-Seiten", () => {
       ).toEqual([]);
     });
   }
+});
+
+test.describe("axe: Länderband", () => {
+  test("Der Hinweis für ein anderes Land hält die Kontraste", async ({ browser }) => {
+    const ctx = await browser.newContext({
+      extraHTTPHeaders: { "x-vercel-ip-country": "CH" },
+    });
+    const page = await ctx.newPage();
+    await page.goto("/");
+    await expect(page.getByText(/kein Steuerregelwerk/).first()).toBeVisible();
+
+    const ergebnis = await new AxeBuilder({ page }).analyze();
+    const serious = ergebnis.violations.filter((v) => ["serious", "critical"].includes(v.impact ?? ""));
+    expect(
+      serious.map((v) => `${v.id}: ${v.help} (${v.nodes.length}x)`),
+      "Verstoesse auf / mit Länderband",
+    ).toEqual([]);
+    await ctx.close();
+  });
 });
 
 test.describe("axe im dunklen Modus", () => {

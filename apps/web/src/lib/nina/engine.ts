@@ -1,5 +1,7 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { z } from "zod";
+import { storeSummary } from "./conversations.ts";
 import {
   EXTRACTION_SYSTEM_DE,
   EXTRACTION_SYSTEM_EN,
@@ -401,4 +403,108 @@ export async function zustimmungVermerken(userId: string, zugestimmt: boolean): 
       .set({ agreedToSeeJobs: zugestimmt, updatedAt: sql`now()` })
       .where(eq(schema.workflowStates.userId, userId)),
   );
+}
+
+/* ── Verdichtung ───────────────────────────────────────────────── */
+
+/* Ein Feld. Der Umweg über ein Schema erzwingt reinen Text ohne
+   Vorrede — bei freier Ausgabe kommt regelmässig „Hier ist die
+   Zusammenfassung:" mit. */
+const VerdichtungSchema = z.object({
+  zusammenfassung: z.string(),
+});
+
+const VERDICHTUNG_SYSTEM_DE = `Du verdichtest ein Gespräch zwischen einer Berufsbegleitung und einem Menschen.
+
+Schreibe eine Zusammenfassung in höchstens zwölf Sätzen, in der dritten Person, auf Deutsch.
+
+Enthalten sein muss, was für den weiteren Verlauf zählt:
+- was die Person über ihre bisherige Arbeit gesagt hat
+- was sie sucht und was sie ausschliesst
+- welche Bedingungen sie genannt hat (Ort, Zeit, Geld, Gesundheit, Familie)
+- worüber schon gesprochen wurde, damit es nicht erneut gefragt wird
+- offene Fragen, die noch nicht beantwortet sind
+
+Regeln:
+- Nur was tatsächlich gesagt wurde. Keine Schlüsse, keine Vermutungen, keine Ratschläge.
+- Zahlen und Orte wörtlich übernehmen.
+- Wo etwas unklar blieb, schreibe, dass es unklar blieb.
+- Keine Anrede, keine Einleitung, kein Fazit. Nur der verdichtete Inhalt.`;
+
+const VERDICHTUNG_SYSTEM_EN = `You condense a conversation between a career companion and a person.
+
+Write a summary of at most twelve sentences, in the third person, in English.
+
+Include what matters for what follows: what the person said about their work so far, what they
+are looking for and what they rule out, the conditions they named (place, time, money, health,
+family), what has already been discussed so it is not asked again, and questions still open.
+
+Rules: only what was actually said — no inferences, no advice. Keep numbers and places verbatim.
+Where something stayed unclear, say that it stayed unclear. No salutation, no preamble, no
+conclusion.`;
+
+/**
+ * Ein langes Gespräch verdichten.
+ *
+ * ── Was hier gefehlt hat ──────────────────────────────────────
+ *
+ * `loadModelContext` gibt Nina die letzten zwölf Züge wörtlich mit,
+ * dazu die Zusammenfassung des Davor. `needsSummary` und
+ * `storeSummary` standen fertig im Code, mit Schwelle bei zwanzig
+ * Zügen — und keinen einzigen Aufrufer.
+ *
+ * Gemessen: 181 Gespräche, null Zusammenfassungen, das längste 47
+ * Nachrichten. Alles vor dem zwölftletzten Zug war schlicht weg. Von
+ * aussen sieht das aus wie „Nina merkt sich nichts" — und war es auch.
+ *
+ * ── Warum nach dem Strom und mit `structuredGenerate` ─────────
+ *
+ * Dieselbe Stelle wie die Extraktion: Die Person hat ihre Antwort
+ * gelesen, hier wartet niemand. Und dasselbe Protokoll — sonst wäre
+ * ein Teil der Rechnung unsichtbar.
+ *
+ * Schlägt es fehl, bleibt die alte Zusammenfassung stehen und der
+ * nächste Zug versucht es erneut. Der Verlust wäre eine schlechtere
+ * Erinnerung, kein kaputtes Gespräch.
+ */
+export async function verdichten(input: {
+  userId: string;
+  locale: string;
+  conversationId: string;
+  bisIndex: number;
+  bisherigeZusammenfassung: string | null;
+  zuege: { role: string; content: string }[];
+}): Promise<void> {
+  if (input.zuege.length === 0) return;
+  const provider = await selectProvider();
+  const routing = route("document_extraction");
+
+  const eingabe = [
+    input.bisherigeZusammenfassung
+      ? `BISHERIGE ZUSAMMENFASSUNG:\n${input.bisherigeZusammenfassung}`
+      : "BISHERIGE ZUSAMMENFASSUNG: keine",
+    "",
+    "GESPRÄCH:",
+    ...input.zuege.map((z) => `${z.role === "user" ? "MENSCH" : "BEGLEITUNG"}: ${z.content}`),
+  ].join("\n");
+
+  try {
+    const ergebnis = await provider.structuredGenerate({
+      system: input.locale === "en" ? VERDICHTUNG_SYSTEM_EN : VERDICHTUNG_SYSTEM_DE,
+      messages: [{ role: "user", content: eingabe }],
+      schema: VerdichtungSchema,
+      schemaName: "nina_verdichtung",
+      tier: routing.providerTier,
+    });
+    await protokollieren(input.userId, routing.task, routing.tier, "ok", true, ergebnis.usage);
+    const text = ergebnis.data.zusammenfassung.trim();
+    if (text.length < 20) return;
+    await storeSummary(input.userId, input.conversationId, text, input.bisIndex);
+  } catch (fehler) {
+    console.error(
+      "[nina/verdichtung] fehlgeschlagen:",
+      fehler instanceof Error ? `${fehler.name}: ${fehler.message}` : String(fehler),
+    );
+    await protokollieren(input.userId, routing.task, routing.tier, "failed", false).catch(() => {});
+  }
 }

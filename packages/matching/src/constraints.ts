@@ -44,11 +44,27 @@ export function checkConstraints(
 ): ConstraintResult {
   const checks: ConstraintCheck[] = [];
 
-  // --- Arbeitserlaubnis ---
-  if (job.workPermitRequired === null) {
+  /*
+   * --- Arbeitserlaubnis ---
+   *
+   * Ohne hinterlegte Länder gibt es nichts zu prüfen.
+   *
+   * Das war die letzte Stelle mit demselben Muster, und die
+   * folgenreichste: ein neu angemeldeter Mensch hat noch keine Länder
+   * hinterlegt, fast keine Anzeige sagt etwas zur Arbeitserlaubnis —
+   * also war für ihn JEDE Stelle „uncertain", und seine gesamte
+   * Trefferliste stand im Abschnitt „hier ist etwas offen". Gemessen:
+   * 10 von 10.
+   *
+   * Die Regel gilt unverändert in die andere Richtung: sobald Länder
+   * hinterlegt sind und eine Stelle sie verletzt, ist sie gesperrt.
+   */
+  if (c.workPermitCountries.length === 0) {
+    // keine Angabe, keine Prüfung
+  } else if (job.workPermitRequired === null) {
     checks.push(check("work_permit", "Arbeitserlaubnis", "uncertain",
       "Die Anzeige sagt nichts zur erforderlichen Arbeitserlaubnis.", null,
-      c.workPermitCountries.join(", ") || null));
+      c.workPermitCountries.join(", ")));
   } else if (!job.workPermitRequired || c.workPermitCountries.includes(job.country)) {
     checks.push(check("work_permit", "Arbeitserlaubnis", "eligible",
       "Du darfst in diesem Land arbeiten.", job.country, c.workPermitCountries.join(", ")));
@@ -81,8 +97,13 @@ export function checkConstraints(
   const langLevels = ["A1", "A2", "B1", "B2", "C1", "C2"];
   const required = Object.entries(job.languageRequirements);
   if (required.length === 0) {
-    checks.push(check("language", "Sprache", "uncertain",
-      "Die Anzeige nennt kein Sprachniveau.", null, null));
+    /*
+     * Die Anzeige nennt kein Sprachniveau — das ist der Normalfall
+     * und keine offene Bedingung.
+     *
+     * Eine Bedingung entsteht erst dort, wo die Anzeige etwas fordert.
+     * Ohne Forderung gibt es nichts zu erfüllen und nichts zu klären.
+     */
   } else {
     const shortfalls = required.filter(([lang, need]) => {
       const has = c.languages[lang];
@@ -112,8 +133,7 @@ export function checkConstraints(
     checks.push(check("commute", "Arbeitsweg", "eligible",
       "Vollständig remote, kein Arbeitsweg.", "remote", null));
   } else if (c.maxCommuteMinutes === null || c.baseLocation === null) {
-    checks.push(check("commute", "Arbeitsweg", "uncertain",
-      "Es ist keine Obergrenze für den Arbeitsweg hinterlegt.", job.location, null));
+    // Keine Obergrenze und kein Wohnort — dann gibt es nichts zu prüfen.
   } else {
     const minutes = commute?.estimateMinutes(c.baseLocation, job.location, c.commuteMode) ?? null;
     if (minutes === null) {
@@ -137,7 +157,40 @@ export function checkConstraints(
 
   // --- Mindestgehalt ---
   if (c.minSalaryPerYear === null) {
-    checks.push(check("salary", "Gehalt", "eligible", "Du hast keine Untergrenze festgelegt.", null, null));
+    /*
+     * Keine Untergrenze, keine Zeile.
+     *
+     * Vorher stand hier „eligible — Du hast keine Untergrenze
+     * festgelegt": ein grüner Haken für eine Prüfung, die nicht
+     * stattgefunden hat. Neben echten Prüfungen liest sich das als
+     * „Gehalt passt".
+     */
+  } else if (job.salary.provenance === "text") {
+    /*
+     * Aus dem Beschreibungstext gelesen — informiert, entscheidet nicht.
+     *
+     * Diese Zahl steht in der Anzeige, aber nicht in einem Feld, das
+     * der Arbeitgeber ausgefüllt hat. Sie kann sich auf ein
+     * Projektbudget, einen Umsatz oder ein Beispiel beziehen; der
+     * Leser hat das im Blick, ein Muster nicht immer.
+     *
+     * Deshalb bleibt es „offen", auch wenn die Zahl unter der Grenze
+     * liegt. Eine Stelle wegen einer Vermutung auszublenden wäre der
+     * teurere Fehler: ausgeblendete Stellen fallen niemandem auf, und
+     * die Person erfährt nie, dass es sie gab.
+     *
+     * Angezeigt wird sie trotzdem — mit dem Beleg daneben. Wer sie
+     * liest, kann selbst urteilen, und genau das ist der Unterschied
+     * zwischen Verschweigen und Nicht-Behaupten.
+     */
+    const wert = job.salary.max ?? job.salary.min;
+    const jahr = wert === null ? null : normaliseSalaryToYear(wert, job.salary.period);
+    checks.push(check("salary", "Gehalt", "uncertain",
+      jahr === null
+        ? "Im Anzeigentext steht eine Gehaltsangabe, die sich nicht sicher zuordnen liess."
+        : `Im Anzeigentext steht ${jahr} ${job.salary.currency} — das ist keine Angabe des Arbeitgebers im dafür vorgesehenen Feld, sondern aus dem Text gelesen. Frag im Erstgespräch nach.`,
+      jahr === null ? "aus dem Text" : `${jahr} ${job.salary.currency} (aus dem Text)`,
+      `mindestens ${c.minSalaryPerYear} ${c.currency}`));
   } else if (!job.salary.disclosed) {
     checks.push(check("salary", "Gehalt", "uncertain",
       "Die Anzeige nennt kein Gehalt. Frag im Erstgespräch danach.",
@@ -162,9 +215,18 @@ export function checkConstraints(
     }
   }
 
-  // --- Schichtarbeit ---
-  if (job.shiftWork === null) {
-    checks.push(check("shift", "Schichtarbeit", "uncertain", "Die Anzeige sagt nichts zu Schichten.", null, null));
+  /*
+   * --- Schichtarbeit ---
+   *
+   * Nur wenn sie ausgeschlossen wurde. Wer Schichtarbeit annimmt, hat
+   * keine Bedingung dazu, und ein „die Anzeige sagt nichts zu
+   * Schichten" wäre für ihn eine Unklarheit ohne Gegenstand.
+   */
+  if (c.acceptsShiftWork) {
+    // keine Bedingung, keine Prüfung
+  } else if (job.shiftWork === null) {
+    checks.push(check("shift", "Schichtarbeit", "uncertain",
+      "Die Anzeige sagt nichts zu Schichten. Du hast sie ausgeschlossen.", null, "ausgeschlossen"));
   } else if (!job.shiftWork || c.acceptsShiftWork) {
     checks.push(check("shift", "Schichtarbeit", "eligible",
       job.shiftWork ? "Schichtarbeit ist für dich in Ordnung." : "Keine Schichtarbeit.",
@@ -174,12 +236,29 @@ export function checkConstraints(
       "Die Stelle ist Schichtarbeit. Das hast du ausgeschlossen.", "ja", "ausgeschlossen"));
   }
 
-  // --- Reiseanteil ---
-  if (c.maxTravelPercent === null || job.travelPercent === null) {
+  /*
+   * --- Reiseanteil ---
+   *
+   * Ohne eigene Grenze gibt es hier nichts zu prüfen — und deshalb
+   * auch keine Zeile.
+   *
+   * Vorher stand hier „uncertain", wenn die Person KEINE Grenze
+   * gesetzt hatte. Das klang harmlos und war der teuerste Fehler
+   * dieser Datei: `overall` wird „uncertain", sobald eine einzige
+   * Prüfung es ist. Reiseanteil, Vertragsart und Wochenstunden stehen
+   * in fast keiner Anzeige — also war praktisch JEDE Stelle
+   * „uncertain", aus Gründen, die mit den Bedingungen der Person
+   * nichts zu tun hatten.
+   *
+   * Gemessen: 243 von 243 Stellen landeten deshalb im Abschnitt „hier
+   * ist etwas offen". Ein Hinweis, der für alles gilt, sagt nichts.
+   */
+  if (c.maxTravelPercent === null) {
+    // keine Bedingung, keine Prüfung
+  } else if (job.travelPercent === null) {
     checks.push(check("travel", "Reiseanteil", "uncertain",
-      job.travelPercent === null ? "Die Anzeige nennt keinen Reiseanteil." : "Du hast keine Grenze festgelegt.",
-      job.travelPercent === null ? null : `${job.travelPercent} %`,
-      c.maxTravelPercent === null ? null : `maximal ${c.maxTravelPercent} %`));
+      "Die Anzeige nennt keinen Reiseanteil.",
+      null, `maximal ${c.maxTravelPercent} %`));
   } else {
     checks.push(job.travelPercent <= c.maxTravelPercent
       ? check("travel", "Reiseanteil", "eligible", `${job.travelPercent} % liegt in deinem Rahmen.`,
@@ -189,11 +268,13 @@ export function checkConstraints(
           `${job.travelPercent} %`, `maximal ${c.maxTravelPercent} %`));
   }
 
-  // --- Vertragsart ---
-  if (c.acceptedContractTypes.length === 0 || job.contractType === null) {
+  // --- Vertragsart ---  (dieselbe Regel: keine Auswahl, keine Prüfung)
+  if (c.acceptedContractTypes.length === 0) {
+    // keine Bedingung, keine Prüfung
+  } else if (job.contractType === null) {
     checks.push(check("contract", "Vertragsart", "uncertain",
-      job.contractType === null ? "Die Anzeige nennt keine Vertragsart." : "Du hast keine Vertragsart ausgeschlossen.",
-      job.contractType, c.acceptedContractTypes.join(", ") || null));
+      "Die Anzeige nennt keine Vertragsart.",
+      null, c.acceptedContractTypes.join(", ")));
   } else {
     checks.push(c.acceptedContractTypes.includes(job.contractType)
       ? check("contract", "Vertragsart", "eligible", "Die Vertragsart passt.",
@@ -203,11 +284,13 @@ export function checkConstraints(
           job.contractType, c.acceptedContractTypes.join(", ")));
   }
 
-  // --- Arbeitszeit ---
-  if (job.weeklyHours === null || (c.weeklyHoursMin === null && c.weeklyHoursMax === null)) {
+  // --- Arbeitszeit ---  (dieselbe Regel)
+  if (c.weeklyHoursMin === null && c.weeklyHoursMax === null) {
+    // keine Bedingung, keine Prüfung
+  } else if (job.weeklyHours === null) {
     checks.push(check("hours", "Arbeitszeit", "uncertain",
-      job.weeklyHours === null ? "Die Anzeige nennt keine Wochenstunden." : "Du hast keine Arbeitszeit festgelegt.",
-      job.weeklyHours === null ? null : `${job.weeklyHours} h`, null));
+      "Die Anzeige nennt keine Wochenstunden.", null,
+      [c.weeklyHoursMin, c.weeklyHoursMax].filter((x) => x !== null).join("–") + " h"));
   } else {
     const tooFew = c.weeklyHoursMin !== null && job.weeklyHours < c.weeklyHoursMin;
     const tooMany = c.weeklyHoursMax !== null && job.weeklyHours > c.weeklyHoursMax;
@@ -219,11 +302,13 @@ export function checkConstraints(
           `${job.weeklyHours} h`, `${c.weeklyHoursMin ?? "?"}-${c.weeklyHoursMax ?? "?"} h`));
   }
 
-  // --- Startdatum ---
-  if (c.earliestStartDate === null || job.publishedAt === null) {
+  // --- Startdatum ---  (dieselbe Regel)
+  if (c.earliestStartDate === null) {
+    // keine Bedingung, keine Prüfung
+  } else if (job.publishedAt === null) {
     checks.push(check("start_date", "Startdatum", "uncertain",
-      "Zum Startdatum liegen keine ausreichenden Angaben vor.", null,
-      c.earliestStartDate ? c.earliestStartDate.toISOString().slice(0, 10) : null));
+      "Die Anzeige nennt kein Datum, an dem sich dein frühester Start prüfen liesse.", null,
+      c.earliestStartDate.toISOString().slice(0, 10)));
   } else {
     checks.push(check("start_date", "Startdatum", "eligible",
       "Kein Widerspruch zu deinem fruehesten Start erkennbar.", null,

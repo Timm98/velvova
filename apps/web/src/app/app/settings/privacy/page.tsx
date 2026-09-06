@@ -6,7 +6,9 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { Card, Separator } from "@/components/ui";
-import { ConsentToggles, DangerZone, ExportButton } from "../SettingsClient";
+import { AuffindbarSchalter, ConsentToggles, DangerZone, ExportButton } from "../SettingsClient";
+import { standLaden } from "@/lib/nina/einrichtung/speicher";
+import { NinaBereich } from "./NinaBereich";
 
 export const metadata: Metadata = { title: "Datenschutz & Daten" };
 export const dynamic = "force-dynamic";
@@ -54,7 +56,7 @@ export default async function PrivacySettingsPage() {
   const { t, brand, integrations } = await getPageContext();
   const db = await getDb();
 
-  const [consents, evidenceCount, documentCount] = await Promise.all([
+  const [consents, evidenceCount, documentCount, einstellungen] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx.select().from(schema.consents).where(eq(schema.consents.userId, user.id)),
     ),
@@ -76,12 +78,51 @@ export default async function PrivacySettingsPage() {
           .where(eq(schema.documents.userId, user.id))
       ).length,
     ),
+    withUser(db, user.id, async (tx) =>
+      (
+        await tx
+          .select({
+            auffindbar: schema.userSettings.auffindbar,
+            auffindbarSeit: schema.userSettings.auffindbarSeit,
+          })
+          .from(schema.userSettings)
+          .where(eq(schema.userSettings.userId, user.id))
+          .limit(1)
+      )[0],
+    ),
   ]);
 
   const consentState = Object.fromEntries(consents.map((c) => [c.kind, c.granted]));
 
+  /*
+   * Ninas Einrichtung steht ganz oben.
+   *
+   * Sie ist das, was die meisten hier suchen: was im Hintergrund
+   * passiert. Die Anbieterangaben darunter erklären, wohin Text geht
+   * — wichtig, aber selten der Grund, warum jemand diese Seite
+   * öffnet.
+   */
+  const nina = await standLaden(user.id);
+
   return (
     <div className="grid gap-6">
+      <Card>
+        <NinaBereich
+          start={{
+            kontotyp: nina.kontotyp,
+            bedienart: nina.bedienart,
+            sprachspeicherung: nina.sprachspeicherung,
+            stufe: nina.stufe,
+            briefingAktiv: nina.briefingAktiv,
+            briefingRhythmus: nina.briefingRhythmus,
+            briefingZeit: nina.briefingZeit,
+            zeitzone: nina.zeitzone,
+            kanaele: nina.kanaele,
+            widerrufenAm: nina.widerrufenAm ? nina.widerrufenAm.toISOString() : null,
+          }}
+        />
+      </Card>
+
       <Card className="grid gap-5">
         <div>
           <h2 className="text-lg font-semibold">Was das Haus verlässt</h2>
@@ -111,6 +152,25 @@ export default async function PrivacySettingsPage() {
             </dd>
           </div>
         </dl>
+      </Card>
+
+      {/*
+        Die Auffindbarkeit steht VOR den übrigen Einwilligungen.
+
+        Die anderen betreffen, was mit vorhandenen Daten geschieht.
+        Diese betrifft, ob überhaupt jemand von einem erfährt — und ist
+        damit die weitreichendste auf dieser Seite. Als sechster Haken
+        in einer Liste stünde sie zwischen fünf harmloseren.
+      */}
+      <Card className="grid gap-5">
+        <div>
+          <h2 className="text-lg font-semibold">Von Unternehmen gefunden werden</h2>
+          <p className="mt-1.5 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+            Standardmässig aus. Ohne diese Einwilligung schlägt {brand.assistantName} dich keinem
+            Unternehmen vor — auch nicht anonym.
+          </p>
+        </div>
+        <AuffindbarSchalter an={einstellungen?.auffindbar ?? false} seit={einstellungen?.auffindbarSeit ?? null} />
       </Card>
 
       <Card className="grid gap-5">

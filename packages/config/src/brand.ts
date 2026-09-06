@@ -3,7 +3,7 @@ import { currentEnv } from "./env.ts";
 /**
  * Marke und Assistenzname. Beide Namen sind vorläufig und können sich
  * ändern, deshalb steht hier die einzige Quelle der Wahrheit. Kein
- * anderer Teil des Codes darf "Paycheck" oder "Nina" hart schreiben.
+ * anderer Teil des Codes darf "Velvova" oder "Nina" hart schreiben.
  */
 
 export interface BrandConfig {
@@ -17,7 +17,19 @@ export interface BrandConfig {
   readonly tagline: { de: string; en: string };
   /** Rechtlicher Betreiber. Leer, solange nicht entschieden. */
   readonly legalEntity: string;
+  /**
+   * Wer die Plattform und die Assistenz gemacht hat.
+   *
+   * Anders als Marken- und Assistenzname NICHT über die Umgebung
+   * überschreibbar. Die beiden sind vorläufig und können sich ändern;
+   * wer etwas gemacht hat, ändert sich nicht. Eine Variable dafür
+   * hiesse, dass eine Installation eine andere Urheberschaft
+   * behaupten kann.
+   */
+  readonly creator: string;
   readonly supportEmail: string;
+  /** Allgemeine Kontaktadresse — im Fussbereich und im Impressum. */
+  readonly kontaktEmail: string;
 }
 
 function envOr(key: string, fallback: string): string {
@@ -27,15 +39,23 @@ function envOr(key: string, fallback: string): string {
 }
 
 export const brand: BrandConfig = {
-  name: envOr("NEXT_PUBLIC_BRAND_NAME", "Paycheck"),
+  name: envOr("NEXT_PUBLIC_BRAND_NAME", "Velvova"),
   assistantName: envOr("NEXT_PUBLIC_ASSISTANT_NAME", "Nina"),
-  shortName: envOr("NEXT_PUBLIC_BRAND_SHORT_NAME", envOr("NEXT_PUBLIC_BRAND_NAME", "Paycheck")),
+  shortName: envOr("NEXT_PUBLIC_BRAND_SHORT_NAME", envOr("NEXT_PUBLIC_BRAND_NAME", "Velvova")),
   tagline: {
     de: "Finde nicht irgendeinen Job. Finde den, der wirklich zu dir passt.",
     en: "Don't find just any job. Find the one that actually fits.",
   },
   legalEntity: envOr("NEXT_PUBLIC_LEGAL_ENTITY", ""),
-  supportEmail: envOr("NEXT_PUBLIC_SUPPORT_EMAIL", "support@example.invalid"),
+  creator: "Herr Tim Enseling",
+  /*
+   * Die echten Adressen, nicht `example.invalid`.
+   *
+   * Eine Support-Adresse, die niemanden erreicht, ist schlimmer als
+   * keine: Wer schreibt, wartet auf eine Antwort, die nie kommt.
+   */
+  supportEmail: envOr("NEXT_PUBLIC_SUPPORT_EMAIL", "support@velvova.com"),
+  kontaktEmail: envOr("NEXT_PUBLIC_CONTACT_EMAIL", "info@velvova.com"),
 };
 
 

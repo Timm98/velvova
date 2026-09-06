@@ -1,0 +1,12 @@
+-- Die Abmeldeadresse gehoert zur Mail, nicht zur Vorlage.
+--
+-- Sie steht schon im Text der Mail. Fuer die Kopfzeile
+-- `List-Unsubscribe` braucht der Versand sie aber getrennt -- und sie
+-- laesst sich nicht rekonstruieren, weil das Token zufaellig ist und
+-- nur als Hash gespeichert wird.
+--
+-- Ohne diese Spalte gaebe es zwei Auswege, und beide sind schlecht:
+-- die Adresse aus dem HTML zurueckzulesen, oder bei jedem Versuch ein
+-- neues Token zu erzeugen. Das zweite hiesse, dass ein Wiederholungs-
+-- versuch eine andere Mail waere als der erste.
+ALTER TABLE "mail_ausgang" ADD COLUMN IF NOT EXISTS "abmelde_url" text

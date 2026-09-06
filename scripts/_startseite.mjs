@@ -1,0 +1,10 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch();
+const s = await b.newPage({ viewport: { width: 1280, height: 900 } });
+await s.goto("http://localhost:3000/", { waitUntil: "domcontentloaded", timeout: 120000 });
+await s.waitForTimeout(2000);
+await s.mouse.move(600, 400); await s.mouse.wheel(0, 150); await s.waitForTimeout(7000);
+await s.mouse.wheel(0, -200); await s.waitForTimeout(800);
+console.log("Core-Canvas:", await s.evaluate(() => document.querySelectorAll("canvas").length));
+await s.screenshot({ path: "/tmp/startseite.png", clip: { x: 0, y: 0, width: 1280, height: 900 } });
+await b.close();

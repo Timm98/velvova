@@ -70,6 +70,22 @@ export async function runMigrations(db: Database): Promise<{ applied: string[]; 
 
 const isMain = process.argv[1] && import.meta.url === `file://${path.resolve(process.argv[1])}`;
 if (isMain) {
+  /*
+   * Erst die Umgebung, dann die Konfiguration.
+   *
+   * `.env.local` liest nur der Entwicklungsserver von selbst. Ohne
+   * diese Zeile lief `pnpm db:migrate` gegen die eingebettete
+   * Datenbank — es meldete „Migrationen angewendet" und liess das
+   * Schema in Supabase unverändert. Dieselbe Ursache wie beim
+   * Stellenabruf, und genauso lautlos: die Meldung stimmt, nur die
+   * Datenbank ist eine andere.
+   *
+   * Der Treiber steht deshalb unten in der Ausgabe. Eine Migration,
+   * bei der man raten muss, wo sie gelandet ist, ist keine.
+   */
+  const { ladeEnvDatei } = await import("@paycheck/config/node");
+  ladeEnvDatei();
+
   const cfg = loadRuntimeConfig();
   const { db, close } = await getDbHandle(cfg);
   const result = await runMigrations(db);

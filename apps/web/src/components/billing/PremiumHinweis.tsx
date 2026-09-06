@@ -1,53 +1,59 @@
 import Link from "next/link";
-import { MERKMAL_TEXT, type PremiumMerkmal } from "@/lib/billing/plaene";
+import { BERECHTIGUNG_AB, HINWEIS_TEXT, PLAENE, type Berechtigung } from "@/lib/billing/plaene";
 
 /**
- * Der Hinweis auf Premium.
+ * Ninas Hinweis auf eine Fähigkeit, die sie hier hätte.
  *
  * Er erscheint an genau einer Sorte Stelle: dort, wo jemand gerade
- * etwas wollte, das Premium kann. Nicht auf der Startseite, nicht im
- * Header, nicht als Banner über der Jobliste.
+ * etwas wollte, das ein anderer Plan kann. Nicht auf der Startseite,
+ * nicht im Header, nicht als Banner über der Jobliste, und nie als
+ * Popup.
  *
  * Der Ton ist der schwierige Teil. Ein Verkaufstext an dieser Stelle
  * wäre doppelt schlecht — er unterbricht jemanden mitten in seiner
  * Arbeit UND er klingt, als sei das Produkt an seinem Geld
  * interessierter als an seiner Frage. Deshalb:
  *
- *   - Was wäre möglich, in einem Satz.
- *   - Wozu es gut ist, in einem zweiten.
+ *   - Was Nina zusätzlich tun könnte, in einem Satz.
  *   - Ein Verweis, kein Knopf in Signalfarbe.
- *   - Kein Ausrufezeichen, kein „nur jetzt", keine Dringlichkeit.
+ *   - Kein Ausrufezeichen, kein „nur jetzt", keine Dringlichkeit,
+ *     keine ablaufende Frist, kein Erfolgsversprechen.
  *
  * Die Fläche ist ruhig und liegt UNTER dem Inhalt, nicht darüber. Wer
- * nicht upgraden will, soll ihn überlesen können, ohne dass ihm etwas
- * fehlt.
+ * nicht wechseln will, soll sie überlesen können, ohne dass ihm etwas
+ * fehlt — und vor allem: die eigentliche Antwort steht bereits
+ * darüber. Nina beantwortet die Frage zuerst und weist danach hin, nie
+ * umgekehrt und nie statt einer Antwort.
  */
 export function PremiumHinweis({
-  merkmal,
+  fähigkeit,
   assistantName,
 }: {
-  merkmal: PremiumMerkmal;
+  fähigkeit: Berechtigung;
   assistantName: string;
 }) {
-  const t = MERKMAL_TEXT[merkmal];
+  const t = HINWEIS_TEXT[fähigkeit];
+  const noetig = PLAENE[BERECHTIGUNG_AB[fähigkeit]];
 
   return (
-    <aside className="grid gap-1.5 rounded-(--radius-lg) bg-soft px-5 py-4">
-      <p className="text-base leading-relaxed text-ink-2">
-        {/*
-          Ninas Formulierung, nicht die des Marketings: sie bietet an,
-          was sie zusätzlich tun könnte, statt ein Produkt zu bewerben.
-        */}
-        Wenn du möchtest, kann {assistantName} das noch deutlich tiefer aufschlüsseln —{" "}
-        {t.nutzen.charAt(0).toLowerCase() + t.nutzen.slice(1)}
-      </p>
+    <aside className="grid gap-2 rounded-(--radius-lg) bg-soft px-5 py-4">
+      {/*
+        Ninas Formulierung, nicht die des Marketings: sie bietet an, was
+        sie zusätzlich tun könnte, statt ein Produkt zu bewerben. Der
+        Satz steht in der ersten Person, weil er von ihr kommt.
+      */}
+      <p className="text-base leading-relaxed text-ink-2">{t.angebot}</p>
       <p>
         <Link
-          href="/pricing"
+          href="/app/settings/abo"
           className="text-sm text-accent-text underline underline-offset-[3px]"
         >
-          Was Premium sonst noch kann
+          {t.titel} mit {noetig.name}
         </Link>
+        <span className="sr-only">
+          {" "}
+          — {assistantName} kann das mit {noetig.name}.
+        </span>
       </p>
     </aside>
   );

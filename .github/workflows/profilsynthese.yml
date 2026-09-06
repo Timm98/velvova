@@ -1,0 +1,73 @@
+name: Profilsynthese
+
+# ─────────────────────────────────────────────────────────────
+# Der Wecker für Ninas Hintergrundanalyse.
+#
+# Ruft `POST /api/intern/profilsynthese` auf der laufenden Anwendung
+# auf. Die Arbeit passiert dort — nur der Server hat die Datenbank und
+# die Zugangsdaten. Diese Datei ist der Wecker, sonst nichts.
+#
+# ── Warum stündlich ──────────────────────────────────────────
+#
+# Weil die Faelligkeitsregel ohnehin frühestens nach zehn Minuten und
+# ab fünf neuen Belegen greift. Ein Lauf alle fünf Minuten fände
+# dasselbe wie der stündliche — nur zwölfmal so oft nichts.
+#
+# ── Warum das Budget in der URL steht ────────────────────────
+#
+# Damit es sich ändern lässt, ohne neu zu deployen. Der Server hat
+# dieselbe Zahl als Vorgabe; hier steht sie sichtbar, weil sie die
+# Zahl ist, die zwischen einem Protokolleintrag und einer Rechnung
+# steht.
+#
+# ── Zwei Secrets, dieselben wie beim Suchauftrag ─────────────
+#
+#   PAYCHECK_BASE_URL      Adresse der Anwendung, ohne Schrägstrich
+#   JOBS_REFRESH_SECRET    derselbe Wert wie in der Serverumgebung
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # Zur Minute 23 — Minute 0 und Minute 7 sind schon belegt.
+    - cron: "23 * * * *"
+  workflow_dispatch:
+    inputs:
+      stapel:
+        description: "Höchstzahl geprüfter Profile je Lauf"
+        required: false
+        default: "25"
+      budget:
+        description: "Höchstzahl Modellaufrufe je Lauf"
+        required: false
+        default: "20"
+
+# Zwei gleichzeitige Läufe greifen dieselben Profile. Die Datenbank
+# fängt das ab; trotzdem ist der zweite verschwendete Zeit.
+concurrency:
+  group: profilsynthese
+  cancel-in-progress: false
+
+jobs:
+  synthese:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Anwendung anstossen
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+          STAPEL: ${{ github.event.inputs.stapel || '25' }}
+          BUDGET: ${{ github.event.inputs.budget || '20' }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "PAYCHECK_BASE_URL oder JOBS_REFRESH_SECRET fehlt — Lauf übersprungen."
+            echo "Das ist keine Störung, sondern eine noch nicht eingerichtete Umgebung."
+            exit 0
+          fi
+          antwort=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 300 \
+            "$BASIS/api/intern/profilsynthese?stapel=$STAPEL&budget=$BUDGET")
+          echo "$antwort"
+          # Ein Lauf ohne `aktiv` ist ein Fehlschlag, den man sehen soll.
+          echo "$antwort" | grep -q '"aktiv"' || exit 1

@@ -1,0 +1,98 @@
+name: Stellenabruf
+
+# ─────────────────────────────────────────────────────────────
+# Der Zeitplan für den Stellenabruf.
+#
+# Ruft `POST /api/jobs/refresh` auf der laufenden Anwendung auf. Der
+# Abruf selbst passiert dort — nicht hier: nur der Server hat die
+# Zugangsdaten der Anbieter und die Verbindung zur Datenbank. Diese
+# Datei ist der Wecker, nicht die Arbeit.
+#
+# ── Bevor das läuft, sind zwei Secrets nötig ─────────────────
+#
+#   PAYCHECK_BASE_URL      Die öffentliche Adresse der laufenden
+#                          Anwendung, ohne Schrägstrich am Ende —
+#                          derselbe Wert wie APP_URL in der
+#                          Serverumgebung. Format: https://beispiel.de
+#
+#                          Bewusst ein eigener Name: die Anwendung
+#                          selbst liest ihn nicht. Er sagt diesem
+#                          Workflow, WEN er anrufen soll, und gehört
+#                          damit zu GitHub, nicht zur Anwendung.
+#
+#   JOBS_REFRESH_SECRET    Derselbe Wert wie in der Serverumgebung —
+#                          der Endpunkt vergleicht ihn. Erzeugen mit
+#                          `openssl rand -hex 32`. Steht er nur an
+#                          einer der beiden Stellen, antwortet der
+#                          Endpunkt mit 401.
+#
+# Ohne sie bricht der Lauf NICHT mit einem Fehler ab, sondern
+# überspringt sich mit einer Meldung. Ein nächtlich rot blinkender
+# Zeitplan, dessen einzige Aussage „ist noch nicht eingerichtet" lautet,
+# wird nach einer Woche ignoriert — und dann fällt auch der echte
+# Fehlschlag niemandem mehr auf.
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # 04:15 UTC. Nachts, weil der Abruf Kontingent verbraucht und
+    # tagsüber mit echten Besuchen um dieselbe Datenbank konkurriert.
+    # Die krumme Minute mit Absicht: zur vollen Stunde starten sehr
+    # viele Zeitpläne gleichzeitig, und die Anbieter merken das.
+    - cron: "15 4 * * *"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Höchstzahl Stellen je Quelle"
+        required: false
+        default: "100"
+
+jobs:
+  abruf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Einrichtung prüfen
+        id: pruefung
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "bereit=nein" >> "$GITHUB_OUTPUT"
+            echo "::notice::Übersprungen: PAYCHECK_BASE_URL und/oder JOBS_REFRESH_SECRET sind nicht gesetzt."
+          else
+            echo "bereit=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Stellen abrufen
+        if: steps.pruefung.outputs.bereit == 'ja'
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+          LIMIT: ${{ github.event.inputs.limit || '100' }}
+        run: |
+          set -euo pipefail
+
+          # `--fail-with-body`: bei 4xx/5xx scheitern, aber die Antwort
+          # trotzdem zeigen. Ohne sie steht im Protokoll nur ein
+          # Statuscode, und die Begründung des Servers geht verloren –
+          # genau die Zeile, die sagt, welche Quelle warum übersprungen
+          # wurde.
+          antwort=$(curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 600 \
+            "$BASIS/api/jobs/refresh?limit=$LIMIT")
+
+          echo "$antwort" | head -c 4000
+
+          # Die Zusammenfassung erscheint auf der Übersichtsseite des
+          # Laufs, damit niemand die Protokolle aufklappen muss.
+          {
+            echo "### Stellenabruf"
+            echo ""
+            echo '```json'
+            echo "$antwort" | head -c 3000
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

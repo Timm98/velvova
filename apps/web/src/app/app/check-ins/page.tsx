@@ -4,6 +4,9 @@ import { getPageContext } from "@/lib/locale";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { eq } from "drizzle-orm";
 import { Badge, Card, EmptyState, PageHeader, Stack } from "@/components/ui";
+import { CheckInFormular } from "@/components/checkins/CheckInFormular";
+import { faelligeCheckIns } from "@/lib/erinnerungen";
+import { and, eq as gleich, inArray } from "drizzle-orm";
 
 export const metadata: Metadata = { title: "Check-ins" };
 export const dynamic = "force-dynamic";
@@ -25,7 +28,39 @@ export default async function CheckInsPage() {
     tx.select().from(schema.checkIns).where(eq(schema.checkIns.userId, user.id)),
   );
 
-  const marks = [30, 60, 90];
+  /*
+   * 30, 90, 180 statt 30, 60, 90.
+   *
+   * Die alten drei lagen alle in der Probezeit, und dort sagt „ich bin
+   * zufrieden" wenig — wer gerade angefangen hat, will die Stelle
+   * meistens behalten. Erst nach einem halben Jahr trennt sich, ob eine
+   * Empfehlung getaugt hat.
+   */
+  const marks = [30, 90, 180];
+
+  /*
+   * Nur angetretene Stellen. Ein Check-in zu einer Bewerbung, die noch
+   * läuft, beantwortet eine Frage, die sich nicht stellt.
+   */
+  const faellig = await faelligeCheckIns(user.id);
+
+  const laufende = await withUser(db, user.id, (tx) =>
+    tx
+      .select({
+        id: schema.applications.id,
+        titel: schema.jobs.title,
+        firma: schema.companies.name,
+      })
+      .from(schema.applications)
+      .innerJoin(schema.jobs, gleich(schema.jobs.id, schema.applications.jobId))
+      .innerJoin(schema.companies, gleich(schema.companies.id, schema.jobs.companyId))
+      .where(
+        and(
+          gleich(schema.applications.userId, user.id),
+          inArray(schema.applications.stage, ["accepted"]),
+        ),
+      ),
+  ).catch(() => []);
 
   return (
     <Stack gap={6}>
@@ -74,6 +109,45 @@ export default async function CheckInsPage() {
           ))}
         </ul>
       )}
+
+      {/*
+       * Das Formular vor der Erklärung.
+       *
+       * Hier stand nur, worauf die Check-ins schauen — eine Beschreibung
+       * ohne Knopf. `check_ins` wurde von nirgendwo geschrieben, und
+       * damit fehlte dem Produkt sein wichtigster Rückkanal.
+       */}
+      <section aria-labelledby="neuer-checkin" className="grid gap-4">
+        <h2 id="neuer-checkin" style={{ fontSize: "var(--text-lg)" }}>
+          {faellig.length > 0
+            ? `${faellig[0]!.label} — ${faellig[0]!.titel}`
+            : laufende.length > 0
+              ? "Wie läuft es?"
+              : "Noch keine angetretene Stelle"}
+        </h2>
+        {/*
+         * Der fällige Termin steht über dem Formular.
+         *
+         * Ohne ihn ist „Wie läuft es?" eine Frage ohne Bezug — der
+         * Mensch hat womöglich mehrere Stellen im Blick und weiss
+         * nicht, welche gemeint ist. Mit Datum und Firma weiss er es.
+         */}
+        {faellig.length > 0 && (
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+            Fällig seit {new Intl.DateTimeFormat("de-DE").format(faellig[0]!.dueAt)} · {faellig[0]!.firma}
+          </p>
+        )}
+        {laufende.length > 0 ? (
+          <CheckInFormular bewerbungen={laufende} />
+        ) : (
+          <Card>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", lineHeight: 1.6 }}>
+              Sobald du eine Stelle angetreten hast, fragen wir hier nach — nach 30, 90 und 180 Tagen.
+              Die Antworten bleiben bei dir.
+            </p>
+          </Card>
+        )}
+      </section>
 
       <section aria-labelledby="fragen">
         <h2 id="fragen" style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>

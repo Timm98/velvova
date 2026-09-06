@@ -1,0 +1,11 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const r = (await db.execute(sql`select * from beruf_entgelt order by random() limit 5`)).rows;
+for (const z of r) console.log("  ", JSON.stringify(z).slice(0, 180));
+const [q] = (await db.execute(sql`select count(distinct quelle)::int n, min(stand)::text a, max(stand)::text b from beruf_entgelt`)).rows;
+console.log(`\nQuellen: ${q.n} · Stand ${q.a} bis ${q.b}`);
+const qq = (await db.execute(sql`select quelle, count(*)::int n from beruf_entgelt group by 1`)).rows;
+for (const z of qq) console.log(`  ${z.quelle}: ${z.n}`);

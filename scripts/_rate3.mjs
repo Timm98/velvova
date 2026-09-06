@@ -1,0 +1,15 @@
+import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
+ladeEnvDatei();
+const { getDb } = await import("../packages/db/src/index.ts");
+const { sql } = await import("../packages/db/node_modules/drizzle-orm/index.js");
+const db = await getDb();
+const n = async () => Number((await db.execute(sql`select count(*)::int n from jobs where is_demo=false`)).rows[0].n);
+const a = await n(); const t = Date.now();
+await new Promise(r => setTimeout(r, 180_000));
+const b = await n(); const min = (Date.now() - t) / 60000;
+const proStd = ((b - a) / min) * 60;
+console.log(`${a} → ${b} in ${min.toFixed(1)} min`);
+console.log(`Rate: ${Math.round(proStd).toLocaleString("de-DE")}/Std · ${Math.round(proStd*24).toLocaleString("de-DE")}/Tag`);
+console.log(`\nDACH-Decke 1.870.000 · noch ${(1870000 - b).toLocaleString("de-DE")} offen`);
+console.log(`Bei dieser Rate erreicht in ${((1870000 - b) / proStd / 24).toFixed(1)} Tagen — wenn sie hielte.`);
+process.exit(0);

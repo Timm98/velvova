@@ -1,0 +1,17 @@
+import { chromium } from "@playwright/test";
+const B = "http://localhost:3000";
+const b = await chromium.launch();
+const s = await b.newPage({ baseURL: B, viewport: { width: 1280, height: 900 } });
+await s.goto(`${B}/register`);
+await s.getByLabel("E-Mail-Adresse").fill(`e2e-gs-${Date.now()}@example.invalid`);
+await s.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!");
+await s.getByRole("button", { name: /Konto anlegen/i }).click();
+await s.waitForURL(/\/(app|setup)/, { timeout: 60000 });
+await s.goto(`${B}/app`, { waitUntil: "domcontentloaded", timeout: 180000 });
+await s.waitForTimeout(8000);
+await s.screenshot({ path: "/tmp/ganz-oben.png", clip: { x: 0, y: 0, width: 1280, height: 900 } });
+await s.evaluate(() => window.scrollBy(0, 700));
+await s.waitForTimeout(1200);
+await s.screenshot({ path: "/tmp/ganz-mitte.png", clip: { x: 0, y: 0, width: 1280, height: 700 } });
+console.log("Bilder erzeugt");
+await b.close();

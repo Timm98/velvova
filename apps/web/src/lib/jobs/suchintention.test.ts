@@ -134,3 +134,36 @@ describe("Ausschlüsse", () => {
     expect(satz).toContain("ohne schichtdienst");
   });
 });
+
+describe("Die Fahrzeit", () => {
+  it("versteht „keine längere Autofahrt als 170 min“", () => {
+    /*
+     * Der Fall, der die Liste geleert hat: Der ganze Satz wanderte in
+     * die Volltextsuche und fand Anzeigen, in denen „längere",
+     * „autofahrt" und „als" vorkommen — also keine.
+     */
+    const r = deuteSuchintention("keine längere autofahrt als 170 min");
+    expect(r.filter.pendelzeit).toBe(170);
+    expect(r.filter.q).toBeUndefined();
+  });
+
+  it("versteht die üblichen Formulierungen", () => {
+    expect(deuteSuchintention("höchstens 45 minuten fahrt").filter.pendelzeit).toBe(45);
+    expect(deuteSuchintention("max 30 min pendeln").filter.pendelzeit).toBe(30);
+  });
+
+  it("verwechselt Minuten nicht mit Kilometern", () => {
+    const km = deuteSuchintention("25 km um karlsruhe");
+    expect(km.filter.umkreisKm).toBe(25);
+    expect(km.filter.pendelzeit).toBeUndefined();
+  });
+
+  it("erfindet keine Grenze, wenn keine Zahl dasteht", () => {
+    /* „Keine lange Anfahrt" nennt keine Zahl. Eine zu setzen wäre
+       eine Grenze, die niemand genannt hat — der Satz wird nur
+       aufgebraucht, damit er nicht zum Suchwort wird. */
+    const r = deuteSuchintention("keine lange anfahrt");
+    expect(r.filter.pendelzeit).toBeUndefined();
+    expect(r.filter.q).toBeUndefined();
+  });
+});

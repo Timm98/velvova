@@ -123,7 +123,7 @@ export default async function OpportunitiesPage() {
       {/* ── Der Engpass ─────────────────────────────────────── */}
       {funnel.engpass && (
         <Card className="grid gap-3 border-line-2">
-          <p className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+          <p className="abschnitts-titel text-ink-3">
             Wo am meisten wegfällt
           </p>
           <p className="text-base font-medium">

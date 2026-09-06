@@ -1,13 +1,18 @@
 import { LogOut } from "lucide-react";
+import { laenderbestand } from "@/lib/jobs/laenderbestand";
+import { bestandszahl } from "@/lib/jobs/bestandszahl";
 import { and, count, eq, isNull } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { requireUser } from "@/lib/auth";
+import { kennung, requireUser } from "@/lib/auth";
+import { loadGate } from "@/lib/gate";
 import { getPageContext } from "@/lib/locale";
 import { AppShell } from "@/components/shell/AppShell";
 import { NinaProvider } from "@/components/nina/NinaProvider";
 import { NinaDock } from "@/components/nina/NinaDock";
 import { ensureWorkflowState } from "@/lib/nina/workflow-state";
 import { logoutAction } from "@/app/(auth)/actions";
+import { profilbildKennung } from "@/lib/profilbild-kennung";
+import { BestandProvider } from "@/components/marketing/BestandProvider";
 
 /**
  * Das App-Gerüst.
@@ -52,7 +57,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     withUser(db, user.id, async (tx) =>
       (
         await tx
-          .select({ voiceAutoplay: schema.userSettings.voiceAutoplay })
+          .select({
+            voiceAutoplay: schema.userSettings.voiceAutoplay,
+            /* Für die Regionsauswahl im Fussbereich. */
+            jobMarketCountry: schema.userSettings.jobMarketCountry,
+            /* Für das Kontomenü oben rechts. */
+            avatarPfad: schema.userSettings.avatarPfad,
+          })
           .from(schema.userSettings)
           .where(eq(schema.userSettings.userId, user.id))
           .limit(1)
@@ -60,15 +71,42 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ),
   ]);
 
+  /*
+   * Ein Zähler für alle Bereiche.
+   *
+   * Hier stand nur `(await bestandszahl()).text` — der fertig
+   * formatierte Satz, ohne Zahl und ohne Rate. Die Kopfzeile im
+   * Anwendungsbereich zeigte damit einen festen Wert, während dieselbe
+   * Kopfzeile auf der Startseite, den Marketingseiten und im
+   * Arbeitgeberbereich weiterlief.
+   *
+   * Auffallen musste das beim Wechsel: Man kommt von der Startseite,
+   * wo die Zahl steigt, in die Anwendung, wo sie steht — und beim
+   * Zurückgehen springt sie. `BestandProvider` sorgt dafür, dass alle
+   * Stellen auf einer Seite denselben Zeitgeber lesen; die drei
+   * anderen Rahmen benutzen ihn längst.
+   */
+  const bestand = await bestandszahl();
+
   return (
+    <BestandProvider genau={bestand.genau} proSekunde={bestand.proSekunde}>
     <NinaProvider
       initialConversationId={workflow.activeConversationId}
       autoSpeak={einstellungen?.voiceAutoplay ?? false}
     >
       <AppShell
+        laender={await laenderbestand()}
+        stellenzahl={bestand.text}
+        stellenGenau={bestand.genau}
+        proSekunde={bestand.proSekunde}
+        gespraechBegonnen={(await loadGate(user.id)).hasAnySession}
+        bildKennung={profilbildKennung(einstellungen?.avatarPfad)}
+        /* Für die Regionsauswahl im Fussbereich — sie soll den
+           aktuellen Stand zeigen und nicht immer „Deutschland". */
+        land={einstellungen?.jobMarketCountry ?? "DE"}
         brandName={brand.name}
         assistantName={brand.assistantName}
-        userEmail={user.email}
+        userEmail={kennung(user)}
         userName={user.displayName}
         unreadCount={unreadRows[0]?.value ?? 0}
         labels={{
@@ -109,5 +147,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           des Inhalts steckt. */}
       <NinaDock assistantName={brand.assistantName} />
     </NinaProvider>
+    </BestandProvider>
   );
 }

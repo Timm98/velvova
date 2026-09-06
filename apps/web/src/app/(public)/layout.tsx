@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getPageContext } from "@/lib/locale";
-import { currentUser } from "@/lib/auth";
+import { kopfsitzung } from "@/components/shell/Kopfsitzung";
+import { BestandProvider } from "@/components/marketing/BestandProvider";
+import { TopNav } from "@/components/shell/TopNav";
+import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
+import { laenderbestand } from "@/lib/jobs/laenderbestand";
+import { bestandszahl } from "@/lib/jobs/bestandszahl";
 
 /**
  * Rahmen der öffentlichen Seiten.
@@ -27,7 +32,24 @@ export default async function PublicLayout({ children }: { children: React.React
    * Ein Login-Knopf ist eine Aussage über den eigenen Zustand. Wird sie
    * ungeprüft getroffen, ist sie in der Hälfte der Fälle falsch.
    */
-  const user = await currentUser();
+  /*
+   * `kopfsitzung()` statt `currentUser()`.
+   *
+   * Hier stand nur die Frage, OB jemand angemeldet ist — und danach
+   * richtete sich, ob rechts „Anmelden" steht oder Glocke und Profil.
+   * Die Glocke kam, das Profil nicht: `TopNav` rendert an der Stelle
+   * `accountMenu`, und das wurde von hier nie übergeben. Angemeldet
+   * war rechts neben der Glocke schlicht nichts.
+   *
+   * `kopfsitzung()` liefert beides — den Zustand und das Menü samt
+   * Profilbild — und ist dieselbe Quelle, aus der Startseite und
+   * Arbeitgeberbereich sich bedienen. Drei Kopfzeilen, die ihren
+   * Anmeldezustand je selbst zusammenbauen, waren zwei zu viel.
+   */
+  const sitzung = await kopfsitzung();
+  const [laender, bestand] = await Promise.all([laenderbestand(), bestandszahl()]);
+  const stellenzahl = bestand.text;
+  const bestandDaten = bestand;
 
   const legal = [
     { href: "/how-it-works", label: "So funktioniert es" },
@@ -47,68 +69,44 @@ export default async function PublicLayout({ children }: { children: React.React
      * Teilbaum; die Tokens definieren die helle Palette sowohl für
      * `:root` als auch für `[data-theme="light"]`.
      */
+    <BestandProvider genau={bestandDaten.genau} proSekunde={bestandDaten.proSekunde}>
     <div data-theme="light" className="flex min-h-dvh flex-col bg-page text-ink">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
 
-      <header className="sticky top-0 z-40 bg-page/80 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-[1120px] items-center justify-between gap-4 px-5 py-3.5">
-          <Link href="/" className="flex items-center gap-2.5 text-[15px] font-semibold tracking-tight">
-            <span
-              aria-hidden
-              className="grid size-7 place-items-center rounded-(--radius-sm) bg-accent text-accent-on text-xs font-bold"
-            >
-              P
-            </span>
-            {brand.name}
-          </Link>
-          <nav aria-label="Seiten" className="flex items-center gap-1">
-            {user ? (
-              /* Ein Weg zurück, kein Ausloggen. Wer die Hilfe liest,
-                 will danach weitermachen, wo er war. */
-              <Link
-                href="/app"
-                className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
-              >
-                {t("nav.backToApp")}
-              </Link>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="rounded-(--radius-md) px-3.5 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
-                >
-                  {t("auth.login")}
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex h-9 items-center rounded-(--radius-md) bg-accent px-4 text-sm font-medium text-accent-on shadow-sm transition-colors hover:bg-accent-hover"
-                >
-                  {t("auth.register")}
-                </Link>
-              </>
-            )}
-          </nav>
-        </div>
-      </header>
+      {/*
+       * Derselbe Kopf wie in der Anwendung.
+       *
+       * Hier stand ein eigener, kleinerer: anderes Logo, andere Höhe,
+       * andere Wege. Wer aus der Anwendung auf eine Rechtsseite oder
+       * die Hilfe klickte, dem wurde mitten in der Arbeit die ganze
+       * Umgebung ausgetauscht — und er musste zurückfinden.
+       *
+       * `angemeldet` entscheidet nur darüber, was rechts steht: Glocke
+       * und Profil, oder Anmelden und Konto anlegen. Alles andere ist
+       * gleich, bis auf den Pixel.
+       */}
+      <TopNav
+        brandName={brand.name}
+        userName={sitzung.userName}
+        userEmail={sitzung.userEmail}
+        unreadCount={sitzung.unreadCount}
+        stellenzahl={stellenzahl}
+        stellenGenau={bestandDaten.genau}
+        proSekunde={bestandDaten.proSekunde}
+        angemeldet={sitzung.angemeldet}
+        accountMenu={sitzung.accountMenu}
+      />
 
       <main id="inhalt" className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:py-20">
         {children}
       </main>
 
-      <footer className="border-t border-line bg-sunken">
-        <nav
-          aria-label="Rechtliches"
-          className="mx-auto flex w-full max-w-[1120px] flex-wrap gap-x-7 gap-y-3 px-5 py-8 text-sm text-ink-2"
-        >
-          {legal.map((l) => (
-            <Link key={l.href} href={l.href} className="transition-colors hover:text-ink">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-      </footer>
+      {/* Auch der Fuss ist derselbe wie in der Anwendung — mit
+          Märkten, Zahlungsarten, Region und Rechtlichem. */}
+      <VelvovaFooter laender={laender} />
     </div>
+    </BestandProvider>
   );
 }

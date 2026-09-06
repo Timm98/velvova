@@ -4,71 +4,112 @@ import { getPageContext } from "@/lib/locale";
 /**
  * Der Rahmen für Anmelden und Registrieren.
  *
- * Zweigeteilt ab Tablet: links das Formular, rechts eine ruhige Fläche
- * mit einem Satz zur Haltung des Produkts. Keine Sprachumschaltung —
- * die Sprache wird im Onboarding gewählt.
+ * ── Warum hier kein Seitenkopf steht ──────────────────────────
+ *
+ * Auf jeder anderen Seite gilt: derselbe Kopf, überall. Hier nicht,
+ * und das ist keine Ausnahme aus Bequemlichkeit.
+ *
+ * Der Kopf trägt Suche, acht Wege und zwei Knöpfe — er ist dafür
+ * gebaut, dass man sich in einem grossen Angebot bewegt. Wer auf
+ * dieser Seite ist, will genau eine Sache, und jeder Weg daneben ist
+ * ein Angebot, sie nicht zu tun. Einer davon führte sogar zurück auf
+ * die Anmeldung, auf der er schon steht.
+ *
+ * Übrig bleibt der Schriftzug oben — als Absender dessen, wonach hier
+ * gefragt wird — und unten die Rechtsverweise. Beides sind Angaben,
+ * keine Wege.
+ *
+ * ── Warum das Thema nicht mehr festgestellt ist ───────────────
+ *
+ * Hier stand `data-theme="light"` mit der Begründung, diese Seiten
+ * würden von Menschen geöffnet, die das Produkt noch nicht kennen.
+ * Das hebelte die Wahl aus: Wer im Konto auf „dunkel" gestellt hatte,
+ * bekam beim nächsten Anmelden eine weisse Seite.
  */
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const { t, brand } = await getPageContext();
 
   return (
-    /*
-     * Öffentliche Seiten sind immer hell.
-     *
-     * Auch wenn im Konto „dunkel“ steht: Landingpage, Anmeldung und
-     * Registrierung werden von Menschen geöffnet, die das Produkt noch
-     * nicht kennen — meist bei Tageslicht und oft am Telefon. Das
-     * Attribut hier überschreibt die Wahl auf `:root` für genau diesen
-     * Teilbaum; die Tokens definieren die helle Palette sowohl für
-     * `:root` als auch für `[data-theme="light"]`.
-     */
-    <div
-      data-theme="light"
-      className="grid min-h-dvh bg-page text-ink lg:grid-cols-[minmax(0,1fr)_minmax(0,0.85fr)]"
-    >
+    <div className="flex min-h-dvh flex-col bg-page text-ink">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
 
-      <div className="flex flex-col">
-        <header className="px-5 py-5 md:px-10 md:py-7">
-          <Link href="/" className="inline-flex items-center gap-2.5 text-[15px] font-semibold">
-            <span
-              aria-hidden
-              className="grid size-7 place-items-center rounded-(--radius-control) bg-accent text-xs font-bold text-accent-on"
-            >
-              P
-            </span>
-            {brand.name}
+      {/*
+        Der Schriftzug führt zurück zur Startseite.
+
+        Ohne Verweis wäre er eine Sackgasse: Wer sich doch nicht
+        anmelden will, hätte auf dieser Seite keinen Weg zurück ausser
+        der Zurück-Taste.
+      */}
+      {/*
+        Die Abstände sind auf einen Laptop hin gerechnet, nicht auf
+        einen grossen Bildschirm.
+
+        Bei 1280 × 900 — der verbreitetsten Grösse — stand der
+        Anmeldeknopf unter der Falz: Man musste scrollen, um sich
+        anzumelden. Auf einer Seite mit genau einer Aufgabe ist das der
+        schlechteste denkbare Fehler.
+
+        Zusammen mit den engeren Innenabständen der Karte passt jetzt
+        alles ohne Scrollen ins Bild.
+      */}
+      <header className="px-5 pb-2 pt-8 text-center md:pt-10">
+        <Link
+          href="/"
+          className="inline-block rounded-(--radius-sm) font-display text-[28px] font-extrabold tracking-[-0.035em] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-(--primary) md:text-[32px]"
+        >
+          {brand.name}
+        </Link>
+      </header>
+
+      <main id="inhalt" className="flex flex-1 items-start justify-center px-5 py-6 md:py-7">
+        {/*
+          440, nach 600, 480 und 420.
+
+          „Hochkant" ist ein Verhältnis, nicht eine Breite. Die Karte
+          ist 760 Pixel hoch:
+
+            600 breit → 1,27  — liest sich als Quadrat
+            480 breit → 1,58  — hochkant, aber zurückhaltend
+            440 breit → 1,77  — hochkant, ohne zu drängen
+            420 breit → 1,86  — schmaler, aber der Hinweis unten
+                                brach auf zwei Zeilen um
+
+          Weiter nach unten wird es eng: Bei 440 bleiben nach dem
+          Innenabstand 368 Pixel, und darin stehen sechs Codefelder
+          nebeneinander. Bei 380 wären es rund 51 Pixel je Feld
+          inklusive Abständen, und die Ziffern begännen zu drängeln.
+        */}
+        <div className="w-full max-w-[440px]">{children}</div>
+      </main>
+
+      {/*
+        Die Rechtsverweise stehen unten und nicht in der Karte.
+
+        Sie gehören zur Seite, nicht zum Vorgang. In der Karte wären es
+        vier weitere Zeilen zwischen dem Nutzer und dem Knopf, den er
+        drücken will.
+      */}
+      <footer className="px-5 pb-8 pt-5">
+        <nav
+          aria-label="Rechtliches"
+          className="mx-auto flex max-w-[640px] flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-3"
+        >
+          <Link href="/privacy" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+            Datenschutzerklärung
           </Link>
-        </header>
-
-        <main id="inhalt" className="flex flex-1 items-center justify-center px-5 py-8 md:px-10">
-          <div className="w-full max-w-[400px]">{children}</div>
-        </main>
-
-        <footer className="px-5 py-6 text-center text-sm text-ink-3 md:px-10">
-          <Link href="/privacy" className="transition-colors hover:text-ink-2">
-            Datenschutz
+          <Link href="/terms" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+            Nutzungsbedingungen
           </Link>
-        </footer>
-      </div>
-
-      {/* Ruhige Fläche rechts — nur ab großen Bildschirmen */}
-      <aside className="surface-gradient relative hidden border-l border-line lg:flex lg:items-center">
-        <div className="px-12 py-16">
-          <p className="text-2xs font-medium uppercase tracking-[0.16em] text-accent-text">
-            {brand.assistantName}
-          </p>
-          <p className="mt-5 max-w-[24ch] text-3xl font-semibold leading-tight">
-            Erst verstehen, dann suchen.
-          </p>
-          <p className="mt-5 max-w-[38ch] text-base leading-relaxed text-ink-2">
-            Bevor du Stellen siehst, klären wir, was du tatsächlich kannst — anhand konkreter
-            Situationen, nicht anhand von Selbsteinschätzungen.
-          </p>
-        </div>
-      </aside>
+          <Link href="/imprint" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+            Impressum
+          </Link>
+          <Link href="/contact" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+            Kontakt
+          </Link>
+        </nav>
+      </footer>
     </div>
   );
 }

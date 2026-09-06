@@ -2,9 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, Bookmark, BookmarkCheck, FileText, MessageSquare } from "lucide-react";
+import { ArrowUpRight, Bookmark, BookmarkCheck, FileText, MessageSquare, FlaskConical } from "lucide-react";
 import { startApplication, toggleSaveJob } from "@/lib/jobActions";
 import { Button } from "@/components/ui";
+import { StelleAblegen } from "../StelleAblegen";
 
 /**
  * Die Handlungen an einer Stelle.
@@ -47,7 +48,15 @@ export function JobActions({
         {pending ? "Wird vorbereitet …" : labels.prepare}
       </Button>
 
-      <div className="grid grid-cols-2 gap-2.5">
+      {/*
+        Untereinander, sobald es eng wird.
+        
+        Zwei feste Spalten in einer 320 Pixel breiten Seitenspalte
+        ergaben zwei Knöpfe zu je 150 Pixeln — „Mit Nina besprechen"
+        braucht mehr und lief über den Nachbarn. Ein Raster mit
+        Mindestbreite bricht stattdessen um.
+      */}
+      <div className="grid gap-2.5 [grid-template-columns:repeat(auto-fit,minmax(9rem,1fr))]">
         <Button
           type="button"
           variant="secondary"
@@ -83,6 +92,23 @@ export function JobActions({
             {labels.discuss}
           </a>
         </Button>
+
+        {/*
+          Diese Stelle ausprobieren — nicht irgendeine Arbeit.
+
+          Die Adresse trägt die Stellenkennung, und die Aufgabe kommt
+          aus dem Berufsfeld DIESER Anzeige. Vorher gab es nur
+          `/app/proben`, wo sich die Aufgabe nach dem letzten
+          Bewerbungsereignis richtete — und wer noch keines hatte,
+          bekam irgendeine. So kam die Warmwasser-Aufgabe zur
+          Lieferfahrer-Stelle.
+        */}
+        <Button asChild variant="secondary">
+          <a href={`/app/jobs/${jobId}/probe`}>
+            <FlaskConical className="size-4" strokeWidth={1.9} />
+            Job ausprobieren
+          </a>
+        </Button>
       </div>
 
       {/*
@@ -100,6 +126,15 @@ export function JobActions({
         <ArrowUpRight className="size-3.5" strokeWidth={1.9} />
         Was für die Bewerbung gebraucht wird
       </a>
+
+      {/*
+        Ablegen steht unter den Handlungen, nicht neben ihnen.
+        
+        „Passt nicht" ist keine gleichrangige Alternative zu „Bewerbung
+        vorbereiten" — es ist der Ausweg. Als vierter Knopf im Raster
+        stünde es optisch auf einer Stufe mit dem Ziel der Seite.
+      */}
+      <StelleAblegen jobId={jobId} />
 
       {blocked && (
         <p className="text-sm leading-relaxed text-ink-2">

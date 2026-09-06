@@ -1,0 +1,33 @@
+-- Gehaltsbeträge mit Nachkommastellen.
+--
+-- ── Warum die Spalten sich ändern ─────────────────────────────
+--
+-- `salary_min` und `salary_max` waren Ganzzahlen. Für Jahres- und
+-- Monatsgehälter genügt das: „45.000,50 €" schreibt niemand in eine
+-- Anzeige.
+--
+-- Für Stundenlöhne genügt es nicht. Sie sind fast immer krumm — der
+-- gesetzliche Mindestlohn ist 12,82 €, Tariflöhne sind 17,65 € oder
+-- 19,30 €. Beim Import scheiterten solche Anzeigen mit „invalid input
+-- syntax for type integer" und fielen still aus dem Bestand.
+--
+-- Aufgefallen ist das erst, als der Adapter anfing, auch Festbeträge
+-- zu lesen: Vorher kamen aus dieser Quelle nur Spannen, und die waren
+-- zufällig ganzzahlig.
+--
+-- ── Warum `double precision` und nicht `numeric` ──────────────
+--
+-- `numeric` wäre die lehrbuchmässige Wahl für Geld. Der Treiber
+-- liefert sie aber als Zeichenkette, und diese Werte werden an 65
+-- Stellen als Zahl gelesen und gerechnet. Jede davon müsste eine
+-- Umwandlung bekommen, und jede vergessene wäre ein stiller Fehler.
+--
+-- Hier geht es nicht um Buchhaltung, sondern um eine Anzeige und um
+-- Vergleiche. Bei diesen Grössenordnungen ist die Ungenauigkeit einer
+-- Gleitkommazahl kleiner als ein tausendstel Cent und nach dem
+-- Formatieren nicht vorhanden. `weekly_hours` und die Koordinaten
+-- stehen aus demselben Grund schon so da.
+
+ALTER TABLE jobs ALTER COLUMN salary_min TYPE double precision
+--> statement-breakpoint
+ALTER TABLE jobs ALTER COLUMN salary_max TYPE double precision

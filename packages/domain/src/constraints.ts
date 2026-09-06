@@ -26,7 +26,27 @@ export const UserConstraintsSchema = z.object({
   salaryTradeOffs: z.array(z.string()).default([]),
 
   baseLocation: z.string().nullable(),
-  country: z.string().length(2).default("DE"),
+  /**
+   * Das Land, in dem gesucht wird — oder `null`.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum hier keine Vorgabe mehr steht
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Es stand `.default("DE")`. Das sah harmlos aus und war eine
+   * stille Entscheidung über jeden, der nie ein Land eingetragen hat:
+   * Gemessen am 6. September 2026 hatten 998 von 1.024 Konten keine
+   * eigene Bedingungszeile — sie alle bekamen ausschliesslich
+   * deutsche Stellen, ohne es zu erfahren.
+   *
+   * Für jemanden in Wien oder Zürich ist das keine Voreinstellung,
+   * sondern ein leerer Arbeitsmarkt mit falscher Erklärung.
+   *
+   * `null` heisst jetzt: nicht gesagt. Die Suche schränkt dann nicht
+   * ein — und Nina fragt, sobald es einen Anlass gibt. Eine offene
+   * Frage ist ehrlicher als eine geratene Antwort.
+   */
+  country: z.string().length(2).nullable().default(null),
   maxCommuteMinutes: z.number().int().positive().nullable(),
   commuteMode: CommuteModeSchema.default("public_transport"),
   acceptedWorkModels: z.array(WorkModelSchema).default(["on_site", "hybrid", "remote"]),
@@ -49,6 +69,45 @@ export const UserConstraintsSchema = z.object({
   earliestStartDate: z.date().nullable().default(null),
   /** Frei formulierte Ausschlüsse, z. B. "reine Kaltakquise". */
   hardNoGos: z.array(z.string()).default([]),
+
+  /**
+   * Was mit Stellen geschehen soll, bei denen eine Bedingung offen ist.
+   *
+   * Der Fall ist häufiger als der klare: eine Bedingung „mindestens
+   * 45.000" trifft auf eine Anzeige ohne Gehaltsangabe. Die Stelle
+   * verletzt die Bedingung nicht — sie sagt nichts dazu.
+   *
+   * Bisher rutschten diese Stellen stillschweigend in die Haupttreffer
+   * und sahen dort aus wie geprüft. Jetzt ist es eine Entscheidung:
+   *
+   *   mitzeigen  die Voreinstellung. In den Haupttreffern, aber an
+   *              jeder Zeile steht, was offen ist.
+   *   getrennt   in einem eigenen Abschnitt. Für alle, die ihre
+   *              Bedingungen streng gelesen haben wollen.
+   *   ausblenden gar nicht. Nur belegt erfüllte Stellen.
+   *
+   * ── Warum die Voreinstellung „mitzeigen" ist ─────────────────
+   *
+   * Sie war zuerst „getrennt", und das war falsch — nicht in der
+   * Absicht, sondern in der Folge. Gemessen an echten Daten: von 100
+   * aktiven Stellen erfüllten bei einer Person mit Gehaltsuntergrenze
+   * NULL die Bedingungen belegt. Nicht weil die Stellen schlecht
+   * wären, sondern weil deutsche Anzeigen selten ein Gehalt nennen.
+   * Die Hauptliste war leer, und darunter standen hundert Stellen im
+   * Abschnitt „hier ist etwas offen".
+   *
+   * Eine Anwendung, die einer Person mit einer völlig normalen
+   * Bedingung eine leere Liste zeigt, ist nicht streng, sondern
+   * kaputt. Und sie erzieht dazu, die Bedingung wieder zu löschen.
+   *
+   * Der Missstand, um den es eigentlich ging, war nie die Platzierung,
+   * sondern die Behauptung: eine offene Angabe sah aus wie eine
+   * geprüfte. Das ist jetzt an der Stelle gelöst, an der es entsteht —
+   * jede Zeile und jede Detailseite sagt „steht nicht in der Anzeige".
+   * Unbekannt gilt nirgends als erfüllt; es steht nur nicht in einem
+   * eigenen Zimmer.
+   */
+  unklaresBehandeln: z.enum(["ausblenden", "getrennt", "mitzeigen"]).default("mitzeigen"),
 });
 export type UserConstraints = z.infer<typeof UserConstraintsSchema>;
 

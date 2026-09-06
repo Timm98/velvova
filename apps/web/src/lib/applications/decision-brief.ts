@@ -78,7 +78,11 @@ export function buildDecisionBrief(input: {
   });
 
   const preflight = buildPreflight({
-    description: job.description,
+    // Der Entscheidungsbericht entsteht immer für eine geöffnete Stelle,
+    // und die kommt aus `loadScoredJob` — mit Text. Das `?? ""` ist die
+    // Absicherung für den Fall, dass jemand ihn später aus der Liste
+    // heraus aufruft: dann fehlen Hinweise, statt dass es abstürzt.
+    description: job.description ?? "",
     userConstraints: input.userConstraints,
   });
 
@@ -104,7 +108,7 @@ export function buildDecisionBrief(input: {
   if (effort.level === "hoch") {
     catches.push(`Die Bewerbung kostet viel Zeit (${effort.minutesMin}–${effort.minutesMax} Min.).`);
   }
-  if (scored.scam.level === "additional_verification_recommended") {
+  if (scored.scam?.level === "additional_verification_recommended") {
     catches.push(scored.scam.summary);
   }
 

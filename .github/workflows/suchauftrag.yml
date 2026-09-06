@@ -1,0 +1,106 @@
+name: Suchauftrag
+
+# ─────────────────────────────────────────────────────────────
+# Der Zeitplan für „Nina sucht für dich weiter".
+#
+# Ruft `POST /api/intern/suchauftrag` auf der laufenden Anwendung auf.
+# Die Arbeit passiert dort — nur der Server hat die Datenbank und die
+# Zugangsdaten. Diese Datei ist der Wecker.
+#
+# ── Warum stündlich ──────────────────────────────────────────
+#
+# Weil „08:00" die Ortszeit der Person ist. Ein einzelner nächtlicher
+# Lauf träfe das Fenster für Mitteleuropa und für sonst niemanden.
+#
+# Doppelt zu laufen schadet nicht: Der Fensterschlüssel ist in der
+# Datenbank eindeutig. Zwei Läufe im selben Fenster erzeugen eine
+# Zusammenfassung, nicht zwei.
+#
+# ── Zwei Secrets, dieselben wie beim Stellenabruf ────────────
+#
+#   PAYCHECK_BASE_URL      Adresse der Anwendung, ohne Schrägstrich
+#   JOBS_REFRESH_SECRET    derselbe Wert wie in der Serverumgebung
+#
+# Fehlt eines, überspringt sich der Lauf mit einer Meldung, statt rot
+# zu blinken. Ein Zeitplan, dessen einzige Aussage „noch nicht
+# eingerichtet" lautet, wird nach einer Woche ignoriert — und dann
+# fällt auch der echte Fehlschlag niemandem mehr auf.
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # Zur Minute 7 — zur vollen Stunde starten sehr viele Zeitpläne
+    # gleichzeitig, und die Datenbank merkt das.
+    - cron: "7 * * * *"
+  workflow_dispatch:
+    inputs:
+      trocken:
+        description: "Nur vorbereiten, nichts versenden"
+        type: boolean
+        required: false
+        default: false
+      stapel:
+        description: "Höchstzahl Aufträge je Lauf"
+        required: false
+        default: "20"
+
+# Zwei gleichzeitige Läufe würden dieselben Aufträge greifen. Die
+# Datenbank fängt das ab; trotzdem ist der zweite Lauf verschwendete
+# Zeit und erzeugt verwirrende Protokolle.
+concurrency:
+  group: suchauftrag
+  cancel-in-progress: false
+
+jobs:
+  lauf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Einrichtung prüfen
+        id: pruefung
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "bereit=nein" >> "$GITHUB_OUTPUT"
+            echo "::notice::Übersprungen: PAYCHECK_BASE_URL und/oder JOBS_REFRESH_SECRET sind nicht gesetzt."
+          else
+            echo "bereit=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Suchaufträge abarbeiten
+        if: steps.pruefung.outputs.bereit == 'ja'
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+          TROCKEN: ${{ github.event.inputs.trocken == 'true' && '1' || '0' }}
+          STAPEL: ${{ github.event.inputs.stapel || '20' }}
+        run: |
+          set -euo pipefail
+
+          # `--fail-with-body`: bei 4xx/5xx scheitern, aber die Antwort
+          # trotzdem zeigen. Ohne sie steht im Protokoll nur ein
+          # Statuscode, und die Begründung des Servers geht verloren.
+          antwort=$(curl --fail-with-body -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 300 \
+            "$BASIS/api/intern/suchauftrag?trocken=$TROCKEN&stapel=$STAPEL")
+
+          echo "$antwort" | head -c 4000
+
+          {
+            echo "### Suchaufträge"
+            echo ""
+            echo '```json'
+            echo "$antwort" | head -c 3000
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Ungewisse Sendungen gehören auf die Übersichtsseite, nicht
+          # in eine aufgeklappte Protokollzeile: Sie sind der einzige
+          # Zustand, den kein Wiederholungslauf auflöst.
+          if echo "$antwort" | grep -q '"ungewiss":[1-9]'; then
+            echo "::warning::Sendungen mit ungewissem Ausgang. Nicht erneut senden — über Webhook oder Anbieter klären."
+          fi

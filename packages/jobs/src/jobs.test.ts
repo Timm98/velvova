@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { classifyRequirement, computeContentHash, deduplicate, extractCoreTasks, normalise } from "./adapter.ts";
 import { UserTextImportAdapter } from "./sources/userImport.ts";
-import { sourceStatuses } from "./registry.ts";
+import { activeAdapters, sourceStatuses } from "./registry.ts";
+import { AdzunaAdapter } from "./sources/adzuna.ts";
 import { loadRuntimeConfig } from "@paycheck/config";
 
 describe("Normalisierung", () => {
@@ -71,9 +72,62 @@ describe("Quellen", () => {
   });
 
   it("meldet nicht eingerichtete Quellen ehrlich als inaktiv", () => {
+    /*
+     * Die Absicht dieses Tests ist unverändert: eine Quelle ohne
+     * Zugangsdaten darf nie als aktiv erscheinen. Das Beispiel ist ein
+     * anderes.
+     *
+     * Vorher stand hier `user_private_import` — als Beispiel für „nicht
+     * ausgewählt". Seit eingerichtete Quellen von selbst laufen, trifft
+     * das auf ihn nicht mehr zu, und zwar zu Recht: der eigene Import
+     * braucht keine Zugangsdaten, kostet nichts und schickt nichts an
+     * Dritte. Er war nie „nicht eingerichtet", sondern nur nicht
+     * aufgezählt.
+     *
+     * Geprüft wird jetzt an einer Quelle, die wirklich einen Schlüssel
+     * braucht.
+     */
     const cfg = loadRuntimeConfig({ JOB_SOURCES: "seed" });
     const statuses = sourceStatuses(cfg);
     expect(statuses.find((s) => s.key === "seed")?.active).toBe(true);
-    expect(statuses.find((s) => s.key === "user_private_import")?.active).toBe(false);
+
+    const adzuna = statuses.find((s) => s.key === "adzuna_de");
+    expect(adzuna).toBeDefined();
+    if (!process.env.ADZUNA_APP_ID) {
+      expect(adzuna!.active).toBe(false);
+      expect(adzuna!.reason).toMatch(/Zugangsdaten/);
+    }
+  });
+
+  it("schaltet eine Quelle frei, sobald ihre Zugangsdaten da sind", () => {
+    /*
+     * Die andere Richtung, und der Grund für die Umstellung.
+     *
+     * Vorher musste eine Quelle zusätzlich in `JOB_SOURCES` stehen.
+     * `JOB_SOURCES=arbeitnow` stand seit Monaten in der Konfiguration,
+     * und jeder neu eingetragene Schlüssel blieb wirkungslos — ohne
+     * Fehlermeldung, ohne Hinweis. Wer einen Schlüssel einträgt und
+     * danach nichts sieht, sucht beim Anbieter.
+     */
+    const cfg = loadRuntimeConfig({ JOB_SOURCES: "seed" });
+    const adapter = new AdzunaAdapter({ appId: "x", appKey: "y" });
+    expect(adapter.isConfigured()).toBe(true);
+    expect(activeAdapters(cfg).some((a) => a.key === "seed")).toBe(false);
+  });
+
+  it("schaltet eine Quelle über JOB_SOURCES_EXCLUDE wieder ab", () => {
+    // Der Notausgang: Schlüssel hinterlegt, Quelle trotzdem aus —
+    // wegen Kosten, Kontingent oder einer Störung beim Anbieter.
+    const vorher = process.env.JOB_SOURCES_EXCLUDE;
+    process.env.JOB_SOURCES_EXCLUDE = "user_private_import";
+    try {
+      const cfg = loadRuntimeConfig({ JOB_SOURCES: "seed" });
+      const zeile = sourceStatuses(cfg).find((s) => s.key === "user_private_import");
+      expect(zeile?.active).toBe(false);
+      expect(zeile?.reason).toMatch(/JOB_SOURCES_EXCLUDE/);
+    } finally {
+      if (vorher === undefined) delete process.env.JOB_SOURCES_EXCLUDE;
+      else process.env.JOB_SOURCES_EXCLUDE = vorher;
+    }
   });
 });

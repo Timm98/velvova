@@ -4,13 +4,15 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
-import { listSessions, requireUser } from "@/lib/auth";
+import { kennung, listSessions, requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { Input, Row, RowGroup } from "@/components/ui";
 import { Section } from "@/components/ui/states";
 import { DeviceList } from "./SettingsClient";
 import { SaveButton } from "./SettingsForm";
 import { updateDisplayName } from "@/lib/account";
+import { Profilbild } from "@/components/shell/Profilbild";
+import { profilbildKennung } from "@/lib/profilbild-kennung";
 
 export const metadata: Metadata = { title: "Konto" };
 export const dynamic = "force-dynamic";
@@ -75,6 +77,10 @@ export default async function AccountSettingsPage() {
 
   return (
     <div className="grid gap-10">
+      {/* Das Bild steht vor dem Namen: Es ist die Angabe, die man
+          zuerst sucht, wenn man sein Konto einrichtet. */}
+      <Profilbild bildKennung={profilbildKennung(settings?.avatarPfad)} name={user.displayName ?? kennung(user)} />
+
       <form action={updateDisplayName}>
         <Section
           title="Wie sollen wir dich ansprechen?"
@@ -93,8 +99,18 @@ export default async function AccountSettingsPage() {
 
             <label className="grid gap-2">
               <span className="text-sm font-medium">E-Mail</span>
-              <Input value={user.email} readOnly disabled />
-              <span className="text-xs text-ink-3">Die Anmeldeadresse. Änderung folgt.</span>
+              <Input value={user.email ?? ""} readOnly disabled />
+              {/*
+                Ein Konto aus der SMS-Anmeldung hat keine Adresse. Das
+                Feld leer zu lassen wäre richtig, aber nicht erklärt —
+                der Satz darunter sagt, warum es leer ist und was
+                stattdessen die Kennung ist.
+              */}
+              <span className="text-xs text-ink-3">
+                {user.email
+                  ? "Die Anmeldeadresse. Änderung folgt."
+                  : `Noch keine Adresse hinterlegt. Angemeldet über ${user.phone ?? "eine Telefonnummer"}.`}
+              </span>
             </label>
           </div>
 

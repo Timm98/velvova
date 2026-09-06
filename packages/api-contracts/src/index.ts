@@ -88,7 +88,7 @@ export const ROUTES: RouteContract[] = [
 ];
 
 /** Erzeugt eine OpenAPI-Beschreibung aus denselben Schemata. */
-export function toOpenApi(brandName = "Paycheck"): Record<string, unknown> {
+export function toOpenApi(brandName = "Velvova"): Record<string, unknown> {
   const paths: Record<string, Record<string, unknown>> = {};
 
   for (const route of ROUTES) {

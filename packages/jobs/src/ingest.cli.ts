@@ -1,5 +1,22 @@
+/*
+ * Zuerst die Umgebung, dann alles andere.
+ *
+ * Diese Zeile muss VOR jedem Import stehen, der Konfiguration liest.
+ * `loadRuntimeConfig()` wertet `process.env` beim Aufruf aus — wird die
+ * Datei erst danach geladen, ist die Konfiguration schon gebildet, und
+ * zwar aus einer leeren Umgebung.
+ *
+ * Was ohne diese Zeile geschah: der Lauf sah keinen einzigen Schlüssel,
+ * übersprang jede Quelle, die einen braucht, und schrieb seine
+ * Ergebnisse mangels `DATABASE_URL` in die eingebettete Datenbank statt
+ * nach Supabase. Gemeldet wurde „10 neu · 0 fehlerhaft".
+ */
+import { ladeEnvDatei } from "@paycheck/config/node";
+const env = ladeEnvDatei();
+
 import { loadRuntimeConfig } from "@paycheck/config";
 import { activeAdapters, sourceStatuses } from "./registry.ts";
+import { berufsabfragen } from "./berufsabfragen.ts";
 import { ingestFromAdapter } from "./ingest.ts";
 
 /**
@@ -28,9 +45,54 @@ import { ingestFromAdapter } from "./ingest.ts";
  * losläuft, wird schnell zur Belästigung der Quelle.
  */
 
-const limitJeQuelle = Number(process.argv[2] ?? 1000);
+/*
+ * Ein unbrauchbares Limit bricht den Lauf ab, statt still nichts zu holen.
+ *
+ * `Number("--source")` ist NaN, und `slice(0, NaN)` ist die leere
+ * Liste. Ein Aufruf mit einem Schalter, den es hier nie gab, lief
+ * deshalb durch alle 28 Quellen, meldete überall „geholt 0" und
+ * endete ohne Fehler — nicht von einem Lauf zu unterscheiden, bei
+ * dem es tatsächlich nichts Neues gab. Genau diese Verwechslung
+ * kostet die Zeit, die eine Ernte einsparen soll.
+ */
+const limitArg = process.argv[2];
+const limitJeQuelle = limitArg === undefined ? 1000 : Number(limitArg);
+if (!Number.isInteger(limitJeQuelle) || limitJeQuelle < 1) {
+  console.error(
+    `Unbrauchbares Limit ${JSON.stringify(limitArg)}. ` +
+      "Erwartet wird eine ganze Zahl ab 1 als erstes Argument, sonst nichts. " +
+      "Beispiel: pnpm jobs:refresh 250",
+  );
+  process.exit(1);
+}
 const cfg = loadRuntimeConfig();
-const adapters = activeAdapters(cfg);
+
+/*
+ * Der Suchwortschatz kommt aus der Datenbank, nicht aus dem Code.
+ *
+ * Ohne ihn sucht die Jobbörse mit fünf fest eingetragenen Begriffen —
+ * und liefert 327 Anzeigen aus einem Bestand von 999.398. Die
+ * amtlichen Berufsbezeichnungen in `beruf_zuordnung` sind ihr eigenes
+ * Vokabular; danach zu suchen findet, was es gibt.
+ */
+const berufe = await berufsabfragen().catch(() => []);
+if (berufe.length > 0) {
+  console.log(`Suchwortschatz: ${berufe.length} amtliche Berufsbezeichnungen.`);
+}
+const adapters = activeAdapters(cfg, { berufe });
+
+/*
+ * Wohin geschrieben wird, steht vor dem Lauf da.
+ *
+ * Der Lauf, der still in die eingebettete Datenbank schrieb, meldete
+ * „10 neu" und sah erfolgreich aus. Die Zeile hier hätte ihn in einer
+ * Sekunde entlarvt.
+ */
+const cfgJetzt = loadRuntimeConfig();
+console.log(
+  `Umgebung: ${env.geladen ? ".env.local geladen" : "keine .env.local — nur Systemumgebung"} · ` +
+    `Datenbank: ${cfgJetzt.db.driver === "pg" ? "Postgres (extern)" : "PGlite (lokale Datei)"}\n`,
+);
 
 console.log("── Quellenlage ──");
 for (const s of sourceStatuses(cfg)) {

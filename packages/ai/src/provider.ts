@@ -28,6 +28,29 @@ export interface ChatOptions {
    *   fast         Klassifikation, Extraktion, Normalisierung.
    */
   tier?: "interactive" | "deep" | "fast";
+  /**
+   * Wie lange dieser eine Aufruf dauern darf.
+   *
+   * Ohne Angabe gilt der Wert der Stufe. Ein Stapelaufruf, der fünf
+   * Kandidaten in einem Durchgang beurteilt, ist auch mit einem
+   * schnellen Modell eine grosse Aufgabe — die Stufe sagt nichts
+   * darüber, wie viel zu lesen ist.
+   */
+  timeoutMs?: number;
+  /**
+   * Ein bestimmtes Modell statt des Stufenmodells.
+   *
+   * ── Warum es diese Ausnahme gibt ────────────────────────────
+   *
+   * Für die zweite Meinung. Sie läuft mit dem Ultra-Modell, und der
+   * Anbieter kennt keine Ultra-Stufe — er kennt `fast`, `interactive`
+   * und `deep`.
+   *
+   * Es ist ausdrücklich eine Ausnahme: Wer hier einen Namen einträgt,
+   * umgeht die Stufenzuordnung. Genau eine Stelle im Projekt tut das,
+   * und sie steht in `tiefeAnalyse`.
+   */
+  modell?: string;
   signal?: AbortSignal;
 }
 

@@ -68,12 +68,12 @@
    * mit 4,39 und 3,53 durch. Genau dort steht die kleine Schrift, bei
    * der ein zu heller Ton am wenigsten auffällt und am meisten schadet.
    */
-  --text-secondary: #616a7b;
+  --text-secondary: #4a5261;
   /* Aufgehellt wirkt „muted" wie Nebensache — und genau deshalb steht
      dort oft etwas, das man lesen muss. #9299A8 aus der Vorgabe erreicht
      2,50:1 auf der Lavendelfläche. Der Ton bleibt zurückhaltend, aber
      lesbar. */
-  --text-tertiary: #666a75;
+  --text-tertiary: #535863;
   --text-on-primary: #ffffff;
 
   /* Linien gibt es noch — für Tabellen, Trennungen in dichten Listen
@@ -82,14 +82,26 @@
   --border-subtle: rgba(11, 14, 22, 0.07);
   --border-strong: rgba(11, 14, 22, 0.13);
 
-  --primary: #655dff;
-  --primary-fill: #655dff;
-  --primary-strong: #4f47e8;
-  --primary-soft: #eae8ff;
+  --primary: #2E6FF2;
+  --primary-fill: #2E6FF2;
+  --primary-strong: #2159cf;
+  --primary-soft: #e6eefe;
   /* 4,53:1 auf der ungünstigsten Fläche (Soft Lavender). Der Markenton
      selbst liegt dort bei 4,13 und trägt deshalb Flächen, aber keine
      Schrift. */
-  --primary-text: #5a53ea;
+  /*
+   * Bleibt bewusst dunkler als die Füllfarbe.
+   *
+   * Die Aufhellung des Blaus zog erst auch diesen Wert mit — und der
+   * Kontrasttest schlug an: Auf der weichen Fläche und auf Lavendel
+   * kam er auf 4,37 und 4,16 gegen die geforderten 4,5. Genau dort
+   * steht die kleine Schrift, bei der ein zu heller Ton am wenigsten
+   * auffällt und am meisten schadet.
+   *
+   * Fläche und Schrift dürfen sich unterscheiden: Ein Knopf trägt die
+   * Farbe, ein Satz trägt sie nicht.
+   */
+  --primary-text: #1d54c9;
 
   --signal-cyan: #b9d8ff;
   --signal-cyan-text: #0e7290;
@@ -222,29 +234,56 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --background: #0a0c14;
-  --background-subtle: #0d1019;
-  --surface-1: #12151f;
-  --surface-2: #171b27;
-  --surface-3: #1e2331;
-  --surface-glass: rgba(18, 21, 31, 0.8);
+  /*
+   * Marineblau statt Neutralgrau.
+   *
+   * Vorher war der dunkle Modus fast schwarz mit einem Hauch Blau
+   * (#0a0c14). Das ist die sichere Wahl und die anonyme zugleich: Es
+   * sieht aus wie jeder dunkle Modus. Der Auftrag nennt Chrono24 als
+   * Vorbild, und dort trägt ein tiefes Marineblau die Fläche.
+   *
+   * Der Ton ist derselbe wie im hellen Modus, nur zu Ende gedacht:
+   * Die Primärfarbe ist ein Blauviolett, und ein blauer Grund lässt
+   * sie als Teil derselben Familie erscheinen statt als Farbfleck auf
+   * Grau. Der Farbton bleibt über alle Stufen gleich (rund 220°), nur
+   * Helligkeit und Sättigung steigen — deshalb wirken die Ebenen wie
+   * Schichten desselben Materials und nicht wie fünf Grautöne.
+   */
+  --background: #070d1a;
+  --background-subtle: #0f1c33;
+  --surface-1: #0e1729;
+  --surface-2: #131e34;
+  --surface-3: #1b2842;
+  --surface-glass: rgba(14, 23, 41, 0.82);
 
-  --surface-soft: #171b27;
-  --surface-soft-hover: #1e2331;
+  --surface-soft: #131e34;
+  --surface-soft-hover: #1b2842;
 
   --text-primary: #f7f8fc;
-  --text-secondary: #a8b0c2;
-  --text-tertiary: #8b93a6;
-  --text-on-primary: #0a0c14;
+  --text-secondary: #dfe4ee;
+  --text-tertiary: #c2c9d6;
+  --text-on-primary: #070d1a;
 
   --border-subtle: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.14);
 
-  --primary: #8b82ff;
-  --primary-fill: #7169ff;
-  --primary-strong: #625cff;
-  --primary-soft: rgba(139, 130, 255, 0.16);
-  --primary-text: #a9a3ff;
+  /*
+   * Dasselbe Blau wie im hellen Modus.
+   *
+   * Hier standen eigene, hellere Werte (#9b93ff / #8078ff) — die
+   * übliche Anpassung, damit eine Farbe auf dunklem Grund nicht
+   * absäuft. Sichtbar war davon aber vor allem eines: Beim Umschalten
+   * wechselte die Marke ihren Ton. Ein Produkt hat eine Farbe, nicht
+   * zwei ähnliche.
+   *
+   * Auf dem tiefen Marineblau trägt #7169ff, weil der Grund selbst
+   * blau ist und nicht grau — die beiden gehören zur selben Familie.
+   */
+  --primary: #4d88ff;
+  --primary-fill: #2E6FF2;
+  --primary-strong: #4a86ff;
+  --primary-soft: rgba(46, 111, 242, 0.24);
+  --primary-text: #8fb6ff;
 
   --signal-cyan: #7ee2ff;
   --signal-cyan-text: #7ee2ff;
@@ -282,8 +321,8 @@
   --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
   --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);
 
-  --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
-  --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
+  --wash-lavender: linear-gradient(180deg, #0e1729 0%, rgba(139, 130, 255, 0.14) 100%);
+  --wash-ice: linear-gradient(180deg, #0e1729 0%, rgba(126, 226, 255, 0.12) 100%);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -310,28 +349,28 @@
   :root[data-theme-mode="system"] {
     color-scheme: dark;
 
-    --background: #0a0c14;
-    --background-subtle: #0d1019;
-    --surface-1: #12151f;
-    --surface-2: #171b27;
-    --surface-3: #1e2331;
-    --surface-glass: rgba(18, 21, 31, 0.8);
-    --surface-soft: #171b27;
-    --surface-soft-hover: #1e2331;
+    --background: #070d1a;
+    --background-subtle: #0f1c33;
+    --surface-1: #0e1729;
+    --surface-2: #131e34;
+    --surface-3: #1b2842;
+    --surface-glass: rgba(14, 23, 41, 0.82);
+    --surface-soft: #131e34;
+    --surface-soft-hover: #1b2842;
 
     --text-primary: #f7f8fc;
-    --text-secondary: #a8b0c2;
-    --text-tertiary: #8b93a6;
-    --text-on-primary: #0a0c14;
+    --text-secondary: #dfe4ee;
+    --text-tertiary: #c2c9d6;
+    --text-on-primary: #070d1a;
 
     --border-subtle: rgba(255, 255, 255, 0.07);
     --border-strong: rgba(255, 255, 255, 0.14);
 
-    --primary: #8b82ff;
-    --primary-fill: #7169ff;
-    --primary-strong: #625cff;
-    --primary-soft: rgba(139, 130, 255, 0.16);
-    --primary-text: #a9a3ff;
+    --primary: #4d88ff;
+    --primary-fill: #2E6FF2;
+    --primary-strong: #4a86ff;
+    --primary-soft: rgba(46, 111, 242, 0.24);
+    --primary-text: #8fb6ff;
 
     --signal-cyan: #7ee2ff;
     --signal-cyan-text: #7ee2ff;
@@ -369,8 +408,8 @@
   --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
   --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);
 
-  --wash-lavender: linear-gradient(180deg, #12151f 0%, rgba(139, 130, 255, 0.14) 100%);
-    --wash-ice: linear-gradient(180deg, #12151f 0%, rgba(126, 226, 255, 0.12) 100%);
+  --wash-lavender: linear-gradient(180deg, #0e1729 0%, rgba(139, 130, 255, 0.14) 100%);
+    --wash-ice: linear-gradient(180deg, #0e1729 0%, rgba(126, 226, 255, 0.12) 100%);
 
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -437,8 +476,19 @@
 
   /* Farbe ist Signal, keine Fläche. Diese drei tauchen als Linie, als
      Punkt und als Verlauf auf — nie als grosser gefüllter Block. */
-  --ed-violet: #635bff;
-  --ed-violet-text: #4b41d6;
+  /*
+   * Kein Violett mehr — dasselbe Blau wie überall sonst.
+   *
+   * Die Startseite hatte eine eigene Akzentfarbe aus der Zeit, als das
+   * Produkt violett war. Sie fiel erst auf, als die Zahl in der
+   * Überschrift neben einem blauen Knopf stand: zwei Akzente auf einem
+   * Bildschirm, und keiner davon falsch genug, um es sofort zu sehen.
+   *
+   * Die Namen bleiben (`--ed-violet`), weil sie an 40 Stellen stehen;
+   * ein Umbenennen wäre eine Änderung ohne Wirkung.
+   */
+  --ed-violet: #2E6FF2;
+  --ed-violet-text: #1d54c9;
   --ed-ice: #55d8ff;
   --ed-mint: #70f0c1;
   --ed-violet-soft: #f0eeff;
@@ -486,8 +536,8 @@
   --ed-hairline: rgba(255, 255, 255, 0.1);
   --ed-hairline-strong: rgba(255, 255, 255, 0.18);
 
-  --ed-violet: #8b83ff;
-  --ed-violet-text: #a9a3ff;
+  --ed-violet: #2E6FF2;
+  --ed-violet-text: #8fb6ff;
   --ed-ice: #7ee2ff;
   --ed-mint: #8ff5d3;
   --ed-violet-soft: rgba(102, 92, 255, 0.16);
@@ -509,8 +559,8 @@
     --ed-ink-3: #7e8899;
     --ed-hairline: rgba(255, 255, 255, 0.1);
     --ed-hairline-strong: rgba(255, 255, 255, 0.18);
-    --ed-violet: #8b83ff;
-    --ed-violet-text: #a9a3ff;
+    --ed-violet: #2E6FF2;
+    --ed-violet-text: #8fb6ff;
     --ed-ice: #7ee2ff;
     --ed-mint: #8ff5d3;
     --ed-violet-soft: rgba(102, 92, 255, 0.16);

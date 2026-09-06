@@ -1,0 +1,18 @@
+import { chromium } from "@playwright/test";
+const BASIS = "http://localhost:3000";
+const b = await chromium.launch();
+const s = await b.newPage({ baseURL: BASIS });
+await s.goto(`${BASIS}/register`);
+await s.getByLabel("E-Mail-Adresse").fill(`e2e-blick-${Date.now()}@example.invalid`);
+await s.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!");
+await s.getByRole("button", { name: /Konto anlegen/i }).click();
+await s.waitForURL(/\/(app|setup)/, { timeout: 45000 });
+await s.goto(`${BASIS}/app/zusagen`);
+await s.waitForLoadState("networkidle");
+console.log("zusagen →", s.url());
+console.log((await s.locator("main").innerText()).slice(0, 260).replace(/\n+/g, " / "));
+await s.context().clearCookies();
+await s.goto(`${BASIS}/login`);
+console.log("\nlogin →", s.url());
+console.log((await s.locator("body").innerText()).slice(0, 120).replace(/\n+/g, " / "));
+await b.close();

@@ -132,10 +132,23 @@ describe("AdzunaAdapter", () => {
     ).rejects.toThrow(/nicht eingerichtet/);
   });
 
-  it("übernimmt ein geschätztes Gehalt nicht als offengelegt", async () => {
-    // Der entscheidende Punkt: Adzuna kennzeichnet Schaetzungen. Eine
-    // Schaetzung, die wie eine Zusage aussieht, ist schlimmer als keine
-    // Angabe.
+  it("behält ein geschätztes Gehalt, ohne es als Zusage auszugeben", async () => {
+    /*
+     * Adzuna kennzeichnet Schätzungen. Eine Schätzung, die wie eine
+     * Zusage aussieht, ist schlimmer als keine Angabe — dieses Prinzip
+     * stand hier von Anfang an und gilt weiter.
+     *
+     * Die frühere Antwort darauf war, den Betrag wegzuwerfen. Damit
+     * standen 83 Adzuna-Stellen ohne jede Gehaltsangabe im Produkt,
+     * obwohl eine brauchbare Grössenordnung vorlag. Der Kommentar im
+     * Adapter behauptete, die Schätzung werde „in der Oberfläche als
+     * solche ausgewiesen" — diesen Anzeigepfad gab es nie.
+     *
+     * Jetzt bleibt der Betrag, trägt aber `board_estimate` und gilt
+     * NICHT als offengelegt. Beides zusammen erfüllt das Prinzip
+     * besser als das Wegwerfen: Die Zahl ist da, und sie behauptet
+     * nichts über den Arbeitgeber.
+     */
     const fetchImpl = (async () =>
       new Response(
         JSON.stringify({
@@ -163,12 +176,17 @@ describe("AdzunaAdapter", () => {
       fetchImpl,
     }).fetchListings();
 
-    expect(raw?.salaryMin).toBeNull();
-    expect(raw?.salaryMax).toBeNull();
+    expect(raw?.salaryMin).toBe(42000);
+    expect(raw?.salaryMax).toBe(52000);
+    expect(raw?.salaryProvenance).toBe("board_estimate");
     expect(raw?.raw?.salaryIsPredicted).toBe(true);
 
     const n = normalise(raw!);
+    // Der Betrag ist da …
+    expect(n.job.salary.min).toBe(42000);
+    // … und gilt trotzdem nicht als Angabe des Arbeitgebers.
     expect(n.job.salary.disclosed).toBe(false);
+    expect(n.job.salary.provenance).toBe("board_estimate");
   });
 });
 

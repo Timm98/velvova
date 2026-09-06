@@ -34,6 +34,9 @@ export function SaveJobButton({
       size="sm"
       full={full}
       aria-pressed={saved}
+      /* Der Zustand steht im Symbol und in `aria-pressed`, nicht im
+         Text. Siehe unten. */
+      aria-label={saved ? labels.saved : labels.save}
       disabled={pending}
       onClick={() => {
         setSaved((v) => !v);
@@ -48,7 +51,19 @@ export function SaveJobButton({
       ) : (
         <Bookmark className="size-4" strokeWidth={1.9} />
       )}
-      {saved ? labels.saved : labels.save}
+      {/*
+        Immer „Speichern", nie „Gespeichert".
+        
+        Der Wechsel der Beschriftung liess den Knopf beim Anklicken die
+        Breite ändern und die Nachbarn springen. Vor allem aber ist
+        „Gespeichert" eine Zustandsmeldung auf einem Knopf — also an
+        der Stelle, an der man liest, was beim Drücken passiert.
+        
+        Der Zustand steht deshalb im Symbol: gefülltes Lesezeichen in
+        Akzentfarbe heisst gemerkt. Für Screenreader trägt ihn
+        `aria-pressed` und die Beschriftung oben.
+      */}
+      {labels.save}
     </Button>
   );
 }

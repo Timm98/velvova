@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { requireUser } from "@/lib/auth";
+import { getPageContext } from "@/lib/locale";
 import { AlertTriangle, Check, Link2, Lock, X } from "lucide-react";
 import { ALL_OPERATIONS, SOURCE_REGISTRY, decideForEntry } from "@paycheck/sources";
 import { adapterByKey, cachedHealthCheck, type HealthReport } from "@paycheck/jobs";
@@ -34,7 +37,27 @@ const HEALTH_LABEL: Record<HealthReport["state"], { text: string; tone: "positiv
   not_allowed: { text: "nicht freigegeben", tone: "outline" },
 };
 
+/**
+ * Zugang: nur Betrieb.
+ *
+ * Diese Prüfung fehlte. Die Seite lag im Verzeichnis `admin`, trug den
+ * Titel eines Betriebswerkzeugs — und war für jede angemeldete Person
+ * erreichbar. Die Geschwisterseiten `/admin` und `/admin/reviews`
+ * prüften die Rolle seit jeher; diese beiden nicht.
+ *
+ * Aufgefallen ist es nicht beim Lesen des Codes, sondern beim Abgehen
+ * aller 45 Routen mit einem frisch angelegten, ganz gewöhnlichen Konto:
+ * zwei Seiten unter `/admin` antworteten mit 200 statt mit 404.
+ *
+ * 404 und nicht 403: Ein 403 bestätigt, dass es die Seite gibt.
+ */
 export default async function AdminSourcesPage() {
+  const user = await requireUser();
+  const { flags } = await getPageContext();
+  if (!flags.adminArea || (user.role !== "operator" && user.role !== "admin")) {
+    notFound();
+  }
+
   const now = new Date();
   const rows = SOURCE_REGISTRY.map((entry) => ({
     entry,

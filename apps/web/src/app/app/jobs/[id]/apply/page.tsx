@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import { ArrowUpRight, Check, CircleDashed, CircleSlash, Minus } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { loadScoredJob } from "@/lib/matching";
+import { after } from "next/server";
+import { loadScoredJob, persistMatch } from "@/lib/matching";
 import { capabilityForJob } from "@/lib/apply/capability-registry";
 import { buildPackage, type ItemStatus } from "@/lib/apply/package-builder";
 import { buildDecisionBrief } from "@/lib/applications/decision-brief";
@@ -40,6 +41,18 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
 
   const scored = await loadScoredJob(user.id, id);
   if (!scored) notFound();
+
+  /*
+   * Hier zählt es doppelt.
+   *
+   * Wer die Bewerbungsseite öffnet, steht kurz davor. Genau diese
+   * Bewertung ist es, gegen die in 30, 90 und 180 Tagen geprüft wird —
+   * ohne die Zeile in `job_matches` friert `vorhersageFesthalten`
+   * nichts ein, und die Schleife bleibt für immer leer.
+   */
+  after(async () => {
+    await persistMatch(user.id, scored).catch(() => {});
+  });
 
   const brief = buildDecisionBrief({ scored, userYearsExperience: null });
   const capability = capabilityForJob({
@@ -87,7 +100,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
                   : "Manuell"}
           </Badge>
           {paket.estimatedMinutes && (
-            <span className="font-mono text-2xs uppercase tracking-wider text-ink-3">
+            <span className="abschnitts-titel text-ink-3">
               etwa {paket.estimatedMinutes.min}–{paket.estimatedMinutes.max} Min.
             </span>
           )}
@@ -160,7 +173,7 @@ export default async function ApplyPage({ params }: { params: Promise<{ id: stri
           {scored.job.originalUrl ? (
             <Button asChild variant="primary">
               <a href={scored.job.originalUrl} target="_blank" rel="noopener noreferrer">
-                Auf der Originalseite bewerben
+                Zur Bewerbungsseite
                 <ArrowUpRight className="size-4" strokeWidth={1.9} />
               </a>
             </Button>

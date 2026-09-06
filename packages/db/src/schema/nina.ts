@@ -6,13 +6,15 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  smallint,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 import { localeEnum } from "./enums.ts";
 import { users } from "./identity.ts";
-import { jobs } from "./jobs.ts";
+import { jobs, jobMatches } from "./jobs.ts";
 import { applications } from "./applications.ts";
 import { documents } from "./applications.ts";
 
@@ -275,3 +277,346 @@ export const ninaRoleHypotheses = pgTable(
   },
   (t) => [index("nina_role_hypotheses_user_idx").on(t.userId)],
 );
+
+/* ══════════════════════════════════════════════════════════════
+   Das Fundament für Chancenradar, Morning Review und Matching
+   ══════════════════════════════════════════════════════════════
+
+   Vier neue Tabellen. Jede füllt eine Lücke, die die Bestandsaufnahme
+   gezeigt hat — und keine dupliziert etwas Vorhandenes:
+
+     job_tasks      Aufgaben strukturiert. `jobs.coreTasks` ist eine
+                    Textliste; vergleichen lässt sich damit nichts.
+     nina_events    Es gab `notifications` (fertige Nachrichten) und
+                    `watchlist_job_events` (nur Firmenbeobachtung).
+                    Was fehlte, ist die Ebene davor: erkannte
+                    Veränderungen, aus denen später eine Nachricht
+                    werden KANN.
+     profile_facts  Ninas Gedächtnis, kontrolliert. Bisher verstreut
+                    zwischen `evidence_items` (Belege) und
+                    `preferences` (Vorlieben) — beides sind Aussagen
+                    über den Menschen, aber keines hält Sätze wie
+                    „möchte langfristig Führung".
+     match_feedback Warum eine Stelle abgelehnt wurde.
+                    `empfehlungs_ergebnisse` misst, was NACH einer
+                    Bewerbung passiert — das ist etwas anderes.
+   ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Die Aufgaben einer Stelle, einzeln und vergleichbar.
+ *
+ * ── Warum nicht `jobs.coreTasks` reicht ───────────────────────
+ *
+ * Dort steht eine Liste von Sätzen. Für die Anzeige genügt das; für
+ * das Matching nicht. „Monatsabschlüsse erstellen" und „Erstellung
+ * der Monats- und Jahresabschlüsse" sind dieselbe Tätigkeit und zwei
+ * verschiedene Zeichenketten.
+ *
+ * `normalisiert` trägt die vereinheitlichte Form, `wichtigkeit` sagt,
+ * ob es der Kern der Stelle ist oder eine Randaufgabe. Erst damit
+ * lässt sich vergleichen, was jemand TUT — statt was seine Stelle
+ * HEISST.
+ */
+export const jobTasks = pgTable(
+  "job_tasks",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    aufgabe: text("aufgabe").notNull(),
+    /** Vereinheitlicht — für den Vergleich, nicht für die Anzeige. */
+    normalisiert: text("normalisiert"),
+    /** kern · regelmaessig · gelegentlich */
+    wichtigkeit: text("wichtigkeit").notNull().default("regelmaessig"),
+    /** Anteil der Arbeitszeit, wenn die Anzeige ihn nennt. */
+    anteil: smallint("anteil"),
+    /**
+     * Woher die Aufgabe stammt.
+     *
+     * `anzeige` heisst: steht wörtlich da. `abgeleitet` heisst: ein
+     * Modell hat sie aus dem Fliesstext gelesen. Der Unterschied
+     * gehört in die Daten, nicht in einen Kommentar — sonst zählt
+     * eine Vermutung später wie eine Angabe.
+     */
+    quelle: text("quelle").notNull().default("anzeige"),
+    konfidenz: smallint("konfidenz").notNull().default(100),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("job_tasks_job_idx").on(t.jobId)],
+);
+
+/**
+ * Erkannte Veränderungen, aus denen später eine Meldung werden kann.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum das keine Benachrichtigungstabelle ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `notifications` enthält fertige Nachrichten: Titel, Text, Ziel.
+ * Sie beantwortet „was steht in der Glocke". Diese Tabelle hier
+ * beantwortet etwas anderes: „was hat sich verändert".
+ *
+ * Der Unterschied trägt den Chancenradar. Ein Ereignis wie
+ * `match_verbessert` entsteht, sobald ein Score steigt — ob daraus
+ * eine Meldung wird, entscheidet später das Briefing anhand von
+ * Priorität, Ruhezeiten und den Einstellungen des Menschen. Wer beides
+ * in eine Tabelle legt, muss beim Erzeugen schon wissen, ob und wann
+ * gemeldet wird, und das weiss er dort nicht.
+ *
+ * ── Warum `verarbeitet` und `gezeigt` getrennt sind ───────────
+ *
+ * `verarbeitet` heisst: Das Briefing hat es berücksichtigt.
+ * `gezeigt` heisst: Ein Mensch hat es gesehen. Zwei Zustände, weil
+ * ein Ereignis verarbeitet und trotzdem nie gezeigt werden kann —
+ * etwa wenn zehn stärkere daneben standen.
+ */
+export const ninaEvents = pgTable(
+  "nina_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /**
+     * neuer_match · match_verbessert · stelle_geaendert · frist_naht ·
+     * angabe_fehlt · muster_erkannt · nachfassen_faellig
+     */
+    art: text("art").notNull(),
+    /** job · match · application · profil — worauf es sich bezieht. */
+    bezugsart: text("bezugsart"),
+    bezugId: uuid("bezug_id"),
+    /** 1 kritisch, 2 wichtig, 3 interessant. */
+    prioritaet: smallint("prioritaet").notNull().default(3),
+    titel: text("titel").notNull(),
+    /**
+     * Die Zahlen dahinter — etwa vorheriger und neuer Score.
+     *
+     * Bewusst als JSON: Was ein Ereignis mitbringt, hängt an seiner
+     * Art, und eine Spalte je Art wäre eine Tabelle mit dreissig
+     * leeren Feldern.
+     */
+    nutzlast: jsonb("nutzlast").$type<Record<string, unknown>>().notNull().default({}),
+    verarbeitetAm: timestamp("verarbeitet_am", { withTimezone: true }),
+    gezeigtAm: timestamp("gezeigt_am", { withTimezone: true }),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("nina_events_offen_idx").on(t.userId, t.verarbeitetAm, t.prioritaet),
+    index("nina_events_bezug_idx").on(t.bezugsart, t.bezugId),
+  ],
+);
+
+/**
+ * Ninas Gedächtnis — kontrolliert, nicht frei.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum kein Chatgedächtnis
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Ein Modell, das sich „alles aus dem Gespräch" merkt, merkt sich
+ * auch Falsches, und niemand kann es korrigieren. Hier ist jeder
+ * Eintrag ein einzelner Satz mit Schlüssel, Wert, Herkunft und
+ * Konfidenz — also etwas, das sich anzeigen, ändern und löschen
+ * lässt.
+ *
+ * ── Warum `bestaetigt` der wichtigste Wert ist ────────────────
+ *
+ * Nina darf schliessen. Sie darf ihre Schlüsse nur nicht als Wissen
+ * ausgeben. `bestaetigt = false` heisst: Ein Modell hat das
+ * abgeleitet, und es zählt weniger — in der Anzeige, im Matching und
+ * bei der Frage, ob ein bestehender Wert überschrieben werden darf.
+ *
+ * Genau dieser Fall steht in der Vorgabe: Wer „minimum_salary = 70k"
+ * bestätigt hat, dessen Regel überschreibt ein späteres „60k wäre
+ * auch okay" NICHT. Es entsteht ein zweiter, unbestätigter Fakt, und
+ * Nina fragt nach.
+ *
+ * ── Warum `gueltig_bis` ───────────────────────────────────────
+ *
+ * „Sucht aktuell nicht aktiv" ist im März wahr und im Oktober
+ * womöglich nicht mehr. Ein Fakt ohne Verfallsdatum wird mit der Zeit
+ * zur Behauptung über einen Menschen, den es so nicht mehr gibt.
+ */
+export const profileFacts = pgTable(
+  "profile_facts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    /** ziel · abneigung · bedingung · situation · praeferenz */
+    art: text("art").notNull(),
+    /** Der stabile Schlüssel, etwa „fuehrungsverantwortung". */
+    schluessel: text("schluessel").notNull(),
+    wert: jsonb("wert").notNull(),
+    /** gespraech · dokument · feedback · nina_ableitung · nutzer */
+    quelle: text("quelle").notNull(),
+    /** Der Satz, auf den sich der Fakt stützt. */
+    beleg: text("beleg"),
+    konfidenz: smallint("konfidenz").notNull().default(50),
+    bestaetigt: boolean("bestaetigt").notNull().default(false),
+    bestaetigtAm: timestamp("bestaetigt_am", { withTimezone: true }),
+    gueltigBis: timestamp("gueltig_bis", { withTimezone: true }),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+    aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    /* Ein Schlüssel je Person und Bestätigungsstand: Der bestätigte
+       Wert und ein abweichender Vorschlag dürfen nebeneinander
+       stehen — genau das ist der Fall, in dem Nina nachfragt. */
+    uniqueIndex("profile_facts_schluessel_idx").on(t.userId, t.schluessel, t.bestaetigt),
+  ],
+);
+
+/**
+ * Warum eine Stelle abgelehnt wurde.
+ *
+ * ── Warum getrennt von `empfehlungs_ergebnisse` ───────────────
+ *
+ * Jene Tabelle misst, was NACH einer Bewerbung geschah: beworben,
+ * Antwort, Gespräch, Angebot. Sie beantwortet „hat die Empfehlung
+ * getragen".
+ *
+ * Diese hier beantwortet die Frage davor: „warum nicht". Das ist die
+ * Auskunft, aus der Nina lernt — und sie entsteht bei Stellen, die
+ * nie zu einer Bewerbung führen, also gerade dort, wo jene Tabelle
+ * leer bleibt.
+ *
+ * ── Was daraus NICHT folgen darf ──────────────────────────────
+ *
+ * Aus sieben Ablehnungen wegen Kundenkontakt wird kein Filter. Es
+ * wird ein Ereignis `muster_erkannt`, und daraus eine Frage: „Soll
+ * ich solche Stellen künftig niedriger bewerten?" Erst die Antwort
+ * wird zur Präferenz. Ein System, das aus beobachtetem Verhalten
+ * stillschweigend Regeln macht, erklärt Menschen für festgelegt.
+ */
+export const matchFeedback = pgTable(
+  "match_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    matchId: uuid("match_id").references(() => jobMatches.id, { onDelete: "cascade" }),
+    jobId: uuid("job_id").references(() => jobs.id, { onDelete: "cascade" }),
+    /** interessiert · abgelehnt · spaeter · beworben */
+    art: text("art").notNull(),
+    /**
+     * gehalt · standort · remote · aufgaben · unternehmen ·
+     * karrierestufe · arbeitszeit · branche · anforderungen ·
+     * kein_interesse · sonstiges
+     */
+    grund: text("grund"),
+    freitext: text("freitext"),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("match_feedback_user_idx").on(t.userId, t.grund, t.erstelltAm)],
+);
+
+
+/**
+ * Ninas tiefe Analyse einer Stelle.
+ *
+ * Sie liest Anzeige, Profil, Belege und Bedingungen zusammen und
+ * braucht dafür mehrere Modellrunden — Minuten, nicht Sekunden.
+ * Deshalb steht sie in der Datenbank und nicht im Speicher der Seite:
+ * Wer weggeht und wiederkommt, findet sie vor, statt sie erneut zu
+ * starten.
+ *
+ * `generated_artifacts` wäre der naheliegende Ort und geht nicht — die
+ * Tabelle verlangt eine `application_id`, und eine Analyse entsteht
+ * VOR der Entscheidung, sich zu bewerben.
+ */
+export const jobTiefenanalysen = pgTable(
+  "job_tiefenanalysen",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    /** laeuft · fertig · fehlgeschlagen */
+    zustand: text("zustand").notNull().default("laeuft"),
+    /** Der Text der Analyse. Leer, solange sie läuft. */
+    inhalt: text("inhalt"),
+    /** Warum sie fehlschlug — für die Person lesbar, kein Stacktrace. */
+    fehler: text("fehler"),
+    /** Die Fassung der Bewertungslogik. Eine Analyse von vor zwei
+        Wochen ist keine Analyse von heute. */
+    logikfassung: text("logikfassung"),
+    begonnenAm: timestamp("begonnen_am", { withTimezone: true }).notNull().defaultNow(),
+    beendetAm: timestamp("beendet_am", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("job_tiefenanalysen_user_job_idx").on(t.userId, t.jobId)],
+);
+
+
+/**
+ * Die nutzerunabhängige Analyse einer Stelle.
+ *
+ * Getrennt von `job_matches`: Die Analyse gehört zur Stelle und ist
+ * für alle gleich, der Match gehört zur Person. Eine Profiländerung
+ * entwertet den Match, nicht die Analyse — in einer Tabelle löste
+ * jede Profiländerung eine Neuanalyse aus.
+ */
+export const jobAnalysen = pgTable(
+  "job_analysen",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    /** Fingerabdruck der Eingabe — ohne `last_seen_at`. */
+    eingabeSchluessel: text("eingabe_schluessel").notNull(),
+    /** Schema, Prompt und Bewertungsregeln als eine Zahl. */
+    fassung: integer("fassung").notNull(),
+    /**
+     * laeuft · fertig · fehlgeschlagen · unzureichende_daten
+     *
+     * `unzureichende_daten` ist kein Fehler: Der Lauf war technisch
+     * erfolgreich, die Anzeige gab zu wenig her.
+     */
+    status: text("status").notNull().default("laeuft"),
+    extraktion: jsonb("extraktion"),
+    bewertung: jsonb("bewertung"),
+    /** Warum eine Zahl fehlt — maschinenlesbar, je Dimension. */
+    gruende: jsonb("gruende"),
+    referenzSnapshot: text("referenz_snapshot"),
+    modellkonfiguration: text("modellkonfiguration"),
+    fehler: text("fehler"),
+    begonnenAm: timestamp("begonnen_am", { withTimezone: true }).notNull().defaultNow(),
+    beendetAm: timestamp("beendet_am", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("job_analysen_job_eingabe_idx").on(t.jobId, t.eingabeSchluessel, t.fassung),
+    index("job_analysen_job_idx").on(t.jobId, t.begonnenAm),
+  ],
+);
+
+/**
+ * Die Filter der Stellenliste — was gerade zu sehen ist.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum das nicht der Suchauftrag ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Drei Dinge, die sich ähneln und nie ein Feld werden dürfen:
+ *
+ *   Profil        wer jemand ist und was er kann
+ *   Suchauftrag   wonach Nina im Hintergrund weitersucht
+ *   Listenfilter  was gerade auf dem Bildschirm steht
+ *
+ * „Zeig mir mal Bayern" ist keine Beauftragung. Wer das in den
+ * Suchauftrag schriebe, bekäme morgen früh eine Mail über Stellen in
+ * Bayern — für einen Satz, der „ich schau mich gerade um" hiess.
+ *
+ * ── Warum überhaupt gespeichert ──────────────────────────────
+ *
+ * Weil die Filter bisher nur in der Adresse standen: Ein geteilter
+ * Link trug sie mit, ein frischer Besuch nicht. Wer gestern Umkreis,
+ * Gehalt und Vertragsart eingestellt hatte, fing heute bei null an.
+ */
+export const listenfilter = pgTable("listenfilter", {
+  userId: uuid("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /**
+   * Die Filter als flaches Objekt, wie sie in der Adresse stehen.
+   *
+   * Als jsonb und nicht als Spalten: Ein neuer Filter ist dann eine
+   * Zeile im Code und keine Migration. Die Datenbank prüft die
+   * Schlüssel nicht — und ein unbekannter Schlüssel in der Adresse
+   * tut ohnehin nichts.
+   */
+  filter: jsonb("filter").$type<Record<string, string>>().notNull().default({}),
+  aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
+});

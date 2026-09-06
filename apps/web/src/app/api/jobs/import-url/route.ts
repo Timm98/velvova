@@ -1,7 +1,10 @@
 import { lookup } from "node:dns/promises";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { eq } from "drizzle-orm";
+import { getDb, schema } from "@paycheck/db";
 import {
+  analysiereLink,
   decideForUrl,
   findByUrl,
   isAllowed,
@@ -74,15 +77,48 @@ export async function POST(request: Request): Promise<NextResponse> {
   const eintrag = findByUrl(url.href);
 
   if (!isAllowed(entscheidung, "FetchDetails")) {
+    /*
+     * Bevor wir „geht nicht" sagen: gibt es die Stelle beim
+     * Arbeitgeber selbst?
+     *
+     * Viele Plattform-Adressen tragen Titel und Arbeitgeber im Pfad.
+     * Das zu LESEN ist kein Zugriff auf die Plattform — die Adresse hat
+     * die Person selbst mitgebracht. Steht der Arbeitgeber in den
+     * registrierten Boards, gibt es eine freigegebene Originalquelle,
+     * und die dürfen wir lesen.
+     *
+     * Was hier ausdrücklich NICHT passiert: aus dem Namen einen
+     * Board-Bezeichner bauen und durchprobieren. Die Quellenliste sagt
+     * zu jedem ATS-Eintrag „nie aus einer Suche"; Bezeichner zu erraten
+     * wäre Aufzählung fremder Systeme.
+     */
+    const db = await getDb();
+    const boards = await db
+      .select({
+        employerName: schema.employerBoards.employerName,
+        board: schema.employerBoards.board,
+        boardToken: schema.employerBoards.boardToken,
+      })
+      .from(schema.employerBoards)
+      .where(eq(schema.employerBoards.enabled, true))
+      .catch(() => []);
+
+    const analyse = analysiereLink(url.href, boards);
+
     return NextResponse.json({
       modus: "bookmark",
       quelle: eintrag?.displayName ?? url.hostname,
       entscheidung: entscheidung.decision,
+      linkModus: analyse.modus,
+      erkannterTitel: analyse.vermuteterTitel,
+      erkannterArbeitgeber: analyse.vermuteterArbeitgeber,
       grund: entscheidung.reason,
       hinweis:
-        "Von dieser Quelle rufen wir nichts ab. Die Adresse ist als privates Lesezeichen " +
-        "gespeichert. Wenn du den Anzeigentext einfügst, analysiert Nina ihn — was du selbst " +
-        "liest und mitbringst, bleibt deine Sache und bleibt privat.",
+        analyse.modus === "canonical_employer_source"
+          ? analyse.hinweis
+          : "Von dieser Quelle rufen wir nichts ab. Die Adresse ist als privates Lesezeichen " +
+            "gespeichert. Wenn du den Anzeigentext einfügst, analysiert Nina ihn — was du selbst " +
+            "liest und mitbringst, bleibt deine Sache und bleibt privat.",
       url: url.href,
     });
   }
