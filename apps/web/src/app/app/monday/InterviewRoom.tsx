@@ -9,6 +9,7 @@ import { Composer } from "@/components/nina/Composer";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
+import { JobRow, type JobRowData } from "@/components/jobs/JobRow";
 import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
@@ -84,6 +85,7 @@ const IMPULSE_JE_STUFE: Record<string, string[]> = {
 
 export function InterviewRoom({
   assistantName,
+  vorschau,
   openingQuestion,
   hypotheses,
   initialMessages,
@@ -94,6 +96,14 @@ export function InterviewRoom({
   labels,
 }: {
   assistantName: string;
+  /**
+   * Die besten Treffer, unter dem Gespräch.
+   *
+   * Sie kommen fertig vom Server — dieselben Zeilen wie auf der
+   * Stellenseite, gebaut von `zeilenAusStellen`. Hier wird nichts
+   * gerechnet, nur gezeigt.
+   */
+  vorschau: JobRowData[];
   openingQuestion: string;
   hypotheses: Hypothese[];
   initialMessages: { id: string; role: "user" | "assistant"; content: string }[];
@@ -773,6 +783,57 @@ export function InterviewRoom({
           )}
 
           <div ref={ende} className="h-4" />
+
+          {/*
+            ══════════════════════════════════════════════════════
+            Was dabei herauskommt — im selben Rollbereich
+            ══════════════════════════════════════════════════════
+
+            Die besten Treffer stehen unter dem letzten Wort des
+            Gesprächs. Wer weiterscrollt, sieht sie.
+
+            Das ist der ganze Übergang. Kein Ansichtswechsel, keine
+            Schwelle, keine Geste — es ist dieselbe Seite und
+            dasselbe Rollen. Was vorher mit Bewegungsrechnung
+            versucht wurde, macht hier der Browser.
+
+            Die Zeilen sind dieselben wie auf der Stellenseite,
+            gebaut von `zeilenAusStellen`. Nicht ähnliche: dieselben.
+            Sonst stünde hier ein Gehalt und dort ein anderes.
+
+            Ohne Treffer steht hier nichts. Ein leerer Kasten mit
+            „noch keine Vorschläge" wäre eine Ankündigung, die
+            niemand bestellt hat — und im Gespräch ist es normal,
+            dass es am Anfang noch nichts zu zeigen gibt.
+          */}
+          {vorschau.length > 0 && (
+            <section aria-labelledby="vorschau" className="mt-10 grid gap-4 border-t border-line pt-8">
+              <div className="grid gap-1">
+                <h2 id="vorschau" className="font-display text-xl font-normal text-ink">
+                  Was bisher dazu passt
+                </h2>
+                <p className="text-sm leading-relaxed text-ink-2">
+                  Aus dem, was du erzählt hast. Die Liste ändert sich, während das Gespräch
+                  weitergeht.
+                </p>
+              </div>
+
+              <ul className="grid gap-2.5">
+                {vorschau.map((zeile) => (
+                  <li key={zeile.id} className="min-w-0">
+                    <JobRow job={zeile} selected={false} href={`/app/jobs?job=${zeile.id}`} />
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="/app/jobs"
+                className="justify-self-start text-sm text-accent-text underline underline-offset-[3px]"
+              >
+                Alle Stellen ansehen
+              </a>
+            </section>
+          )}
         </div>
 
         {/* ── Composer ────────────────────────────────────────── */}
