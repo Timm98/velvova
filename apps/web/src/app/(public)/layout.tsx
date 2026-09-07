@@ -61,17 +61,27 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     /*
-     * Öffentliche Seiten sind immer hell.
+     * ══════════════════════════════════════════════════════════
+     * Kein festes Hell mehr
+     * ══════════════════════════════════════════════════════════
      *
-     * Auch wenn im Konto „dunkel“ steht: Landingpage, Anmeldung und
-     * Registrierung werden von Menschen geöffnet, die das Produkt noch
-     * nicht kennen — meist bei Tageslicht und oft am Telefon. Das
-     * Attribut hier überschreibt die Wahl auf `:root` für genau diesen
-     * Teilbaum; die Tokens definieren die helle Palette sowohl für
-     * `:root` als auch für `[data-theme="light"]`.
+     * Hier stand `data-theme="light"`, mit der Begründung: Diese
+     * Seiten werden von Menschen geöffnet, die das Produkt noch nicht
+     * kennen — meist bei Tageslicht und oft am Telefon.
+     *
+     * Das Ergebnis war ein sichtbarer Bruch. Die Startseite folgt der
+     * Wahl und war dunkelblau; „Sicherheit", „So funktioniert es" und
+     * die öffentliche Jobsuche lagen im selben Verbund, trugen
+     * dieselbe Kopfzeile — und waren weiss. Wer von der Startseite auf
+     * „Sicherheit" klickte, wechselte mitten im Klick die Farbwelt.
+     *
+     * Ein Argument, das für die Startseite gälte, aber ausgerechnet
+     * dort nicht angewendet wird, ist keines. Diese Seiten folgen
+     * jetzt derselben Wahl wie alles andere: der des Nutzers, sonst
+     * der seines Geräts.
      */
     <BestandProvider genau={bestandDaten.genau} proSekunde={bestandDaten.proSekunde}>
-    <div data-theme="light" className="flex min-h-dvh flex-col bg-page text-ink">
+    <div className="flex min-h-dvh flex-col bg-page text-ink">
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
