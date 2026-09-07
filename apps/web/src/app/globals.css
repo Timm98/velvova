@@ -990,7 +990,7 @@ input[type="number"] {
  * trägt: der Weg schnell, die Ankunft ruhig.
  */
 :root {
-  --uebergang-feld: 700ms;
+  --uebergang-feld: 820ms;
   /*
    * Das Alte geht schneller, als das Neue kommt.
    *
@@ -1012,9 +1012,9 @@ input[type="number"] {
    * dem Bildschirm steht, zu wenig, um zwei Seiten gleichzeitig zu
    * lesen.
    */
-  --uebergang-panel-weg: 260ms;
-  --uebergang-panel-her: 420ms;
-  --uebergang-grund: 260ms;
+  --uebergang-panel-weg: 320ms;
+  --uebergang-panel-her: 520ms;
+  --uebergang-grund: 300ms;
   /*
    * Weichere Kurve.
    *
@@ -1104,8 +1104,20 @@ input[type="number"] {
 
 /*
  * ══════════════════════════════════════════════════════════════
- * Nur EINE Richtung bewegt sich
+ * Nur EINE Richtung bewegt sich — und sie fährt nicht nur
  * ══════════════════════════════════════════════════════════════
+ *
+ * Ein Weg allein liest sich hart: Eine Fläche schiebt sich herein,
+ * fertig. Drei Eigenschaften zusammen lesen sich als Ankommen —
+ * Deckkraft, ein Hauch Massstab und Unschärfe.
+ *
+ * `scale(0.985)` sind anderthalb Prozent, `blur(4px)` verschwindet
+ * innerhalb der halben Bewegung. Beides ist einzeln kaum zu benennen
+ * und zusammen der Unterschied zwischen „eingeblendet" und
+ * „angekommen": Die Fläche kommt aus der Tiefe, nicht von der Seite.
+ *
+ * Beim Weggehen dasselbe rückwärts und schwächer — 0,99 und 3 Pixel.
+ * Was geht, soll nicht auffallen.
  *
  * Vorher fuhr das Alte 72 Pixel nach oben davon, während das Neue 72
  * Pixel von unten heraufkam. Zwei gegenläufige Bewegungen zur selben
@@ -1123,29 +1135,33 @@ input[type="number"] {
  */
 @keyframes panel-hoch-weg {
   to {
-    transform: translateY(-8px);
+    transform: translateY(-8px) scale(0.99);
     opacity: 0;
+    filter: blur(3px);
   }
 }
 
 @keyframes panel-von-unten {
   from {
-    transform: translateY(24px);
+    transform: translateY(20px) scale(0.985);
     opacity: 0;
+    filter: blur(4px);
   }
 }
 
 @keyframes panel-runter-weg {
   to {
-    transform: translateY(8px);
+    transform: translateY(8px) scale(0.99);
     opacity: 0;
+    filter: blur(3px);
   }
 }
 
 @keyframes panel-von-oben {
   from {
-    transform: translateY(-24px);
+    transform: translateY(-20px) scale(0.985);
     opacity: 0;
+    filter: blur(4px);
   }
 }
 
@@ -1189,15 +1205,15 @@ input[type="number"] {
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel-her) 100ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 110ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
-  animation: panel-von-unten var(--uebergang-panel-her) 160ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 180ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel-her) 220ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 250ms var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
@@ -1215,11 +1231,11 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel-her) 100ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 110ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel-her) 160ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 180ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1386,7 +1402,8 @@ input[type="number"] {
 @keyframes zeile-auftritt {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(12px) scale(0.99);
+    filter: blur(2px);
   }
 }
 
@@ -1410,7 +1427,8 @@ input[type="number"] {
 .zeile-auftritt[data-wartet] {
   animation: none;
   opacity: 0;
-  transform: translateY(12px);
+  transform: translateY(12px) scale(0.99);
+  filter: blur(2px);
 }
 
 /*
@@ -1426,6 +1444,7 @@ input[type="number"] {
     animation: none;
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }
 
@@ -1454,7 +1473,8 @@ input[type="number"] {
 @keyframes block-auftritt {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) scale(0.99);
+    filter: blur(3px);
   }
 }
 
@@ -1483,5 +1503,6 @@ input[type="number"] {
     animation: none;
     opacity: 1;
     transform: none;
+    filter: none;
   }
 }

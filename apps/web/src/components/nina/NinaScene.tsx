@@ -63,8 +63,25 @@ import type { NinaVisualState } from "./NinaProvider";
 
 /*
  * ══════════════════════════════════════════════════════════════
- * Die gepackte Fassung — 7,6 statt 12,4 MB
+ * Zurück auf die unverpackte Fassung
  * ══════════════════════════════════════════════════════════════
+ *
+ * ── ZURÜCKGENOMMEN am 7. September ──────────────────────────
+ *
+ * `nina.opt.glb` (7,6 statt 12,4 MB) lud in Chromium sauber — im
+ * Browser des Nutzers blieb der Core leer. Welche der beiden
+ * Erweiterungen dort scheitert, ist ungeklärt:
+ * `EXT_texture_webp` oder `KHR_mesh_quantization`.
+ *
+ * Ein Modell, das schnell lädt und nicht erscheint, ist schlechter
+ * als eines, das langsam lädt und da ist. Bis das geklärt ist, gilt
+ * die unverpackte Datei.
+ *
+ * Die gepackte bleibt liegen — sie ist gebaut und geprüft, sie wartet
+ * nur auf eine Antwort. Der nächste Schritt wäre, die beiden
+ * Erweiterungen EINZELN zu probieren, um zu wissen, welche stört.
+ *
+ * ── Die ursprüngliche Begründung ────────────────────────────
  *
  * Monday ist das mit Abstand grösste, was diese Anwendung ausliefert.
  * Gemessen auf der Startseite: Die Datei wird nach einer Sekunde
@@ -97,7 +114,7 @@ import type { NinaVisualState } from "./NinaProvider";
  *   npx @gltf-transform/cli optimize nina.glb nina.opt.glb \
  *     --compress quantize --texture-compress webp
  */
-const MODELL = "/models/nina.opt.glb";
+const MODELL = "/models/nina.glb";
 
 /*
  * Ein Zwischenspeicher über alle Verbraucher.
