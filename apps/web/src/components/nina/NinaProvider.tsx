@@ -470,6 +470,17 @@ export function NinaProvider({
       const controller = new AbortController();
       abbruch.current = controller;
 
+      /*
+       * Der Schreibtakt gehört VOR das `try`.
+       *
+       * Der `finally`-Block muss ihn abräumen können — auch wenn der
+       * Strom mit einem Fehler endet oder jemand die Seite wechselt.
+       * Stünde er im `try`, kennte ihn `finally` nicht, und ein
+       * Intervall liefe weiter und schriebe in eine Nachricht, die es
+       * nicht mehr gibt.
+       */
+      const takt = { rest: "", fertig: false, uhr: 0 as number | ReturnType<typeof setInterval> };
+
       try {
         const antwort = await fetch("/api/nina/chat", {
           method: "POST",
@@ -511,6 +522,56 @@ export function NinaProvider({
         const decoder = new TextDecoder();
         let puffer = "";
 
+        /*
+         * ══════════════════════════════════════════════════════════
+         * Monday schreibt in gleichmässigem Takt, nicht in Schüben
+         * ══════════════════════════════════════════════════════════
+         *
+         * Das Modell liefert seinen Text in Stücken — mal drei Zeichen,
+         * mal dreissig, mit Pausen dazwischen. Direkt angehängt sieht
+         * das aus, als würde jemand hektisch tippen und dann warten.
+         *
+         * Die Stücke laufen deshalb erst in einen Zwischenpuffer, und
+         * ein Takt lässt sie mit fester Geschwindigkeit heraus. Das ist
+         * nicht nur ruhiger, es ist auch LESBAR: Man kann mitlesen,
+         * statt jedem Sprung hinterherzuspringen.
+         *
+         * Fünfzig Zeichen je Sekunde — etwa das Tempo, in dem man
+         * einen Text laut vorliest. Schneller wirkt maschinell,
+         * langsamer wirkt zäh.
+         *
+         * ── Warum der Rest am Ende schneller läuft ──────────────
+         *
+         * Kommt die Antwort zu Ende, während noch Zeichen im Puffer
+         * stehen, würde die Nachricht mit gleichem Takt weiterlaufen —
+         * bei einem langen Absatz Sekunden nach dem eigentlichen Ende.
+         * Ab dem Schlusssignal räumt der Takt deshalb vierfach ab. Es
+         * bleibt eine Bewegung, nur eine schnellere.
+         */
+        const takt = { rest: "", fertig: false, uhr: 0 as number | ReturnType<typeof setInterval> };
+        const TAKT_MS = 40;
+        const ZEICHEN_JE_TAKT = 2;
+
+        const abgeraeumt = () =>
+          new Promise<void>((fertig) => {
+            takt.uhr = setInterval(() => {
+              if (takt.rest.length === 0) {
+                if (takt.fertig) {
+                  clearInterval(takt.uhr as ReturnType<typeof setInterval>);
+                  fertig();
+                }
+                return;
+              }
+              const wieViele = takt.fertig ? ZEICHEN_JE_TAKT * 4 : ZEICHEN_JE_TAKT;
+              const stueck = takt.rest.slice(0, wieViele);
+              takt.rest = takt.rest.slice(wieViele);
+              setMessages((m) =>
+                m.map((n) => (n.id === antwortId ? { ...n, content: n.content + stueck } : n)),
+              );
+            }, TAKT_MS);
+          });
+        const taktLaeuft = abgeraeumt();
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -547,10 +608,9 @@ export function NinaProvider({
             }
 
             if (ereignis.type === "text") {
-              const stück = String(ereignis.delta ?? "");
-              setMessages((m) =>
-                m.map((n) => (n.id === antwortId ? { ...n, content: n.content + stück } : n)),
-              );
+              /* In den Puffer, nicht direkt in die Nachricht — der Takt
+                 oben lässt die Zeichen gleichmässig heraus. */
+              takt.rest += String(ereignis.delta ?? "");
               continue;
             }
 
@@ -657,6 +717,15 @@ export function NinaProvider({
             }
 
             if (ereignis.type === "done") {
+              /*
+               * Erst abwarten, bis der Puffer leer ist.
+               *
+               * Ohne das stünde die Nachricht als „fertig" da, während
+               * die letzten Zeichen noch unterwegs sind — und der
+               * Vorlese-Knopf erschiene über einem halben Satz.
+               */
+              takt.fertig = true;
+              await taktLaeuft;
               setMessages((m) =>
                 m.map((n) => (n.id === antwortId ? { ...n, streaming: false } : n)),
               );
@@ -670,6 +739,21 @@ export function NinaProvider({
         setMessages((m) => m.filter((n) => n.id !== antwortId));
         setError("Die Verbindung ist abgebrochen. Deine Nachricht ist gespeichert.");
       } finally {
+        /*
+         * Der Takt muss in JEDEM Fall enden — auch bei Abbruch oder
+         * Fehler. Ein Intervall, das niemand mehr abräumt, schreibt
+         * bis zum Seitenwechsel in eine Nachricht, die es nicht mehr
+         * gibt.
+         */
+        takt.fertig = true;
+        clearInterval(takt.uhr as ReturnType<typeof setInterval>);
+        if (takt.rest.length > 0) {
+          const rest = takt.rest;
+          takt.rest = "";
+          setMessages((m) =>
+            m.map((n) => (n.id === antwortId ? { ...n, content: n.content + rest } : n)),
+          );
+        }
         setMessages((m) => m.map((n) => (n.streaming ? { ...n, streaming: false } : n)));
         setBusy(false);
         abbruch.current = null;
