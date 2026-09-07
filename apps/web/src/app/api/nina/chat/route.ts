@@ -1023,8 +1023,8 @@ async function runTool(
          * der Seite oben stehen.
          */
         const data = input as z.infer<(typeof ToolSchemas)["search_jobs"]>;
-        const ctx = await loadProfileContext(user.id);
-        const { jobs } = await listJobsForUser(user.id, ctx, {
+        const ctx = await loadProfileContext(userId);
+        const { jobs } = await listJobsForUser(userId, ctx, {
           suche: data.query ?? null,
           /*
            * Zwölf Kandidaten je gezeigter Stelle — dieselbe Regel wie
