@@ -261,6 +261,44 @@ export function InterviewRoom({
    * gestreamten Token direkt gemessen, wäre das ein Layout-Durchlauf
    * pro Zeichen.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Beim Öffnen steht man unten, beim zuletzt Geschriebenen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Wer aus der Stellenseite zurückkommt, landete oben im Gespräch —
+   * beim ersten Satz von vorgestern — und musste erst nach unten
+   * scrollen, um zu sehen, wo er stehengeblieben war. Ein Gespräch
+   * öffnet man da, wo es aufgehört hat.
+   *
+   * Warum das nicht schon der Effekt darunter erledigte: Der läuft
+   * beim ersten Eintreffen der Nachrichten, misst mit `amEnde()` und
+   * scrollt „sanft". Zu dem Zeitpunkt ist der Strom aber noch leer
+   * gemessen — `scrollHeight` gleich `clientHeight` —, also gilt
+   * „steht schon unten", und die sanfte Bewegung geht ins Leere.
+   *
+   * Hier wird deshalb hart gesprungen, nicht gescrollt, und zweimal:
+   * einmal sofort, einmal nach einem Bild, wenn die Höhen stehen. Ein
+   * Sprung ist hier richtig — man kommt an, man reist nicht.
+   */
+  const untenGestartet = useRef(false);
+  useEffect(() => {
+    if (untenGestartet.current) return;
+    if (nina.messages.length === 0) return;
+    untenGestartet.current = true;
+
+    const ansEnde = () => {
+      const el = strom.current;
+      if (el) el.scrollTop = el.scrollHeight;
+    };
+    ansEnde();
+    const bild = requestAnimationFrame(() => {
+      ansEnde();
+      requestAnimationFrame(ansEnde);
+    });
+    return () => cancelAnimationFrame(bild);
+  }, [nina.messages.length]);
+
   useEffect(() => {
     if (nina.messages.length === 0) return;
     const bild = requestAnimationFrame(() => {

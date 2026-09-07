@@ -968,12 +968,21 @@ input[type="number"] {
  * `cubic-bezier(0.22, 1, 0.36, 1)` schiesst los und bremst spät, und
  * bei 80 Pixeln Weg wirkte das geworfen statt geführt.
  *
- * Jetzt: 1010 ms, weichere Kurve, kürzerer Weg. `0.32, 0.72, 0, 1`
- * setzt sanft an, hält die Mitte gleichmässig und läuft ruhig aus —
- * die Bewegung hat keinen Ruck, weder am Anfang noch am Ende.
+ * Dritte Fassung: 880 ms, weichere Kurve, kürzerer Weg.
+ * `0.32, 0.72, 0, 1` setzt sanft an, hält die Mitte gleichmässig und
+ * läuft ruhig aus — die Bewegung hat keinen Ruck, weder am Anfang
+ * noch am Ende.
+ *
+ * Vierte Fassung: 1050 ms, alle Zeiten um ein Fünftel gestreckt.
+ * Immer noch hektisch — und das lag nicht an der Dauer.
+ *
+ * Jetzt: 1200 ms, und vor allem eine Bewegung weniger. Das Alte fährt
+ * nicht mehr davon, es geht nur noch; die Strecke tragen allein die
+ * ankommenden Flächen, und die ist kürzer. Was hektisch wirkte, waren
+ * drei gleichzeitige, teils gegenläufige Wege — nicht das Tempo.
  */
 :root {
-  --uebergang-feld: 820ms;
+  --uebergang-feld: 1100ms;
   /*
    * Das Alte geht schneller, als das Neue kommt.
    *
@@ -990,14 +999,14 @@ input[type="number"] {
    * halbe Sekunde lang. Ein Loch ist nicht besser als eine
    * Überlagerung.
    *
-   * Jetzt: Das Alte geht bis 420 ms, das Neue setzt bei 200 ein. Rund
-   * 220 Millisekunden Überschneidung — genug, dass immer etwas auf
+   * Jetzt: Das Alte geht bis 500 ms, das Neue setzt bei 240 ein. Rund
+   * 260 Millisekunden Überschneidung — genug, dass immer etwas auf
    * dem Bildschirm steht, zu wenig, um zwei Seiten gleichzeitig zu
    * lesen.
    */
-  --uebergang-panel-weg: 360ms;
-  --uebergang-panel-her: 560ms;
-  --uebergang-grund: 260ms;
+  --uebergang-panel-weg: 420ms;
+  --uebergang-panel-her: 760ms;
+  --uebergang-grund: 340ms;
   --uebergang-kurve: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -1014,6 +1023,29 @@ input[type="number"] {
   animation-duration: var(--uebergang-feld);
   animation-timing-function: var(--uebergang-kurve);
   z-index: 3;
+}
+
+/*
+ * Die beiden Feldbilder überblenden schnell, die Gruppe fährt lang.
+ *
+ * Der Browser bewegt die GRUPPE — Ort und Grösse — und blendet darin
+ * das alte Bild gegen das neue. Beides über die volle Länge zu
+ * überblenden hiess: Auf halbem Weg standen beide Beschriftungen
+ * übereinander, „Schreib Monday oder sprich mit ihr …" quer über
+ * „Frag Monday oder beschreibe deinen nächsten Job …". Auf den
+ * Einzelbildern war das der letzte deutlich unsaubere Punkt.
+ *
+ * Jetzt ist das alte Bild nach 200 ms weg, das neue ab 140 ms da —
+ * sechzig Millisekunden Überlappung, gerade genug, dass nichts
+ * blinkt. Die Bewegung selbst dauert unverändert lang; nur der
+ * Wechsel des Inhalts ist kurz.
+ */
+::view-transition-old(sucheingabe) {
+  animation: uebergang-aus 200ms var(--uebergang-kurve) both;
+}
+
+::view-transition-new(sucheingabe) {
+  animation: uebergang-ein 260ms 140ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1054,40 +1086,48 @@ input[type="number"] {
 }
 
 /*
- * 72 Pixel Weg.
+ * ══════════════════════════════════════════════════════════════
+ * Nur EINE Richtung bewegt sich
+ * ══════════════════════════════════════════════════════════════
  *
- * Erst 56 — davon war auf Einzelbildern fast nichts zu sehen, die
- * Flächen blendeten eher, als dass sie fuhren. Dann 80, was mit der
- * harten Kurve geworfen wirkte.
+ * Vorher fuhr das Alte 72 Pixel nach oben davon, während das Neue 72
+ * Pixel von unten heraufkam. Zwei gegenläufige Bewegungen zur selben
+ * Zeit, dazu das Feld quer durchs Bild — das ist der Grund, warum es
+ * hektisch wirkte, und nicht die Dauer. Man sah nicht EINE Bewegung,
+ * man sah drei, die sich widersprachen.
  *
- * 72 mit der weichen Kurve ist der Punkt dazwischen: etwa zwei
- * Textzeilen, deutlich als Weg zu erkennen und trotzdem ruhig. Der
- * Weg macht die Bewegung lesbar; die Deckkraft macht sie fertig.
+ * Jetzt geht das Alte nur noch: Es blendet aus und sinkt dabei acht
+ * Pixel — gerade genug, dass man „weg" liest, zu wenig, um als
+ * eigener Weg aufzufallen. Die Bewegung trägt allein das Neue, und
+ * die ist auf 40 Pixel verkürzt.
+ *
+ * Weniger Weg, mehr Zeit: 40 Pixel über 760 Millisekunden sind
+ * ruhiger als 72 über 670, obwohl es länger dauert.
  */
 @keyframes panel-hoch-weg {
   to {
-    transform: translateY(-72px);
+    transform: translateY(-8px);
     opacity: 0;
   }
 }
 
 @keyframes panel-von-unten {
   from {
-    transform: translateY(72px);
+    transform: translateY(40px);
     opacity: 0;
   }
 }
 
 @keyframes panel-runter-weg {
   to {
-    transform: translateY(72px);
+    transform: translateY(8px);
     opacity: 0;
   }
 }
 
 @keyframes panel-von-oben {
   from {
-    transform: translateY(-72px);
+    transform: translateY(-40px);
     opacity: 0;
   }
 }
@@ -1102,14 +1142,18 @@ input[type="number"] {
  *
  * Hinweg — Gespräch → Stellen:
  *
- *     0 ms   Gesprächskopf fährt hoch und blendet aus
- *    60      Nachrichtenstrom folgt
- *   200      Überschrift der Stellenseite kommt von unten
- *   260      Hinweiskasten
- *   320      Liste
+ *     0 ms   das Gespräch blendet aus — als Ganzes, ohne Versatz
+ *   260      Überschrift der Stellenseite kommt von unten
+ *   350      Hinweiskasten
+ *   440      Liste
  *   420      das Gespräch ist weg
- *   820      das Feld ist angekommen
- *   880      Ende
+ *  1100      das Feld ist angekommen
+ *  1200      Ende
+ *
+ * Das Alte hat keinen Versatz mehr. Zwei Flächen, die nacheinander
+ * verschwinden, sind zwei Ereignisse; eine Seite, die als Ganzes
+ * geht, ist eines. Gestaffelt wird nur noch, was ANKOMMT — dort
+ * schafft die Reihenfolge Sinn, beim Weggehen schafft sie Unruhe.
  *
  * Rückweg — Stellen → Gespräch, dieselbe Ordnung umgekehrt: Zuerst
  * geht die Liste, zuletzt kommt der Nachrichtenstrom. Wer zurückgeht,
@@ -1125,29 +1169,29 @@ input[type="number"] {
 }
 
 :root[data-uebergang="runter"]::view-transition-old(gespraech-strom) {
-  animation: panel-hoch-weg var(--uebergang-panel-weg) 60ms var(--uebergang-kurve) both;
+  animation: panel-hoch-weg var(--uebergang-panel-weg) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel-her) 200ms var(--uebergang-kurve) both;
-}
-
-:root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
   animation: panel-von-unten var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
 }
 
+:root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
+  animation: panel-von-unten var(--uebergang-panel-her) 350ms var(--uebergang-kurve) both;
+}
+
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel-her) 320ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 440ms var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
    aussieht wie der Hinweg, liest sich als Fehler. */
 :root[data-uebergang="hoch"]::view-transition-old(stellen-titel) {
-  animation: panel-runter-weg var(--uebergang-panel-weg) 100ms var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel-weg) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-hinweis) {
-  animation: panel-runter-weg var(--uebergang-panel-weg) 60ms var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel-weg) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-liste) {
@@ -1155,11 +1199,11 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel-her) 200ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 350ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1184,7 +1228,7 @@ input[type="number"] {
 }
 
 ::view-transition-new(root) {
-  animation: uebergang-ein var(--uebergang-grund) 160ms var(--uebergang-kurve) both;
+  animation: uebergang-ein var(--uebergang-grund) 190ms var(--uebergang-kurve) both;
   z-index: 1;
 }
 
