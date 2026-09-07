@@ -30,6 +30,7 @@ import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
 import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
 import { titelOhneEmoji } from "@/lib/jobs/titel";
+import { gehaltszeileFuer, referenzFinden, zeilenAusStellen } from "@/lib/jobs/zeilen";
 import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
 import { entfernungKm } from "@paycheck/matching";
 import { ortNachschlagen } from "@paycheck/jobs";
@@ -491,157 +492,33 @@ export default async function JobsPage({
    */
   /* Aus dem Bestand gezählt, halbstündig zwischengespeichert. */
 
-  const referenz = (j: ScoredJob) => {
-    const code = (j.job.kldb ?? "").replace(/\D/g, "").slice(0, 5);
-    return (code.length === 5 ? nachKldb.get(code) : null) ?? nachTitel.get(j.job.title) ?? null;
-  };
+  const referenz = (j: ScoredJob) => referenzFinden(j, nachKldb, nachTitel);
 
   /** Was in einer Zeile als Gehalt steht — echte Angabe oder Referenz. */
-  const gehaltszeile = (j: ScoredJob): { text: string; geschaetzt: boolean } | null => {
-    const a = gehaltsanzeige(j.job.salary);
-    /*
-     * „umgerechnet" gehört an die Zahl, nicht in eine Fussnote.
-     *
-     * Jede Angabe steht jetzt als Jahresgehalt — auch die, die in der
-     * Anzeige pro Stunde oder pro Monat stand. Ohne den Zusatz sähe
-     * eine hochgerechnete Zahl aus wie eine genannte, und der
-     * Unterschied ist genau das, worauf es bei einem Gehalt ankommt.
-     */
-    if (a) return { text: a.umgerechnet ? `${a.betrag} (umgerechnet)` : a.betrag, geschaetzt: false };
-    const r = referenz(j);
-    if (!r) return null;
-    const f = (n: number) => n.toLocaleString("de-DE");
-    return { text: `ca. ${f(r.q1)} – ${f(r.q3)} €`, geschaetzt: true };
-  };
+  const gehaltszeile = (j: ScoredJob) => gehaltszeileFuer(j, referenz);
 
   const fortbewegung = ctx.constraints.commuteMode ?? null;
 
-  const rows: JobRowData[] = sichtbar.map((j) => ({
-    id: j.jobId,
-    /*
-     * Ohne Emojis.
-     *
-     * Sie stehen in den Anzeigen, nicht bei uns — gemessen in 2 von
-     * 400 Titeln, meist als Blickfang um eine Gehaltsangabe. In einer
-     * Liste aus fünfundzwanzig Zeilen schreien damit zwei und
-     * dreiundzwanzig nicht, und die Reihenfolge sagt bereits, was
-     * wichtig ist.
-     *
-     * Gespeichert bleibt der Titel des Arbeitgebers unverändert:
-     * Was wir zeigen, ist unsere Entscheidung; was wir speichern,
-     * seine Angabe.
-     */
-    title: titelOhneEmoji(j.job.title),
-    /* Entscheidet über das Berufssymbol links in der Zeile. */
-    kldb: j.job.kldb ?? null,
-    /*
-     * Wie weit es ist — geschätzt aus Koordinaten.
-     *
-     * `null`, wenn der Wohnort nicht aufgelöst werden konnte oder
-     * die Stelle keine Koordinaten trägt. Dann steht in der Zeile
-     * nichts; eine erfundene Zahl wäre schlimmer als eine fehlende.
-     */
-    fahrzeitMin:
-      j.job.workModel === "remote" ? 0 : fahrzeitMinuten(wohnpunkt, j.job, fortbewegung),
-    entfernungKm:
-      wohnpunkt && j.job.latitude !== null && j.job.longitude !== null
-        ? Math.round(
-            entfernungKm(wohnpunkt.latitude, wohnpunkt.longitude, j.job.latitude, j.job.longitude),
-          )
-        : null,
-    companyName: j.job.companyName,
-    location: j.job.location,
-    workModel: j.job.workModel,
-    contractType: CONTRACT[j.job.contractType ?? ""] ?? null,
-    /*
-     * Eine Formatierung für alle Stellen, aus `geld.ts`.
-     *
-     * Hier stand `Intl.NumberFormat("de-DE")` mit angehängtem Kürzel —
-     * „60.000–80.000 EUR". Das Jobdetail nebenan setzte das Symbol
-     * davor. Dieselbe Stelle sah an zwei Orten verschieden aus, und
-     * beide Fassungen schrieben jede Währung deutsch.
-     */
-    /*
-     * Der Betrag entscheidet, nicht `disclosed`.
-     *
-     * `disclosed` heisst „der Arbeitgeber hat es offengelegt". Als
-     * Anzeigeschalter verwendet, versteckte es die siebzig Gehälter,
-     * die aus den Stellenbeschreibungen gelesen wurden — und liess die
-     * Liste 1.446 Mal „nicht angegeben" schreiben, obwohl in siebzig
-     * Anzeigen eine Zahl stand.
-     */
-    salaryLabel: gehaltsanzeige(j.job.salary)?.betrag ?? null,
-    /*
-     * Die Referenzspanne — getrennt vom echten Gehalt.
-     *
-     * Bewusst ein eigenes Feld und nicht `salaryLabel`. Wären beide
-     * dasselbe, sähe eine Schätzung in der Liste aus wie eine Zusage,
-     * und der Unterschied hinge an einem Kürzel daneben. Zwei Felder
-     * heisst: die Zeile kann sie nicht verwechseln.
-     */
-    referenzSpanne: (() => {
-      const r = referenz(j);
-      if (!r) return null;
-      const f = (n: number) => n.toLocaleString("de-DE");
-      return `${f(r.q1)} – ${f(r.q3)} €`;
-    })(),
-    referenzQuelle: referenz(j)?.quelle ?? null,
-    /*
-     * Die Herkunft gehört auf die Karte, nicht nur ins Detail.
-     *
-     * „75.000 €" und „75.000 €" sehen in einer Liste gleich aus. Das
-     * eine hat ein Arbeitgeber geschrieben, das andere hat ein Portal
-     * geschätzt. Wer die Liste überfliegt und sich eine Zahl merkt,
-     * merkt sich sonst eine Vermutung als Tatsache.
-     */
-    salaryHerkunft: gehaltsanzeige(j.job.salary)?.herkunftKurz ?? null,
-    salaryZugesagt: gehaltsanzeige(j.job.salary)?.zugesagt ?? false,
-    ageLabel: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).label,
-    isFresh: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).fresh,
-    sourceName: j.source?.displayName ?? "unbekannt",
-    score: j.fit.score,
-    band: j.fit.band,
-    confidence: j.confidence.level,
-    /*
-     * Was die Zahl auf der Karte bedeutet.
-     *
-     * Ohne bestätigtes Profil gibt es keine Passung — und dann stand bei
-     * JEDER Stelle derselbe Strich. Eine Liste, in der alle Zeilen
-     * dasselbe anzeigen, ordnet nichts und sagt nichts.
-     *
-     * Die Jobqualität lässt sich dagegen aus der Anzeige selbst
-     * beurteilen: Offenheit, Vertragsart, Flexibilität, Weiterbildung.
-     * Sie steht deshalb ein, solange die Passung fehlt — mit eigenem
-     * Etikett, damit niemand sie für eine Passung hält.
-     */
-    /* Transparenz der Anzeige, nicht die Arbeitsbedingungen — dieselbe
-       Zahl wie im Kopf der Anzeige. */
-    qualitaet: j.anzeige.score,
-    /* Dritter Wert der Farbrechnung — dieselbe Formel wie im Kopf. */
-    sicherheitWert: j.confidence.score,
-    /*
-     * Kurze Etiketten statt gekürzter Sätze.
-     *
-     * Hier standen `topReason` und `topReservation` — Mondays ganze
-     * Sätze, in der Zeile auf `line-clamp-1` gestutzt und damit mitten
-     * im Wort abgebrochen. Die vollständigen Sätze stehen weiterhin
-     * rechts im Detail, wo Platz für sie ist.
-     */
-    signale: listensignale(j),
-    blocked: j.constraints.overall === "blocked",
-    /*
-     * Nur die Namen, nicht die Begründungen.
-     *
-     * In einer Zeile ist Platz für „Gehalt nicht angegeben", nicht für
-     * den ganzen Satz. Der steht auf der Detailseite. Zwei reichen —
-     * bei drei Zeichen daneben liest niemand mehr eines davon.
-     */
-    offeneBedingungen: j.constraints.checks
-      .filter((c) => c.verdict === "uncertain")
-      .slice(0, 2)
-      .map((c) => c.label),
-    saved: savedIds.has(j.jobId),
-  }));
+  /*
+   * Die Zeilen baut `lib/jobs/zeilen.ts`.
+   *
+   * Sie standen hier: rund hundertzwanzig Zeilen mit jeder Entscheidung
+   * darüber, was eine Stellenzeile zeigt. Sobald eine zweite Stelle
+   * dieselben Zeilen zeigt, gibt es nur zwei Möglichkeiten — dieselbe
+   * Funktion, oder zwei Fassungen, die beim nächsten Feld
+   * auseinanderlaufen.
+   *
+   * Das Laden bleibt hier: Wohnort, Referenzgehälter und abgelegte
+   * Stellen holt die Seite, die Funktion rechnet nur.
+   */
+  const rows: JobRowData[] = zeilenAusStellen(sichtbar, {
+    wohnpunkt,
+    fortbewegung,
+    savedIds,
+    nachKldb,
+    nachTitel,
+    vertragsarten: CONTRACT,
+  });
 
   /*
    * Mondays Lesart der ausgewählten Stelle.
@@ -1408,15 +1285,6 @@ const CONTRACT: Record<string, string> = {
 };
 
 /** Alter in Worten. „vor 3 Tagen" liest sich schneller als ein Datum. */
-function relativeAge(date: Date | null): { label: string | null; fresh: boolean } {
-  if (!date) return { label: null, fresh: false };
-  const days = Math.floor((Date.now() - date.getTime()) / 86_400_000);
-  if (days <= 0) return { label: "heute", fresh: true };
-  if (days === 1) return { label: "gestern", fresh: true };
-  if (days < 7) return { label: `vor ${days} Tagen`, fresh: true };
-  if (days < 30) return { label: `vor ${Math.floor(days / 7)} Wochen`, fresh: false };
-  return { label: `vor ${Math.floor(days / 30)} Monaten`, fresh: false };
-}
 
 /**
  * Filter auf der bereits bewerteten Liste.
