@@ -50,12 +50,12 @@ import { Skeleton } from "@/components/ui";
 export default function StellenseiteLaedt() {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <PageHeader title="Deine besten Möglichkeiten" />
+      <PageHeader className="uebergang-stellen-titel" title="Deine besten Möglichkeiten" />
 
       {/* Platz des Hinweiskastens „Diese Reihenfolge ist noch nicht auf
           dich zugeschnitten" — px-5 py-4 um zwei Zeilen `text-sm
           leading-relaxed`. */}
-      <div className="rounded-(--radius-surface) bg-accent-soft px-5 py-4">
+      <div className="uebergang-stellen-hinweis rounded-(--radius-surface) bg-accent-soft px-5 py-4">
         <div className="grid max-w-[var(--measure)] gap-2.5">
           <Skeleton className="h-3.5" />
           <Skeleton className="h-3.5 w-2/5" />
@@ -95,7 +95,7 @@ export default function StellenseiteLaedt() {
       {/* Die Liste. Vier Zeilen sind genug, damit die Seite als Liste
           lesbar ist; mehr wäre ein Versprechen über die Zahl der
           Treffer, das wir hier nicht geben können. */}
-      <div className="grid gap-2" aria-busy="true" aria-live="polite">
+      <div className="uebergang-stellen-liste grid gap-2" aria-busy="true" aria-live="polite">
         <span className="sr-only">Stellen werden geladen</span>
         {[0, 1, 2, 3].map((i) => (
           <div key={i} className="grid gap-2.5 rounded-(--radius-surface) border border-line p-4">

@@ -376,7 +376,7 @@ export function InterviewRoom({
             über ihre Fläche hinaus (`inset-[-18%]`), bei 120px also gut
             20 Pixel. Mit dem kleineren Abstand lag der Schein auf dem
             Wort „Monday". */}
-        <header className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 pt-6 pb-5">
+        <header className="uebergang-gespraech-kopf flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 pt-6 pb-5">
           {/*
            * Monday schrumpft, sobald das Gespräch läuft.
            *
@@ -641,7 +641,7 @@ export function InterviewRoom({
              * abgerundete Ecke wurde angeschnitten. Vier Pixel Luft
              * genügen; mehr würde die Blase sichtbar einrücken.
              */
-            "ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1 pb-6",
+            "uebergang-gespraech-strom ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1 pb-6",
             /*
              * Auch die Ausrichtung wird normal.
              *

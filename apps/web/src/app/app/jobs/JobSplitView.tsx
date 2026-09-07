@@ -151,7 +151,7 @@ export function JobSplitView({
      * einem 390 Pixel breiten Fenster, und die ganze Seite rollte
      * seitlich.
      */
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] lg:items-start">
+    <div className="uebergang-stellen-liste grid gap-6 lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] lg:items-start">
       {/* ── Liste ──────────────────────────────────────────── */}
       <div
         ref={listRef}

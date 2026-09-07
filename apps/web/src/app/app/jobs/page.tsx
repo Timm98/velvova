@@ -591,6 +591,7 @@ export default async function JobsPage({
          * hier vierundzwanzig Pixel — und Pixel über der Liste sind auf
          * dieser Seite das knappste Gut.
          */
+        className="uebergang-stellen-titel"
         title="Deine besten Möglichkeiten"
         /*
          * Kein Vorspann mehr — auf keiner Breite.
@@ -647,7 +648,7 @@ export default async function JobsPage({
        * steht hier.
        */}
       {!gate.unlocked && (
-        <div className="rounded-(--radius-surface) bg-accent-soft px-5 py-4">
+        <div className="uebergang-stellen-hinweis rounded-(--radius-surface) bg-accent-soft px-5 py-4">
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             <span className="font-medium text-ink">
               Diese Reihenfolge ist noch nicht auf dich zugeschnitten.

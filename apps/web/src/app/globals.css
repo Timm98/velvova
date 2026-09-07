@@ -942,109 +942,222 @@ input[type="number"] {
 }
 
 /*
- * Die Bewegung: gemächlich genug, dass man sie als Weg liest, und kurz
- * genug, dass niemand wartet. 420 ms sind der Punkt, an dem beides
- * gerade noch zusammengeht.
+ * ══════════════════════════════════════════════════════════════
+ * Die Zeiten
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Vorher lief alles in 420 ms. Das war ein Schnitt mit Bewegung:
+ * technisch eine Animation, zum Lesen zu kurz — man sah, DASS sich
+ * etwas geändert hat, nicht WAS.
+ *
+ * Jetzt trägt das Feld 760 ms, die Flächen 620 ms, und sie setzen
+ * nacheinander ein. Die ganze Bewegung dauert damit gut neun Zehntel
+ * Sekunden. Das ist die Grenze: darüber wartet man, darunter
+ * verschwimmt die Abfolge zu einem Ereignis.
+ */
+:root {
+  --uebergang-feld: 760ms;
+  --uebergang-panel: 620ms;
+  --uebergang-grund: 320ms;
+  --uebergang-kurve: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Das Feld ist die durchgehende Linie.
+ *
+ * Es ist das einzige Element, das auf beiden Seiten existiert und
+ * seinen Platz wechselt — alle anderen gehen oder kommen. Deshalb
+ * läuft es am längsten und ohne Verzögerung: Es beginnt als Erstes
+ * und endet als Letztes, und die Flächen bewegen sich in seiner
+ * Zeit.
  */
 ::view-transition-group(sucheingabe) {
-  animation-duration: 420ms;
-  animation-timing-function: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+  animation-duration: var(--uebergang-feld);
+  animation-timing-function: var(--uebergang-kurve);
+  z-index: 3;
 }
 
 /*
  * ══════════════════════════════════════════════════════════════
- * Die Seite fährt hoch, die neue kommt von unten
+ * Die Flächen fahren einzeln
  * ══════════════════════════════════════════════════════════════
  *
- * Hier stand nur eine Blende. Das war zu wenig: Man sah das Feld
- * wandern, aber nicht, WOHIN man geht. Ein Übergang, der nur
- * überblendet, ist ein Schnitt mit Weichzeichner.
+ * Vorher bewegte sich die ganze Seite als ein Block: Ein Rechteck
+ * fuhr hoch, ein anderes kam nach. Man sah zwei Bilder, nicht zwei
+ * Seiten.
  *
- * Jetzt schiebt sich das Gespräch nach oben aus dem Bild, und die
- * Stellenseite kommt von unten nach. Das ist die Bewegung, die die
- * Geste beschreibt: Man scrollt nach unten, also kommt das Nächste
- * von unten.
+ * Ein eigener `view-transition-name` nimmt eine Fläche aus dem
+ * Wurzelbild heraus und macht sie zu einer eigenen Gruppe. Damit
+ * fahren Gesprächskopf, Nachrichtenstrom, Überschrift, Hinweis und
+ * Liste jede für sich — nacheinander, nicht miteinander.
  *
- * Beide laufen gleich lang wie das Feld (420 ms) und mit derselben
- * Kurve — sonst kommt eines an, während das andere noch unterwegs
- * ist, und die Bewegung zerfällt in zwei.
- *
- * `::view-transition-group(sucheingabe)` liegt darüber: Das Feld
- * gehört zu keiner der beiden Seiten, es geht seinen eigenen Weg.
+ * Die Namen müssen je Dokument einmalig sein. Jede dieser Klassen
+ * steht deshalb an genau einer Stelle je Seite.
  */
-@keyframes seite-faehrt-hoch {
+.uebergang-gespraech-kopf {
+  view-transition-name: gespraech-kopf;
+}
+
+.uebergang-gespraech-strom {
+  view-transition-name: gespraech-strom;
+}
+
+.uebergang-stellen-titel {
+  view-transition-name: stellen-titel;
+}
+
+.uebergang-stellen-hinweis {
+  view-transition-name: stellen-hinweis;
+}
+
+.uebergang-stellen-liste {
+  view-transition-name: stellen-liste;
+}
+
+/*
+ * 80 Pixel Weg.
+ *
+ * Erst standen hier 56. Auf Einzelbildern war davon fast nichts zu
+ * sehen: Die Flächen blendeten eher, als dass sie fuhren — und
+ * gefragt war ausdrücklich das Fahren.
+ *
+ * 80 ist etwa zwei Textzeilen. Genug, dass die Richtung eindeutig
+ * ist, wenig genug, dass die Fläche nicht erst durch den halben
+ * Bildschirm reisen muss, bevor sie verschwindet. Der Weg macht die
+ * Bewegung lesbar; die Deckkraft macht sie fertig.
+ */
+@keyframes panel-hoch-weg {
   to {
-    transform: translateY(-14%);
+    transform: translateY(-80px);
     opacity: 0;
   }
 }
 
-@keyframes seite-kommt-von-unten {
+@keyframes panel-von-unten {
   from {
-    transform: translateY(100%);
-  }
-}
-
-@keyframes seite-faehrt-runter {
-  to {
-    transform: translateY(14%);
+    transform: translateY(80px);
     opacity: 0;
   }
 }
 
-@keyframes seite-kommt-von-oben {
+@keyframes panel-runter-weg {
+  to {
+    transform: translateY(80px);
+    opacity: 0;
+  }
+}
+
+@keyframes panel-von-oben {
   from {
-    transform: translateY(-100%);
+    transform: translateY(-80px);
+    opacity: 0;
   }
 }
 
 /*
- * Die Richtung steht am Dokument, gesetzt kurz bevor der Übergang
- * beginnt (siehe `ScrollUebergang`).
+ * ══════════════════════════════════════════════════════════════
+ * Die Abfolge
+ * ══════════════════════════════════════════════════════════════
  *
- * Ohne sie sähe der Rückweg aus wie der Hinweg: Man scrollt nach
- * oben, und die Seite fährt trotzdem nach oben davon. Das liest sich
- * als Fehler, auch wenn man nicht benennen kann, welcher.
+ * Erst geht das Alte, dann kommt das Neue — mit Überschneidung, sonst
+ * steht zwischendrin ein leerer Bildschirm.
+ *
+ *   0 ms   Gesprächskopf fährt hoch
+ *   70     Nachrichtenstrom folgt
+ *  150     Überschrift der Stellenseite kommt von unten
+ *  210     Hinweiskasten
+ *  270     Liste
+ *  760     das Feld ist angekommen
+ *
+ * Die Staffelung ist der Unterschied zwischen „die Seite hat
+ * gewechselt" und „ich bin woanders hingegangen". Gleichzeitig
+ * einsetzende Flächen liest das Auge als eine Fläche.
  */
-:root[data-uebergang="runter"]::view-transition-old(root) {
-  animation: seite-faehrt-hoch 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+:root[data-uebergang="runter"]::view-transition-old(gespraech-kopf) {
+  animation: panel-hoch-weg var(--uebergang-panel) var(--uebergang-kurve) both;
 }
 
-:root[data-uebergang="runter"]::view-transition-new(root) {
-  animation: seite-kommt-von-unten 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+:root[data-uebergang="runter"]::view-transition-old(gespraech-strom) {
+  animation: panel-hoch-weg var(--uebergang-panel) 70ms var(--uebergang-kurve) both;
 }
 
-:root[data-uebergang="hoch"]::view-transition-old(root) {
-  animation: seite-faehrt-runter 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+:root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
+  animation: panel-von-unten var(--uebergang-panel) 150ms var(--uebergang-kurve) both;
 }
 
-:root[data-uebergang="hoch"]::view-transition-new(root) {
-  animation: seite-kommt-von-oben 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+:root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
+  animation: panel-von-unten var(--uebergang-panel) 210ms var(--uebergang-kurve) both;
+}
+
+:root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
+  animation: panel-von-unten var(--uebergang-panel) 270ms var(--uebergang-kurve) both;
+}
+
+/* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
+   aussieht wie der Hinweg, liest sich als Fehler. */
+:root[data-uebergang="hoch"]::view-transition-old(stellen-titel) {
+  animation: panel-runter-weg var(--uebergang-panel) 140ms var(--uebergang-kurve) both;
+}
+
+:root[data-uebergang="hoch"]::view-transition-old(stellen-hinweis) {
+  animation: panel-runter-weg var(--uebergang-panel) 70ms var(--uebergang-kurve) both;
+}
+
+:root[data-uebergang="hoch"]::view-transition-old(stellen-liste) {
+  animation: panel-runter-weg var(--uebergang-panel) var(--uebergang-kurve) both;
+}
+
+:root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
+  animation: panel-von-oben var(--uebergang-panel) 150ms var(--uebergang-kurve) both;
+}
+
+:root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
+  animation: panel-von-oben var(--uebergang-panel) 210ms var(--uebergang-kurve) both;
 }
 
 /*
- * Ohne gesetzte Richtung bleibt es beim Überblenden des Browsers.
- * Jede andere Navigation — ein Klick im Menü, der Zurück-Knopf —
- * soll nicht plötzlich fahren.
+ * ══════════════════════════════════════════════════════════════
+ * Der Grund bewegt sich nicht mehr
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Vorher fuhr das Wurzelbild als Ganzes: alte Seite 14 % nach oben,
+ * neue Seite von 100 % unten herauf.
+ *
+ * Das geht nicht mehr zusammen mit einzeln fahrenden Flächen. Was
+ * einen eigenen Namen hat, ist aus dem Wurzelbild HERAUSGENOMMEN —
+ * übrig bleibt der Seitengrund. Würde der noch um eine ganze
+ * Bildhöhe fahren, sähe man eine leere Fläche vorbeiziehen, während
+ * die Inhalte unabhängig davon ihre eigenen Wege gehen. Zwei
+ * Bewegungen, die nichts miteinander zu tun haben.
+ *
+ * Jetzt blendet der Grund nur noch. Die Bewegung tragen die Flächen.
  */
+::view-transition-old(root) {
+  animation: uebergang-aus var(--uebergang-grund) var(--uebergang-kurve) both;
+}
 
-/*
- * Die neue Seite liegt oben. Ohne das schiebt sie sich UNTER die
- * alte und man sieht die Bewegung nicht.
- */
 ::view-transition-new(root) {
+  animation: uebergang-ein var(--uebergang-grund) 120ms var(--uebergang-kurve) both;
   z-index: 1;
 }
 
-::view-transition-group(sucheingabe) {
-  z-index: 2;
+@keyframes uebergang-aus {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes uebergang-ein {
+  from {
+    opacity: 0;
+  }
 }
 
 /*
  * Wer Bewegung abbestellt hat, bekommt keine.
  *
  * Das ist kein Zusatz, sondern der Grund, warum diese Menschen die
- * Einstellung setzen: Ein Feld, das über den Bildschirm fährt, ist
+ * Einstellung setzen: Flächen, die über den Bildschirm fahren, sind
  * genau die Art Bewegung, die Übelkeit auslöst.
  */
 @media (prefers-reduced-motion: reduce) {
@@ -1063,10 +1176,16 @@ input[type="number"] {
  * rechnet der Browser keine Bewegung für sie aus, während der Rest
  * fährt.
  *
- * Ohne das gehört sie zur Wurzel und fährt mit nach oben aus dem
- * Bild. Dann wandert alles gleichzeitig, und es gibt nichts mehr, an
- * dem das Auge sich festhält.
+ * Ohne das gehört sie zur Wurzel und blendet mit weg. Dann bewegt
+ * sich alles gleichzeitig, und es gibt nichts mehr, an dem das Auge
+ * sich festhält.
  */
 .uebergang-kopf {
   view-transition-name: kopfzeile;
+}
+
+/* Sie liegt über allem, was fährt — sonst schiebt sich eine
+   auffahrende Fläche kurz vor sie. */
+::view-transition-group(kopfzeile) {
+  z-index: 4;
 }
