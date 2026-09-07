@@ -775,20 +775,28 @@ export function InterviewRoom({
                * hingehört: am Ende eines Satzes.
                */
               /*
-               * Eine Nachricht ohne Inhalt ist keine Nachricht.
+               * Nur die noch leere Antwort beim Streamen fällt weg.
                *
-               * Beim Streamen legt der Provider die Antwort an, bevor
-               * das erste Zeichen da ist — gezeichnet wurde ein leerer
-               * Absatz. Dasselbe passiert bei einer Nutzerzeile, deren
-               * Inhalt leer bleibt: Auf dem Bildschirm stand ein
-               * blauer Strich ohne Text, weil die Bubble ihre Polster
-               * und ihre Farbe behält, aber nichts zu zeigen hat.
+               * Der Provider legt sie an, bevor das erste Zeichen da
+               * ist; gezeichnet wurde sonst ein leerer Absatz mit
+               * Balken. Die graue Zeile darunter sagt in dieser Zeit,
+               * was passiert.
                *
-               * Beides fällt hier weg. Was leer ist, wird nicht
-               * gezeichnet — die graue Zeile darunter sagt ohnehin,
-               * dass gerade gearbeitet wird.
+               * ── ZURÜCKGENOMMEN: der breite Filter ───────────────
+               *
+               * Hier stand kurzzeitig `m.content.trim().length > 0` —
+               * ALLE leeren Nachrichten weg, auch geladene. Gedacht
+               * war er gegen einen blauen Strich ohne Text; direkt
+               * danach kam die Meldung, das Gespräch sei leer.
+               *
+               * Ob er die Ursache war, ist nicht bewiesen. Aber ein
+               * Filter, der im Zweifel ALLES ausblendet, ist genau die
+               * Bauart, die einen leeren Chat erzeugt — und ein
+               * einzelner blauer Strich ist der kleinere Schaden. Er
+               * kommt erst zurück, wenn klar ist, woher leere
+               * Nutzerzeilen stammen.
                */
-              .filter((m) => m.content.trim().length > 0)
+              .filter((m) => !(m.role === "assistant" && m.streaming && m.content.length === 0))
               .map((m, i, sichtbare) => {
               /*
                * Die letzte Nachricht groß — aber nur, wenn sie kurz ist.
