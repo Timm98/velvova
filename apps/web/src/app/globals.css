@@ -228,10 +228,25 @@
    */
   --breite-inhalt: 1200px;
 
-  /* Höhe des globalen Headers. V7 §8.1 rechnet ausdrücklich damit:
-     `height: calc(100dvh - var(--app-header-height))`. Sie steht
-     deshalb als Token da und nicht als 76 in drei Dateien. */
-  --app-header-height: 76px;
+  /*
+   * Hier stand `--app-header-height: 76px`.
+   *
+   * Die Zahl war einmal richtig. Dann bekam die Kopfzeile eine zweite
+   * Reihe und misst gemessen 147 Pixel, darüber liegt ein Hinweisband
+   * von 37 — über dem Inhalt stehen also 184. Die Variable sagte
+   * weiter 76.
+   *
+   * Sie ist weg und nicht etwa korrigiert, denn der Fehler steckt in
+   * der Bauart: Eine Zahl, die die Höhe eines Elements beschreibt,
+   * geht auseinander, sobald jemand dieses Element ändert — und zwar
+   * lautlos. Der einzige Ort, an dem sie gebraucht wurde, war
+   * `AppShell`, und dort steht jetzt `flex-1 min-h-0`: Der
+   * Inhaltsbereich nimmt, was die Geschwister übrig lassen, und misst
+   * sich damit selbst.
+   *
+   * Wer die Höhe wirklich braucht, misst sie — er schreibt sie nicht
+   * auf.
+   */
 }
 
 @layer base {

@@ -271,10 +271,16 @@ export function AppShell({
                 /*
                  * Der Rest wird gemessen, nicht gerechnet.
                  *
-                 * Hier stand eine feste Höhe:
+                 * Hier stand eine feste Höhe: die Fensterhöhe minus
+                 * zwei Gestaltungsvariablen — eine für die Kopfzeile,
+                 * eine für die untere Leiste.
                  *
-                 *   h-[calc(100dvh - var(--app-header-height)
-                 *                  - var(--nav-bottom-h))]
+                 * (Die Namen stehen hier bewusst NICHT ausgeschrieben:
+                 * `design-tokens.test.ts` sucht im Quelltext nach
+                 * benutzten Variablen und hielte die Erwähnung in
+                 * diesem Kommentar für eine Benutzung. Die Variable
+                 * für die Kopfhöhe gibt es nicht mehr; warum, steht in
+                 * `globals.css` an ihrer Stelle.)
                  *
                  * Sie stimmte, solange die Kopfzeile 76 Pixel hoch war.
                  * Inzwischen hat sie zwei Reihen und misst 147, und

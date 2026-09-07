@@ -10,6 +10,7 @@ import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { seitenwechsel } from "@/lib/nina/uebergang";
+import { darfFuehren, FUEHRUNG_WARTEN_MS } from "@/lib/nina/fuehrung";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
 import { useNina } from "@/components/nina/NinaProvider";
@@ -179,20 +180,34 @@ export function InterviewRoom({
   }, [router]);
 
   useEffect(() => {
-    if (gefuehrt.current) return;
-    if (nina.jobs.length === 0) return;
-    if (nina.busy) return;
-
-    const uhr = window.setTimeout(() => {
+    const lage = () => {
       const feld = document.activeElement;
-      const angefangen =
-        (feld instanceof HTMLTextAreaElement || feld instanceof HTMLInputElement) &&
-        feld.value.trim().length > 0;
-      if (angefangen || gefuehrt.current) return;
+      return {
+        schonGefuehrt: gefuehrt.current,
+        treffer: nina.jobs.length,
+        schreibtGerade: nina.busy,
+        feldinhalt:
+          feld instanceof HTMLTextAreaElement || feld instanceof HTMLInputElement
+            ? feld.value
+            : null,
+      };
+    };
 
+    if (!darfFuehren(lage())) return;
+
+    /*
+     * Vor dem Wechsel noch einmal prüfen.
+     *
+     * In den 1,6 Sekunden kann sich alles ändern: Monday fängt eine
+     * neue Antwort an, jemand tippt los, oder er ist selbst schon
+     * hinübergegangen. Die Bedingungen von vorhin gelten dann nicht
+     * mehr.
+     */
+    const uhr = window.setTimeout(() => {
+      if (!darfFuehren(lage())) return;
       gefuehrt.current = true;
       seitenwechsel(router, "/app/jobs", "runter");
-    }, 1600);
+    }, FUEHRUNG_WARTEN_MS);
 
     return () => window.clearTimeout(uhr);
   }, [nina.busy, nina.jobs.length, router]);
