@@ -20,10 +20,42 @@ import { profilbildEntfernen, profilbildHochladen } from "@/lib/account";
 export function Profilbild({
   bildKennung,
   name,
+  kopf = false,
+  kennung,
 }: {
   bildKennung: string | null;
   name: string;
+  /**
+   * Als Kopf des Bereichs statt als eigener Abschnitt.
+   *
+   * Die Vorlage stellt Bild und Name nebeneinander an den Anfang —
+   * das ist die Angabe, an der man erkennt, wessen Konto man gerade
+   * ansieht. Als eigener Abschnitt mit Überschrift „Profilbild" und
+   * drei Zeilen Erklärung stand das Bild dagegen mitten im Formular.
+   *
+   * Die Erklärung zu den Dateiformaten geht dabei nicht verloren; sie
+   * steht klein unter den Knöpfen, wo sie gebraucht wird.
+   */
+  kopf?: boolean;
+  /** Die Kennung unter dem Namen — E-Mail oder Telefonnummer. */
+  kennung?: string | null;
 }) {
+  if (kopf) {
+    return (
+      <section aria-label="Konto" className="flex flex-wrap items-center gap-6">
+        <Bild bildKennung={bildKennung} name={name} />
+
+        <div className="grid min-w-0 gap-2">
+          <div className="grid gap-0.5">
+            <h2 className="font-display text-2xl font-normal tracking-[-0.02em]">{name}</h2>
+            {kennung && <p className="truncate text-sm text-ink-3">{kennung}</p>}
+          </div>
+          <Knoepfe bildKennung={bildKennung} />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section aria-labelledby="profilbild" className="grid gap-4">
       <div className="grid gap-1">
@@ -37,6 +69,17 @@ export function Profilbild({
       </div>
 
       <div className="flex flex-wrap items-center gap-5">
+        <Bild bildKennung={bildKennung} name={name} />
+        <Knoepfe bildKennung={bildKennung} />
+      </div>
+    </section>
+  );
+}
+
+/** Das Bild selbst — oder der Anfangsbuchstabe, wenn keines da ist. */
+function Bild({ bildKennung, name }: { bildKennung: string | null; name: string }) {
+  return (
+    <>
         {bildKennung ? (
           // eslint-disable-next-line @next/next/no-img-element -- Die Route
           // liefert das Bild des angemeldeten Nutzers; sie kennt weder
@@ -55,7 +98,13 @@ export function Profilbild({
             {name.trim().slice(0, 1).toUpperCase()}
           </span>
         )}
+    </>
+  );
+}
 
+/** Hochladen, ersetzen, entfernen — in beiden Fassungen dieselben. */
+function Knoepfe({ bildKennung }: { bildKennung: string | null }) {
+  return (
         <div className="grid gap-3">
           <form action={profilbildHochladen} className="flex flex-wrap items-center gap-3">
             <label className="grid gap-1.5">
@@ -86,8 +135,11 @@ export function Profilbild({
               </button>
             </form>
           )}
+
+          <p className="max-w-[46ch] text-2xs leading-relaxed text-ink-3">
+            JPEG, PNG oder WebP, höchstens 2 MB. Es wird nirgends veröffentlicht — nur du
+            siehst es.
+          </p>
         </div>
-      </div>
-    </section>
   );
 }

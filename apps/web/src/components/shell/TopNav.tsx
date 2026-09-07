@@ -274,7 +274,7 @@ export function TopNav({
           >
             <Bell className="size-[21px]" strokeWidth={2} />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 font-mono text-[12px] font-semibold leading-[18px] text-accent-on">
+              <span className="absolute right-1.5 top-1.5 grid min-w-[18px] place-items-center rounded-(--radius-pill) bg-accent px-1 font-mono text-[12px] font-semibold leading-[18px] text-accent-on">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

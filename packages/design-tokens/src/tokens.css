@@ -160,21 +160,34 @@
      Es bleibt eine SKALA, keine Sammlung von Einzelwerten — sonst
      entscheidet jede neue Fläche neu, ob 7 oder 9 richtig ist.
 
-     `--radius-pill` und `--radius-full` bleiben bei 999: Sie tragen
-     die echten Kreise — Profilbilder, Punkte, runde Symbolknöpfe.
-     Die aus einer Pille rechteckig zu machen wäre kein Stilwechsel,
-     sondern ein Fehler. */
+     `--radius-full` bleibt bei 999: Es trägt die echten Kreise —
+     Profilbilder, Punkte, Fortschrittsringe. Die rechteckig zu machen
+     wäre kein Stilwechsel, sondern ein Fehler. */
   --radius-xs: 3px;
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
   --radius-2xl: 16px;
-  --radius-pill: 999px;
-  /* Der alte Name bleibt als Weiterleitung: rund zwanzig Dateien
-     benutzen ihn noch, und ein halb umbenanntes Token ist schlimmer als
-     ein altes. */
-  --radius-full: var(--radius-pill);
+  /* Echte Kreise: Profilbilder, Punkte, Fortschrittsringe. */
+  --radius-full: 999px;
+
+  /*
+     `--radius-pill` ist KEIN Kreis mehr.
+     ══════════════════════════════════════════════════════════════
+
+     Der Name kommt aus der alten Sprache, in der Knöpfe, Chips und
+     Eingaben Pillen waren. Rund hundert Stellen benutzen ihn — sie
+     alle einzeln umzuschreiben hiesse, hundertmal dieselbe
+     Entscheidung zu treffen und beim einundhundertsten Mal eine
+     andere.
+
+     Er zeigt deshalb jetzt auf die Bedienelement-Stufe. Wer die
+     Formensprache wieder rund haben will, ändert diese eine Zeile.
+
+     Für die verbliebenen echten Kreise gibt es `--radius-full` und
+     `rounded-full`; die sind davon nicht betroffen. */
+  --radius-pill: var(--radius-sm);
 
   /* Benannt nach der Aufgabe, nicht nach der Größe — wer eine Jobfläche
      baut, soll nicht entscheiden müssen, ob 6 oder 8 richtig ist. */

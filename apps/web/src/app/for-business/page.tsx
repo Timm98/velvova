@@ -162,7 +162,7 @@ export default async function FuerUnternehmenSeite() {
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   href="/business/signup"
-                  className="group inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
+                  className="group inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
                   style={{
                     background: "var(--ed-violet)",
                     color: "#fff",
@@ -174,7 +174,7 @@ export default async function FuerUnternehmenSeite() {
                 </Link>
                 <Link
                   href="#trennlinie"
-                  className="inline-flex min-h-13 items-center rounded-full px-6 text-[15px] font-medium"
+                  className="inline-flex min-h-13 items-center rounded-(--radius-pill) px-6 text-[15px] font-medium"
                   style={{ color: "var(--ed-ink)", boxShadow: "inset 0 0 0 1px var(--ed-hairline-strong)" }}
                 >
                   Was ihr seht — und was nicht
@@ -428,7 +428,7 @@ export default async function FuerUnternehmenSeite() {
               ].map((x) => (
                 <li
                   key={x}
-                  className="rounded-full px-3 py-1.5 text-sm"
+                  className="rounded-(--radius-pill) px-3 py-1.5 text-sm"
                   style={{ background: "var(--ed-violet-soft)", color: "var(--ed-violet-text)" }}
                 >
                   {x}
@@ -641,7 +641,7 @@ export default async function FuerUnternehmenSeite() {
 
               <Link
                 href="/security"
-                className="inline-flex min-h-13 w-fit items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-colors"
+                className="inline-flex min-h-13 w-fit items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium transition-colors"
                 style={{ background: "rgba(255,255,255,.1)", color: "#fff" }}
               >
                 Was ihr seht — und was nicht
@@ -666,7 +666,7 @@ export default async function FuerUnternehmenSeite() {
             </p>
             <Link
               href="/business/signup"
-              className="group inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
+              className="group inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
               style={{
                 background: "var(--ed-violet)",
                 color: "#fff",

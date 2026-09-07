@@ -6,8 +6,7 @@ import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { kennung, listSessions, requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { Input, Row, RowGroup } from "@/components/ui";
-import { Section } from "@/components/ui/states";
+import { Card, Input, Row, RowGroup } from "@/components/ui";
 import { DeviceList } from "./SettingsClient";
 import { SaveButton } from "./SettingsForm";
 import { updateDisplayName } from "@/lib/account";
@@ -24,10 +23,20 @@ export const dynamic = "force-dynamic";
  * selbst gehört — alles Weitere hat einen eigenen Bereich, damit
  * niemand beim Ändern der Sprache an einem Löschknopf vorbeiscrollt.
  *
- * Der Aufbau ist Absicht: Überschrift, Erklärung, Zeilen. Keine Karte
- * um jeden Abschnitt, kein Rahmen um jedes Feld. Eine Einstellungsseite,
- * auf der jede Angabe in einem eigenen Kasten sitzt, sieht aus wie ein
- * Verwaltungsformular — und liest sich auch so.
+ * ── Warum hier jetzt doch Karten stehen ───────────────────────
+ *
+ * Hier stand das Gegenteil: „Keine Karte um jeden Abschnitt, kein
+ * Rahmen um jedes Feld." Die Begründung war, dass eine Seite aus
+ * lauter Kästen wie ein Verwaltungsformular aussieht.
+ *
+ * Sie galt für Kästen mit Schatten und Rahmen um EINZELNE FELDER.
+ * Die Karten der Vorlage sind etwas anderes: eine Haarlinie um eine
+ * ZUSAMMENGEHÖRIGE GRUPPE, flach, ohne Schatten. Sie umranden nicht
+ * jede Angabe, sie fassen zusammen, was zusammengehört — und genau
+ * das fehlte hier: vier Abschnitte untereinander, getrennt nur durch
+ * Abstand, ohne dass man sah, wo einer aufhört.
+ *
+ * Was bleibt: kein Rahmen um einzelne Felder.
  */
 export default async function AccountSettingsPage() {
   const user = await requireUser();
@@ -76,19 +85,35 @@ export default async function AccountSettingsPage() {
   ];
 
   return (
-    <div className="grid gap-10">
-      {/* Das Bild steht vor dem Namen: Es ist die Angabe, die man
-          zuerst sucht, wenn man sein Konto einrichtet. */}
-      <Profilbild bildKennung={profilbildKennung(settings?.avatarPfad)} name={user.displayName ?? kennung(user)} />
+    <div className="grid gap-8">
+      {/* Bild und Name als Kopf: die Angabe, an der man erkennt,
+          wessen Konto man gerade ansieht. */}
+      <Profilbild
+        kopf
+        bildKennung={profilbildKennung(settings?.avatarPfad)}
+        name={user.displayName ?? kennung(user)}
+        kennung={user.email ?? user.phone ?? null}
+      />
 
-      <form action={updateDisplayName}>
-        <Section
-          title="Wie sollen wir dich ansprechen?"
-          description="Der Name erscheint in der Anwendung und in erzeugten Unterlagen. Er wird nicht an das Sprachmodell übermittelt."
-        >
-          <div className="grid max-w-xl gap-4 sm:grid-cols-2">
+      {/*
+        Zwei Karten nebeneinander wie in der Vorlage, darunter die
+        breiten. `items-start`, damit die kürzere nicht auf die Höhe
+        der längeren gezogen wird — gestreckter Leerraum liest sich
+        als vergessener Inhalt.
+      */}
+      <div className="grid items-start gap-5 lg:grid-cols-2">
+        <form action={updateDisplayName}>
+          <Card className="grid gap-5">
+            <div className="grid gap-1">
+              <h2 className="text-base font-semibold text-ink">Angaben zur Person</h2>
+              <p className="text-2xs leading-relaxed text-ink-3">
+                Der Name erscheint in der Anwendung und in erzeugten Unterlagen. Er wird nicht
+                an das Sprachmodell übermittelt.
+              </p>
+            </div>
+
             <label className="grid gap-2">
-              <span className="text-sm font-medium">Name</span>
+              <span className="text-sm text-ink-2">Name</span>
               <Input
                 name="displayName"
                 defaultValue={user.displayName ?? ""}
@@ -97,47 +122,56 @@ export default async function AccountSettingsPage() {
               />
             </label>
 
-            <label className="grid gap-2">
-              <span className="text-sm font-medium">E-Mail</span>
-              <Input value={user.email ?? ""} readOnly disabled />
-              {/*
-                Ein Konto aus der SMS-Anmeldung hat keine Adresse. Das
-                Feld leer zu lassen wäre richtig, aber nicht erklärt —
-                der Satz darunter sagt, warum es leer ist und was
-                stattdessen die Kennung ist.
-              */}
-              <span className="text-xs text-ink-3">
-                {user.email
-                  ? "Die Anmeldeadresse. Änderung folgt."
-                  : `Noch keine Adresse hinterlegt. Angemeldet über ${user.phone ?? "eine Telefonnummer"}.`}
-              </span>
-            </label>
-          </div>
+            <div>
+              <SaveButton />
+            </div>
+          </Card>
+        </form>
 
-          <div>
-            <SaveButton />
-          </div>
-        </Section>
-      </form>
+        <Card className="grid gap-5">
+          <h2 className="text-base font-semibold text-ink">Anmeldedaten</h2>
 
-      <Section
-        title={t("settings.sessions")}
-        description="Angemeldete Geräte. Abmelden wirkt sofort, auch auf dem betroffenen Gerät."
-      >
+          <label className="grid gap-2">
+            <span className="text-sm text-ink-2">E-Mail</span>
+            <Input value={user.email ?? ""} readOnly disabled />
+            {/*
+              Ein Konto aus der SMS-Anmeldung hat keine Adresse. Das
+              Feld leer zu lassen wäre richtig, aber nicht erklärt —
+              der Satz darunter sagt, warum es leer ist und was
+              stattdessen die Kennung ist.
+            */}
+            <span className="text-2xs leading-relaxed text-ink-3">
+              {user.email
+                ? "Die Anmeldeadresse. Änderung folgt."
+                : `Noch keine Adresse hinterlegt. Angemeldet über ${user.phone ?? "eine Telefonnummer"}.`}
+            </span>
+          </label>
+        </Card>
+      </div>
+
+      <Card className="grid gap-5">
+        <div className="grid gap-1">
+          <h2 className="text-base font-semibold text-ink">{t("settings.sessions")}</h2>
+          <p className="text-2xs leading-relaxed text-ink-3">
+            Angemeldete Geräte. Abmelden wirkt sofort, auch auf dem betroffenen Gerät.
+          </p>
+        </div>
+
         <DeviceList
           sessions={sessions.sessions.map((s) => ({ ...s, lastSeenAt: s.lastSeenAt.toISOString() }))}
           total={sessions.total}
         />
-      </Section>
+      </Card>
 
-      <Section title="Kurzwege">
+      <Card padded={false} className="overflow-hidden">
+        <h2 className="px-6 pt-5 pb-3 text-base font-semibold text-ink">Kurzwege</h2>
         {/*
          * Zeilen in einer weichen Gruppe statt einer Liste von Karten.
          * Die Zugehörigkeit trägt die Fläche, die Trennung zwischen den
          * Zeilen eine sehr zarte Linie — als Lesehilfe, nicht als
          * Rahmen.
          */}
-        <RowGroup className="max-w-2xl">
+        <RowGroup>
           {kurzwege.map((eintrag) => (
             <Link
               key={eintrag.href}
@@ -150,7 +184,7 @@ export default async function AccountSettingsPage() {
             </Link>
           ))}
         </RowGroup>
-      </Section>
+      </Card>
     </div>
   );
 }

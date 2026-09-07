@@ -131,7 +131,7 @@ export function NinaCore() {
                Aussage nach zwei Beispielen verstanden, und drei passen
                nicht ohne Umbruch. */
             className={
-              "nina-core__signal w-fit rounded-full px-3 py-1.5 " +
+              "nina-core__signal w-fit rounded-(--radius-pill) px-3 py-1.5 " +
               (i === 2 ? "hidden sm:block" : "")
             }
             style={{
@@ -210,7 +210,7 @@ export function NinaCore() {
                 {j.titel}
               </span>
               <span
-                className="shrink-0 rounded-full px-2 py-0.5 text-[clamp(9px,0.75vw,11px)] font-medium"
+                className="shrink-0 rounded-(--radius-pill) px-2 py-0.5 text-[clamp(9px,0.75vw,11px)] font-medium"
                 style={{
                   background: j.stark ? "var(--ed-violet-soft)" : "transparent",
                   color: j.stark ? "var(--ed-violet-text)" : "var(--ed-ink-3)",

@@ -36,11 +36,20 @@ export function Card({
     <Tag
       className={cn(
         "rounded-(--radius-surface)",
-        tone === "plain" ? "bg-raised shadow-sm" : "bg-soft",
+        /*
+         * Rand statt Schatten.
+         *
+         * Die Vorlage setzt ihre Karten flach: eine Haarlinie und
+         * eine minimal hellere Fläche, kein Schlagschatten. Auf
+         * dunklem Grund ist ein Schatten ohnehin eine Behauptung —
+         * man sieht ihn kaum, und wo man ihn sieht, wirkt er
+         * schmutzig statt erhaben.
+         */
+        tone === "plain" ? "border border-line bg-raised" : "bg-soft",
         padded && "p-6",
         interactive && [
           "transition-[box-shadow,background-color,transform] duration-(--duration-base) ease-(--ease-out)",
-          tone === "plain" ? "hover:-translate-y-0.5 hover:shadow-lg" : "hover:bg-soft-hover",
+          tone === "plain" ? "hover:border-line-3 hover:bg-inset" : "hover:bg-soft-hover",
         ],
         className,
       )}

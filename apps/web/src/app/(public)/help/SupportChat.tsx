@@ -27,9 +27,22 @@ interface Zeile {
 export function SupportChat({
   assistantName,
   angemeldet,
+  nackt = false,
 }: {
   assistantName: string;
   angemeldet: boolean;
+  /**
+   * Ohne eigene Fläche — für das schwebende Fenster unten rechts.
+   *
+   * Dort ist das Fenster bereits die Sprechblase. Eine zweite,
+   * andersfarbige Fläche darin ist ein Kasten im Kasten: zwei
+   * Ränder, zwei Radien, und keiner sagt etwas Neues.
+   *
+   * Auf der Hilfeseite steht der Chat dagegen zwischen anderen
+   * Abschnitten und braucht seine Fläche, um als eigener Bereich
+   * erkennbar zu sein.
+   */
+  nackt?: boolean;
 }) {
   const [zeilen, setZeilen] = useState<Zeile[]>([]);
   const [text, setText] = useState("");
@@ -74,7 +87,7 @@ export function SupportChat({
   }
 
   return (
-    <section className="grid gap-4 rounded-(--radius-lg) bg-lavender px-6 py-6">
+    <section className={nackt ? "grid gap-4" : "grid gap-4 rounded-(--radius-lg) bg-lavender px-6 py-6"}>
       <div className="flex items-center gap-2.5">
         <MessagesSquare className="size-[18px] shrink-0 text-accent" strokeWidth={1.9} aria-hidden />
         <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">
@@ -95,12 +108,26 @@ export function SupportChat({
               key={i}
               className={cn("grid", z.rolle === "user" && "justify-items-end")}
             >
+              {/*
+                Beide Seiten als Blase, wie in einer SMS.
+
+                Vorher trug nur die eigene Nachricht eine Fläche und
+                die Antwort stand als nackter Text daneben. Das las
+                sich nicht als Wechselrede, sondern als Formular mit
+                Zwischenüberschriften — man sah nicht auf einen Blick,
+                wer gerade spricht.
+
+                Die eigene Seite blau mit heller Schrift, die andere
+                als erhöhte Fläche. Die eine eckigere Ecke unten zeigt,
+                von welcher Seite die Nachricht kommt; sie ersetzt den
+                Zipfel, den echte Nachrichtenprogramme zeichnen.
+              */}
               <p
                 className={cn(
-                  "max-w-[85%] whitespace-pre-wrap text-base leading-relaxed",
+                  "max-w-[85%] whitespace-pre-wrap rounded-[18px] px-4 py-2.5 text-base leading-relaxed",
                   z.rolle === "user"
-                    ? "rounded-(--radius-lg) rounded-br-md bg-raised px-5 py-3"
-                    : "text-ink",
+                    ? "rounded-br-md bg-accent text-accent-on"
+                    : "rounded-bl-md bg-raised text-ink",
                 )}
               >
                 {z.text}

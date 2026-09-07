@@ -48,9 +48,19 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
         <div
           role="dialog"
           aria-label="Hilfe und Kontakt"
-          className="mb-3 max-h-[70vh] w-[min(92vw,26rem)] overflow-y-auto rounded-(--radius-lg) border border-line bg-page p-5 shadow-lg"
+          /* Wie eine Sprechblase, nicht wie ein Kasten.
+
+             Vorher: Rahmen, Seitenfarbe, 8 Pixel Ecke — das las sich
+             als angehefteter Ausschnitt der Seite. Eine Nachricht
+             braucht keinen Rahmen; ihre Füllung IST ihre Grenze. Auf
+             dunklem Grund ist `bg-page` unsichtbar ohne Rahmen,
+             deshalb die erhöhte Fläche.
+
+             18 Pixel: Der Radius der Vorlage liegt bei rund einem
+             Fünftel der Blasenhöhe. */
+          className="mb-3 max-h-[70vh] w-[min(92vw,26rem)] overflow-y-auto rounded-[18px] bg-raised p-4 shadow-lg"
         >
-          <SupportChat assistantName={assistantName} angemeldet={false} />
+          <SupportChat nackt assistantName={assistantName} angemeldet={false} />
         </div>
       )}
 
@@ -58,7 +68,13 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
         type="button"
         onClick={() => setOffen((v) => !v)}
         aria-expanded={offen}
-        className="ml-auto flex h-12 items-center gap-2.5 rounded-(--radius-pill) bg-accent px-5 text-sm font-semibold text-accent-on shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        /* Ausdrücklich `rounded-full`, nicht das Formtoken.
+
+           Der Rest der Oberfläche ist auf die eckige Sprache der
+           Vorlage umgestellt; dieser Knopf bleibt eine Pille, weil
+           er als schwebender Chat-Einstieg erkannt wird und nicht
+           als Teil der Seite darunter. Auf Ansage. */
+        className="ml-auto flex h-12 items-center gap-2.5 rounded-full bg-accent px-5 text-sm font-semibold text-accent-on shadow-lg transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {offen ? (
           <X aria-hidden className="size-[18px]" strokeWidth={2.2} />

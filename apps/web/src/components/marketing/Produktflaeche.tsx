@@ -50,7 +50,7 @@ export function Produktflaeche() {
           <div className="grid gap-1.5">
             <span className="flex flex-wrap items-center gap-2">
               <span
-                className="rounded-full px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.12em]"
+                className="rounded-(--radius-pill) px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.12em]"
                 style={{ background: "rgba(255,255,255,.14)", color: "#fff" }}
               >
                 Beispiel

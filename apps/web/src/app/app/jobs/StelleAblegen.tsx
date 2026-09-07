@@ -71,7 +71,7 @@ export function StelleAblegen({ jobId }: { jobId: string }) {
               type="button"
               disabled={pending}
               onClick={() => ablegen(schluessel)}
-              className="min-h-8 rounded-full border border-line-3 px-3 text-xs text-ink-2 transition-colors hover:border-line hover:text-ink disabled:opacity-50"
+              className="min-h-8 rounded-(--radius-pill) border border-line-3 px-3 text-xs text-ink-2 transition-colors hover:border-line hover:text-ink disabled:opacity-50"
             >
               {label}
             </button>

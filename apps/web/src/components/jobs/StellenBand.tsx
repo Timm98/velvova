@@ -125,7 +125,7 @@ export async function StellenBand({ anzahl = 12 }: { anzahl?: number } = {}) {
                 die Detailseite, wo daneben steht, woher sie kommt.
               */}
               {z.angegeben && z.gehaltMin ? (
-                <span className="mt-0.5 justify-self-start rounded-full bg-positive-soft px-2.5 py-1 font-mono text-2xs font-bold text-ink">
+                <span className="mt-0.5 justify-self-start rounded-(--radius-pill) bg-positive-soft px-2.5 py-1 font-mono text-2xs font-bold text-ink">
                   {geld(z.gehaltMin, z.gehaltMax, z.waehrung, z.zeitraum)}
                 </span>
               ) : (

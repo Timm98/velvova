@@ -207,7 +207,7 @@ function Merkmal({
       ? "border-transparent bg-transparent text-ink-3"
       : "border-line bg-inset text-ink-2";
   return (
-    <span className={`rounded-full border px-2.5 py-1 text-2xs font-medium ${klasse}`}>
+    <span className={`rounded-(--radius-pill) border px-2.5 py-1 text-2xs font-medium ${klasse}`}>
       {children}
     </span>
   );

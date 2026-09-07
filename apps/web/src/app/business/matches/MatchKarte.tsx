@@ -94,7 +94,7 @@ export function MatchKarte({
             <span className="font-mono text-sm font-semibold text-ink">
               {kontaktOffen && daten.name ? daten.name : `Vorschlag ${daten.kennung}`}
             </span>
-            <span className="rounded-full bg-inset px-2.5 py-0.5 text-2xs font-medium text-ink-2">
+            <span className="rounded-(--radius-pill) bg-inset px-2.5 py-0.5 text-2xs font-medium text-ink-2">
               {daten.zustandName}
             </span>
           </div>

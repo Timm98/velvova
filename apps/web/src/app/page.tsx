@@ -329,7 +329,7 @@ function Kopfzeile() {
             <Link
               key={href}
               href={href}
-              className="inline-flex min-h-11 items-center rounded-full px-1.5 text-sm transition-colors hover:text-[var(--ed-ink)]"
+              className="inline-flex min-h-11 items-center rounded-(--radius-pill) px-1.5 text-sm transition-colors hover:text-[var(--ed-ink)]"
               style={{ color: "var(--ed-ink-2)" }}
             >
               {label}
@@ -340,14 +340,14 @@ function Kopfzeile() {
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
           <Link
             href="/login"
-            className="hidden min-h-11 items-center rounded-full px-3 text-sm sm:inline-flex"
+            className="hidden min-h-11 items-center rounded-(--radius-pill) px-3 text-sm sm:inline-flex"
             style={{ color: "var(--ed-ink-2)" }}
           >
             Anmelden
           </Link>
           <Link
             href="/register"
-            className="inline-flex min-h-11 items-center rounded-full px-4 text-sm font-medium transition-transform hover:-translate-y-px"
+            className="inline-flex min-h-11 items-center rounded-(--radius-pill) px-4 text-sm font-medium transition-transform hover:-translate-y-px"
             style={{
               background: "var(--ed-violet)",
               color: "#fff",
@@ -569,7 +569,7 @@ function Hauptknopf({ href, children }: { href: string; children: React.ReactNod
   return (
     <Link
       href={href}
-      className="group inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
+      className="group inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium transition-transform hover:-translate-y-0.5"
       style={{
         background: "var(--ed-violet)",
         color: "#fff",
@@ -586,7 +586,7 @@ function Nebenknopf({ href, children }: { href: string; children: React.ReactNod
   return (
     <Link
       href={href}
-      className="inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px] font-medium transition-colors"
+      className="inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium transition-colors"
       style={{
         color: "var(--ed-ink)",
         boxShadow: "inset 0 0 0 1px var(--ed-hairline-strong)",
@@ -947,7 +947,7 @@ function Entdeckung() {
                 (r) => (
                   <li
                     key={r}
-                    className="rounded-full px-4 py-2 text-[15px]"
+                    className="rounded-(--radius-pill) px-4 py-2 text-[15px]"
                     style={{
                       background: "var(--ed-violet-soft)",
                       color: "var(--ed-violet-text)",
@@ -1095,7 +1095,7 @@ function JobIntelligenz() {
             */}
             <span className="flex flex-wrap items-center gap-2">
               <span
-                className="rounded-full px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.12em]"
+                className="rounded-(--radius-pill) px-2 py-0.5 text-2xs font-semibold uppercase tracking-[0.12em]"
                 style={{ background: "rgba(255,255,255,.14)", color: "#fff" }}
               >
                 Beispiel
@@ -1283,7 +1283,7 @@ function JobIntelligenz() {
             ].map(([label, aktiv]) => (
               <span
                 key={String(label)}
-                className="rounded-full px-3.5 py-1.5 text-sm"
+                className="rounded-(--radius-pill) px-3.5 py-1.5 text-sm"
                 style={
                   aktiv
                     ? { background: "var(--ed-violet)", color: "#fff" }
@@ -1781,7 +1781,7 @@ function FuerUnternehmen() {
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
               href="/business/signup"
-              className="inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px] font-medium"
+              className="inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px] font-medium"
               style={{ background: "#fff", color: "#0b0d16" }}
             >
               Unternehmen registrieren
@@ -1789,7 +1789,7 @@ function FuerUnternehmen() {
             </Link>
             <Link
               href="/for-business"
-              className="inline-flex min-h-13 items-center gap-2 rounded-full px-6 text-[15px]"
+              className="inline-flex min-h-13 items-center gap-2 rounded-(--radius-pill) px-6 text-[15px]"
               style={{ color: "#fff", boxShadow: "inset 0 0 0 1px rgba(255,255,255,.24)" }}
             >
               Business ansehen
@@ -1808,7 +1808,7 @@ function FuerUnternehmen() {
               <span className="sr-only"> — Beispielansicht</span>
             </h3>
             <span
-              className="rounded-full px-3 py-1 font-mono text-2xs"
+              className="rounded-(--radius-pill) px-3 py-1 font-mono text-2xs"
               style={{ background: "rgba(255,255,255,.14)", color: "#fff" }}
             >
               Beispiel
