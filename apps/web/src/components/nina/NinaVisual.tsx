@@ -348,23 +348,25 @@ export function NinaVisual({
        * das nicht fertig geladen hat. Ausgerechnet an der Stelle, an
        * der sich jemand ein Bild vom Produkt macht.
        */}
-      {grund === "verlauf" && bereit && imBlick && !gescheitert && (
-        <div
-          className={cn(
-            "pointer-events-none absolute inset-[-18%] rounded-full",
-            zustand === "listening" && "motion-safe:animate-[pulse-soft_2.4s_ease-in-out_infinite]",
-          )}
-          style={{
-            background:
-              "radial-gradient(circle at 50% 45%, " +
-              "rgba(28, 24, 74, 0.96) 0%, " +
-              "rgba(46, 40, 110, 0.82) 38%, " +
-              "rgba(101, 93, 255, 0.22) 66%, " +
-              "rgba(101, 93, 255, 0) 78%)",
-          }}
-        />
-      )}
+      {/*
+        ══════════════════════════════════════════════════════════
+        ENTFERNT: der lila Schein hinter Monday
+        ══════════════════════════════════════════════════════════
 
+        Hier lag ein radialer Verlauf aus `rgba(101, 93, 255, …)` —
+        ein Indigo-Halo, der erschien, sobald das Modell geladen und
+        im Blick war.
+
+        Zweimal gemeldet: „der core dieser glow ist kacke, nur der
+        core" und „oben beim core kommt manchmal lila". Das
+        „manchmal" hatte einen Grund: Der Schein hing an `bereit &&
+        imBlick` und blitzte deshalb genau im Moment des Ladens auf.
+
+        Er ist weg. Monday steht auf dem Seitengrund, sonst nichts.
+        Die Eigenschaft `grund` bleibt in der Schnittstelle, damit
+        nichts an den Aufrufstellen bricht — sie schaltet nur nichts
+        mehr ein.
+      */}
       {/*
         Ein hauchdünner dunkler Saum um jedes sichtbare Pixel.
 

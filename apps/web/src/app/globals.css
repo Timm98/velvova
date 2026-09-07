@@ -1557,74 +1557,94 @@ input[type="number"] {
 
 /*
  * ══════════════════════════════════════════════════════════════
- * Ein DUNKLES Band wandert durch helle Schrift — nach links
+ * Die Welle bringt die Kraft — der Grundton hält sich zurück
  * ══════════════════════════════════════════════════════════════
  *
- * Zwei Fassungen lagen daneben, beide falsch herum. Ich hatte einen
- * hellen Streifen über gedämpfter Schrift laufen lassen; die Vorlage
- * macht das Gegenteil.
+ * Drei Fassungen, und die Wendung kam zuletzt: erst ein heller
+ * Streifen über gedämpfter Schrift, dann — nach den Vorlagenbildern —
+ * ein dunkles Band durch helle Schrift, jetzt wieder das erste, aber
+ * richtig gebaut.
  *
- * Drei Aufnahmen im Sekundenabstand, Buchstabe für Buchstabe gelesen:
+ * Der Grund für die Wendung steht in der Rückmeldung: „nicht so weiß
+ * und dann wie eine Wellenanimation Kraft an Farbe bekommen." Die
+ * Zeile soll also NICHT ständig laut sein. Sie liegt gedämpft da, und
+ * die Welle ist das, was ihr Kraft gibt — sie holt die Helligkeit
+ * kurz heran und lässt sie wieder los.
  *
- *   Bild 1   „Wird verarbeite" hell, das letzte „t" gedämpft
- *   Bild 2   „Wird verarbe" hell, „itet" gedämpft
- *   Bild 3   „Wir" hell, „d ve" gedämpft, „rarbeitet" wieder hell
+ * Das ist auch der ehrlichere Ausdruck: Eine Zeile, die dauerhaft in
+ * voller Helligkeit steht, behauptet mehr Wichtigkeit, als eine
+ * Zwischenmeldung hat.
  *
- * Daraus stehen zwei Dinge fest, die vorher nur geraten waren:
+ * ── Eigene Schrift, kleiner ─────────────────────────────────
  *
- *   1. Die Schrift ist HELL, und ein dunkles Band zieht hindurch.
- *      Nicht umgekehrt. Der Text bleibt dadurch die ganze Zeit gut
- *      lesbar — bei einem hellen Streifen über dunklem Grund ist er
- *      es nur dort, wo der Streifen gerade steht.
+ * `--font-mono` statt der Fliesstextschrift und eine Stufe kleiner.
+ * Das ist keine Antwort und kein Inhalt, sondern eine Auskunft der
+ * Maschine über sich selbst — und die soll man als solche erkennen,
+ * ohne sie zu lesen.
  *
- *   2. Das Band wandert nach LINKS: erst am Ende, dann in der Mitte,
- *      dann vorn.
+ * ── Warum das Band nach links wandert ───────────────────────
  *
- * ── Warum die Richtung stimmt ───────────────────────────────
- *
- * Der Verlauf ist dreimal so breit wie die Zeile, das dunkle Stück
+ * Der Verlauf ist dreimal so breit wie die Zeile, die helle Stelle
  * sitzt in seiner Mitte. Bei `background-position: 0%` steht diese
  * Mitte am rechten Rand, bei `100%` am linken. Von 0 nach 100 wandert
- * sie also nach links.
+ * sie also nach links — dieselbe Richtung wie in der Vorlage.
  */
 .schimmert {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+  /*
+   * Sieben Stufen statt drei, und ein leicht geneigter Verlauf.
+   *
+   * Mit drei Stufen hat die Welle eine Kante: Der helle Punkt liegt
+   * zwischen zwei gedämpften Nachbarn, und dazwischen rechnet der
+   * Browser geradlinig. Das liest sich als Balken, der durchgeschoben
+   * wird.
+   *
+   * Sieben Stufen mit einer Zwischenhelligkeit auf jeder Seite lassen
+   * die Helligkeit an- und abschwellen statt umzuschalten. Dazu 100
+   * statt 90 Grad: Die Welle läuft leicht schräg durch die Zeile,
+   * und schon zehn Grad nehmen ihr das Mechanische.
+   */
   background-image: linear-gradient(
-    90deg,
-    var(--text-primary) 0%,
-    var(--text-primary) 42%,
-    color-mix(in srgb, var(--text-primary) 45%, transparent) 50%,
-    var(--text-primary) 58%,
-    var(--text-primary) 100%
+    100deg,
+    color-mix(in srgb, var(--text-tertiary) 48%, transparent) 0%,
+    color-mix(in srgb, var(--text-tertiary) 48%, transparent) 32%,
+    color-mix(in srgb, var(--text-tertiary) 78%, transparent) 42%,
+    var(--text-primary) 50%,
+    color-mix(in srgb, var(--text-tertiary) 78%, transparent) 58%,
+    color-mix(in srgb, var(--text-tertiary) 48%, transparent) 68%,
+    color-mix(in srgb, var(--text-tertiary) 48%, transparent) 100%
   );
-  background-size: 300% 100%;
+  background-size: 260% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   /*
    * `-webkit-text-fill-color` ist der Grund, warum Safari die Welle
-   * nicht zeigte.
-   *
-   * Gemessen in Chromium lief die Animation sauber — die
-   * Verlaufsposition wanderte von 18 auf 73 Prozent. Auf dem
-   * Bildschirm des Nutzers (Safari) stand die Zeile trotzdem still.
-   *
-   * Mit `background-clip: text` verlangt WebKit ausdrücklich
-   * `-webkit-text-fill-color: transparent`. Nur `color: transparent`
-   * genügt ihm nicht: Es zeichnet den Verlauf dann einmal und rührt
-   * ihn nicht mehr an, während Chromium jede Änderung neu malt.
-   *
-   * `color: transparent` bleibt zusätzlich stehen — für alles, was
-   * `-webkit-text-fill-color` nicht kennt.
+   * lange nicht zeigte. Mit `background-clip: text` verlangt WebKit
+   * es ausdrücklich; nur `color: transparent` genügt ihm nicht — es
+   * zeichnet den Verlauf dann einmal und rührt ihn nicht mehr an,
+   * während Chromium jede Änderung neu malt.
    */
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: schimmer 2s linear infinite;
+  /*
+   * 2,8 Sekunden, gleichförmig.
+   *
+   * Langsamer als jedes Ladezeichen — das ist der Unterschied
+   * zwischen „ruhig" und „ungeduldig". Gleichförmig, weil eine
+   * beschleunigende Kurve an der Nahtstelle des Durchlaufs stockt:
+   * Die Welle käme schnell an und liefe langsam wieder an, und genau
+   * dort sähe man den Sprung.
+   */
+  animation: schimmer 2.8s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .schimmert {
     animation: none;
     background-image: none;
-    color: var(--text-primary);
-    -webkit-text-fill-color: var(--text-primary);
+    color: var(--text-tertiary);
+    -webkit-text-fill-color: var(--text-tertiary);
   }
 }

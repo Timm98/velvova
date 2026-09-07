@@ -938,7 +938,7 @@ export function InterviewRoom({
                 laufende?.role === "assistant" && (laufende.content ?? "").trim().length > 0,
             });
             return wort ? (
-              <p className="schimmert mt-8 text-base" aria-live="polite">
+              <p className="schimmert mt-8" aria-live="polite">
                 {wort}
               </p>
             ) : null;

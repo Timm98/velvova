@@ -728,7 +728,24 @@ export function NinaProvider({
                * Vorlese-Knopf erschiene über einem halben Satz.
                */
               takt.fertig = true;
-              await taktLaeuft;
+              /*
+               * Mit Zeitgrenze warten, nie unbegrenzt.
+               *
+               * `taktLaeuft` löst sich auf, wenn der Puffer leer ist.
+               * Bliebe er aus irgendeinem Grund stehen — ein
+               * geräumtes Intervall, ein Fehler im Takt —, würde
+               * dieses `await` NIE zurückkommen. Der `finally`-Block
+               * läuft dann auch nicht, `busy` bliebe wahr, und im
+               * Gespräch stünde für immer „Denkt nach".
+               *
+               * Zwei Sekunden reichen für jeden Rest: Ab dem
+               * Schlusssignal räumt der Takt mit dem Vierfachen ab,
+               * das sind dreihundert Zeichen je Sekunde.
+               */
+              await Promise.race([
+                taktLaeuft,
+                new Promise<void>((weiter) => setTimeout(weiter, 2000)),
+              ]);
               setMessages((m) =>
                 m.map((n) => (n.id === antwortId ? { ...n, streaming: false } : n)),
               );
