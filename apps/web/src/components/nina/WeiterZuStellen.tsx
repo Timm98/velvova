@@ -49,11 +49,18 @@ import { cn } from "@/lib/cn";
  * nicht scrollen mag, klickt.
  */
 
-/** Ab wie vielen Pixeln Abwärtsbewegung der Wechsel ausgelöst wird. */
-const SCHWELLE = 240;
+/**
+ * Ab wie vielen Pixeln Abwärtsbewegung der Wechsel ausgelöst wird.
+ *
+ * Erst 240 — gemessen an einer Maus mit festen 120er-Schritten waren
+ * das zwei Rasten. Auf einem Trackpad kommen viele kleine Werte, und
+ * wer sanft wischt, erreichte die Schwelle nie, bevor die Geduld
+ * ablief. 150 bei 900 ms Geduld trifft beides.
+ */
+const SCHWELLE = 150;
 
 /** Wie lange eine begonnene Bewegung ohne Fortsetzung gilt. */
-const GEDULD_MS = 600;
+const GEDULD_MS = 900;
 
 /** Wie nah am Ende „ganz unten" heisst. */
 const NAH_GENUG = 24;

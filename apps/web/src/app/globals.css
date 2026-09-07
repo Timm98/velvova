@@ -952,13 +952,57 @@ input[type="number"] {
 }
 
 /*
- * Der Rest der Seite blendet, statt zu schieben. Zwei Bewegungen
- * gleichzeitig — das Feld wandert, die Seite fliegt — lesen sich als
- * Unruhe, nicht als Weg.
+ * ══════════════════════════════════════════════════════════════
+ * Die Seite fährt hoch, die neue kommt von unten
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Hier stand nur eine Blende. Das war zu wenig: Man sah das Feld
+ * wandern, aber nicht, WOHIN man geht. Ein Übergang, der nur
+ * überblendet, ist ein Schnitt mit Weichzeichner.
+ *
+ * Jetzt schiebt sich das Gespräch nach oben aus dem Bild, und die
+ * Stellenseite kommt von unten nach. Das ist die Bewegung, die die
+ * Geste beschreibt: Man scrollt nach unten, also kommt das Nächste
+ * von unten.
+ *
+ * Beide laufen gleich lang wie das Feld (420 ms) und mit derselben
+ * Kurve — sonst kommt eines an, während das andere noch unterwegs
+ * ist, und die Bewegung zerfällt in zwei.
+ *
+ * `::view-transition-group(sucheingabe)` liegt darüber: Das Feld
+ * gehört zu keiner der beiden Seiten, es geht seinen eigenen Weg.
  */
-::view-transition-old(root),
+@keyframes seite-faehrt-hoch {
+  to {
+    transform: translateY(-14%);
+    opacity: 0;
+  }
+}
+
+@keyframes seite-kommt-von-unten {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+::view-transition-old(root) {
+  animation: seite-faehrt-hoch 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
 ::view-transition-new(root) {
-  animation-duration: 260ms;
+  animation: seite-kommt-von-unten 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+/*
+ * Die neue Seite liegt oben. Ohne das schiebt sie sich UNTER die
+ * alte und man sieht die Bewegung nicht.
+ */
+::view-transition-new(root) {
+  z-index: 1;
+}
+
+::view-transition-group(sucheingabe) {
+  z-index: 2;
 }
 
 /*
