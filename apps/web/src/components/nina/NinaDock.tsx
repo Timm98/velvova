@@ -67,6 +67,11 @@ export function NinaDock({ assistantName }: { assistantName: string }) {
            * ein Knopf darunter wäre nicht zu treffen.
            */
           cn(
+            /* Bleibt beim Seitenwechsel stehen — dieselbe Begründung
+               wie beim Hinweisband: Sie gehört zum Gerüst, nicht zur
+               Seite. Ohne eigenen Namen blendet sie mit weg und wieder
+               ein, obwohl sie sich nicht bewegt. */
+            "uebergang-dock",
             "fixed right-5 z-40 grid size-9 place-items-center rounded-full",
             "bg-surface text-ink-3 ring-1 ring-line-2",
             "transition-colors hover:bg-soft hover:text-ink-2",

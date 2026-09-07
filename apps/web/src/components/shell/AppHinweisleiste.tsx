@@ -100,7 +100,22 @@ export function AppHinweisleiste({
        * umschalten.
        */
       data-theme="dark"
-      className="border-b border-line bg-sunken"
+      /*
+       * `uebergang-band`: Beim Seitenwechsel bleibt diese Leiste
+       * stehen.
+       *
+       * Sie gehört zum Gerüst und nicht zur Seite — sie steht auf
+       * beiden. Ohne eigenen `view-transition-name` gehört sie zum
+       * Wurzelbild und fährt mit: In der Aufnahme vom 7. September
+       * stand sie mitten auf dem Bildschirm, quer über dem Gespräch,
+       * während darunter die Stellenseite hereinkam. Das war der
+       * auffälligste Fehler der ganzen Bewegung.
+       *
+       * Mit eigenem Namen ist sie eine eigene Gruppe. Sie steht auf
+       * beiden Seiten an derselben Stelle, also rechnet der Browser
+       * keine Bewegung für sie aus.
+       */
+      className="uebergang-band border-b border-line bg-sunken"
     >
       <div className="mx-auto flex h-8 w-full max-w-(--breite-inhalt) items-center gap-3 px-5 text-2xs font-medium text-ink sm:h-9">
         {/*

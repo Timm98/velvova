@@ -958,9 +958,31 @@ input[type="number"] {
  * die Bewegung hat keinen Ruck, weder am Anfang noch am Ende.
  */
 :root {
-  --uebergang-feld: 900ms;
-  --uebergang-panel: 720ms;
-  --uebergang-grund: 420ms;
+  --uebergang-feld: 820ms;
+  /*
+   * Das Alte geht schneller, als das Neue kommt.
+   *
+   * Vorher liefen beide 720 ms und überschnitten sich fast über die
+   * ganze Länge. Auf der Aufnahme vom 7. September sah man deshalb
+   * mitten im Wechsel BEIDE Seiten halbdurchsichtig übereinander —
+   * oben noch das Gespräch, in der Mitte schon die Stellenseite. Das
+   * liest sich nicht als Übergang, sondern als Fehler.
+   *
+   * Der erste Versuch dagegen ging zu weit: Das Alte war nach 440 ms
+   * weg, das Neue setzte erst bei 300 ms ein und war wegen seiner
+   * Einblendung erst ab 500 wirklich zu sehen. Auf den Einzelbildern
+   * stand dazwischen ein LEERER Bildschirm — beim Rückweg über eine
+   * halbe Sekunde lang. Ein Loch ist nicht besser als eine
+   * Überlagerung.
+   *
+   * Jetzt: Das Alte geht bis 420 ms, das Neue setzt bei 200 ein. Rund
+   * 220 Millisekunden Überschneidung — genug, dass immer etwas auf
+   * dem Bildschirm steht, zu wenig, um zwei Seiten gleichzeitig zu
+   * lesen.
+   */
+  --uebergang-panel-weg: 360ms;
+  --uebergang-panel-her: 560ms;
+  --uebergang-grund: 260ms;
   --uebergang-kurve: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
@@ -1065,13 +1087,14 @@ input[type="number"] {
  *
  * Hinweg — Gespräch → Stellen:
  *
- *     0 ms   Gesprächskopf fährt hoch
- *    80      Nachrichtenstrom folgt
- *   170      Überschrift der Stellenseite kommt von unten
- *   230      Hinweiskasten
- *   290      Liste
- *   900      das Feld ist angekommen
- *  1010      Ende
+ *     0 ms   Gesprächskopf fährt hoch und blendet aus
+ *    60      Nachrichtenstrom folgt
+ *   200      Überschrift der Stellenseite kommt von unten
+ *   260      Hinweiskasten
+ *   320      Liste
+ *   420      das Gespräch ist weg
+ *   820      das Feld ist angekommen
+ *   880      Ende
  *
  * Rückweg — Stellen → Gespräch, dieselbe Ordnung umgekehrt: Zuerst
  * geht die Liste, zuletzt kommt der Nachrichtenstrom. Wer zurückgeht,
@@ -1083,45 +1106,45 @@ input[type="number"] {
  * einsetzende Flächen liest das Auge als eine Fläche.
  */
 :root[data-uebergang="runter"]::view-transition-old(gespraech-kopf) {
-  animation: panel-hoch-weg var(--uebergang-panel) var(--uebergang-kurve) both;
+  animation: panel-hoch-weg var(--uebergang-panel-weg) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-old(gespraech-strom) {
-  animation: panel-hoch-weg var(--uebergang-panel) 80ms var(--uebergang-kurve) both;
+  animation: panel-hoch-weg var(--uebergang-panel-weg) 60ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel) 170ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 200ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
-  animation: panel-von-unten var(--uebergang-panel) 230ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel) 290ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 320ms var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
    aussieht wie der Hinweg, liest sich als Fehler. */
 :root[data-uebergang="hoch"]::view-transition-old(stellen-titel) {
-  animation: panel-runter-weg var(--uebergang-panel) 140ms var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel-weg) 100ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-hinweis) {
-  animation: panel-runter-weg var(--uebergang-panel) 80ms var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel-weg) 60ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-liste) {
-  animation: panel-runter-weg var(--uebergang-panel) var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel-weg) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel) 170ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 200ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel) 230ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1146,7 +1169,7 @@ input[type="number"] {
 }
 
 ::view-transition-new(root) {
-  animation: uebergang-ein var(--uebergang-grund) var(--uebergang-kurve) both;
+  animation: uebergang-ein var(--uebergang-grund) 160ms var(--uebergang-kurve) both;
   z-index: 1;
 }
 
@@ -1193,8 +1216,31 @@ input[type="number"] {
   view-transition-name: kopfzeile;
 }
 
+/*
+ * Was zum Gerüst gehört, bewegt sich nicht.
+ *
+ * Das Hinweisband über der Kopfzeile und Mondays Blase unten rechts
+ * stehen auf beiden Seiten — sie werden beim Wechsel nicht ersetzt,
+ * sie bleiben einfach. Ohne eigenen Namen gehören sie zum Wurzelbild
+ * und fahren mit: Das Band landete dabei mitten auf dem Bildschirm,
+ * quer über dem Inhalt.
+ *
+ * Ein eigener Name macht aus jedem eine eigene Gruppe. Weil sie vor
+ * und nach dem Wechsel an derselben Stelle stehen, rechnet der
+ * Browser keine Bewegung für sie aus.
+ */
+.uebergang-band {
+  view-transition-name: hinweisband;
+}
+
+.uebergang-dock {
+  view-transition-name: dock;
+}
+
 /* Sie liegt über allem, was fährt — sonst schiebt sich eine
    auffahrende Fläche kurz vor sie. */
-::view-transition-group(kopfzeile) {
+::view-transition-group(kopfzeile),
+::view-transition-group(hinweisband),
+::view-transition-group(dock) {
   z-index: 4;
 }
