@@ -131,11 +131,22 @@ export default async function JobsPage({
    * losgeworden ist. `?leer=1` sagt: Ich will wirklich nichts.
    */
   const eigene = nurFilter(adresse);
-  const gemerkt =
+  /*
+   * Nicht abwarten — mitlaufen lassen.
+   *
+   * `filterLaden` stand hier mit `await` und lief allein, bevor die
+   * Sammelrunde darunter überhaupt begann. Gemessen kostete das 179
+   * Millisekunden, in denen sonst nichts geschah: eine `withUser`-
+   * Transaktion sind vier Netzrunden gegen Supabase.
+   *
+   * Als Zusage weitergereicht läuft sie in derselben Runde wie der
+   * Rest. Gebraucht wird ihr Ergebnis erst für `params`, und das
+   * steht unter der Sammelrunde.
+   */
+  const gemerktZusage =
     Object.keys(eigene).length > 0 || adresse.leer === "1"
-      ? {}
-      : await filterLaden(user.id);
-  const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
+      ? Promise.resolve({} as Record<string, string | undefined>)
+      : filterLaden(user.id);
   /*
    * Alles gleichzeitig, was nicht voneinander abhängt.
    *
@@ -168,26 +179,41 @@ export default async function JobsPage({
    * Runde wie der Rest — nacheinander wären es drei weitere Umläufe
    * gegen Supabase, und die kosten je rund 170 Millisekunden.
    */
-  const [gate, abdeckung, ctx, saved, gehaltsangaben, lebenshaltung, wohnzeile] = await Promise.all([
-    loadGate(user.id),
-    ladeQuellenabdeckung(),
-    loadProfileContext(user.id),
-    withUser(db, user.id, (tx) =>
-      tx
-        .select({ jobId: schema.savedJobs.jobId })
-        .from(schema.savedJobs)
-        .where(eq(schema.savedJobs.userId, user.id)),
-    ),
-    ladeGehaltsangaben(),
-    ladeLebenshaltung(),
-    withUser(db, user.id, (tx) =>
-      tx
-        .select({ baseLocation: schema.userSettings.baseLocation })
-        .from(schema.userSettings)
-        .where(eq(schema.userSettings.userId, user.id))
-        .limit(1),
-    ),
-  ]);
+  const [gate, abdeckung, ctx, [saved, wohnzeile], gehaltsangaben, lebenshaltung, gemerkt] =
+    await Promise.all([
+      loadGate(user.id),
+      ladeQuellenabdeckung(),
+      loadProfileContext(user.id),
+      /*
+       * Zwei Abfragen, eine Transaktion.
+       *
+       * Sie standen als zwei `withUser`-Aufrufe nebeneinander. Jeder
+       * davon ist BEGIN, Rolle setzen, Abfrage, COMMIT — vier Runden
+       * à 44 ms. Die zweite Transaktion kostete also drei Runden für
+       * nichts, denn die Abfrage darin ist eine Zeile mit einer
+       * Spalte.
+       *
+       * In einer Transaktion laufen beide Abfragen nebeneinander und
+       * teilen sich Rolle und COMMIT.
+       */
+      withUser(db, user.id, (tx) =>
+        Promise.all([
+          tx
+            .select({ jobId: schema.savedJobs.jobId })
+            .from(schema.savedJobs)
+            .where(eq(schema.savedJobs.userId, user.id)),
+          tx
+            .select({ baseLocation: schema.userSettings.baseLocation })
+            .from(schema.userSettings)
+            .where(eq(schema.userSettings.userId, user.id))
+            .limit(1),
+        ]),
+      ),
+      ladeGehaltsangaben(),
+      ladeLebenshaltung(),
+      gemerktZusage,
+    ]);
+  const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
 
   /*
    * Wie viele Stellen die Seite zeigen soll — aus der Adresse.
