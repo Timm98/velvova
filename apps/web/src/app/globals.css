@@ -1599,7 +1599,24 @@ input[type="number"] {
   background-size: 300% 100%;
   background-clip: text;
   -webkit-background-clip: text;
+  /*
+   * `-webkit-text-fill-color` ist der Grund, warum Safari die Welle
+   * nicht zeigte.
+   *
+   * Gemessen in Chromium lief die Animation sauber — die
+   * Verlaufsposition wanderte von 18 auf 73 Prozent. Auf dem
+   * Bildschirm des Nutzers (Safari) stand die Zeile trotzdem still.
+   *
+   * Mit `background-clip: text` verlangt WebKit ausdrücklich
+   * `-webkit-text-fill-color: transparent`. Nur `color: transparent`
+   * genügt ihm nicht: Es zeichnet den Verlauf dann einmal und rührt
+   * ihn nicht mehr an, während Chromium jede Änderung neu malt.
+   *
+   * `color: transparent` bleibt zusätzlich stehen — für alles, was
+   * `-webkit-text-fill-color` nicht kennt.
+   */
   color: transparent;
+  -webkit-text-fill-color: transparent;
   animation: schimmer 2s linear infinite;
 }
 
@@ -1608,5 +1625,6 @@ input[type="number"] {
     animation: none;
     background-image: none;
     color: var(--text-primary);
+    -webkit-text-fill-color: var(--text-primary);
   }
 }

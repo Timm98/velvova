@@ -774,7 +774,21 @@ export function InterviewRoom({
                * sobald das erste Wort da ist — dann steht er, wo er
                * hingehört: am Ende eines Satzes.
                */
-              .filter((m) => !(m.role === "assistant" && m.streaming && m.content.length === 0))
+              /*
+               * Eine Nachricht ohne Inhalt ist keine Nachricht.
+               *
+               * Beim Streamen legt der Provider die Antwort an, bevor
+               * das erste Zeichen da ist — gezeichnet wurde ein leerer
+               * Absatz. Dasselbe passiert bei einer Nutzerzeile, deren
+               * Inhalt leer bleibt: Auf dem Bildschirm stand ein
+               * blauer Strich ohne Text, weil die Bubble ihre Polster
+               * und ihre Farbe behält, aber nichts zu zeigen hat.
+               *
+               * Beides fällt hier weg. Was leer ist, wird nicht
+               * gezeichnet — die graue Zeile darunter sagt ohnehin,
+               * dass gerade gearbeitet wird.
+               */
+              .filter((m) => m.content.trim().length > 0)
               .map((m, i, sichtbare) => {
               /*
                * Die letzte Nachricht groß — aber nur, wenn sie kurz ist.
