@@ -120,18 +120,16 @@ export function VelvovaFooter({
       /*
        * Der Fuss ist die abgesetzte Fläche der Vorlage — #1c253a.
        *
-       * Diese Zahl steht nicht mehr hier, sondern als
-       * `--background-subtle` im Kern; `bg-sunken` holt sie sich von
-       * dort. `data-theme="dark"` sorgt dafür, dass auch bei heller
-       * Einstellung die dunkle Seite der Palette gilt: Der Fuss ist
-       * in der Vorlage immer blau.
+       * Die Zahl steht als `--background-subtle` im Kern; `bg-sunken`
+       * holt sie sich von dort. `data-theme="dark"` sorgt dafür, dass
+       * auch bei heller Einstellung die dunkle Seite gilt: Der Fuss
+       * ist in der Vorlage immer blau.
        *
-       * Übrig bleibt der Eckenradius. Unsere Bedienelemente sind
-       * sonst Pillen; die Vorlage setzt an ihren Feldern rund vier
-       * Pixel, und im Fuss wären Pillen das auffälligste Merkmal,
-       * das nicht stimmt.
+       * Der Eckenradius stand hier ebenfalls, als Ausnahme gegen
+       * unsere Pillen. Er ist weg, seit die ganze Skala der Vorlage
+       * folgt — eine Ausnahme, die dasselbe sagt wie die Regel, ist
+       * nur eine Stelle mehr, die man pflegen muss.
        */
-      style={{ "--radius-control": "4px" } as React.CSSProperties}
       className="mt-20 bg-sunken"
     >
       <div className="mx-auto w-full max-w-(--breite-inhalt) px-5 py-14 md:py-16">

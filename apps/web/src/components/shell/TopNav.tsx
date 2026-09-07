@@ -293,10 +293,20 @@ export function TopNav({
         /*
          * Auf schmalen Geräten rollt die Leiste seitlich, statt über
          * den Rand zu laufen. Bei 768 Pixeln standen sieben Wege mit
-         * grossen Abständen 57 Pixel über die Seite hinaus — und weil
-         * sie mittig ausgerichtet ist, nach beiden Seiten.
+         * grossen Abständen 57 Pixel über die Seite hinaus.
          */
-        className="laufband mx-auto hidden w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:flex md:px-8 lg:justify-center"
+        /*
+         * Linksbündig, auf einer Kante mit dem Schriftzug darüber.
+         *
+         * Vorher stand die Zeile mittig. Die Vorlage setzt sie
+         * bündig unter das Logo — gemessen beginnt der erste Weg bei
+         * x=648, das Logo bei x=646. Der Blick läuft dadurch eine
+         * Kante hinunter statt von der Mitte zur Seite und zurück.
+         *
+         * `lg:justify-center` fällt damit weg; die Rollbarkeit auf
+         * schmalen Geräten bleibt.
+         */
+        className="laufband mx-auto hidden w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:flex md:px-8"
       >
         {/* Mehr Luft zwischen den Wegen: Ohne Symbole stehen jetzt nur
               noch Wörter da, und die brauchen Abstand, um als einzelne
@@ -310,8 +320,8 @@ export function TopNav({
               In einem Behälter mit `overflow-x: auto` schiebt ein
               automatischer Aussenabstand den Inhalt über den Rand,
               statt ihn zu zentrieren — gemessen 135 Pixel Überstand
-              bei 1024. Die Zentrierung übernimmt `justify-center` am
-              Behälter, und die greift nur, solange Platz ist.
+              bei 1024. Seit die Zeile linksbündig steht, braucht es
+              ihn ohnehin nicht mehr.
             */}
           <ul className="flex items-center gap-3 whitespace-nowrap pb-2.5 md:gap-5 lg:gap-8 xl:gap-12">
           {BEREICHE.map((b) => {
@@ -333,7 +343,7 @@ export function TopNav({
                      * nicht mehr — und ein Symbol ohne Wort ist eine
                      * Vokabel, die man raten muss.
                      */
-                    "flex h-12 items-center justify-center rounded-(--radius-pill) px-3 text-[15px] transition-colors duration-(--duration-fast)",
+                    "flex h-12 items-center justify-center rounded-(--radius-control) px-3 text-[15px] transition-colors duration-(--duration-fast)",
                     /*
                      * Alle Wege in Schwarz, nicht nur der aktive.
                      *

@@ -73,22 +73,53 @@ export async function AppBadges() {
       {/*
         Links der Kode, rechts die beiden Abzeichen übereinander.
 
-        ── Warum die Höhen ohne eine einzige Höhenangabe passen ──
+        ══════════════════════════════════════════════════════════
+        Warum hier Zahlen stehen und keine Automatik
+        ══════════════════════════════════════════════════════════
 
-        Die Abzeichen sind 135×40. Zwei davon mit 8 Pixeln Abstand
-        sind 88 Pixel hoch — und `w-22` ist 5.5rem, also 88 Pixel.
-        Der quadratische Kode ist damit genau so hoch wie die
-        Abzeichenspalte, ohne dass irgendwo eine Höhe steht.
+        Hier stand einmal, stolz, „die Höhen passen ohne eine
+        einzige Höhenangabe". Genau das war der Fehler.
 
-        Beide Spalten haben eine feste Breite. Mit `flex-1` wuchsen
-        die Abzeichen vorher auf die halbe Fussspalte, und ein
-        Ladenabzeichen von 300 Pixeln Breite sieht nach nichts mehr
-        aus.
+        Die Zeile war `items-stretch`: Der Kode wollte über
+        `aspect-square` quadratisch werden, die Abzeichenspalte
+        wollte so hoch werden wie ihr Inhalt, und der Inhalt — ein
+        Bild mit Breite UND Höhe auf 100 % — wollte so hoch werden
+        wie seine Zeile. Jeder mass sich am anderen, keiner an einer
+        Zahl.
+
+        Der Browser löst das trotzdem auf, nur eben irgendwie:
+        gemessen 102 statt 88 Pixel, und weil `align-self: stretch`
+        eine Höhe SETZT, verlor `aspect-ratio` und aus dem Quadrat
+        wurde ein hochkantes Rechteck.
+
+        Jetzt steht die eine Zahl da, aus der alles folgt: Die
+        Abzeichen sind 40 Pixel hoch, zwei davon mit 8 Pixeln
+        Abstand sind 88 — und der Kode ist 88 × 88. Nichts misst
+        sich mehr an etwas, das sich selbst noch nicht kennt.
+
+        Die Masse stehen als Stil am Element, nicht als Klasse: Sie
+        tragen die Zeile, und ob eine Utility-Klasse erzeugt wurde,
+        darf darüber nicht entscheiden.
       */}
-      <div className="flex items-stretch gap-2.5">
+      <div className="flex items-start gap-2.5">
         <div
           /* Ohne Kode bleibt die Fläche gestrichelt statt leer weiss. */
-          className={`grid aspect-square w-22 shrink-0 place-items-center rounded-(--radius-md) p-1.5 ${
+          /*
+           * Die Breite steht als Stil am Element, nicht als Klasse.
+           *
+           * Fehlt eine Breitenklasse, ist ein Flex-Kind mit
+           * `aspect-square` und `shrink-0` nicht klein — es ist so
+           * breit wie die Zeile hoch ist, und die Zeile ist so hoch
+           * wie das Kind. Aus einem 88-Pixel-Kode wurde so ein
+           * Quadrat über die halbe Fussspalte, das die Zahlungsarten
+           * daneben überdeckte.
+           *
+           * Diese zwei Zahlen tragen die ganze Zeile: Der Kode gibt
+           * die Höhe vor, die Abzeichen erben sie. Sie gehören
+           * deshalb dorthin, wo nichts dazwischenkommen kann.
+           */
+          style={{ width: 88, height: 88 }}
+          className={`grid shrink-0 place-items-center rounded-(--radius-md) p-1.5 ${
             qr ? "border border-line bg-white" : "border border-dashed border-line"
           }`}
           /*
@@ -105,7 +136,7 @@ export async function AppBadges() {
             : {})}
         />
 
-        <div className="grid w-34 shrink-0 grid-rows-2 gap-2">
+        <div style={{ width: 136 }} className="grid shrink-0 gap-2">
           <Abzeichen
             href={AUSSENVERWEISE.iosUrl}
             quelle="/laden/app-store-de.svg"
@@ -156,16 +187,17 @@ function Abzeichen({
       height={40}
       /* `object-contain`: Die Abzeichen dürfen nur proportional
          skaliert werden, nie gedehnt oder beschnitten. */
-      className="size-full object-contain object-left"
+      style={{ width: "100%", height: "100%", objectFit: "contain", objectPosition: "left" }}
     />
   );
 
+  /* 40 Pixel: die echte Höhe der Abzeichen (135 × 40). */
   return href ? (
-    <a href={href} className="block transition-opacity hover:opacity-85">
+    <a href={href} style={{ height: 40 }} className="block transition-opacity hover:opacity-85">
       {bild}
     </a>
   ) : (
     /* Ohne Laden bleibt es ein Bild, kein Bedienelement. */
-    <span className="block opacity-90">{bild}</span>
+    <span style={{ height: 40 }} className="block opacity-90">{bild}</span>
   );
 }

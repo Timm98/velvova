@@ -140,17 +140,36 @@
   --shadow-glow: 0 6px 24px rgba(98, 92, 255, 0.24);
 
   /* ---- Radien ----
-     Die Skala steht in V7 §3.2 und wird hier wörtlich übernommen. Die
-     alten Werte (6 bis 22) lagen durchgehend darunter — deshalb wirkte
-     alles eckig, obwohl überall ein Radius stand. Zwei Zwischenstufen
-     verschieben sich dabei um wenige Pixel; das ist Absicht, damit die
-     Skala eine Skala bleibt und nicht sieben Einzelentscheidungen. */
-  --radius-xs: 12px;
-  --radius-sm: 16px;
-  --radius-md: 22px;
-  --radius-lg: 30px;
-  --radius-xl: 40px;
-  --radius-2xl: 56px;
+
+     ══════════════════════════════════════════════════════════════
+     Von der runden Skala auf die der Vorlage
+     ══════════════════════════════════════════════════════════════
+
+     Hier stand die Skala aus V7 §3.2 — 12 bis 56, Bedienelemente als
+     Pillen. Sie wird bewusst ersetzt, auf ausdrückliche Ansage: Die
+     Gestaltung soll der Vorlage des Betreibers folgen, und deren
+     Formensprache ist fast rechteckig.
+
+     Gemessen an den Vorlagen:
+
+       Suchfeld im Kopf     4 px   (Höhe 50)
+       Felder im Fuss       4 px
+       Felder der Anmeldung 6 px
+       Karte der Anmeldung 12 px
+
+     Es bleibt eine SKALA, keine Sammlung von Einzelwerten — sonst
+     entscheidet jede neue Fläche neu, ob 7 oder 9 richtig ist.
+
+     `--radius-pill` und `--radius-full` bleiben bei 999: Sie tragen
+     die echten Kreise — Profilbilder, Punkte, runde Symbolknöpfe.
+     Die aus einer Pille rechteckig zu machen wäre kein Stilwechsel,
+     sondern ein Fehler. */
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
   --radius-pill: 999px;
   /* Der alte Name bleibt als Weiterleitung: rund zwanzig Dateien
      benutzen ihn noch, und ein halb umbenanntes Token ist schlimmer als
@@ -158,24 +177,17 @@
   --radius-full: var(--radius-pill);
 
   /* Benannt nach der Aufgabe, nicht nach der Größe — wer eine Jobfläche
-     baut, soll nicht entscheiden müssen, ob 28 oder 30 richtig ist.
-     Die Werte folgen V7 §3.2: Buttons und Composer als Pille,
-     Jobflächen 24–30, Modale und Schubladen mindestens 30, Bilder
-     28–48. */
-  --radius-control: var(--radius-pill);
-  --radius-chip: var(--radius-pill);
-  /* Eingaben und Composer sind Pillen, nicht „stark gerundet". Ein
-     22px-Feld neben einem Pillen-Button sieht aus wie ein Versehen. */
-  --radius-input: var(--radius-pill);
-  --radius-textarea: var(--radius-lg);
-  --radius-surface: 28px;
-  --radius-job: 28px;
-  /* Mindestens 30 laut Vorgabe. */
-  --radius-sheet: 36px;
-  --radius-modal: var(--radius-lg);
+     baut, soll nicht entscheiden müssen, ob 6 oder 8 richtig ist. */
+  --radius-control: var(--radius-sm);
+  --radius-chip: var(--radius-sm);
+  --radius-input: var(--radius-sm);
+  --radius-textarea: var(--radius-md);
+  --radius-surface: var(--radius-lg);
+  --radius-job: var(--radius-lg);
+  --radius-sheet: var(--radius-xl);
+  --radius-modal: var(--radius-xl);
   --radius-canvas: var(--radius-xl);
-  /* Bilder: eigene Stufe, weil sie weiter gehen darf als eine Fläche. */
-  --radius-image: 32px;
+  --radius-image: var(--radius-lg);
 
   /* ---- Bewegung ---- */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
