@@ -11,6 +11,7 @@ import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { seitenwechsel } from "@/lib/nina/uebergang";
 import { darfFuehren, FUEHRUNG_WARTEN_MS } from "@/lib/nina/fuehrung";
+import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
 import { useNina } from "@/components/nina/NinaProvider";
@@ -962,62 +963,30 @@ export function InterviewRoom({
           />
 
           {/*
-            Der Weg zu den Stellen — sichtbar, nicht als Geste.
+            Der Weg zu den Stellen — als Geste UND als Knopf.
+            ══════════════════════════════════════════════════════
 
-            ── Warum er überhaupt dasteht ──────────────────────
+            Hier stand erst eine Geste, dann ein Knopf, jetzt beides —
+            und das ist kein Zickzack, sondern das Ergebnis von zwei
+            Beobachtungen.
 
-            Vorher stand hier eine Geste: am Ende weiterscrollen führte
-            zur Stellensuche. Sie ist weg, weil der Weg von selbst
-            kommt, sobald Monday Treffer hat (siehe `gefuehrt` weiter
-            oben).
+            Die Geste allein war unsichtbar: Wer sie nicht kennt,
+            findet den Weg nicht. Der Knopf allein war unsymmetrisch:
+            Von der Stellenseite führt eine Geste zurück, von hier
+            keine hin — derselbe Weg, zwei verschiedene Arten, ihn zu
+            gehen.
 
-            Damit gab es aber gar keinen Weg mehr, den man selbst
-            gehen konnte. Von der Stellenseite führte eine sichtbare
-            Zeile zurück ins Gespräch — in die andere Richtung stand
-            nichts. Wer die Stellen sehen wollte, bevor Monday so weit
-            ist, hatte hier keinen Anhalt.
-
-            ── Warum als Knopf und nicht als Geste ─────────────
-
-            Weil diese Seite nicht mehr rollt: Sie füllt das Fenster
-            genau aus (`h-dvh`, siehe `AppShell`). Ein Hinweis
-            „weiterscrollen" würde auf etwas zeigen, das es hier nicht
-            gibt. Was man tun kann, ist klicken — also steht das da.
-
-            ── Warum unter dem Feld ────────────────────────────
-
-            Weil das Feld der Ort ist, an dem man beschreibt, was man
-            sucht. Der Verweis auf das Ergebnis gehört direkt darunter
-            und nicht in die Navigation, wo er neben sechs anderen
-            Zielen steht.
+            `ScrollUebergang` ist dasselbe Bauteil wie drüben, nur mit
+            anderer Richtung. Es zeigt dauerhaft eine Zeile, die man
+            anklicken kann, und löst zusätzlich aus, wenn man am Ende
+            weiterscrollt. Ein Bauteil für beide Richtungen: Zwei fast
+            gleiche wären beim ersten Unterschied auseinandergelaufen.
           */}
-          <button
-            type="button"
-            onClick={() => {
-              /*
-               * Nur einmal.
-               *
-               * Ein zweiter Klick, während der erste Übergang noch
-               * fährt, startet einen zweiten `startViewTransition` —
-               * der Browser verwirft dann den ersten mitten in der
-               * Bewegung. Sichtbar ist das als Ruck. Derselbe Riegel
-               * steht in `ScrollUebergang`, dort heisst er
-               * `unterwegs`.
-               */
-              if (gefuehrt.current) return;
-              gefuehrt.current = true;
-              seitenwechsel(router, "/app/jobs", "runter");
-            }}
-            className={cn(
-              "mx-auto mt-1 flex items-center gap-2 rounded-(--radius-pill) px-4 py-1.5",
-              "text-2xs text-ink-3 transition-colors duration-(--duration-base)",
-              "hover:bg-soft hover:text-ink-2",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-            )}
-          >
-            <ArrowDown aria-hidden className="size-3.5" strokeWidth={2} />
-            Weiter zu deinen Stellen
-          </button>
+          <ScrollUebergang
+            ziel="/app/jobs"
+            richtung="runter"
+            hinweis="Nach unten scrollen, um deine Stellen zu sehen"
+          />
 
           {/*
             Hier standen die Antwortimpulse — Plättchen unter dem

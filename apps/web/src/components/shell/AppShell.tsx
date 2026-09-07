@@ -210,28 +210,53 @@ export function AppShell({
         Die Leiste kostet 32 Pixel und lässt sich wegklicken. Das ist
         der Handel.
       */}
-      <AppHinweisleiste nachtsZiel={nachtsZiel} />
+      {/*
+        ══════════════════════════════════════════════════════════
+        Band und Kopfzeile kleben zusammen
+        ══════════════════════════════════════════════════════════
 
-      <TopNav
-        brandName={brandName}
-        userName={userName}
-        userEmail={userEmail}
-        unreadCount={unreadCount}
-        onOpenSearch={() => setPaletteOpen(true)}
-        stellenzahl={stellenzahl}
-        stellenGenau={stellenGenau}
-        proSekunde={proSekunde}
-        accountMenu={
-          <AccountMenu
-            userName={userName}
-            userEmail={userEmail}
-            gruppen={accountGruppen}
-            assistent={brand.assistantName}
-            onLogout={onLogout}
-            bildKennung={bildKennung}
-          />
-        }
-      />
+        Vorher klebte nur die Kopfzeile. Das Band darüber rollte weg —
+        und damit sah die Seite oben je nach Rollstand anders aus:
+        gescrollt nur Kopfzeile, oben Band UND Kopfzeile.
+
+        Beim Seitenwechsel wurde das sichtbar. Das Band trägt einen
+        eigenen `view-transition-name`, damit es nicht mitfährt; steht
+        es aber auf der einen Seite im Bild und auf der anderen nicht,
+        hat der Browser nichts zum Stehenlassen und blendet es ein
+        oder aus. Ein Element, das nicht Teil der Bewegung sein soll,
+        bewegt sich dann doch.
+
+        Zusammen in einer klebenden Hülle ist der obere Rand auf jeder
+        Seite und bei jedem Rollstand derselbe.
+
+        Die Hülle trägt das Kleben, nicht die Kinder: Zwei `sticky`
+        untereinander kleben jedes für sich am Fensterrand und
+        schieben sich übereinander.
+      */}
+      <div className="sticky top-0 z-40">
+        <AppHinweisleiste nachtsZiel={nachtsZiel} />
+
+        <TopNav
+          brandName={brandName}
+          userName={userName}
+          userEmail={userEmail}
+          unreadCount={unreadCount}
+          onOpenSearch={() => setPaletteOpen(true)}
+          stellenzahl={stellenzahl}
+          stellenGenau={stellenGenau}
+          proSekunde={proSekunde}
+          accountMenu={
+            <AccountMenu
+              userName={userName}
+              userEmail={userEmail}
+              gruppen={accountGruppen}
+              assistent={brand.assistantName}
+              onLogout={onLogout}
+              bildKennung={bildKennung}
+            />
+          }
+        />
+      </div>
 
       {/*
        * Hier lag der Monday-Streifen mit „Willkommen zurück".

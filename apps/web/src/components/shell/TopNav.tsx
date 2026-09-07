@@ -218,7 +218,7 @@ export function TopNav({
          Und es ist auch ohne Übergang das Richtige: Suche und Wege
          gehören zu den Dingen, die man mitten im Lesen braucht.
       */
-      className="uebergang-kopf sticky top-0 z-40 border-b border-line bg-page"
+      className="uebergang-kopf border-b border-line bg-page"
     >
       {/* ── Reihe 1: Marke · Suche · Konto ─────────────────── */}
       {/*
