@@ -951,7 +951,21 @@ export function InterviewRoom({
           */}
           <button
             type="button"
-            onClick={() => seitenwechsel(router, "/app/jobs", "runter")}
+            onClick={() => {
+              /*
+               * Nur einmal.
+               *
+               * Ein zweiter Klick, während der erste Übergang noch
+               * fährt, startet einen zweiten `startViewTransition` —
+               * der Browser verwirft dann den ersten mitten in der
+               * Bewegung. Sichtbar ist das als Ruck. Derselbe Riegel
+               * steht in `ScrollUebergang`, dort heisst er
+               * `unterwegs`.
+               */
+              if (gefuehrt.current) return;
+              gefuehrt.current = true;
+              seitenwechsel(router, "/app/jobs", "runter");
+            }}
             className={cn(
               "mx-auto mt-1 flex items-center gap-2 rounded-(--radius-pill) px-4 py-1.5",
               "text-2xs text-ink-3 transition-colors duration-(--duration-base)",

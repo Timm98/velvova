@@ -10,16 +10,24 @@ import type { useRouter } from "next/navigation";
  * wirft „View transition update callback timed out" — dann gibt es
  * keine Bewegung UND einen Fehler.
  *
- * Gemessen, wie lange der Wechsel wirklich braucht:
+ * Gemessen, wie lange der Wechsel wirklich braucht — beide Seiten
+ * haben inzwischen ein `loading.tsx`, das sofort dasteht:
  *
- *   Gespräch → Stellen    274 ms   (mit `app/jobs/loading.tsx`)
- *   Stellen  → Gespräch   990 ms, 1034 ms
+ *   Gespräch → Stellen    240, 241, 248, 252, 253, 259 ms
+ *   Stellen  → Gespräch    25,  28,  31,  37,  38,  44 ms
  *
- * Zwei Sekunden lassen dem langsameren Weg also das Doppelte an Luft
- * und halten den schlimmsten Fall — ein stehendes Bild — trotzdem
- * unter dem, was als Hänger auffällt.
+ * 800 ms sind also das Dreifache des langsameren Weges. Vorher
+ * standen hier 2000 — mehr Luft, als je gebraucht wurde, und im
+ * schlechten Fall zwei Sekunden Standbild: Wird die Grenze erreicht,
+ * ist der Bildschirm bis dahin eingefroren. Diese Zeit zu verkürzen
+ * kostet nichts, solange sie nie erreicht wird.
+ *
+ * Erreicht wird sie in der Entwicklung, wenn Turbopack die Zielseite
+ * nach einer Änderung neu übersetzt — das dauert zehn bis fünfzehn
+ * Sekunden, und dagegen hilft keine Grenze. Aber 0,8 Sekunden
+ * Standbild sind besser als 2.
  */
-const GEDULD_MS = 2000;
+const GEDULD_MS = 800;
 
 /** Wie oft nachgesehen wird, ob die Adresse steht. */
 const TAKT_MS = 16;
