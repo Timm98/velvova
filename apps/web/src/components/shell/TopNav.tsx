@@ -270,11 +270,19 @@ export function TopNav({
                 ? `Benachrichtigungen: ${unreadCount} ungelesen`
                 : "Benachrichtigungen"
             }
-            className="relative grid size-12 place-items-center rounded-(--radius-pill) text-ink transition-colors hover:bg-soft"
+            /* `rounded-full`, nicht das Formtoken: Ein Symbolknopf ohne
+               Beschriftung ist eine Fläche um ein rundes Zeichen — als
+               Rechteck mit vier Pixeln Ecke sieht die Aufhellung beim
+               Überfahren aus wie ein Kästchen, das dort nicht hingehört.
+               In der Vorlage steht die Glocke ganz ohne Fläche. */
+            className="relative grid size-12 place-items-center rounded-full text-ink transition-colors hover:bg-soft"
           >
             <Bell className="size-[21px]" strokeWidth={2} />
             {unreadCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 grid min-w-[18px] place-items-center rounded-(--radius-pill) bg-accent px-1 font-mono text-[12px] font-semibold leading-[18px] text-accent-on">
+              /* Der Zähler bleibt rund. Eine Zahl in einem eckigen
+                 Plättchen liest sich als Etikett, nicht als Meldung —
+                 und bei einstelligen Zahlen ist es ohnehin ein Kreis. */
+              <span className="absolute right-1.5 top-1.5 grid min-w-[18px] place-items-center rounded-full bg-accent px-1 font-mono text-[12px] font-semibold leading-[18px] text-accent-on">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}

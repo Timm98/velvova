@@ -84,24 +84,23 @@ export function AccountMenu({
           aufklappt. Ohne ihn sieht der Kreis aus wie ein Bild, nicht
           wie ein Knopf — und niemand klickt auf ein Bild, um zu den
           Einstellungen zu kommen.
-        */}
-        {/*
-          Der Pfeil ist dunkel auf hellem Grund, nicht umgekehrt.
 
-          Vorher war das Abzeichen selbst schwarz und der Pfeil darin
-          weiss — neben einem Profilbild sass damit ein zweiter
-          dunkler Kreis am Rand, und der las sich als Teil des Bildes
-          statt als Bedienhinweis. Ein dunkler Pfeil auf einem hellen
-          Plättchen ist als Zeichen erkennbar und als Bild nicht.
+          ── Warum jetzt ohne Plättchen ─────────────────────────
 
-          `border-line` statt `border-page`: Auf hellem Grund braucht
-          ein helles Plättchen eine Kante, sonst verschwindet es.
+          Vorher sass der Pfeil in einem eigenen kleinen Kreis mit
+          Rand und Seitenfarbe. Neben einem Profilbild war das ein
+          zweiter Kreis am Rand des ersten — die Vorlage zeichnet dort
+          nur den Strich, der über die Kante des Bildes läuft.
+
+          Ein blosser Strich kann auf einem hellen Foto verschwinden.
+          Deshalb der Schlagschatten: Er trägt den Kontrast, ohne eine
+          zweite Form danebenzusetzen.
         */}
         <span
           aria-hidden
-          className="absolute -bottom-0.5 -right-0.5 grid size-4 place-items-center rounded-full border border-line bg-page text-ink"
+          className="absolute -bottom-0.5 -right-0.5 text-white [filter:drop-shadow(0_1px_2px_rgb(0_0_0/0.75))]"
         >
-          <ChevronDown className="size-2.5" strokeWidth={3} />
+          <ChevronDown className="size-3.5" strokeWidth={3} />
         </span>
         {bildKennung ? (
           /*
@@ -129,7 +128,10 @@ export function AccountMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-[calc(100%_+_8px)] z-50 w-64 animate-fade-in rounded-(--radius-lg) border border-line-2 bg-overlay p-1.5 shadow-xl"
+          /* Gefüllt statt umrandet, wie das Fenster unten rechts: Ein
+             schwebendes Feld braucht keinen Rahmen, seine Fläche ist
+             seine Grenze. */
+          className="absolute right-0 top-[calc(100%_+_8px)] z-50 w-64 animate-fade-in rounded-(--radius-xl) bg-elevated p-1.5 shadow-xl"
         >
           <div className="border-b border-line px-3 py-2.5">
             <p className="truncate text-sm font-medium">{userName ?? "Konto"}</p>
