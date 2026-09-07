@@ -6,7 +6,6 @@ import { requireUser } from "@/lib/auth";
 import { ensureConversation, loadMessages } from "@/lib/nina/conversations";
 import { bestandAufnehmen } from "@/lib/nina/engine";
 import { InterviewRoom } from "./InterviewRoom";
-import { vorschauZeilen } from "@/lib/jobs/vorschau";
 
 export const metadata: Metadata = { title: "Gespräch" };
 export const dynamic = "force-dynamic";
@@ -54,22 +53,7 @@ export default async function NinaPage() {
   const { t, brand } = await getPageContext();
   const user = await requireUser();
 
-  /*
-   * Die Vorschau wird mitgeladen, nicht nachgereicht.
-   *
-   * Sie steht unter dem Gespräch im selben Rollbereich: Wer
-   * weiterscrollt, sieht sie. Nachzuladen hiesse, dass sie beim
-   * Scrollen erscheint — und dann springt die Seite unter der Hand.
-   *
-   * `.catch(() => [])`: Ohne Profil oder ohne Treffer bleibt der
-   * Abschnitt einfach weg. Ein Fehler beim Vorschlagen darf das
-   * Gespräch nicht mitreissen.
-   */
-  const [view, bestand, vorschau] = await Promise.all([
-    loadInterview(),
-    bestandAufnehmen(user.id),
-    vorschauZeilen(user.id).catch(() => []),
-  ]);
+  const [view, bestand] = await Promise.all([loadInterview(), bestandAufnehmen(user.id)]);
 
   const gespräch = await ensureConversation(user.id, {
     kind: "career_interview",
@@ -89,7 +73,6 @@ export default async function NinaPage() {
         .filter((m) => m.role === "user" || m.role === "assistant")
         .map((m) => ({ id: m.id, role: m.role as "user" | "assistant", content: m.content }))}
       hypotheses={entdoppeln(view.openHypotheses).slice(0, 4)}
-      vorschau={vorschau}
       initialStage={bestand.stage}
       initialStatus={STAGE_STATUS_DE[bestand.stage]}
       progress={{
