@@ -230,6 +230,30 @@
    Nur auf ausdrücklichen Wunsch. Zwei Wege führen hierher: eine
    gespeicherte Wahl „dunkel“, oder eine gespeicherte Wahl „System“ bei
    dunklem System. Kein dritter. */
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die dunkle Palette — gemessen, nicht geschätzt
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Werte stammen aus den drei Vorlagen des Betreibers (Fuss,
+ * Anmeldeseite, Kopfzeile), Pixel für Pixel abgelesen:
+ *
+ *   #0c0f18   Seitengrund
+ *   #1c253a   abgesetzte Fläche — Fuss, Hinweisleiste
+ *   #1e232f   erhöhte Fläche — Suchfeld, Karten
+ *   #e1e4ea   Schrift
+ *   #969ba7   gedämpfte Schrift
+ *   #545f78   deutliche Ränder, Feldrahmen
+ *   #426dc5   Hauptknopf
+ *
+ * Es ist bewusst EINE Stelle. Die Vorlagen liessen sich auch je
+ * Bauteil nachbauen — dann stünde dieselbe Zahl an dreissig Orten,
+ * und die einunddreissigste Stelle wäre die, die man vergisst.
+ *
+ * Das helle Schema bleibt unverändert: Die Vorlagen zeigen nur die
+ * dunkle Seite, und ein helles Schema danach zu erfinden hiesse,
+ * Werte zu setzen, die niemand gemessen hat.
+ */
 :root[data-theme="dark"],
 [data-theme="dark"] {
   color-scheme: dark;
@@ -249,23 +273,23 @@
    * Helligkeit und Sättigung steigen — deshalb wirken die Ebenen wie
    * Schichten desselben Materials und nicht wie fünf Grautöne.
    */
-  --background: #070d1a;
-  --background-subtle: #0f1c33;
-  --surface-1: #0e1729;
-  --surface-2: #131e34;
-  --surface-3: #1b2842;
-  --surface-glass: rgba(14, 23, 41, 0.82);
+  --background: #0c0f18;
+  --background-subtle: #1c253a;
+  --surface-1: #141a28;
+  --surface-2: #1e232f;
+  --surface-3: #252b3a;
+  --surface-glass: rgba(12, 15, 24, 0.82);
 
-  --surface-soft: #131e34;
-  --surface-soft-hover: #1b2842;
+  --surface-soft: #1e232f;
+  --surface-soft-hover: #252b3a;
 
-  --text-primary: #f7f8fc;
-  --text-secondary: #dfe4ee;
-  --text-tertiary: #c2c9d6;
-  --text-on-primary: #070d1a;
+  --text-primary: #e1e4ea;
+  --text-secondary: #c3c8d2;
+  --text-tertiary: #969ba7;
+  --text-on-primary: #ffffff;
 
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.14);
+  --border-subtle: rgba(225, 228, 234, 0.1);
+  --border-strong: #545f78;
 
   /*
    * Dasselbe Blau wie im hellen Modus.
@@ -279,11 +303,11 @@
    * Auf dem tiefen Marineblau trägt #7169ff, weil der Grund selbst
    * blau ist und nicht grau — die beiden gehören zur selben Familie.
    */
-  --primary: #4d88ff;
-  --primary-fill: #2E6FF2;
-  --primary-strong: #4a86ff;
-  --primary-soft: rgba(46, 111, 242, 0.24);
-  --primary-text: #8fb6ff;
+  --primary: #5b83d6;
+  --primary-fill: #426dc5;
+  --primary-strong: #3a61b2;
+  --primary-soft: rgba(66, 109, 197, 0.24);
+  --primary-text: #8fabe4;
 
   --signal-cyan: #7ee2ff;
   --signal-cyan-text: #7ee2ff;
@@ -313,8 +337,8 @@
    * unsichtbarer Text, und niemandem aufgefallen, weil der helle Modus
    * der Standard ist und dunkel selten geprüft wurde.
    */
-  --surface-lavender: #1c1f33;
-  --surface-ice: #14202e;
+  --surface-lavender: #1b2136;
+  --surface-ice: #151d2c;
 
   /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
      gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */
@@ -349,28 +373,28 @@
   :root[data-theme-mode="system"] {
     color-scheme: dark;
 
-    --background: #070d1a;
-    --background-subtle: #0f1c33;
-    --surface-1: #0e1729;
-    --surface-2: #131e34;
-    --surface-3: #1b2842;
-    --surface-glass: rgba(14, 23, 41, 0.82);
-    --surface-soft: #131e34;
-    --surface-soft-hover: #1b2842;
+    --background: #0c0f18;
+    --background-subtle: #1c253a;
+    --surface-1: #141a28;
+    --surface-2: #1e232f;
+    --surface-3: #252b3a;
+    --surface-glass: rgba(12, 15, 24, 0.82);
+    --surface-soft: #1e232f;
+    --surface-soft-hover: #252b3a;
 
-    --text-primary: #f7f8fc;
-    --text-secondary: #dfe4ee;
-    --text-tertiary: #c2c9d6;
-    --text-on-primary: #070d1a;
+    --text-primary: #e1e4ea;
+    --text-secondary: #c3c8d2;
+    --text-tertiary: #969ba7;
+    --text-on-primary: #ffffff;
 
-    --border-subtle: rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.14);
+    --border-subtle: rgba(225, 228, 234, 0.1);
+    --border-strong: #545f78;
 
-    --primary: #4d88ff;
-    --primary-fill: #2E6FF2;
-    --primary-strong: #4a86ff;
-    --primary-soft: rgba(46, 111, 242, 0.24);
-    --primary-text: #8fb6ff;
+    --primary: #5b83d6;
+    --primary-fill: #426dc5;
+    --primary-strong: #3a61b2;
+    --primary-soft: rgba(66, 109, 197, 0.24);
+    --primary-text: #8fabe4;
 
     --signal-cyan: #7ee2ff;
     --signal-cyan-text: #7ee2ff;
@@ -400,8 +424,8 @@
    * unsichtbarer Text, und niemandem aufgefallen, weil der helle Modus
    * der Standard ist und dunkel selten geprüft wurde.
    */
-  --surface-lavender: #1c1f33;
-  --surface-ice: #14202e;
+  --surface-lavender: #1b2136;
+  --surface-ice: #151d2c;
 
   /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
      gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */

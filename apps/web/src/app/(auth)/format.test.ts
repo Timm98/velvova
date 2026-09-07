@@ -45,7 +45,7 @@ const rahmen = readFileSync(join(AUTH, "layout.tsx"), "utf8");
  * erklären, warum genau das ausgeschlossen ist. Ein Test, den eine
  * Begründung bricht, erzieht dazu, Begründungen wegzulassen.
  */
-const klassen = /className="([^"]*rounded-\[14px\][^"]*)"/.exec(karte)?.[1] ?? "";
+const klassen = /className="([^"]*rounded-\[12px\][^"]*)"/.exec(karte)?.[1] ?? "";
 
 describe("Anmeldekarte", () => {
   it("findet ihre Klassenzeile überhaupt", () => {
@@ -83,9 +83,12 @@ describe("Anmeldeseiten", () => {
   });
 
   it("bauen ihre Karte nicht selbst", () => {
-    /* Wer `rounded-[14px]` direkt schreibt, hat eine zweite Karte
+    /* 12 statt 14 Pixel, seit die Karte der Vorlage folgt — der
+       Wert ist hier nur das Erkennungsmerkmal der einen Karte.
+
+       Wer `rounded-[12px]` direkt schreibt, hat eine zweite Karte
        gebaut — und die folgt dem Mass hier nicht mehr. */
-    const eigenbau = alle.filter((d) => readFileSync(d, "utf8").includes("rounded-[14px]"));
+    const eigenbau = alle.filter((d) => readFileSync(d, "utf8").includes("rounded-[12px]"));
     expect(eigenbau.map((d) => d.slice(AUTH.length + 1))).toEqual([]);
   });
 });

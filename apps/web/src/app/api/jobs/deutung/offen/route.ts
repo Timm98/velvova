@@ -51,6 +51,19 @@ export async function GET() {
             and k.nachricht is not null
             and k.schluessel is not null
             /*
+             * Was schon gezeigt wurde, kommt nicht wieder.
+             *
+             * Der Abruf setzte gezeigt_am, pruefte es aber nicht --
+             * und weil er an jeder Navigation hängt, kam dieselbe
+             * Frage nach jedem Filterklick erneut. Für die Person
+             * sah es aus, als klebe das Fenster fest.
+             *
+             * Eine Frage wird einmal gestellt. Wer sie wegklickt,
+             * bekommt sie beim nächsten Anlass wieder — nicht beim
+             * nächsten Seitenaufbau.
+             */
+            and k.gezeigt_am is null
+            /*
              * Nichts Altes nachreichen.
              *
              * Eine Frage zum Umkreis von gestern passt nicht mehr zu

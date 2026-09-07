@@ -7,6 +7,7 @@ import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { LebendeZahl } from "@/components/marketing/LebendeZahl";
 import { NinaVisual } from "@/components/nina/NinaVisual";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
+import { NachtsWeiter } from "@/components/jobs/NachtsWeiter";
 import { TopNav } from "@/components/shell/TopNav";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
 import { laenderbestand } from "@/lib/jobs/laenderbestand";
@@ -148,7 +149,7 @@ export default async function LandingPage() {
 
       {/* Die Ankündigung steht über dem Kopf — auf jeder Seite
           dieselbe, mittig, dunkelblau. */}
-      <AppHinweisleiste />
+<AppHinweisleiste />
 
       {/*
        * Derselbe Kopf wie überall.
@@ -170,7 +171,6 @@ export default async function LandingPage() {
         accountMenu={sitzung.accountMenu}
       />
       <Landeshinweis lage={lage} quelle={herkunft.quelle} />
-      <NachtsLeiste />
 
       <main id="inhalt">
         <Hero bestand={bestand} anrede={sitzung.anrede} />
@@ -178,7 +178,7 @@ export default async function LandingPage() {
         <Entdeckung />
         <NichtNachSchlagwoertern />
         <JobIntelligenz />
-        <NachtsWeiter />
+        <NachtsAbschnitt />
         <LifeFit lage={lage} />
         <FitScore />
         <Bewerbung />
@@ -462,121 +462,17 @@ function Fusszeile({ lage }: { lage: Landeslage }) {
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * Die Leiste ganz oben: was Nina nachts tut, und die App.
+ * Der Abschnitt unter den Stellen — der Kasten in einem Abschnitt.
  *
- * ══════════════════════════════════════════════════════════════
- * Warum eine Zeile und kein Banner
- * ══════════════════════════════════════════════════════════════
- *
- * Sie steht über allem, noch vor der Überschrift — und genau deshalb
- * darf sie nichts wollen. Kein Kasten, keine Fläche, kein Kreuz zum
- * Wegklicken: eine Zeile, die man liest oder überliest.
- *
- * Was sie sagt, ist der Kern des Produkts und passt in sieben Wörter.
- * Wer mehr wissen will, klickt — und landet bei dem Kasten, der es
- * erklärt, statt hier eine zweite Erklärung zu bekommen.
+ * Der Inhalt steht in `components/jobs/NachtsWeiter.tsx`, weil er auf
+ * der Stellenseite noch einmal gebraucht wird. Zwei Fassungen
+ * desselben Versprechens liefen irgendwann auseinander.
  */
-function NachtsLeiste() {
+function NachtsAbschnitt() {
   return (
-    <div className="border-b border-line/60 bg-canvas">
-      <div className="mx-auto flex max-w-[76rem] flex-wrap items-center justify-center gap-x-3 gap-y-1 px-5 py-2.5 text-center text-[13px] text-ink-2">
-        <span>
-          <span className="font-medium text-ink">Nina sucht automatisch über Nacht.</span>{" "}
-          <a
-            href="#nachts"
-            className="underline decoration-dotted underline-offset-4 hover:text-ink"
-          >
-            Hier entdecken
-          </a>
-        </span>
-        <span aria-hidden className="hidden text-ink-3 sm:inline">
-          ·
-        </span>
-        <span className="text-ink-3">Velvova auch unterwegs: Die App kommt bald.</span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Der Kasten unter den Stellen — was nachts passiert.
- *
- * ══════════════════════════════════════════════════════════════
- * Warum er hier steht und nicht weiter oben
- * ══════════════════════════════════════════════════════════════
- *
- * Weil er erst Sinn ergibt, wenn man gesehen hat, wonach gesucht
- * wird. „Nina sucht nachts weiter" ist über einer leeren Seite eine
- * Behauptung; unter den Stellen ist es die Antwort auf die Frage, die
- * sich dann stellt — muss ich jeden Tag selbst nachsehen?
- *
- * ══════════════════════════════════════════════════════════════
- * Was hier NICHT steht
- * ══════════════════════════════════════════════════════════════
- *
- * Ein Feld für die E-Mail-Adresse. Es gibt keinen Newsletter-Versand
- * in diesem System — kein Verteiler, keine doppelte Bestätigung,
- * kein Abmeldeweg. Ein Formular, das nichts davon hat, sammelt
- * Adressen für ein Versprechen, das niemand einlösen kann.
- *
- * Stattdessen führt der Weg dorthin, wo die nächtliche Suche
- * tatsächlich eingerichtet wird: ins Konto. Wer eines anlegt,
- * bekommt sie — und die App, sobald es sie gibt.
- */
-function NachtsWeiter() {
-  return (
-    <Abschnitt grund="lavendel" id="nachts">
-      <div className="mx-auto max-w-[46rem] text-center">
-        <p className="abschnitts-titel text-ink-3">Während du schläfst</p>
-        <h2 className="mt-3 font-display text-[clamp(1.6rem,3.2vw,2.4rem)] font-semibold leading-[1.1] tracking-[-0.02em] text-ink">
-          Nina sucht über Nacht weiter
-        </h2>
-        <p className="mt-4 text-[17px] leading-relaxed text-ink-2">
-          Einmal gesagt, wonach du suchst — den Rest übernimmt sie. Jede Nacht geht
-          sie den neuen Bestand durch, prüft ihn gegen deine Bedingungen und legt
-          dir am Morgen hin, was übrig bleibt. Nicht alles, was neu ist. Das, was
-          passt.
-        </p>
-
-        {/*
-          Drei Sätze, drei Versprechen — und jedes ist eines, das die
-          Anwendung hält. „Keine Mail ohne Treffer" ist wörtlich
-          gemeint: Der Suchauftrag verschickt nichts, wenn nichts
-          gefunden wurde. Eine tägliche Mail mit „heute leider nichts"
-          wäre eine Gewohnheit, die man abbestellt.
-        */}
-        <ul className="mx-auto mt-8 grid max-w-[34rem] gap-3 text-left text-[15px] leading-relaxed text-ink-2">
-          <li className="flex gap-3">
-            <span aria-hidden className="mt-[9px] size-1.5 shrink-0 rounded-full bg-accent" />
-            Du sagst es einmal — in einem Satz, nicht in einem Formular.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden className="mt-[9px] size-1.5 shrink-0 rounded-full bg-accent" />
-            Keine Nachricht ohne Treffer. Wenn nichts passt, bleibt es still.
-          </li>
-          <li className="flex gap-3">
-            <span aria-hidden className="mt-[9px] size-1.5 shrink-0 rounded-full bg-accent" />
-            Jederzeit abstellbar, ohne dass dein Profil davon berührt wird.
-          </li>
-        </ul>
-
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          {/* Derselbe Knopf wie überall auf dieser Seite — ein eigener
-              hätte hier nur bedeutet, dass er anders aussieht. */}
-          <Hauptknopf href="/register">Nachts weitersuchen lassen</Hauptknopf>
-        </div>
-
-        {/*
-          Die App als Ausblick, nicht als Anmeldung.
-
-          „Bald" ohne Datum ist ehrlich, solange kein Datum feststeht.
-          Ein Feld für die E-Mail-Adresse stünde hier für einen
-          Verteiler, den es nicht gibt.
-        */}
-        <p className="mt-6 text-[13px] leading-relaxed text-ink-3">
-          <span className="font-medium text-ink-2">Velvova auch unterwegs.</span>{" "}
-          Die App kommt bald — wer ein Konto hat, erfährt es als Erstes.
-        </p>
+    <Abschnitt grund="lavendel">
+      <div className="mx-auto max-w-[52rem]">
+        <NachtsWeiter />
       </div>
     </Abschnitt>
   );

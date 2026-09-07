@@ -3,6 +3,7 @@ import { getPageContext } from "@/lib/locale";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { TopNav } from "@/components/shell/TopNav";
+import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
 import { laenderbestand } from "@/lib/jobs/laenderbestand";
 import { bestandszahl } from "@/lib/jobs/bestandszahl";
@@ -87,6 +88,16 @@ export default async function PublicLayout({ children }: { children: React.React
        * und Profil, oder Anmelden und Konto anlegen. Alles andere ist
        * gleich, bis auf den Pixel.
        */}
+      {/*
+        Dieselbe Leiste wie überall — hier mit dem Weg zur Anmeldung.
+        
+        Auf einer öffentlichen Seite gibt es keinen Auftrag, den man
+        prüfen könnte, und keinen Abschnitt darunter, auf den ein
+        Anker zeigen würde. Der Weg zur nächtlichen Suche führt hier
+        über ein Konto — das ist der ehrliche Link.
+      */}
+      <AppHinweisleiste nachtsZiel="/register" />
+
       <TopNav
         brandName={brand.name}
         userName={sitzung.userName}

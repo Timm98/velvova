@@ -64,6 +64,7 @@ export interface NavLabels {
 export function AppShell({
   labels,
   brandName,
+  nachtsZiel = null,
   assistantName,
   userEmail,
   userName,
@@ -80,6 +81,13 @@ export function AppShell({
 }: {
   labels: NavLabels;
   brandName: string;
+  /**
+   * Wohin „Hier entdecken" in der Leiste oben führt — oder `null`.
+   *
+   * `null` heisst: Es läuft bereits eine nächtliche Suche. Dann steht
+   * dort die App-Ankündigung, und im Gespräch mit Nina gar nichts.
+   */
+  nachtsZiel?: string | null;
   assistantName: string;
   userEmail: string;
   userName: string | null;
@@ -164,7 +172,24 @@ export function AppShell({
         * eine App, die es noch nicht gibt, ist es nicht wert, dort
         * dreissig Pixel zu kosten.
         */}
-      {!fülltFenster && <AppHinweisleiste />}
+      {/*
+        ══════════════════════════════════════════════════════════
+        Auch im Gespräch mit Nina
+        ══════════════════════════════════════════════════════════
+
+        Hier stand `!fülltFenster` — auf `/app/nina` blieb die Leiste
+        weg, mit dem Argument, ein Hinweis auf eine App, die es noch
+        nicht gibt, sei dreissig Pixel Höhe im Gespräch nicht wert.
+
+        Das Argument galt der App. Seit dort auch die nächtliche
+        Suche steht, gilt es nicht mehr: Sie existiert, sie ist einen
+        Klick entfernt, und das Gespräch ist genau der Ort, an dem
+        jemand merkt, dass er nicht jeden Tag selbst nachsehen will.
+
+        Die Leiste kostet 32 Pixel und lässt sich wegklicken. Das ist
+        der Handel.
+      */}
+      <AppHinweisleiste nachtsZiel={nachtsZiel} />
 
       <TopNav
         brandName={brandName}
@@ -264,7 +289,8 @@ export function AppShell({
         * Scrollen.
         */}
       {!fülltFenster && !ARBEITSFLAECHEN.some((p) => pathname.startsWith(p)) && (
-        <VelvovaFooter land={land} laender={laender} />
+        /* `angemeldet`: Die Hülle läuft nur unter einer Sitzung. */
+        <VelvovaFooter angemeldet land={land} laender={laender} />
       )}
 
       <BottomNav />

@@ -1162,6 +1162,7 @@ export default async function JobsPage({
       />
       </NinaSteuerungProvider>
 
+
       {/*
        * Blättern statt endlos scrollen.
        *
@@ -1353,12 +1354,25 @@ export default async function JobsPage({
           * sinnvolle Handlung — und die gehört vor einen Abschnitt,
           * der erklärt, wie das Produkt gedacht ist.
           */}
+        {/*
+          Das Ziel des Hinweises oben in der Leiste.
+          
+          Ein zweiter Kasten mit demselben Versprechen stand hier
+          kurz — bis auffiel, dass `Jobalarm` genau das seit Langem
+          tut, und zwar mit einem Knopf, der den Auftrag aus den
+          aktuellen Filtern wirklich anlegt.
+          
+          `scroll-mt` wegen der Leiste oben: Ohne den Abstand landet
+          die Überschrift beim Ankersprung darunter.
+        */}
+        <div id="nachts" className="scroll-mt-24">
         <Jobalarm
           params={params}
           vorschlag={
             [params.q, params.ort].filter(Boolean).join(" in ") || "Meine Suche"
           }
         />
+        </div>
 
         <Vertrauensbereich />
 

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
+import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { brand } from "@paycheck/config";
 import { NinaVisual } from "@/components/nina/NinaVisual";
-import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { Studienlage } from "@/components/marketing/Studienlage";
 import { Produktflaeche } from "@/components/marketing/Produktflaeche";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
@@ -102,7 +102,6 @@ export default async function FuerUnternehmenSeite() {
 
       {/* Die Ankündigung steht über dem Kopf — auf jeder Seite
           dieselbe. */}
-      <AppHinweisleiste />
 
       {/*
        * Derselbe Kopf wie überall — die Regel gilt ohne Ausnahme.
@@ -118,6 +117,8 @@ export default async function FuerUnternehmenSeite() {
        * Was diese Seite braucht, steht ohnehin schon im Kopf: „Für
        * Unternehmen" ist einer der Wege in der zweiten Zeile.
        */}
+      <AppHinweisleiste nachtsZiel="/register" />
+
       <TopNav
         brandName={brand.name}
         userName={sitzung.userName}

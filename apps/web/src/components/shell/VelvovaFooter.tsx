@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { AUSSENVERWEISE, MAERKTE, brand } from "@paycheck/config";
+import { MAERKTE, brand } from "@paycheck/config";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RegionAuswahl } from "./RegionAuswahl";
 import { Laenderraster } from "./Laenderraster";
 import { Zahlungsarten } from "./Zahlungsarten";
+import { AppBadges } from "./AppBadges";
 import { SozialeKanaele } from "./SozialeKanaele";
 import type { Landzeile } from "@/lib/jobs/laenderbestand";
 
@@ -18,9 +19,10 @@ import type { Landzeile } from "@/lib/jobs/laenderbestand";
  *
  * ── Warum trotzdem nichts erfunden wird ───────────────────────
  *
- * Keine App-Store-Abzeichen ohne App, keine Social-Symbole ohne
- * Konten, keine vierzig Länder ohne Stellen darin. Was es nicht gibt,
- * steht als „kommt bald" da oder gar nicht.
+ * Keine Social-Symbole ohne Konten, keine vierzig Länder ohne Stellen
+ * darin. Die Ladenabzeichen stehen da, weil der Betreiber sie gestellt
+ * hat — mit dem Satz darunter, dass die App noch kommt. Was es nicht
+ * gibt, steht als „kommt bald" da oder gar nicht.
  *
  * Die Märkte kommen aus `MAERKTE` — dieselbe Quelle, aus der die
  * Regionsauswahl und die Währungsformatierung lesen. Eine zweite Liste
@@ -84,10 +86,19 @@ const SPALTEN: Spalte[] = [
 export function VelvovaFooter({
   land = "DE",
   laender = [],
+  angemeldet = false,
 }: {
   land?: string;
   /** Märkte mit Stellenzahl. Leer heisst: das Raster entfällt. */
   laender?: Landzeile[];
+  /**
+   * Steht der Fuss unter einer angemeldeten Sitzung?
+   *
+   * Nur dafür da, den Aufruf oben links richtig zu beschriften.
+   * „Jetzt kostenlos starten" unter jemandem, der längst angemeldet
+   * ist, liest sich, als kenne die Seite ihn nicht.
+   */
+  angemeldet?: boolean;
 }) {
   return (
     <footer
@@ -106,10 +117,70 @@ export function VelvovaFooter({
        * umschalten.
        */
       data-theme="dark"
-      className="mt-20 border-t border-line bg-sunken"
+      /*
+       * Der Fuss ist die abgesetzte Fläche der Vorlage — #1c253a.
+       *
+       * Diese Zahl steht nicht mehr hier, sondern als
+       * `--background-subtle` im Kern; `bg-sunken` holt sie sich von
+       * dort. `data-theme="dark"` sorgt dafür, dass auch bei heller
+       * Einstellung die dunkle Seite der Palette gilt: Der Fuss ist
+       * in der Vorlage immer blau.
+       *
+       * Übrig bleibt der Eckenradius. Unsere Bedienelemente sind
+       * sonst Pillen; die Vorlage setzt an ihren Feldern rund vier
+       * Pixel, und im Fuss wären Pillen das auffälligste Merkmal,
+       * das nicht stimmt.
+       */
+      style={{ "--radius-control": "4px" } as React.CSSProperties}
+      className="mt-20 bg-sunken"
     >
       <div className="mx-auto w-full max-w-(--breite-inhalt) px-5 py-14 md:py-16">
         {/*
+          ══════════════════════════════════════════════════════════
+          Reihe 1 — Aufruf, Einstellungen, Darstellung
+          ══════════════════════════════════════════════════════════
+
+          Drei gleich breite Spalten, darunter eine Trennlinie. Die
+          beiden rechten sind Felder derselben Höhe; links steht ein
+          umrandeter Knopf über die volle Spaltenbreite.
+        */}
+        <div className="grid gap-8 md:grid-cols-3 md:gap-10">
+          <div className="grid content-start gap-3">
+            <h2 className="text-sm font-semibold text-ink">Nina sucht über Nacht</h2>
+            {/*
+              Beide Wege enden am selben Kasten auf der Jobseite.
+
+              Vorher führte der Knopf für Nichtangemeldete zur
+              Registrierung — eine Zwischenstation, die nicht zeigt,
+              wovon die Rede ist. Wer den Kasten sieht und einen
+              Suchauftrag anlegen will, wird dort ohnehin nach einem
+              Konto gefragt; die Reihenfolge „erst sehen, dann
+              anmelden" ist die ehrlichere.
+            */}
+            <Link
+              href="/app/jobs#nachts"
+              className="flex h-11 items-center justify-center rounded-(--radius-control) border border-line px-4 text-sm font-medium text-ink transition-colors hover:bg-inset"
+            >
+              {angemeldet ? "Suchauftrag einrichten" : "Jetzt kostenlos starten"}
+            </Link>
+          </div>
+
+          <RegionAuswahl aktuellesLand={land} />
+
+          <div className="grid content-start gap-1.5">
+            <span className="text-sm font-semibold text-ink">Darstellung</span>
+            <ThemeToggle
+              feld
+              labels={{ light: "Hell", dark: "Dunkel", system: "System", group: "Darstellung" }}
+            />
+          </div>
+        </div>
+
+        {/*
+          ══════════════════════════════════════════════════════════
+          Reihe 2 — die Verweisspalten
+          ══════════════════════════════════════════════════════════
+
           `content-start` an jeder Spalte — sonst strecken sich die Zeilen.
 
           Die Spalten stehen als Gitterfelder nebeneinander und werden
@@ -118,8 +189,12 @@ export function VelvovaFooter({
           standen die Links in „Velvova" 36 Pixel auseinander, in „Für
           Unternehmen" 48 — und deren erster begann 36 Pixel tiefer.
           Kein Abstandsfehler, sondern gestreckter Leerraum.
+
+          Drei Spalten wie in der Vorlage. Unsere fünf Bereiche laufen
+          damit in zwei Reihen, was dem Bild dort entspricht: zwei
+          Blöcke zu je drei Spalten.
         */}
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+        <div className="mt-12 grid gap-x-10 gap-y-12 border-t border-line pt-12 sm:grid-cols-2 md:grid-cols-3">
           {SPALTEN.map((s) => (
             <nav key={s.titel} aria-label={s.titel} className="grid content-start gap-3">
               <h2 className="text-sm font-semibold text-ink">{s.titel}</h2>
@@ -152,98 +227,16 @@ export function VelvovaFooter({
           ))}
         </div>
 
-        <div className="mt-12 grid gap-10 border-t border-line pt-10 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="grid content-start gap-3">
-            <h2 className="text-sm font-semibold text-ink">Velvova App</h2>
-            {AUSSENVERWEISE.iosUrl || AUSSENVERWEISE.androidUrl ? (
-              <ul className="grid">
-                {AUSSENVERWEISE.iosUrl && (
-                  <li>
-                    <a href={AUSSENVERWEISE.iosUrl} className="inline-flex min-h-9 items-center text-sm text-ink-2 hover:text-ink">
-                      Für iPhone
-                    </a>
-                  </li>
-                )}
-                {AUSSENVERWEISE.androidUrl && (
-                  <li>
-                    <a href={AUSSENVERWEISE.androidUrl} className="inline-flex min-h-9 items-center text-sm text-ink-2 hover:text-ink">
-                      Für Android
-                    </a>
-                  </li>
-                )}
-              </ul>
-            ) : (
-              /*
-               * Kein Abzeichen ohne App.
-               *
-               * „Jetzt im App Store" mit einem Verweis ins Leere ist die
-               * billigste Art, grösser auszusehen — und der erste Klick
-               * widerlegt sie.
-               */
-              <p className="-mt-1 max-w-[30ch] text-sm leading-relaxed text-ink-3">
-                Die Velvova App kommt bald. Bis dahin läuft alles im Browser, auch auf dem
-                Telefon.
-              </p>
-            )}
-          </div>
+        {/*
+          ══════════════════════════════════════════════════════════
+          Reihe 3 — Kontakt, App, Zahlungsarten
+          ══════════════════════════════════════════════════════════
 
-          <div className="grid content-start gap-3">
-            {/*
-              Die grössten offen, der Rest ausklappbar.
-
-              Ganz zugeklappt stand da nur „Verfügbare Märkte (19)" —
-              man musste klicken, um überhaupt zu erfahren, ob das
-              eigene Land dabei ist. Ganz offen nahm die Liste mehr
-              Platz ein als alle anderen Fussspalten zusammen.
-
-              Fünf reichen, um die Frage zu beantworten; die Liste ist
-              nach Bestandsgrösse sortiert, also stehen oben die, nach
-              denen am ehesten jemand sucht.
-            */}
-            <h2 className="text-sm font-semibold text-ink">Verfügbare Märkte</h2>
-            <ul className="grid gap-1.5">
-              {MAERKTE.slice(0, 5).map((m) => (
-                <li key={m.countryCode} className="text-sm text-ink-2">
-                  {m.name} · {m.currency}
-                </li>
-              ))}
-            </ul>
-
-            {MAERKTE.length > 5 && (
-              /*
-               * `<details>` statt eines nachgebauten Aufklappers: von
-               * Haus aus tastaturbedienbar, wird von Vorlesegeräten
-               * angesagt, funktioniert ohne JavaScript, und der Browser
-               * findet den zugeklappten Text bei der Seitensuche.
-               */
-              <details className="group mt-1">
-                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-sm text-accent-text marker:content-none">
-                  <span className="group-open:hidden">
-                    {MAERKTE.length - 5} weitere Märkte
-                  </span>
-                  <span className="hidden group-open:inline">Weniger anzeigen</span>
-                  <ChevronDown
-                    aria-hidden
-                    className="size-4 transition-transform group-open:rotate-180"
-                    strokeWidth={1.8}
-                  />
-                </summary>
-
-                <ul className="mt-2 grid gap-1.5">
-                  {MAERKTE.slice(5).map((m) => (
-                    <li key={m.countryCode} className="text-sm text-ink-2">
-                      {m.name} · {m.currency}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
-
-            <p className="mt-2 text-2xs leading-relaxed text-ink-3">
-              Weitere Länder folgen, sobald wir dort Stellen und Referenzdaten haben.
-            </p>
-          </div>
-
+          Dieselben drei Spalten, ohne Trennlinie davor: In der Vorlage
+          trennt hier nur Abstand, weil es weiter dieselbe Sorte Inhalt
+          ist — Auskünfte über den Anbieter.
+        */}
+        <div className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 md:grid-cols-3">
           <div className="grid content-start gap-3">
             <h2 className="text-sm font-semibold text-ink">Kontakt</h2>
             {/*
@@ -272,6 +265,10 @@ export function VelvovaFooter({
               </li>
             </ul>
           </div>
+
+          <AppBadges />
+
+          <Zahlungsarten />
         </div>
 
         {/*
@@ -280,25 +277,64 @@ export function VelvovaFooter({
           * behaupten; mit Zahlen ist es eine überprüfbare Auskunft.
           */}
         {laender.length > 0 && (
-          <div className="mt-12 border-t border-line pt-10">
+          <div className="mt-14">
             <Laenderraster laender={laender} />
           </div>
         )}
 
-        <div className="mt-12 grid gap-8 border-t border-line pt-10 sm:grid-cols-2">
-          <Zahlungsarten />
-          <RegionAuswahl aktuellesLand={land} />
-          <div className="grid gap-1.5">
-            <span className="text-sm font-semibold text-ink">Darstellung</span>
-            <ThemeToggle
-              labels={{ light: "Hell", dark: "Dunkel", system: "System", group: "Darstellung" }}
-            />
-            <p className="max-w-[32ch] text-2xs leading-relaxed text-ink-3">
-              „System" folgt der Einstellung deines Geräts und wechselt mit ihr.
-            </p>
-          </div>
+        {/*
+          Die Währungen der Märkte — dieselbe Liste, nur mit der
+          Angabe, in der dort gerechnet wird. Sie steht unter dem
+          Länderraster, weil sie dieselben Länder betrifft; zweimal
+          nebeneinander wäre sie eine zweite Länderliste.
+        */}
+        <div className="mt-8 grid gap-2">
+          <ul className="flex flex-wrap gap-x-5 gap-y-1.5">
+            {MAERKTE.slice(0, 5).map((m) => (
+              <li key={m.countryCode} className="text-2xs text-ink-3">
+                {m.name} · {m.currency}
+              </li>
+            ))}
+          </ul>
+
+          {MAERKTE.length > 5 && (
+            /*
+             * `<details>` statt eines nachgebauten Aufklappers: von
+             * Haus aus tastaturbedienbar, wird von Vorlesegeräten
+             * angesagt, funktioniert ohne JavaScript, und der Browser
+             * findet den zugeklappten Text bei der Seitensuche.
+             */
+            <details className="group">
+              <summary className="flex cursor-pointer list-none items-center gap-1.5 text-2xs text-accent-text marker:content-none">
+                <span className="group-open:hidden">{MAERKTE.length - 5} weitere Märkte</span>
+                <span className="hidden group-open:inline">Weniger anzeigen</span>
+                <ChevronDown
+                  aria-hidden
+                  className="size-3.5 transition-transform group-open:rotate-180"
+                  strokeWidth={1.8}
+                />
+              </summary>
+
+              <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1.5">
+                {MAERKTE.slice(5).map((m) => (
+                  <li key={m.countryCode} className="text-2xs text-ink-3">
+                    {m.name} · {m.currency}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+
+          <p className="text-2xs leading-relaxed text-ink-3">
+            Weitere Länder folgen, sobald wir dort Stellen und Referenzdaten haben.
+          </p>
         </div>
 
+        {/*
+          ══════════════════════════════════════════════════════════
+          Fusszeile — Rechtliches links, Kanäle rechts
+          ══════════════════════════════════════════════════════════
+        */}
         <div className="mt-12 flex flex-wrap items-center gap-x-7 gap-y-4 border-t border-line pt-8 text-2xs text-ink-3">
           <span className="font-semibold text-ink-2">{brand.name}</span>
           <span>© {new Date().getFullYear()} {brand.name}</span>

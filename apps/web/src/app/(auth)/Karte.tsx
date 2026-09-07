@@ -65,7 +65,7 @@
  */
 export function Karte({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-[780px] content-center gap-6 rounded-[14px] border border-line-3 px-6 py-8 sm:px-9 sm:py-9">
+    <div className="grid min-h-[780px] content-center gap-6 rounded-[12px] border border-line-3 px-6 py-8 sm:px-9 sm:py-9">
       {children}
     </div>
   );
@@ -74,7 +74,15 @@ export function Karte({ children }: { children: React.ReactNode }) {
 /** Die Überschrift — überall dieselbe Grösse und derselbe Abstand. */
 export function Titel({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="font-display text-[clamp(1.7rem,4vw,2rem)] font-semibold tracking-[-0.025em]">
+    /*
+       Grösser und leichter als vorher.
+
+       Die Vorlage setzt die Überschrift bei rund 40 Pixeln in
+       normaler Strichstärke. Fett wirkt sie auf einer Karte mit
+       genau einer Aufgabe wie eine Warnung; die Grösse allein
+       trägt den Rang schon.
+    */
+    <h1 className="font-display text-[clamp(1.9rem,4.5vw,2.4rem)] font-normal tracking-[-0.02em]">
       {children}
     </h1>
   );

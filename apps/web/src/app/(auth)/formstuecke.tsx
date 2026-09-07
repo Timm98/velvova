@@ -31,7 +31,7 @@ import { cn } from "@/lib/cn";
  * und ein Token mit zwei Verwendungen ist eine Zahl mit Umweg.
  */
 export const FELD = [
-  "h-[56px] w-full rounded-[10px] border border-line-3 bg-transparent px-4 text-[15px] text-ink",
+  "h-[56px] w-full rounded-[6px] border border-line-3 bg-transparent px-4 text-[15px] text-ink",
   "placeholder:text-ink-3",
   "transition-[border-color,box-shadow] duration-(--duration-fast) ease-(--ease-out)",
   "hover:border-ink-3",
@@ -42,7 +42,7 @@ export const FELD = [
 ];
 
 export const KNOPF =
-  "inline-flex h-[56px] w-full items-center justify-center gap-3 rounded-[10px] text-[15px] font-medium transition-[background-color,border-color,opacity,transform] duration-(--duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) disabled:cursor-not-allowed disabled:opacity-55";
+  "inline-flex h-[56px] w-full items-center justify-center gap-3 rounded-[6px] text-[15px] font-medium transition-[background-color,border-color,opacity,transform] duration-(--duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary) disabled:cursor-not-allowed disabled:opacity-55";
 
 /** Der blaue Hauptknopf. */
 export const KNOPF_HAUPT = cn(KNOPF, "bg-accent text-accent-on hover:opacity-90 active:translate-y-px");
@@ -67,7 +67,7 @@ export function Meldung({ text }: { text: string | null | undefined }) {
     <p
       role="alert"
       aria-live="polite"
-      className="rounded-[10px] border border-critical/40 bg-critical-soft px-4 py-3 text-sm text-ink"
+      className="rounded-[6px] border border-critical/40 bg-critical-soft px-4 py-3 text-sm text-ink"
     >
       {text}
     </p>

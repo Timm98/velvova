@@ -30,7 +30,33 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   const { t, brand } = await getPageContext();
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page text-ink">
+    <div
+      /*
+       * ══════════════════════════════════════════════════════════
+       * Die Anmeldeseiten stehen fest im dunklen Blau
+       * ══════════════════════════════════════════════════════════
+       *
+       * Vorher folgten sie dem gewählten Farbschema, mit gutem Grund:
+       * Wer im Konto auf „dunkel" gestellt hatte, bekam beim nächsten
+       * Anmelden sonst eine weisse Seite.
+       *
+       * Der Grund gilt weiter — er wiegt hier nur weniger. Diese fünf
+       * Seiten sind die Schwelle: eine Fläche, eine Karte, eine
+       * Aufgabe. Sie sind das Erste, was jemand von Velvova sieht, und
+       * sie sollen jedes Mal gleich aussehen, statt je nach Gerät
+       * einmal weiss und einmal blau.
+       *
+       * Der Preis steht hier, damit er nicht vergessen wird: Wer
+       * ausdrücklich hell eingestellt hat, bekommt diese fünf Seiten
+       * trotzdem dunkel. Alles dahinter folgt wieder seiner Wahl.
+       *
+       * Die Farben stehen nicht mehr hier: Sie sind seit dem Abgleich
+       * mit den Vorlagen die dunkle Palette des Kerns. `data-theme`
+       * wählt sie nur aus.
+       */
+      data-theme="dark"
+      className="flex min-h-dvh flex-col bg-page text-ink"
+    >
       <a href="#inhalt" className="skip-link">
         {t("nav.skipToContent")}
       </a>
@@ -96,16 +122,16 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           aria-label="Rechtliches"
           className="mx-auto flex max-w-[640px] flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-3"
         >
-          <Link href="/privacy" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+          <Link href="/privacy" className="underline underline-offset-[3px] transition-colors hover:text-ink-2">
             Datenschutzerklärung
           </Link>
-          <Link href="/terms" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+          <Link href="/terms" className="underline underline-offset-[3px] transition-colors hover:text-ink-2">
             Nutzungsbedingungen
           </Link>
-          <Link href="/imprint" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+          <Link href="/imprint" className="underline underline-offset-[3px] transition-colors hover:text-ink-2">
             Impressum
           </Link>
-          <Link href="/contact" className="underline-offset-[3px] transition-colors hover:text-ink-2 hover:underline">
+          <Link href="/contact" className="underline underline-offset-[3px] transition-colors hover:text-ink-2">
             Kontakt
           </Link>
         </nav>

@@ -166,15 +166,24 @@ export const viewport: Viewport = {
  *
  *   "dark"    → data-theme="dark"          immer dunkel
  *   "light"   → data-theme="light"         immer hell
- *   "system"  → data-theme-mode="system"   folgt dem Gerät
- *   nichts    → kein Attribut              HELL
+ *   sonst     → data-theme-mode="system"   folgt dem Gerät
  *
- * Der letzte Fall war vorher falsch: ohne Cookie entschied die
- * Systemeinstellung, und wer sein Betriebssystem dunkel eingestellt
- * hatte, landete beim allerersten Besuch in einer dunklen Oberfläche,
- * ohne je etwas gewählt zu haben. Deshalb hat „System“ jetzt ein
- * eigenes Attribut: sonst ist es von „nie gewählt“ nicht zu
- * unterscheiden.
+ * ── Warum „nie gewählt" jetzt dem Gerät folgt ────────────────
+ *
+ * Hier stand HELL, mit einer Begründung, die stimmte: Wer sein
+ * Betriebssystem dunkel eingestellt hat, hat damit noch nichts über
+ * DIESE Seite gesagt, und beim allerersten Besuch in einer dunklen
+ * Oberfläche zu landen, kann überraschen.
+ *
+ * Nur ist die Gegenseite stärker. Ein Gerät auf Dunkel zu stellen IST
+ * eine Aussage über Bildschirme — die einzige, die uns beim ersten
+ * Besuch vorliegt. Sie zu übergehen und stattdessen Hell zu setzen,
+ * heisst nicht „wir legen niemanden fest", sondern „wir legen ihn auf
+ * Hell fest".
+ *
+ * „System" bleibt trotzdem ein eigener Zustand: Wer ihn ausdrücklich
+ * wählt, bekommt denselben Keks wie vorher. Der Unterschied ist nur,
+ * dass er jetzt auch ohne Keks gilt.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
@@ -213,7 +222,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang={locale}
       data-theme={theme === "light" || theme === "dark" ? theme : undefined}
-      data-theme-mode={theme === "system" ? "system" : undefined}
+      data-theme-mode={theme === "light" || theme === "dark" ? undefined : "system"}
       className={`${GeistSans.variable} ${zahlenschrift.variable} ${hausschrift.variable} ${titelschrift.variable}`}
       suppressHydrationWarning
     >

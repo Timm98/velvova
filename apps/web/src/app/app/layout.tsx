@@ -1,12 +1,13 @@
 import { LogOut } from "lucide-react";
 import { laenderbestand } from "@/lib/jobs/laenderbestand";
 import { bestandszahl } from "@/lib/jobs/bestandszahl";
-import { and, count, eq, isNull } from "drizzle-orm";
+import { and, count, eq, inArray, isNull } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { kennung, requireUser } from "@/lib/auth";
 import { loadGate } from "@/lib/gate";
 import { getPageContext } from "@/lib/locale";
 import { AppShell } from "@/components/shell/AppShell";
+import { zugangFür } from "@/lib/billing/zugang";
 import { NinaProvider } from "@/components/nina/NinaProvider";
 import { NinaDock } from "@/components/nina/NinaDock";
 import { ensureWorkflowState } from "@/lib/nina/workflow-state";
@@ -38,7 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { t, brand } = await getPageContext();
   const db = await getDb();
 
-  const [unreadRows, workflow, einstellungen] = await Promise.all([
+  const [unreadRows, workflow, einstellungen, hatAbo] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx
         .select({ value: count() })
@@ -69,6 +70,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           .limit(1)
       )[0],
     ),
+    /*
+     * Hat die Person ein Abo?
+     *
+     * ── Warum das die Leiste oben entscheidet ───────────────────
+     *
+     * Wer zahlt, ist drin — dem den Einstieg anzupreisen ist die
+     * Sorte Werbung, die man wegklickt und danach auch die
+     * nützlichen Hinweise.
+     *
+     * Bei einem Fehler gilt „hat eins": Lieber einmal die App
+     * ankündigen als jemandem, der bezahlt, den Einstieg zeigen.
+     */
+    zugangFür(user.id)
+      .then((z) => z.plan !== "free")
+      .catch(() => true),
   ]);
 
   /*
@@ -95,6 +111,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       autoSpeak={einstellungen?.voiceAutoplay ?? false}
     >
       <AppShell
+        /* Ohne laufenden Auftrag steht oben die nächtliche Suche,
+           mit Auftrag die App. Die Leiste selbst sitzt in `AppShell`. */
+        nachtsZiel={hatAbo ? null : "/app/jobs#nachts"}
         laender={await laenderbestand()}
         stellenzahl={bestand.text}
         stellenGenau={bestand.genau}
