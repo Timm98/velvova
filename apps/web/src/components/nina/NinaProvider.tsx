@@ -536,9 +536,12 @@ export function NinaProvider({
          * nicht nur ruhiger, es ist auch LESBAR: Man kann mitlesen,
          * statt jedem Sprung hinterherzuspringen.
          *
-         * Fünfzig Zeichen je Sekunde — etwa das Tempo, in dem man
-         * einen Text laut vorliest. Schneller wirkt maschinell,
-         * langsamer wirkt zäh.
+         * Fünfundsiebzig Zeichen je Sekunde. Fünfzig waren der erste
+         * Versuch und lasen sich als Vorlesetempo — gemeldet kam
+         * zurück: etwas schneller. Fünfundsiebzig ist noch immer
+         * gleichmässig und schon zügig; darüber beginnt es wieder
+         * ruckhaft zu wirken, weil einzelne Zeichen nicht mehr zu
+         * verfolgen sind.
          *
          * ── Warum der Rest am Ende schneller läuft ──────────────
          *
@@ -550,7 +553,7 @@ export function NinaProvider({
          */
         const takt = { rest: "", fertig: false, uhr: 0 as number | ReturnType<typeof setInterval> };
         const TAKT_MS = 40;
-        const ZEICHEN_JE_TAKT = 2;
+        const ZEICHEN_JE_TAKT = 3;
 
         const abgeraeumt = () =>
           new Promise<void>((fertig) => {

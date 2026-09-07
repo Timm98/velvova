@@ -1548,52 +1548,65 @@ input[type="number"] {
  */
 @keyframes schimmer {
   from {
-    background-position: 100% 0;
+    background-position: 0% 0;
   }
   to {
-    background-position: 0% 0;
+    background-position: 100% 0;
   }
 }
 
 /*
- * ── Warum dreifache Breite und ein schmales Band ────────────
+ * ══════════════════════════════════════════════════════════════
+ * Ein DUNKLES Band wandert durch helle Schrift — nach links
+ * ══════════════════════════════════════════════════════════════
  *
- * Die erste Fassung nahm 200 % Breite und einen breiten hellen
- * Bereich. Gemessen lief sie — die Position wanderte von 92 % auf
- * 9 % —, zu sehen war trotzdem fast nichts: Bei einem Wort wie
- * „Denkt nach" ist ein breites Band so gross wie der ganze Text, und
- * dann hellt sich alles gleichzeitig auf. Aufhellen ist keine Welle.
+ * Zwei Fassungen lagen daneben, beide falsch herum. Ich hatte einen
+ * hellen Streifen über gedämpfter Schrift laufen lassen; die Vorlage
+ * macht das Gegenteil.
  *
- * 300 % Breite mit einem Band über zehn Prozent der Verlaufsbreite
- * ergibt einen Streifen von rund einem Drittel der Textbreite. Der
- * wandert sichtbar durch die Buchstaben.
+ * Drei Aufnahmen im Sekundenabstand, Buchstabe für Buchstabe gelesen:
  *
- * Der Grundton ist ausserdem durchscheinend statt voll: Ein Streifen
- * fällt gegen einen gedämpften Grund auf, gegen einen kräftigen
- * kaum. `color-mix` mit `transparent` dimmt in beiden Themen richtig
- * — ein fester Grauwert täte das nur in einem.
+ *   Bild 1   „Wird verarbeite" hell, das letzte „t" gedämpft
+ *   Bild 2   „Wird verarbe" hell, „itet" gedämpft
+ *   Bild 3   „Wir" hell, „d ve" gedämpft, „rarbeitet" wieder hell
+ *
+ * Daraus stehen zwei Dinge fest, die vorher nur geraten waren:
+ *
+ *   1. Die Schrift ist HELL, und ein dunkles Band zieht hindurch.
+ *      Nicht umgekehrt. Der Text bleibt dadurch die ganze Zeit gut
+ *      lesbar — bei einem hellen Streifen über dunklem Grund ist er
+ *      es nur dort, wo der Streifen gerade steht.
+ *
+ *   2. Das Band wandert nach LINKS: erst am Ende, dann in der Mitte,
+ *      dann vorn.
+ *
+ * ── Warum die Richtung stimmt ───────────────────────────────
+ *
+ * Der Verlauf ist dreimal so breit wie die Zeile, das dunkle Stück
+ * sitzt in seiner Mitte. Bei `background-position: 0%` steht diese
+ * Mitte am rechten Rand, bei `100%` am linken. Von 0 nach 100 wandert
+ * sie also nach links.
  */
 .schimmert {
   background-image: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--text-tertiary) 55%, transparent) 0%,
-    color-mix(in srgb, var(--text-tertiary) 55%, transparent) 40%,
-    var(--text-primary) 48%,
-    var(--text-primary) 52%,
-    color-mix(in srgb, var(--text-tertiary) 55%, transparent) 60%,
-    color-mix(in srgb, var(--text-tertiary) 55%, transparent) 100%
+    var(--text-primary) 0%,
+    var(--text-primary) 42%,
+    color-mix(in srgb, var(--text-primary) 45%, transparent) 50%,
+    var(--text-primary) 58%,
+    var(--text-primary) 100%
   );
   background-size: 300% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation: schimmer 1.8s linear infinite;
+  animation: schimmer 2s linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .schimmert {
     animation: none;
     background-image: none;
-    color: var(--text-tertiary);
+    color: var(--text-primary);
   }
 }
