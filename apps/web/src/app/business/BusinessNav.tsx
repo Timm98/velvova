@@ -37,7 +37,17 @@ const WEGE = [
   { href: "/business/matches", label: "Matches" },
   { href: "/business/bewerbungen", label: "Gespräche" },
   { href: "/business/unternehmensseite", label: "Unternehmensseite" },
-  { href: "/business/analysen", label: "Analysen" },
+  /*
+   * „Analysen" steht vorerst nicht in der Leiste.
+   *
+   * Die Seite bleibt im Code und unter ihrer Adresse erreichbar —
+   * gelöscht ist nichts. Sie ist nur nicht verlinkt, bis sie so weit
+   * ist. Ein Weg, der in etwas Halbfertiges führt, kostet mehr
+   * Vertrauen, als er an Vollständigkeit bringt.
+   *
+   * Wieder sichtbar: diese Zeile einkommentieren.
+   */
+  // { href: "/business/analysen", label: "Analysen" },
   { href: "/business/team", label: "Team" },
   { href: "/business/einstellungen", label: "Einstellungen" },
 ];

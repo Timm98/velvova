@@ -83,7 +83,7 @@ export function NachtsWeiter({
           height={900}
           loading="lazy"
           decoding="async"
-          className="h-[24rem] w-full object-cover object-center sm:h-[30rem] lg:h-[36rem]"
+          className="h-[28rem] w-full object-cover object-center sm:h-[34rem] lg:h-[42rem]"
         />
 
         {/*
@@ -106,8 +106,8 @@ export function NachtsWeiter({
 
         <div className="absolute inset-0 flex items-center">
           <div className={randlos ? raster : "w-full px-6 sm:px-10 lg:px-14"}>
-            <div className="max-w-[40rem]">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white/70">
+            <div className="max-w-[48rem]">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">
               Während du schläfst
             </p>
 
@@ -120,21 +120,33 @@ export function NachtsWeiter({
               Schrift mit dem Motiv, und nur Gewicht und Versalien
               halten dagegen. Die Vorlage macht an genau dieser Stelle
               dasselbe.
+
+              ── Und warum eine andere Schrift ─────────────────────
+
+              `font-titel` (Instrument Sans) statt der Hausschrift.
+              Sie ist enger geschnitten und hat kürzere Oberlängen —
+              in Versalien steht sie damit als Block, während die
+              Hausschrift auseinanderläuft. Genau das macht die
+              Vorlage in ihrem Bildkopf.
+
+              Sie ist schon geladen: Stellentitel benutzen sie. Ein
+              neuer Schriftschnitt für eine Überschrift wäre ein
+              zusätzlicher Download auf der ersten Seite.
             */}
-            <h2 className="mt-4 font-display text-[clamp(2.1rem,4.6vw,3.75rem)] font-bold uppercase leading-[1.08] tracking-[-0.01em] text-white">
+            <h2 className="mt-4 font-titel text-[clamp(2.6rem,5.8vw,4.75rem)] font-bold uppercase leading-[1.05] tracking-[-0.01em] text-white">
               Neue Stellen,
               <br />
               während du schläfst.
             </h2>
 
-            <p className="mt-5 max-w-[34rem] text-[17px] leading-relaxed text-white/80">
+            <p className="mt-6 max-w-[38rem] text-[19px] leading-relaxed text-white/80">
               Einmal gesagt, wonach du suchst — den Rest übernimmt Monday. Sie meldet sich nur,
               wenn wirklich etwas passt.
             </p>
 
             <Link
               href={ziel}
-              className="mt-8 inline-flex min-h-14 items-center rounded-(--radius-control) border border-white/50 px-8 text-base font-medium text-white transition-colors hover:bg-white/10"
+              className="mt-9 inline-flex min-h-16 items-center rounded-(--radius-control) border border-white/50 px-10 text-lg font-medium text-white transition-colors hover:bg-white/10"
             >
               {zielwort}
             </Link>

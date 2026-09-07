@@ -1369,6 +1369,45 @@ function LifeFit({ lage }: { lage: Landeslage }) {
             höheres Gehalt ist nicht automatisch der bessere Job — und heute weniger denn je: Was
             davon ankommt, entscheiden Miete, Fahrweg, Steuerklasse und Arbeitszeit.
           </Fliess>
+          {/*
+            Der Weg steht links, unter der Frage — nicht rechts bei
+            der Rechnung.
+
+            Rechts stand er als dritter dunkler Kasten unter zwei
+            anderen: drei Werkzeuge übereinander, von denen man das
+            unterste nicht mehr liest. Links beantwortet er die Frage
+            direkt, die darüber gestellt wird: „Was bleibt dir?" —
+            und Zeit ist das, was nach dem Geld übrig bleibt.
+          */}
+          <div data-theme="dark" className="grid gap-3 rounded-(--radius-xl) bg-sunken p-6 text-ink md:p-8">
+            <span className="text-2xs font-semibold uppercase tracking-[0.14em] text-ink-3">
+              Der Weg dorthin
+            </span>
+            <ul className="grid gap-2.5">
+              {/*
+                Ein Beispielweg: Lünen nach Dortmund-Innenstadt, rund
+                14 Kilometer.
+
+                Die Farbe sagt, ob der Weg trägt — grün heisst
+                alltagstauglich, gelb geht an guten Tagen, rot ist
+                keine Option. Ohne diese Einordnung sind es vier
+                Zeiten, aus denen jeder selbst schliessen müsste.
+              */}
+              {[
+                ["Auto", "26 Min.", "text-positive"],
+                ["Bahn", "34 Min.", "text-positive"],
+                ["Fahrrad", "48 Min.", "text-caution"],
+                ["Zu Fuss", "2 Std. 50", "text-critical"],
+              ].map(([m, z, ton]) => (
+                <li key={m} className="flex items-baseline justify-between gap-4">
+                  <span className="text-[15px] text-ink-2">{m}</span>
+                  <span className={`font-mono text-[15px] tabular-nums ${ton}`}>{z}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="text-2xs text-ink-3">Lünen → Dortmund-Innenstadt, rund 14 km. Bei zwei Bürotagen die Woche.</p>
+          </div>
+
           <Fliess>
             Deshalb rechnet {brand.assistantName} bei jeder Stelle mit, was am Ende des Monats
             übrig bleibt. Nicht das Bruttogehalt aus der Anzeige, sondern der Betrag, mit dem du
@@ -1501,37 +1540,6 @@ function LifeFit({ lage }: { lage: Landeslage }) {
             </p>
           </div>
 
-          {/* Derselbe dunkle Kasten wie die Rechnung darüber: Beide
-              gehören zur selben Stelle und sollen als ein Werkzeug
-              gelesen werden, nicht als zwei Bausteine. */}
-          <div data-theme="dark" className="grid gap-3 rounded-(--radius-xl) bg-sunken p-6 text-ink md:p-8">
-            <span className="text-2xs font-semibold uppercase tracking-[0.14em] text-ink-3">
-              Der Weg dorthin
-            </span>
-            <ul className="grid gap-2.5">
-              {/*
-                Ein Beispielweg: Lünen nach Dortmund-Innenstadt, rund
-                14 Kilometer.
-
-                Die Farbe sagt, ob der Weg trägt — grün heisst
-                alltagstauglich, gelb geht an guten Tagen, rot ist
-                keine Option. Ohne diese Einordnung sind es vier
-                Zeiten, aus denen jeder selbst schliessen müsste.
-              */}
-              {[
-                ["Auto", "26 Min.", "text-positive"],
-                ["Bahn", "34 Min.", "text-positive"],
-                ["Fahrrad", "48 Min.", "text-caution"],
-                ["Zu Fuss", "2 Std. 50", "text-critical"],
-              ].map(([m, z, ton]) => (
-                <li key={m} className="flex items-baseline justify-between gap-4">
-                  <span className="text-[15px] text-ink-2">{m}</span>
-                  <span className={`font-mono text-[15px] tabular-nums ${ton}`}>{z}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-2xs text-ink-3">Lünen → Dortmund-Innenstadt, rund 14 km. Bei zwei Bürotagen die Woche.</p>
-          </div>
         </Erscheint>
       </div>
     </Abschnitt>

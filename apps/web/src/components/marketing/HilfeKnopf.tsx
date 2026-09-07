@@ -121,7 +121,7 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
           streiten um dieselbe Bedeutung.
         */
         style={{ background: "#181c25" }}
-        className="ml-auto flex h-16 items-center gap-2 rounded-full border border-line-3 py-2 pl-2 pr-4 text-[15px] text-ink shadow-lg transition-colors hover:bg-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="ml-auto flex h-16 items-center gap-3 rounded-full border border-line-3 py-2 pl-2 pr-7 text-[15px] text-ink shadow-lg transition-colors hover:bg-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {/*
           Der Kreis um das Zeichen — heller als die Fläche, damit er
