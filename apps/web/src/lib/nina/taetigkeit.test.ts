@@ -7,6 +7,7 @@ const ruhe: Taetigkeitslage = {
   spricht: false,
   sucht: false,
   schreibtSchon: false,
+  werkzeug: null,
 };
 
 describe("taetigkeit", () => {
@@ -34,6 +35,29 @@ describe("taetigkeit", () => {
 
   it("Zuhören schlägt alles", () => {
     expect(taetigkeit({ ...ruhe, busy: true, hoert: true, sucht: true })).toBe("Hört zu");
+  });
+
+  it("nennt, was das laufende Werkzeug tut", () => {
+    expect(taetigkeit({ ...ruhe, busy: true, werkzeug: "Stellen werden durchsucht" })).toBe(
+      "Stellen werden durchsucht",
+    );
+  });
+
+  /*
+   * „Denkt nach" ist wahr und sagt wenig. Der Satz des Werkzeugs sagt,
+   * WORAN — und genau das trennt eine Seite, die arbeitet, von einer,
+   * die hängt.
+   */
+  it("das Werkzeug schlägt das allgemeine Nachdenken", () => {
+    expect(
+      taetigkeit({ ...ruhe, busy: true, sucht: true, werkzeug: "Passung wird berechnet" }),
+    ).toBe("Passung wird berechnet");
+  });
+
+  it("aber der fertige Text schlägt auch das Werkzeug", () => {
+    expect(
+      taetigkeit({ ...ruhe, busy: true, werkzeug: "Profil wird ergänzt", schreibtSchon: true }),
+    ).toBeNull();
   });
 
   it("Vorlesen schlägt Denken", () => {

@@ -30,6 +30,11 @@
  *
  * Deshalb auch keine Abfolge von Phasen, die nur die Uhr weiterstellt.
  * Was wir nicht wissen, sagen wir nicht.
+ *
+ * Die Vielfalt kommt trotzdem — aber aus dem Server: Jedes Werkzeug,
+ * das Monday aufruft, meldet beim Start, was es tut. Diese Sätze
+ * wechseln, weil die Arbeit wechselt, nicht weil eine Uhr
+ * weiterläuft.
  */
 export interface Taetigkeitslage {
   /** Läuft gerade eine Anfrage? */
@@ -42,6 +47,19 @@ export interface Taetigkeitslage {
   sucht: boolean;
   /** Steht schon Text der laufenden Antwort auf dem Schirm? */
   schreibtSchon: boolean;
+  /**
+   * Was das Werkzeug meldet, das gerade läuft — oder `null`.
+   *
+   * Der Server schickt zu jedem Werkzeugaufruf ein `tool_start` mit
+   * einem Satz, der beschreibt, was es tut: „Stellen werden
+   * durchsucht", „Profil wird ergänzt", „Passung wird berechnet",
+   * „Ich denke gründlich darüber nach". Diese Sätze sind nicht
+   * erfunden — sie stehen neben dem Werkzeug, das sie ausführt.
+   *
+   * Ein laufendes Werkzeug ist eines ohne Ergebnis: `ok` ist noch
+   * nicht gesetzt.
+   */
+  werkzeug: string | null;
 }
 
 export function taetigkeit(lage: Taetigkeitslage): string | null {
@@ -53,6 +71,14 @@ export function taetigkeit(lage: Taetigkeitslage): string | null {
    * selbst ist der bessere Beweis, dass etwas passiert.
    */
   if (lage.schreibtSchon) return null;
+  /*
+   * Das laufende Werkzeug schlägt alles Allgemeine.
+   *
+   * „Denkt nach" ist wahr und sagt wenig. „Stellen werden
+   * durchsucht" sagt, WORAN — und genau das trennt eine Seite, die
+   * arbeitet, von einer, die hängt.
+   */
+  if (lage.werkzeug) return lage.werkzeug;
   if (lage.sucht) return "Sucht passende Stellen";
   return "Denkt nach";
 }

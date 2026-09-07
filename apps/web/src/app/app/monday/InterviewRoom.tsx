@@ -896,14 +896,24 @@ export function InterviewRoom({
             Erfundene Tätigkeiten stehen hier nicht.
           */}
           {(() => {
+            const laufende = nina.messages.at(-1);
+            /*
+             * Das zuletzt gestartete Werkzeug, das noch kein Ergebnis
+             * hat. `ok` wird erst mit `tool_done` gesetzt — solange es
+             * fehlt, arbeitet es.
+             */
+            const werkzeug =
+              laufende?.role === "assistant"
+                ? ((laufende.tools ?? []).filter((w) => w.ok === undefined).at(-1)?.label ?? null)
+                : null;
             const wort = taetigkeit({
               busy: nina.busy,
               hoert: nina.isListening,
               spricht: nina.isSpeaking,
               sucht: nina.offeringJobs,
+              werkzeug,
               schreibtSchon:
-                nina.messages.at(-1)?.role === "assistant" &&
-                (nina.messages.at(-1)?.content ?? "").trim().length > 0,
+                laufende?.role === "assistant" && (laufende.content ?? "").trim().length > 0,
             });
             return wort ? (
               <p className="schimmert mt-8 text-base" aria-live="polite">
