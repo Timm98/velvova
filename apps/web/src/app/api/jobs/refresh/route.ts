@@ -182,11 +182,68 @@ export async function POST(request: Request) {
     else familien.set(familie, [adapter]);
   }
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Zwei Sekunden Pause zwischen zwei Abrufen desselben Anbieters
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Der erste Lauf mit dreihundert Anzeigen je Quelle brachte 932
+   * neue Stellen — und acht von vierzehn Adzuna-Ländern antworteten
+   * gar nicht:
+   *
+   *     adzuna_de, at, ch, us, gb, nl    503
+   *     adzuna_in, mx                    429
+   *
+   * 429 heisst „zu viele Anfragen". Wir haben uns verpflichtet, kein
+   * Ratenlimit zu umgehen — und ein Limit umgeht man nicht nur durch
+   * Tricks, sondern auch dadurch, dass man dagegenläuft und die
+   * Fehler wegschaut.
+   *
+   * Mehr Anfragen sind hier ausserdem WENIGER Stellen: Sechs Länder
+   * lieferten, acht nichts. Wer wartet, bekommt vierzehn.
+   *
+   * Die Pause steht zwischen den Ländern einer Familie, nicht
+   * zwischen den Familien: Verschiedene Anbieter stören einander
+   * nicht.
+   */
+  const warte = (ms: number) => new Promise<void>((fertig) => setTimeout(fertig, ms));
+  const PAUSE_MS = 2_000;
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein Lauf schafft nicht alle Länder — also reihum
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Gemessen an einem echten Lauf, Dauer je Adzuna-Land:
+   *
+   *     157 s, 87 s, 75 s, 56 s, 33 s, 23 s
+   *
+   * Sechs Länder brauchten zusammen über sieben Minuten. Achtzehn
+   * passen in kein Zeitfenster, das man einem Endpunkt geben will —
+   * und ein Lauf, der immer bei `adzuna_de` beginnt, kommt bei den
+   * hinteren Ländern nie an.
+   *
+   * Deshalb rotiert der Startpunkt mit der Uhrzeit: Jeder Lauf beginnt
+   * dort, wo der vorige aufgehört hätte. Bei acht Läufen am Tag ist
+   * jedes Land regelmässig dran, ohne dass irgendwo Zustand
+   * gespeichert werden muss — die Zeit selbst ist der Zeiger.
+   *
+   * Dazu ein Zeitbudget: Vier Minuten, dann bricht die Familie ab.
+   * Was übrig bleibt, ist beim nächsten Lauf vorn.
+   */
+  const BUDGET_MS = 240_000;
+  const beginn = Date.now();
+  const takt = Math.floor(beginn / (3 * 60 * 60 * 1000));
+
   const results: IngestResult[] = (
     await Promise.all(
       [...familien.values()].map(async (gruppe) => {
         const ausGruppe: IngestResult[] = [];
-        for (const adapter of gruppe) {
+        const versatz = gruppe.length > 1 ? takt % gruppe.length : 0;
+        for (let n = 0; n < gruppe.length; n++) {
+          if (Date.now() - beginn > BUDGET_MS) break;
+          if (n > 0) await warte(PAUSE_MS);
+          const adapter = gruppe[(versatz + n) % gruppe.length]!;
           const policy = decideForProvider(adapter.key);
           ausGruppe.push(
             await ingestFromAdapter(adapter, {
