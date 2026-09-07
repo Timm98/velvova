@@ -35,22 +35,34 @@ name: Stellenabruf
 
 on:
   schedule:
-    # 04:15 UTC. Nachts, weil der Abruf Kontingent verbraucht und
-    # tagsüber mit echten Besuchen um dieselbe Datenbank konkurriert.
-    # Die krumme Minute mit Absicht: zur vollen Stunde starten sehr
-    # viele Zeitpläne gleichzeitig, und die Anbieter merken das.
-    - cron: "15 4 * * *"
+    # Alle drei Stunden, zur krummen Minute.
+    #
+    # Vorher einmal nachts um 04:15. Die Begründung dafür war richtig —
+    # der Abruf verbraucht Kontingent und konkurriert tagsüber mit
+    # echten Besuchen um dieselbe Datenbank — aber die Folge war ein
+    # Bestand, der nur einmal am Tag wuchs. Eine Anzeige, die morgens
+    # um neun erscheint, stand bei uns neunzehn Stunden später drin;
+    # bis dahin hat sie jemand anders besetzt.
+    #
+    # Achtmal am Tag statt einmal. Das Kontingent der Anbieter bleibt
+    # gewahrt: Die Grenze je Quelle und Lauf steht unten, und der
+    # Endpunkt fragt jeden Anbieter weiterhin nur mit EINER Anfrage
+    # gleichzeitig.
+    #
+    # Die krumme Minute bleibt mit Absicht: zur vollen Stunde starten
+    # sehr viele Zeitpläne gleichzeitig, und die Anbieter merken das.
+    - cron: "15 */3 * * *"
   workflow_dispatch:
     inputs:
       limit:
         description: "Höchstzahl Stellen je Quelle"
         required: false
-        default: "100"
+        default: "300"
 
 jobs:
   abruf:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Einrichtung prüfen
@@ -71,7 +83,11 @@ jobs:
         env:
           BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
           GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
-          LIMIT: ${{ github.event.inputs.limit || '100' }}
+          # 300 statt 100 je Quelle und Lauf. Zusammen mit dem
+          # Drei-Stunden-Takt ist das der vierundzwanzigfache
+          # Durchsatz gegenüber vorher — bei achtundzwanzig Quellen
+          # rund 8.400 Anzeigen je Lauf statt 2.800 am Tag.
+          LIMIT: ${{ github.event.inputs.limit || '300' }}
         run: |
           set -euo pipefail
 

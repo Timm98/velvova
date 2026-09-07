@@ -7,7 +7,15 @@ import { decideForProvider } from "@paycheck/sources";
 import { ATS_BOARDS, loadRegistrations, setBoardRegistrations } from "@paycheck/jobs";
 
 export const dynamic = "force-dynamic";
-export const maxDuration = 120;
+/*
+ * Fünf Minuten statt zwei.
+ *
+ * Bei zwei Minuten und achtundzwanzig Quellen bekam jede rund vier
+ * Sekunden, bevor der Lauf abbrach — und die hinteren kamen gar nicht
+ * mehr dran. Was abgeschnitten wird, fehlt im Bestand, und niemand
+ * sieht warum: Der Bericht meldet die Quellen, die noch liefen.
+ */
+export const maxDuration = 300;
 
 /**
  * Echte Stellen abrufen — im Serverprozess.
@@ -112,11 +120,42 @@ export async function POST(request: Request) {
     );
   }
 
-  const limit = Math.min(200, Number(new URL(request.url).searchParams.get("limit") ?? 100));
-  const results: IngestResult[] = [];
-
+  /*
+   * Bis zu 500 Anzeigen je Quelle.
+   *
+   * Vorher 200. Die Zahl ist eine Obergrenze gegen Vertipper im
+   * Zeitplan, keine fachliche Grenze — die setzen die Anbieter selbst
+   * über ihre Kontingente, und die Adapter halten sich daran.
+   */
+  const limit = Math.min(500, Number(new URL(request.url).searchParams.get("limit") ?? 100));
   const skipped: { key: string; reason: string }[] = [];
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Quellenfamilien nebeneinander, Länder darin nacheinander
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier lief eine einzige Schleife: achtundzwanzig Quellen, eine nach
+   * der anderen. Die Wartezeiten addierten sich, obwohl fast alle auf
+   * VERSCHIEDENE Anbieter warten — und bei zwei Minuten Zeitrahmen kam
+   * das Ende der Liste nie dran.
+   *
+   * Alles gleichzeitig zu starten wäre der falsche Schluss. Von den
+   * achtundzwanzig Quellen sind achtzehn Adzuna-Länder — DERSELBE
+   * Anbieter. Achtzehn Anfragen auf einmal ist genau das, wogegen ein
+   * Ratenlimit gebaut ist, und wir haben uns verpflichtet, keines zu
+   * umgehen.
+   *
+   * Deshalb: gruppiert nach Anbieter (der Teil des Schlüssels vor dem
+   * ersten Unterstrich — `adzuna_de`, `adzuna_ch`, … gehören zusammen).
+   * Die Gruppen laufen nebeneinander, die Quellen innerhalb einer
+   * Gruppe weiterhin nacheinander. Jeder Anbieter sieht damit genau
+   * eine Anfrage von uns zur Zeit — wie vorher.
+   *
+   * Die Dauer eines Laufs ist danach die der LÄNGSTEN Gruppe statt der
+   * Summe aller.
+   */
+  const familien = new Map<string, typeof adapters>();
   for (const adapter of adapters) {
     // Jede Quelle einzeln. Eine gesperrte blockiert nicht die anderen —
     // und eine freigegebene deckt keine gesperrte mit ab.
@@ -137,17 +176,33 @@ export async function POST(request: Request) {
       continue;
     }
 
-    results.push(
-      await ingestFromAdapter(adapter, {
-        limit,
-        policy: {
-          decision: policy.decision,
-          allowedOperations: policy.allowedOperations,
-          reason: policy.reason,
-        },
-      }),
-    );
+    const familie = adapter.key.split("_")[0] ?? adapter.key;
+    const liste = familien.get(familie);
+    if (liste) liste.push(adapter);
+    else familien.set(familie, [adapter]);
   }
+
+  const results: IngestResult[] = (
+    await Promise.all(
+      [...familien.values()].map(async (gruppe) => {
+        const ausGruppe: IngestResult[] = [];
+        for (const adapter of gruppe) {
+          const policy = decideForProvider(adapter.key);
+          ausGruppe.push(
+            await ingestFromAdapter(adapter, {
+              limit,
+              policy: {
+                decision: policy.decision,
+                allowedOperations: policy.allowedOperations,
+                reason: policy.reason,
+              },
+            }),
+          );
+        }
+        return ausGruppe;
+      }),
+    )
+  ).flat();
 
   const total = results.reduce(
     (acc, r) => ({

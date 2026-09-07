@@ -85,8 +85,14 @@ export default function StellenseiteLaedt() {
         */}
         <div className="uebergang-sucheingabe flex items-center gap-2 rounded-(--radius-pill) bg-raised py-2 pl-5 pr-2 shadow-sm">
           <MessagesSquare className="size-[18px] shrink-0 text-accent" strokeWidth={1.9} aria-hidden />
+          {/* Der echte Platzhaltertext, kein grauer Balken: Er hängt
+              an keiner Abfrage, und was man schon weiss, als Balken zu
+              zeigen lässt eine Seite kaputt aussehen, die gleich da
+              ist. */}
           <div className="flex h-12 min-w-0 flex-1 items-center">
-            <Skeleton className="h-3.5 w-56" />
+            <span className="truncate text-base text-ink-3">
+              Frag Monday oder beschreibe deinen nächsten Job …
+            </span>
           </div>
           <div className="size-9 shrink-0 rounded-(--radius-full) bg-soft" />
         </div>

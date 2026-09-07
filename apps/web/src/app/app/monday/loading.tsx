@@ -1,5 +1,4 @@
 import { ArrowDown } from "lucide-react";
-import { Skeleton } from "@/components/ui";
 
 /**
  * Was zu sehen ist, während das Gespräch lädt.
@@ -44,11 +43,21 @@ export default function GespraechLaedt() {
               Kreis hinaus. Mit 72 war der Kopf 116 statt 164 hoch, und
               der Nachrichtenstrom begann 48 Pixel zu weit oben. */}
           <div className="grid size-[120px] shrink-0 place-items-center">
-            <Skeleton className="size-[72px] rounded-(--radius-full)" />
+            <div className="size-[72px] rounded-(--radius-full) bg-raised" />
           </div>
-          <div className="grid min-w-0 flex-1 gap-2">
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-3.5 w-64" />
+          {/*
+            Name und Zeile darunter stehen als echter Text da, nicht als
+            graue Balken.
+
+            Sie hängen an keiner Abfrage — sie sind in jedem Gespräch
+            dieselben. Als Balken zu zeigen, was man schon weiss, macht
+            aus einer Seite, die gleich da ist, eine, die kaputt
+            aussieht. Genau das war auf der Aufnahme zu sehen: ein
+            grauer Kreis, zwei graue Striche, sonst nichts.
+          */}
+          <div className="grid min-w-0 flex-1 gap-1">
+            <h1 className="font-display text-xl font-normal text-ink">Monday</h1>
+            <p className="text-sm text-ink-2">Einen Moment, ich hole unser Gespräch.</p>
           </div>
         </header>
 
@@ -67,16 +76,10 @@ export default function GespraechLaedt() {
             Stellenseite. Kein `<textarea>`: Eingaben, die beim
             Eintreffen der echten Seite verloren gingen, wären
             schlimmer als ein Feld, das sichtbar noch nicht bereit
-            ist. */}
+            ist. Genau 70 Pixel hoch, wie das echte. */}
         <div className="relative shrink-0 -mx-2 px-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3">
-          {/* Genau 70 Pixel hoch — so hoch ist das echte Feld
-              gemessen. Es ist das eine Element, das der Browser
-              BEWEGT statt einzublenden: Wo es hier steht und wie
-              gross es ist, entscheidet, wo die Bewegung endet. 48
-              statt 70 hiess, dass es nach dem Ankommen noch um 22
-              Pixel wuchs. */}
           <div className="uebergang-sucheingabe flex h-[70px] items-center gap-2 rounded-(--radius-pill) border border-line bg-raised px-5">
-            <Skeleton className="h-3.5 w-64" />
+            <span className="text-base text-ink-3">Schreib Monday oder sprich mit ihr …</span>
           </div>
           <div
             aria-hidden
