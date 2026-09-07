@@ -2,8 +2,27 @@
 
 import type { useRouter } from "next/navigation";
 
-/** Wie lange der Übergang höchstens auf die Zielseite wartet. */
-const GEDULD_MS = 1200;
+/**
+ * Wie lange der Übergang höchstens auf die Zielseite wartet.
+ *
+ * Deutlich unter Chromiums eigener Grenze von vier Sekunden: Wird die
+ * überschritten, verwirft der Browser den Übergang von sich aus und
+ * wirft „View transition update callback timed out" — dann gibt es
+ * keine Bewegung UND einen Fehler.
+ *
+ * Gemessen, wie lange der Wechsel wirklich braucht:
+ *
+ *   Gespräch → Stellen    274 ms   (mit `app/jobs/loading.tsx`)
+ *   Stellen  → Gespräch   990 ms, 1034 ms
+ *
+ * Zwei Sekunden lassen dem langsameren Weg also das Doppelte an Luft
+ * und halten den schlimmsten Fall — ein stehendes Bild — trotzdem
+ * unter dem, was als Hänger auffällt.
+ */
+const GEDULD_MS = 2000;
+
+/** Wie oft nachgesehen wird, ob die Adresse steht. */
+const TAKT_MS = 16;
 
 /**
  * Der Weg zwischen Gespräch und Stellensuche, als eine Bewegung.
@@ -24,22 +43,30 @@ const GEDULD_MS = 1200;
  * unterwegs ist, und die Bewegung zerfällt in zwei.
  *
  * ══════════════════════════════════════════════════════════════
+ * Warum hier ein Zeitgeber steht und kein `requestAnimationFrame`
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Weil `startViewTransition` das Bild einfriert — und mit dem Bild
+ * auch die Bildtakte. Gemessen in einem eingefrorenen Übergang von
+ * 1000 ms:
+ *
+ *   requestAnimationFrame:   4 Aufrufe
+ *   setInterval(…, 16):     63 Aufrufe
+ *
+ * Die erste Fassung fragte per `requestAnimationFrame` ab, ob die
+ * Adresse schon steht, und brach nach `GEDULD_MS` ab. Beides lief bei
+ * vier Takten pro Sekunde ins Leere: Die Grenze wurde nie wirksam,
+ * der Übergang hing bis zu Chromiums eigener Vier-Sekunden-Grenze und
+ * wurde dort verworfen. Sichtbar war das als „keine Animation, man
+ * ist einfach auf der anderen Seite" — plus ein Laufzeitfehler.
+ *
+ * ══════════════════════════════════════════════════════════════
  * Warum die Richtung am Dokument steht
  * ══════════════════════════════════════════════════════════════
  *
  * `data-uebergang` wird gesetzt, bevor der Übergang beginnt, und das
  * Stylesheet liest es. Ein Rückweg, der aussieht wie der Hinweg,
  * fühlt sich falsch an — auch wenn man nicht benennen kann, warum.
- *
- * ══════════════════════════════════════════════════════════════
- * Warum eine harte Zeitgrenze
- * ══════════════════════════════════════════════════════════════
- *
- * `startViewTransition` friert das Bild ein, bis die Zusage erfüllt
- * ist. Ohne Grenze hinge der Bildschirm, wenn die Zielseite lange
- * braucht — in der Entwicklung übersetzt Turbopack sie beim ersten
- * Aufruf sekundenlang. Ein eingefrorener Bildschirm ist schlimmer als
- * ein Wechsel ohne Bewegung.
  */
 export function seitenwechsel(
   router: ReturnType<typeof useRouter>,
@@ -56,28 +83,37 @@ export function seitenwechsel(
 
   document.documentElement.dataset.uebergang = richtung;
 
-  start(
+  const uebergang = start(
     () =>
       new Promise<void>((fertig) => {
         const t0 = performance.now();
         router.push(ziel);
 
-        const schauen = (): void => {
-          if (window.location.pathname === ziel) {
-            /* Ein Bild abwarten: Die Adresse steht, bevor React
-               fertig gemalt hat. */
-            requestAnimationFrame(() => fertig());
-            return;
-          }
-          if (performance.now() - t0 > GEDULD_MS) {
-            fertig();
-            return;
-          }
-          requestAnimationFrame(schauen);
-        };
-        requestAnimationFrame(schauen);
+        const takt = window.setInterval(() => {
+          const angekommen = window.location.pathname === ziel;
+          const abgelaufen = performance.now() - t0 > GEDULD_MS;
+          if (!angekommen && !abgelaufen) return;
+
+          window.clearInterval(takt);
+          /* Zwei Bilder Luft, damit React den neuen Baum gemalt hat.
+             `requestAnimationFrame` wäre der richtige Weg, taktet hier
+             aber nicht (siehe oben) — also eine Zeitspanne. */
+          window.setTimeout(fertig, angekommen ? 32 : 0);
+        }, TAKT_MS);
       }),
-  ).finished.finally(() => {
+  );
+
+  /*
+   * Beide Zusagen brauchen einen Fänger.
+   *
+   * `ready` wird abgelehnt, wenn der Browser den Übergang verwirft —
+   * und eine abgelehnte Zusage ohne Fänger landet in der Fehlerkonsole
+   * und in Next' Fehlerfenster. Der Nutzer sah dann einen roten
+   * Laufzeitfehler für etwas, das nur eine ausgefallene Animation ist.
+   */
+  const aufraeumen = (): void => {
     delete document.documentElement.dataset.uebergang;
-  });
+  };
+  uebergang.ready.catch(() => {});
+  uebergang.finished.then(aufraeumen, aufraeumen);
 }

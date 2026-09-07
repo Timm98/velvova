@@ -136,6 +136,21 @@ export function InterviewRoom({
    * läuft ab, und beim nächsten Anlass wird neu entschieden.
    */
   const gefuehrt = useRef(false);
+
+  /*
+   * Die Stellenseite vorladen, sobald das Gespräch offen ist.
+   *
+   * Der Übergang kann nur fahren, solange die Zielseite in
+   * Millisekunden dasteht — er friert das Bild ein, bis sie da ist,
+   * und Chromium verwirft ihn nach vier Sekunden. Das Gerüst in
+   * `app/jobs/loading.tsx` sorgt für den schnellen Wechsel, das
+   * Vorladen dafür, dass auch dessen Daten schon unterwegs sind,
+   * bevor jemand geführt wird.
+   */
+  useEffect(() => {
+    router.prefetch("/app/jobs");
+  }, [router]);
+
   useEffect(() => {
     if (gefuehrt.current) return;
     if (nina.jobs.length === 0) return;
