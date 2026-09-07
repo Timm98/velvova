@@ -123,7 +123,7 @@ function Uebersicht({ daten }: { daten: WorkspaceDaten }) {
         <button
           type="button"
           onClick={() => ausfuehren("prepare_application", { jobId: daten.jobId })}
-          className="inline-flex min-h-10 items-center gap-2 rounded-(--radius-pill) bg-accent px-4 text-sm font-medium text-ink-inv transition-opacity hover:opacity-90"
+          className="inline-flex min-h-10 items-center gap-2 rounded-(--radius-pill) bg-accent px-4 text-sm font-medium text-accent-on transition-opacity hover:opacity-90"
         >
           <FileText aria-hidden className="size-4" strokeWidth={1.9} />
           Bewerbung vorbereiten

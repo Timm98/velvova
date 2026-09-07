@@ -811,8 +811,23 @@ export function InterviewRoom({
               onClick={() => nachUnten()}
               className={cn(
                 "absolute -top-7 left-1/2 z-10 -translate-x-1/2",
-                "inline-flex h-10 items-center gap-2 rounded-(--radius-pill) bg-ink px-4",
-                "text-sm font-medium text-ink-inv shadow-lg",
+                /*
+                 * Akzentfarbe, nicht `bg-ink` mit `text-ink-inv`.
+                 *
+                 * `text-ink-inv` ist `--text-on-primary` — die Farbe,
+                 * die AUF dem Akzent liegt. Seit dem Abgleich mit der
+                 * Vorlage ist sie im dunklen Schema Weiss (vorher fast
+                 * Schwarz). Auf `bg-ink`, das im Dunkeln hell ist, hiess
+                 * das: weisse Schrift auf weisser Pille.
+                 *
+                 * Die Paarung war schon vorher schief — sie hat nur
+                 * zufällig funktioniert, solange die eine Farbe dunkel
+                 * und die andere hell war. `bg-accent` mit
+                 * `text-accent-on` gehört zusammen und stimmt in beiden
+                 * Schemata.
+                 */
+                "inline-flex h-10 items-center gap-2 rounded-(--radius-pill) bg-accent px-4",
+                "text-sm font-medium text-accent-on shadow-lg",
                 /*
                  * Nur die Bewegung, nicht die Deckkraft.
                  *

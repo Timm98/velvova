@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { ChevronDown, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { MAERKTE } from "@paycheck/config";
 import { updateSettings } from "@/lib/privacy";
@@ -35,11 +36,35 @@ export function RegionAuswahl({ aktuellesLand }: { aktuellesLand: string }) {
       <label htmlFor="region" className="text-sm font-semibold text-ink">
         Region &amp; Sprache
       </label>
-      <select
-        id="region"
-        defaultValue={aktuellesLand}
-        disabled={laeuft}
-        onChange={(e) => {
+
+      {/*
+        ══════════════════════════════════════════════════════════
+        Dasselbe Feld wie „Darstellung" daneben
+        ══════════════════════════════════════════════════════════
+
+        Beide standen im Fuss nebeneinander und sahen verschieden aus:
+        dieses gefüllt (`bg-raised`) mit dem Pfeil des Betriebssystems,
+        jenes durchsichtig mit Zeichen links und eigenem Pfeil rechts.
+
+        Zwei Felder in einer Zeile, gleich gross, gleiche Aufgabe — und
+        trotzdem verschieden gebaut: Das liest sich nicht als
+        Unterschied, sondern als Versehen. Und der Systempfeil ist im
+        dunklen Blau des Fusses ohnehin kaum zu sehen.
+
+        Jetzt beide gleich: `appearance-none`, durchsichtig, ein
+        Zeichen links, ein eigener Pfeil rechts.
+      */}
+      <div className="relative w-full max-w-[22rem]">
+        <Globe
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-2"
+          strokeWidth={1.8}
+        />
+        <select
+          id="region"
+          defaultValue={aktuellesLand}
+          disabled={laeuft}
+          onChange={(e) => {
           const markt = MAERKTE.find((m) => m.countryCode === e.target.value);
           if (!markt) return;
           starten(async () => {
@@ -52,14 +77,20 @@ export function RegionAuswahl({ aktuellesLand }: { aktuellesLand: string }) {
             router.refresh();
           });
         }}
-        className="h-11 w-full max-w-[22rem] rounded-(--radius-control) border border-line bg-raised px-3 text-sm text-ink"
-      >
-        {MAERKTE.map((m) => (
-          <option key={m.countryCode} value={m.countryCode}>
-            {m.name} · Deutsch · {m.currency}
-          </option>
-        ))}
-      </select>
+        className="h-11 w-full appearance-none rounded-(--radius-control) border border-line bg-transparent pr-10 pl-9 text-sm text-ink"
+        >
+          {MAERKTE.map((m) => (
+            <option key={m.countryCode} value={m.countryCode}>
+              {m.name} · Deutsch · {m.currency}
+            </option>
+          ))}
+        </select>
+        <ChevronDown
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-ink-2"
+          strokeWidth={1.8}
+        />
+      </div>
       <p className="max-w-[32ch] text-2xs leading-relaxed text-ink-3">
         Bestimmt, in welchem Land gesucht wird, in welcher Währung Gehälter erscheinen und wie
         Datum und Zahlen geschrieben werden.
