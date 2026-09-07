@@ -3,7 +3,7 @@ import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
 ladeEnvDatei();
 
 /**
- * Die Bilanz — und Ninas Rückfrage zu den gelesenen Achsen.
+ * Die Bilanz — und Mondays Rückfrage zu den gelesenen Achsen.
  *
  * Beide Seiten haben eine Eigenschaft gemeinsam, die geprüft werden
  * muss: Sie müssen auch dann etwas Richtiges sagen, wenn sie nichts zu
@@ -32,12 +32,12 @@ zeile(/unveränderlich/i.test(t), "Und erklärt, dass die Aufzeichnung trotzdem 
 zeile(/nicht, dass die Empfehlung es bewirkt/i.test(t),
   "Die Grenze der Aussage steht auch im leeren Zustand dabei");
 
-// ── Ninas Rückfrage: erst nach einer Gesprächsantwort ──
+// ── Mondays Rückfrage: erst nach einer Gesprächsantwort ──
 await p.goto(`${B}/app/career`, { waitUntil:"domcontentloaded" });
 await p.getByText(/Wie du arbeiten willst/i).first().waitFor({ timeout: 45000 }).catch(()=>{});
 t = (await p.locator("main").innerText()).replace(/\s+/g," ");
 zeile(!/Habe ich das richtig verstanden/i.test(t),
-  "Ohne Gespräch fragt Nina nichts nach");
+  "Ohne Gespräch fragt Monday nichts nach");
 zeile(/Wie du arbeiten willst/i.test(t), "Die zehn Regler stehen da");
 zeile(/noch nicht beantwortet/i.test(t), "Unangetastete Achsen sind als solche gekennzeichnet");
 zeile(/wird nicht geraten/i.test(t), "Und es steht dabei, dass Ausgelassenes nicht geraten wird");

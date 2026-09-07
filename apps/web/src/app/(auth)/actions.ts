@@ -109,7 +109,7 @@ export async function registerAction(_prev: FormState, formData: FormData): Prom
   // Ein neues Konto geht immer durch das Setup. Der Zustand wird hier
   // angelegt, damit die Weiterleitung ab jetzt eine Grundlage hat.
   await ensureWorkflowState(result.userId);
-  redirect(sicheresZiel(formData.get("weiter")) ?? "/nina-einrichten");
+  redirect(sicheresZiel(formData.get("weiter")) ?? "/monday-einrichten");
 }
 
 /**
@@ -341,5 +341,5 @@ export async function saveSetupAction(formData: FormData): Promise<void> {
     currentWorkflowStep: "career_interview",
   });
 
-  redirect("/app/nina");
+  redirect("/app/monday");
 }

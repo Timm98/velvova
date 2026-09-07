@@ -133,7 +133,7 @@ export function nextStep(state: InterviewState): NextStep {
        * ── Warum das etwas ändert ────────────────────────────
        *
        * Der Career Twin entscheidet über Passung, Alltagsvergleich und
-       * Rollenkarte. Nina konnte ihn bisher nur zufällig füllen: Sie
+       * Rollenkarte. Monday konnte ihn bisher nur zufällig füllen: Sie
        * nahm die erste offene Frage des Themas, unabhängig davon, ob
        * deren Antwort überhaupt eine Achse trifft — und ob die Achse
        * schon beantwortet war.

@@ -5,9 +5,9 @@ import { ArrowUp, MessagesSquare } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
- * Ninas Supportchat.
+ * Mondays Supportchat.
  *
- * Bewusst NICHT der globale Nina-Drawer. Der trägt das Karrieregespräch
+ * Bewusst NICHT der globale Monday-Drawer. Der trägt das Karrieregespräch
  * mit sich — Stufe, Belege, Profil — und genau das darf hier nicht
  * mitkommen (§24.3, §29). Ein gemeinsamer Zustand für beides wäre eine
  * Einladung, die Trennung eines Tages zu verlieren, ohne dass es
@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
  *
  * Deshalb ein eigener, kleiner Chat mit eigener Route und eigener
  * Gesprächsart. Für Gäste funktioniert er ohne Konto; angemeldet darf
- * Nina zusätzlich den eigenen Kontostand einbeziehen, aber niemals
+ * Monday zusätzlich den eigenen Kontostand einbeziehen, aber niemals
  * Daten anderer.
  */
 
@@ -90,7 +90,7 @@ export function SupportChat({
     <section className={nackt ? "grid gap-4" : "grid gap-4 rounded-(--radius-lg) bg-lavender px-6 py-6"}>
       <div className="flex items-center gap-2.5">
         <MessagesSquare className="size-[18px] shrink-0 text-accent" strokeWidth={1.9} aria-hidden />
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">
           {assistantName} fragen
         </h2>
       </div>

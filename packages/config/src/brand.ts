@@ -3,7 +3,7 @@ import { currentEnv } from "./env.ts";
 /**
  * Marke und Assistenzname. Beide Namen sind vorläufig und können sich
  * ändern, deshalb steht hier die einzige Quelle der Wahrheit. Kein
- * anderer Teil des Codes darf "Velvova" oder "Nina" hart schreiben.
+ * anderer Teil des Codes darf "Velvova" oder "Monday" hart schreiben.
  */
 
 export interface BrandConfig {
@@ -40,7 +40,7 @@ function envOr(key: string, fallback: string): string {
 
 export const brand: BrandConfig = {
   name: envOr("NEXT_PUBLIC_BRAND_NAME", "Velvova"),
-  assistantName: envOr("NEXT_PUBLIC_ASSISTANT_NAME", "Nina"),
+  assistantName: envOr("NEXT_PUBLIC_ASSISTANT_NAME", "Monday"),
   shortName: envOr("NEXT_PUBLIC_BRAND_SHORT_NAME", envOr("NEXT_PUBLIC_BRAND_NAME", "Velvova")),
   tagline: {
     de: "Finde nicht irgendeinen Job. Finde den, der wirklich zu dir passt.",

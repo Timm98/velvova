@@ -1,7 +1,7 @@
 # Paycheck
 
 Ein kandidatenkontrolliertes, evidenzbasiertes Karriere-Betriebssystem.
-Die Assistenz heißt **Nina**. Beide Namen sind vorläufig und stehen an
+Die Assistenz heißt **Monday**. Beide Namen sind vorläufig und stehen an
 genau einer Stelle: `packages/config/src/brand.ts`.
 
 > **Ohne einen einzigen Zugangsschlüssel läuft das Projekt vollständig.**
@@ -91,7 +91,7 @@ packages/
   config/         Marke, Feature Flags, validierte Laufzeitkonfiguration
   domain/         Evidence Graph, Bedingungen, alle Bewertungstypen
   matching/       Constraint-Prüfung, Fit, Confidence, Quality, AI, Ranking
-  ai/             Provider-Abstraktion, Ninas Prompt, Guardrails, Eval
+  ai/             Provider-Abstraktion, Mondays Prompt, Guardrails, Eval
   db/             Drizzle-Schema, Migrationen, RLS, Seed
   jobs/           Quellenadapter, Normalisierung, Deduplizierung
   documents/      Claim-Provenienz, Lebenslauf, Versandwege
@@ -109,7 +109,7 @@ infra/      Docker Compose für optionale Dienste
 | Variable | Standard | Wirkung |
 |---|---|---|
 | `NEXT_PUBLIC_BRAND_NAME` | `Paycheck` | Produktname überall |
-| `NEXT_PUBLIC_ASSISTANT_NAME` | `Nina` | Name der Assistenz |
+| `NEXT_PUBLIC_ASSISTANT_NAME` | `Monday` | Name der Assistenz |
 | `PAYCHECK_DEMO_MODE` | `demo` | `live` schaltet echte Adapter frei |
 | `DATABASE_DRIVER` | `pglite` | `pg` für einen echten Server |
 | `AI_PROVIDER` | `mock` | `openai`, `anthropic` oder `self_hosted` |

@@ -4,13 +4,13 @@
 
 ## HEADER
 
-**Ursache:** Nicht der Header. Auf der Nina-Seite lag ein radialer
+**Ursache:** Nicht der Header. Auf der Monday-Seite lag ein radialer
 Verlauf (`--glow-nina`) über die **volle Seitenbreite**, 420 px hoch, ab
 24 px oberhalb des Bereichs. Weil der Header durchsichtig ist
 (`bg-page/85 backdrop-blur-xl`), lag der Verlauf teilweise HINTER ihm —
 es sah aus, als leuchte die Kopfzeile nach unten.
 
-**Fix:** Die Fläche ist entfernt. Ninas eigener Schein bleibt, wo er
+**Fix:** Die Fläche ist entfernt. Mondays eigener Schein bleibt, wo er
 hingehört: `inset-[-18%]` um ihre Kugel. Der Landing-Schein bleibt
 ebenfalls — er ist auf 880 px begrenzt und liegt mitten auf der Seite
 hinter Karten, nicht unter dem Header.
@@ -96,7 +96,7 @@ artifacts/phase17-fix/salary-unknown.png
   fotografieren, wäre das Gegenteil dessen, worum es hier geht.
 - §4 Kartenhierarchie nur teilweise: Text reduziert, aber die
   Reihenfolge Titel/Firma/Ort/Modell/Gehalt ist nicht neu aufgebaut.
-- §10 „Warum Nina ihn zeigt" noch nicht gekürzt.
+- §10 „Warum Monday ihn zeigt" noch nicht gekürzt.
 - §43/§44 Spaltenbreiten unverändert.
 
 ---

@@ -9,7 +9,7 @@ Checkpoint vor diesem Durchgang: `checkpoint-before-v5-production-rebuild`.
 
 **Vollständig vorhanden** (aus früheren Durchgängen): Source Registry und
 Policy Engine, kanonischer Stellen-Graph mit `job_source_links`, Modell-Router,
-Ninas persistentes Gedächtnis mit Wiederaufnahme, Belegabgleich für
+Mondays persistentes Gedächtnis mit Wiederaufnahme, Belegabgleich für
 Bewerbungsaussagen, Betrugssignale, SSRF-gehärteter Link-Import,
 Arbeitgeberboards, Partnerplatzhalter, Lightcast.
 
@@ -143,7 +143,7 @@ und eigener Dringlichkeit als Argument.
 ### Keine Demo-Antworten in Produktion
 
 `/api/nina/stream` antwortet in Produktion mit 503 statt mit einer
-Beispielantwort. Eine Antwort, die aussieht wie eine Antwort von Nina, ist eine
+Beispielantwort. Eine Antwort, die aussieht wie eine Antwort von Monday, ist eine
 Lüge über das, was das Produkt gerade kann — und die teuerste Sorte, weil die
 Person darauf Entscheidungen über ihre Bewerbung stützt. In der Entwicklung
 läuft der Demo-Anbieter weiter, sonst könnte niemand ohne Schlüssel arbeiten.
@@ -182,14 +182,14 @@ Riegel dagegen.
 
 | | Zustand | Fehlende Variable |
 | --- | --- | --- |
-| Nina antwortet über echte KI | **nein** | `OPENAI_API_KEY` |
+| Monday antwortet über echte KI | **nein** | `OPENAI_API_KEY` |
 | Supabase als Datenbank | **nein** | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` |
 | Adzuna liefert Stellen | **nein** | `ADZUNA_APP_ID`, `ADZUNA_APP_KEY` |
 | Jooble liefert Stellen | **nein** | `JOOBLE_API_KEY_DE` |
 | Lightcast | **nein** | Vertrag + `LIGHTCAST_ENABLED=true` |
 
 Das sind **keine Bugs**. Der Code läuft; es fehlen Schlüssel. Die drei Punkte
-aus deiner Fehlerliste — „Nina zeigt Demo-Anbieter", „Jobs aus Mock-Daten",
+aus deiner Fehlerliste — „Monday zeigt Demo-Anbieter", „Jobs aus Mock-Daten",
 „nicht verbunden" — haben genau hier ihre Ursache. Setz die Werte in
 `.env.local`, dann verschwinden sie.
 

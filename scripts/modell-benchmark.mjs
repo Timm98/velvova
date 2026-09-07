@@ -2,7 +2,7 @@ import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
 ladeEnvDatei();
 
 /**
- * Dieselben Nina-Aufgaben gegen mehrere Modelle.
+ * Dieselben Monday-Aufgaben gegen mehrere Modelle.
  *
  * ══════════════════════════════════════════════════════════════
  * Wozu

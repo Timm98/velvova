@@ -25,13 +25,13 @@ gefunden habe. Die dritte Kategorie ist die interessanteste.
 
 ## Was in diesem Durchgang entstanden ist
 
-### Ninas Gedächtnis (§15B)
+### Mondays Gedächtnis (§15B)
 
 Der Vorgangszustand liegt in der Datenbank, nicht im Kontextfenster. Nach einem
 Neustart, einem Gerätewechsel oder drei Tagen Pause kommt dieselbe Antwort:
 
 > Zuletzt: Bewerbung begonnen. Offen ist: Bewerbung fortsetzen. Möchtest du dort
-> weitermachen? — Nina
+> weitermachen? — Monday
 
 Liegt kein Ereignis vor, behauptet die Antwort nichts.
 

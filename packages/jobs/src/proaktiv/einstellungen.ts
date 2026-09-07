@@ -3,7 +3,7 @@ import { schema, withUser, type Database } from "@paycheck/db";
 import { ZURUECKHALTUNG, type Eigeninitiative, type Zustand } from "@paycheck/matching";
 
 /**
- * Was die Person erlaubt, und wie oft Nina schon gesprochen hat.
+ * Was die Person erlaubt, und wie oft Monday schon gesprochen hat.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum der Zustand aus der Datenbank kommt und nicht aus dem Prozess
@@ -107,13 +107,13 @@ export async function zustandLaden(
 }
 
 /**
- * Vermerken, dass Nina gesprochen hat.
+ * Vermerken, dass Monday gesprochen hat.
  *
  * ── Warum der Sitzungszähler hier zurückgesetzt wird ──────────
  *
  * Weil eine neue Sitzung von vorn anfängt. Ohne das Zurücksetzen
  * trüge jemand, der gestern drei Hinweise bekommen hat, das Limit
- * heute noch mit sich — und Nina bliebe für immer stumm.
+ * heute noch mit sich — und Monday bliebe für immer stumm.
  */
 export async function nachrichtVermerken(
   db: Database,
@@ -158,7 +158,7 @@ export type Antwort = "behalten" | "verworfen";
  * ══════════════════════════════════════════════════════════════
  *
  * Es macht die Wirkung rückgängig UND vermerkt die Ablehnung. Nur das
- * erste wäre eine Schaltfläche, die nichts lernt: Nina merkte die
+ * erste wäre eine Schaltfläche, die nichts lernt: Monday merkte die
  * Stelle beim nächsten Lauf wieder vor, und die Person müsste
  * dieselbe Sache noch einmal wegklicken.
  */
@@ -340,7 +340,7 @@ export async function stufeSetzen(
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Was Nina zu sagen hat
+   Was Monday zu sagen hat
    ═══════════════════════════════════════════════════════════════ */
 
 export interface Ninanachricht {
@@ -372,7 +372,7 @@ export interface Ninanachricht {
  * Warum immer nur eine
  * ══════════════════════════════════════════════════════════════
  *
- * Weil Nina eine Assistentin ist und kein Postfach. Drei Hinweise
+ * Weil Monday eine Assistentin ist und kein Postfach. Drei Hinweise
  * gleichzeitig sind keine Aufmerksamkeit, sondern eine Liste — und
  * eine Liste liest man später, also nie.
  */

@@ -12,7 +12,7 @@ import { cn } from "@/lib/cn";
  * Das Prinzip, das diese Datei umsetzt
  * ══════════════════════════════════════════════════════════════
  *
- * Vorher stand hier ein Analysebericht: Warum Nina die Stelle zeigt,
+ * Vorher stand hier ein Analysebericht: Warum Monday die Stelle zeigt,
  * Bedingungen, Analyse, dafür, dagegen, offen, Passung, Sicherheit,
  * Arbeitsalltag, Anforderungen, Arbeitsweg — alles gleichzeitig,
  * untereinander, ungefragt.
@@ -21,7 +21,7 @@ import { cn } from "@/lib/cn";
  * beantwortet ausser der Frage, die man gerade hat.
  *
  * Jetzt gilt: Was in der Anzeige steht, steht sofort da. Was daraus
- * folgt, sagt Nina, wenn man fragt. Der Unterschied ist nicht die
+ * folgt, sagt Monday, wenn man fragt. Der Unterschied ist nicht die
  * Menge an Information, sondern wer den Zeitpunkt bestimmt.
  *
  * ══════════════════════════════════════════════════════════════
@@ -159,7 +159,7 @@ function Uebersicht({ daten }: { daten: WorkspaceDaten }) {
         )}
       </div>
 
-      {/* ── Nina ─────────────────────────────────────────────── */}
+      {/* ── Monday ─────────────────────────────────────────────── */}
       {/*
         Hier standen Vorschlagsknöpfe: „Passt der Job zu mir?",
         „Gehalt prüfen", „Unternehmen ansehen" und weitere.
@@ -169,7 +169,7 @@ function Uebersicht({ daten }: { daten: WorkspaceDaten }) {
         Wer eine Anzeige liest, hat seine eigene Frage im Kopf; ihm
         sechs vorzulegen heisst, ihn von ihr abzulenken.
         
-        Die Ansichten selbst bleiben erreichbar: über Nina in der Blase
+        Die Ansichten selbst bleiben erreichbar: über Monday in der Blase
         unten rechts. Der Weg dorthin läuft über dieselben Aktionen,
         die die Knöpfe ausgelöst haben — es fehlt nur die Aufforderung.
       */}

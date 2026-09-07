@@ -5,7 +5,7 @@ import { Button } from "@/components/ui";
 import { useNinaActions } from "./NinaProvider";
 
 /**
- * Ein Knopf irgendwo auf der Seite, der zu Nina führt.
+ * Ein Knopf irgendwo auf der Seite, der zu Monday führt.
  *
  * Er öffnet die Blase unten rechts und lässt sie kurz blinken. Das
  * Blinken ist nicht Zierde: Ein Knopf in der Mitte der Seite öffnet

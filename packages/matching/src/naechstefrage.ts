@@ -26,7 +26,7 @@ import { traegtEntscheidung, wirksameKonfidenz, type Beleg } from "./erkenntnis.
  */
 
 /**
- * Was Nina über einen Menschen wissen muss, um etwas Nützliches zu
+ * Was Monday über einen Menschen wissen muss, um etwas Nützliches zu
  * sagen — und wie schwer jede Lücke wiegt.
  *
  * ── Warum diese Reihenfolge ───────────────────────────────────
@@ -57,7 +57,7 @@ export const WISSENSFELDER = [
      * Die Beugung mitfassen.
      *
      * Die erste Fassung stand bei „arbeiten als". „Ich möchte im
-     * Lager arbeiten" fiel durch — und Nina hätte nach der Tätigkeit
+     * Lager arbeiten" fiel durch — und Monday hätte nach der Tätigkeit
      * gefragt, die gerade genannt worden war.
      */
     erkennt: /\b(tätigkeit|beruf|branche|bereich|arbeiten (als|in|im|bei)|(stelle|job) als|möchte[^.]{0,40}arbeiten)\b/i,

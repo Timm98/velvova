@@ -23,7 +23,7 @@ test.describe("Öffentlicher Bereich", () => {
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     // Zwei Einstiege: anfangen und erst verstehen.
-    await expect(page.getByRole("link", { name: /Mit Nina starten/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Mit Monday starten/i }).first()).toBeVisible();
     await expect(page.getByRole("link", { name: /So funktioniert es/i }).first()).toBeVisible();
 
     // Keine erfundenen Belege: die Seite darf keine Erfolgsquoten behaupten.
@@ -432,13 +432,13 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Gespräch stellt eine Frage und sagt, woran gerade gearbeitet wird", async ({ page }) => {
-    await page.goto("/app/nina");
+    await page.goto("/app/monday");
 
     /*
      * Der Aufklapper „Warum diese Frage" ist entfallen.
      *
      * Die Begründung steht nicht mehr hinter einem Knopf, sondern
-     * dauerhaft als Statuszeile neben Nina — „Wir klären gerade, worum
+     * dauerhaft als Statuszeile neben Monday — „Wir klären gerade, worum
      * es dir geht". V7 §8.2 verlangt genau das: eine kurze, menschliche
      * Statuszeile statt einer aufklappbaren Erklärung.
      *
@@ -457,7 +457,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
   });
 
   test("Fortschritt drängt sich nicht als Zahl auf", async ({ page }) => {
-    await page.goto("/app/nina");
+    await page.goto("/app/monday");
 
     /*
      * Umgedreht gegenüber vorher — und zwar auf Ansage.
@@ -484,7 +484,7 @@ test.describe("Angemeldet als Demo-Persona", () => {
     // ist das Gespräch am Ende: kein Eingabefeld mehr, Test rot, ohne
     // dass sich am Produkt etwas geändert hätte.
     await page.request.post("/api/dev/reset-interview");
-    await page.goto("/app/nina");
+    await page.goto("/app/monday");
     const answer = `Testantwort ${Date.now()}: Ich habe zwei Jahre lang Kundenanfragen bearbeitet und dabei monatlich ausgewertet, woran es lag.`;
     await page.getByRole("textbox").first().fill(answer);
     await page.getByRole("button", { name: "Senden" }).click();
@@ -808,7 +808,7 @@ test.describe("Öffentliche Wurzelroute", () => {
      * weiter unten. Was bleibt, ist die eigentliche Frage: Steht der
      * Inhalt da, auch wenn keine Animation läuft?
      *
-     * Der Nina Core ist bewusst so gebaut, dass sein Markup der
+     * Der Monday Core ist bewusst so gebaut, dass sein Markup der
      * Endzustand ist. Ohne diese Prüfung könnte jemand die Bewegung zur
      * Voraussetzung machen — und auf einem langsamen Gerät bliebe das
      * Hero leer.
@@ -836,7 +836,7 @@ test.describe("Öffentliche Wurzelroute", () => {
 
   test("Geschützte Routen verlangen eine Anmeldung", async ({ page, context }) => {
     await context.clearCookies();
-    for (const pfad of ["/app", "/app/nina", "/app/jobs", "/app/settings"]) {
+    for (const pfad of ["/app", "/app/monday", "/app/jobs", "/app/settings"]) {
       const antwort = await page.goto(pfad);
       expect(antwort?.status(), pfad).toBe(200);
       await expect(page, pfad).toHaveURL(/\/login/);

@@ -24,9 +24,9 @@ export const dynamic = "force-dynamic";
  * Was hier NICHT angefordert wird: eine sprechende Sitzung.
  *
  * Die Sitzung ist reine Transkription — OpenAI hört zu und gibt Text
- * zurück, mehr nicht. Ninas Stimme kommt aus ElevenLabs, wie überall
+ * zurück, mehr nicht. Mondays Stimme kommt aus ElevenLabs, wie überall
  * sonst. Eine Realtime-Sitzung mit `modalities: ["audio"]` wäre der
- * bequemere Weg gewesen, hätte Nina aber im Sprachmodus eine andere
+ * bequemere Weg gewesen, hätte Monday aber im Sprachmodus eine andere
  * Stimme gegeben als im Textmodus. Zwei Stimmen für dieselbe Figur
  * sind schlimmer als eine Umleitung mehr.
  *

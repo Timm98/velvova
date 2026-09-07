@@ -40,7 +40,7 @@ export async function StimmenAbschnitt() {
             </p>
             <h2
               id="stimmen"
-              className="mt-4 max-w-[16ch] font-display text-[1.75rem] font-semibold leading-[1.14] tracking-[-0.03em] md:text-[2.25rem]"
+              className="mt-4 max-w-[16ch] font-display text-[1.75rem] font-normal leading-[1.14] tracking-[-0.02em] md:text-[2.25rem]"
               style={{ color: "var(--ed-ink)" }}
             >
               Das sagen unsere Nutzer
@@ -50,7 +50,7 @@ export async function StimmenAbschnitt() {
           {zahlen.schnitt !== null && (
             <div className="flex items-center gap-4">
               <span
-                className="font-display text-[2.75rem] font-semibold leading-none tracking-[-0.03em] tabular"
+                className="font-display text-[2.75rem] font-normal leading-none tracking-[-0.02em] tabular"
                 style={{ color: "var(--ed-ink)" }}
               >
                 {zahlen.schnitt.toLocaleString("de-DE", {

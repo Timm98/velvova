@@ -36,7 +36,7 @@ import { eskalieren } from "./router.ts";
  * Rangordnung. Wenn zwei Analysen auseinandergehen, ist das eine
  * Auskunft über die Frage, nicht über die Modelle: Sie ist offen.
  *
- * Nina soll das sagen dürfen — oder gezielt nachfragen, statt sich
+ * Monday soll das sagen dürfen — oder gezielt nachfragen, statt sich
  * für eine Seite zu entscheiden, die sie nicht begründen kann.
  */
 

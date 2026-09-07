@@ -114,7 +114,7 @@ describe("Eskalation zur höchsten Stufe", () => {
 
   it("eskaliert ein Gespräch niemals", () => {
     /*
-     * „Hallo Nina" darf die teuerste Stufe nie erreichen — auch nicht,
+     * „Hallo Monday" darf die teuerste Stufe nie erreichen — auch nicht,
      * wenn im Hintergrund zwanzig Stellen liegen.
      */
     const gespraech = route("nina_chat");

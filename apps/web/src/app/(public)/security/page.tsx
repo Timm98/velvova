@@ -68,7 +68,7 @@ export default function SecurityPage() {
             <Stack gap={2}>
               <h3 style={{ fontSize: "var(--text-sm)" }}>Nicht sichtbar</h3>
               <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                <li>· das Gespräch mit Nina</li>
+                <li>· das Gespräch mit Monday</li>
                 <li>· das aktuelle Gehalt</li>
                 <li>· Lebenshaltung und Steuerangaben</li>
                 <li>· andere Bewerbungen</li>

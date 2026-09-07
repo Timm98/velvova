@@ -84,7 +84,7 @@ zeile(/Unternehmen registrieren/.test(fuss), "Registrierung steht auch im Fuss")
 
 // ── Der Fünf-Sekunden-Test ───────────────────────────────────
 const oben = (await p.locator("main").innerText()).slice(0, 900);
-zeile(/Nina/.test(oben), "Nina wird oben genannt");
+zeile(/Monday/.test(oben), "Monday wird oben genannt");
 zeile(/versteht|lernt, was dir wichtig/.test(oben), "Dass sie zuerst den Menschen versteht");
 zeile(/prüft echte Stellen/.test(oben), "Dass sie Stellen prüft");
 zeile(/Mitarbeiter|Unternehmen/.test(oben), "Dass es eine Unternehmensseite gibt");

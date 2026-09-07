@@ -1,4 +1,4 @@
--- „Nina sucht für dich weiter" — Suchauftrag, Treffer, Zusammenfassung, Versand.
+-- „Monday sucht für dich weiter" — Suchauftrag, Treffer, Zusammenfassung, Versand.
 --
 -- ══════════════════════════════════════════════════════════════
 -- Warum drei getrennte Dinge und nicht ein Feld mehr an `job_alarme`

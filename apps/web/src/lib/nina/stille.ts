@@ -8,7 +8,7 @@
  * asynchronen Fortsetzung kommen.
  *
  * Ohne diesen Kunstgriff lehnt Safari jedes `play()` ab, das nicht
- * unmittelbar in einer Nutzerhandlung steht. Genau daran war Ninas
+ * unmittelbar in einer Nutzerhandlung steht. Genau daran war Mondays
  * Stimme im Live-Gespräch gescheitert, und zwar lautlos: der
  * `NotAllowedError` wurde wie ein zu Ende gespieltes Stück behandelt.
  *

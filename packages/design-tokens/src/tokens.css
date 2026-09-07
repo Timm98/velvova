@@ -48,7 +48,7 @@
   --surface-glass: rgba(255, 255, 255, 0.84);
 
   /* ---- Die beiden farbigen Ruheflächen ----
-     Lavendel trägt, was Nina verstanden hat. Eis trägt, was aus einer
+     Lavendel trägt, was Monday verstanden hat. Eis trägt, was aus einer
      Quelle kommt. Zwei Bedeutungen, zwei Töne — und keine dritte, weil
      eine dritte niemand mehr auseinanderhält. */
   --surface-lavender: #f0eeff;
@@ -124,7 +124,7 @@
      ein Abschnitt bekommt Tiefe durch Licht, nicht durch eine Kante. */
   --wash-lavender: linear-gradient(180deg, #ffffff 0%, #f0eeff 100%);
   --wash-ice: linear-gradient(180deg, #ffffff 0%, #edf6ff 100%);
-  /* Das Licht hinter Nina. Radial, sehr weit, sehr schwach — es soll
+  /* Das Licht hinter Monday. Radial, sehr weit, sehr schwach — es soll
      den Blick nicht holen, sondern die Fläche atmen lassen. */
   --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(99, 91, 255, 0.14) 0%, transparent 72%);
   --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(185, 216, 255, 0.5) 0%, transparent 72%);
@@ -365,7 +365,7 @@
   --surface-lavender: #1b2136;
   --surface-ice: #151d2c;
 
-  /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
+  /* Dasselbe Versäumnis: das Licht hinter Monday war für weissen Grund
      gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */
   --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
   --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);
@@ -452,7 +452,7 @@
   --surface-lavender: #1b2136;
   --surface-ice: #151d2c;
 
-  /* Dasselbe Versäumnis: das Licht hinter Nina war für weissen Grund
+  /* Dasselbe Versäumnis: das Licht hinter Monday war für weissen Grund
      gemischt und leuchtete auf dunklem Grund als milchiger Fleck. */
   --glow-nina: radial-gradient(60% 60% at 50% 0%, rgba(139, 130, 255, 0.18) 0%, transparent 72%);
   --glow-jobs: radial-gradient(60% 60% at 50% 0%, rgba(126, 226, 255, 0.14) 0%, transparent 72%);

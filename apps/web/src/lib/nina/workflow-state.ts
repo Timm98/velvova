@@ -133,24 +133,24 @@ export function entryRoute(state: {
   careerInterviewStatus: InterviewStatus;
   lastActiveRoute: string | null;
 }): string {
-  /* Früher `/setup`. Die Seite ist Ninas Einrichtung geworden; sie
+  /* Früher `/setup`. Die Seite ist Mondays Einrichtung geworden; sie
      schickt selbst weiter, sobald sie einmal abgeschlossen ist. */
-  if (!state.onboardingComplete) return "/nina-einrichten";
+  if (!state.onboardingComplete) return "/monday-einrichten";
 
   switch (state.careerInterviewStatus) {
     case "not_started":
-      return "/app/nina";
+      return "/app/monday";
     case "in_progress":
     case "paused":
       // Unterbrochen heißt: genau dort weiter. Das Gespräch selbst
       // weiß, bei welcher Frage es stehengeblieben ist.
-      return "/app/nina";
+      return "/app/monday";
     case "needs_review":
       return "/app/career";
     case "completed":
       // Die zuletzt besuchte Seite hat Vorrang — aber nie das
       // Interview: sonst wäre die Regel oben umsonst.
-      if (state.lastActiveRoute && state.lastActiveRoute !== "/app/nina") {
+      if (state.lastActiveRoute && state.lastActiveRoute !== "/app/monday") {
         return state.lastActiveRoute;
       }
       return "/app/jobs";

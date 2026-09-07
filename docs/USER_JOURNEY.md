@@ -33,9 +33,9 @@ Einwilligungen**, nicht ein Sammelhaken:
 Ist kein externer Anbieter verbunden, steht das dort — nicht als
 Werbeversprechen, sondern als Zustand.
 
-## 4. Gespräch mit Nina → `/app/nina`
+## 4. Gespräch mit Monday → `/app/monday`
 
-Nina steht im Mittelpunkt, nicht eine Formularwand.
+Monday steht im Mittelpunkt, nicht eine Formularwand.
 
 - **Eine Hauptfrage** je Schritt, mit „Warum diese Frage?" zum Aufklappen
 - Text- und Sprachmodus jederzeit wechselbar
@@ -85,7 +85,7 @@ Zufallstreffer — und die schaden mehr, als sie nützen.
 
 ## 8. Jobliste → `/app/jobs`
 
-„Ninas Auswahl für dich", nicht „Alle Jobs".
+„Mondays Auswahl für dich", nicht „Alle Jobs".
 
 Je Karte: Rolle, Unternehmen, Ort, Arbeitsmodell, Pendelhinweis, Gehalt
 **oder „nicht angegeben"**, fünf getrennte Bewertungen, ein Grund, ein
@@ -169,7 +169,7 @@ Diese Antworten bleiben **privat**. Sie gehen nicht an Arbeitgeber, nicht
 an Partner, nicht in Auswertungen — es sei denn, der Mensch gibt sie
 ausdrücklich frei. Das ist kein Überwachungswerkzeug.
 
-## Ninas nächste beste Handlung
+## Mondays nächste beste Handlung
 
 Auf jeder Seite höchstens **eine** — und sie ist wegklickbar. Keine
 Pop-ups.

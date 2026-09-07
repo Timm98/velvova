@@ -1,4 +1,4 @@
--- Wann Nina die Nachricht tatsaechlich gesagt hat.
+-- Wann Monday die Nachricht tatsaechlich gesagt hat.
 --
 -- Ohne diese Spalte muesste der Browser sich merken, was er schon
 -- angezeigt hat. Das waere an drei Stellen falsch: Auf einem zweiten
@@ -6,7 +6,7 @@
 -- jedes Mal, und die Sprachausgabe wuesste nichts davon, was der Chat
 -- schon gesagt hat.
 --
--- `erstellt_am` sagt, wann Nina etwas zu sagen hatte. `gezeigt_am`
+-- `erstellt_am` sagt, wann Monday etwas zu sagen hatte. `gezeigt_am`
 -- sagt, wann sie es gesagt hat. Zwischen beidem koennen Stunden
 -- liegen -- die Handlung geschieht sofort, das Reden erst, wenn
 -- jemand hinsieht.

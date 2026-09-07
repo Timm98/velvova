@@ -45,7 +45,7 @@ export default async function BelegePage() {
       {bilanz.gesamt === 0 ? (
         <EmptyState
           title="Noch nichts"
-          body="Nach einem Gespräch mit Nina stehen hier deine ersten Aussagen. Belegt werden sie durch Arbeitsproben."
+          body="Nach einem Gespräch mit Monday stehen hier deine ersten Aussagen. Belegt werden sie durch Arbeitsproben."
         />
       ) : (
         <>

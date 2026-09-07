@@ -57,7 +57,7 @@ describe("Vollständigkeit", () => {
 
   it("zählt gefundene Angaben nur halb", () => {
     /*
-     * Was Nina auf einer Website gefunden hat, ist eine Vermutung mit
+     * Was Monday auf einer Website gefunden hat, ist eine Vermutung mit
      * Fundstelle. Voll gezählt sähe ein Profil vollständig aus, das
      * niemand gelesen hat.
      */

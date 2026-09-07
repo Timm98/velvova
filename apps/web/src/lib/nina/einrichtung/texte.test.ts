@@ -92,7 +92,7 @@ describe("Berechtigungen", () => {
 describe("Abschlusstext", () => {
   const b = { briefingAktiv: false, rhythmus: "werktags" as const, zeit: "08:00" };
 
-  it("sagt bei Stufe 1 nicht, dass Nina im Hintergrund sucht", () => {
+  it("sagt bei Stufe 1 nicht, dass Monday im Hintergrund sucht", () => {
     const a = abschluss({ kontotyp: "arbeitnehmer", bedienart: "text", stufe: "manual", ...b });
     expect(a.text).toContain("nur, wenn du sie öffnest");
     expect(a.text).not.toContain("im Hintergrund");
@@ -101,7 +101,7 @@ describe("Abschlusstext", () => {
   it("nennt den Hintergrund ab Stufe 2", () => {
     const a = abschluss({ kontotyp: "arbeitnehmer", bedienart: "sprache", stufe: "observe_and_save", ...b });
     expect(a.text).toContain("im Hintergrund");
-    expect(a.text).toContain("Du sprichst mit Nina");
+    expect(a.text).toContain("Du sprichst mit Monday");
   });
 
   it("nennt das Briefing nur, wenn es an ist", () => {
@@ -118,7 +118,7 @@ describe("Abschlusstext", () => {
   it("siezt Unternehmen im Plural und nennt ihre Grenzen", () => {
     const a = abschluss({ kontotyp: "unternehmen", bedienart: "sprache", stufe: "prepare_and_connect", ...b });
     expect(a.titel).toContain("euer Unternehmen");
-    expect(a.text).toContain("Ihr sprecht mit Nina");
+    expect(a.text).toContain("Ihr sprecht mit Monday");
     expect(a.text).toContain("eure Freigabe");
     expect(a.knoepfe.primaer).toContain("unser Unternehmen");
   });
@@ -131,7 +131,7 @@ describe("Abschlusstext", () => {
 
 describe("Weiterleitung", () => {
   it("führt Kontotypen an verschiedene Orte", () => {
-    expect(weiterZu("arbeitnehmer")).toBe("/app/nina");
+    expect(weiterZu("arbeitnehmer")).toBe("/app/monday");
     expect(weiterZu("unternehmen")).toBe("/business/onboarding");
   });
 });

@@ -22,7 +22,7 @@ import type { Lage } from "./schnellaktionen";
  * gelegentlich etwas, das in keinem Faktor steht — und diese Sätze
  * stehen ungefragt da, also müssen sie ausnahmslos stimmen.
  *
- * Ninas Deutung im Gespräch bleibt davon unberührt.
+ * Mondays Deutung im Gespräch bleibt davon unberührt.
  */
 
 export type Befund = { key: string; label: string; satz: string };
@@ -224,7 +224,7 @@ function datum(d: Date | null): string | null {
 }
 
 /**
- * Ninas Satz zur Gesamtlage.
+ * Mondays Satz zur Gesamtlage.
  *
  * Gestuft, weil ein einziger Satz mit eingesetzter Zahl bei 91 % und
  * bei 44 % gleich klingt. Was sich ändert, ist nicht der Wert im Text,

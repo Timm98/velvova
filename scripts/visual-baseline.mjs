@@ -47,7 +47,7 @@ await setup.close();
 const ROUTEN = [
   ["landing", "/"],
   ["heute", "/app"],
-  ["nina", "/app/nina"],
+  ["nina", "/app/monday"],
   ["jobs", "/app/jobs"],
   ...(jobId ? [["jobs-auswahl", `/app/jobs?job=${jobId}`]] : []),
   ...(jobId ? [["jobdetail", `/app/jobs/${jobId}`]] : []),

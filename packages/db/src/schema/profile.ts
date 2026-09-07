@@ -61,7 +61,7 @@ export const evidenceItems = pgTable("evidence_items", {
   /**
    * Der Inhalt, nicht die Zeile.
    *
-   * Eine Ablehnung hing bisher an der Kennung. Nina leitet denselben
+   * Eine Ablehnung hing bisher an der Kennung. Monday leitet denselben
    * Satz aber aus der nächsten Nachricht erneut ab — als neue Zeile mit
    * neuer Kennung, und damit unbelastet. Für den Menschen sah das aus,
    * als hätte das Ablehnen nichts bewirkt.
@@ -171,7 +171,7 @@ export const preferences = pgTable("preferences", {
   /**
    * Ob ein Mensch sie bestätigt hat.
    *
-   * Nina darf aus Feedback eine Vorliebe ableiten. Sie darf sie nur
+   * Monday darf aus Feedback eine Vorliebe ableiten. Sie darf sie nur
    * nicht als bestätigt hinstellen — sonst wird aus sieben
    * Ablehnungen ein Filter, den niemand gesetzt hat.
    */

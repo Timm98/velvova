@@ -210,7 +210,7 @@ export async function NettoSchaetzung({ job }: { job: Pick<Job, "salary" | "coun
   );
 }
 
-/** Für Nina und den Jobvergleich: nur die Zahlen, ohne Darstellung. */
+/** Für Monday und den Jobvergleich: nur die Zahlen, ohne Darstellung. */
 export function nettoSchaetzen(bruttoJahr: number, land = "DE") {
   const rechner = rechnerFuer(land as Eingabe["land"], 2026);
   if (!rechner) return null;

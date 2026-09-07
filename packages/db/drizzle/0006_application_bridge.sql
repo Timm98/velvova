@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS "application_handoffs" (
 -- ── Job Briefs ────────────────────────────────────────────────────
 --
 -- Drei Ebenen, im Datenmodell getrennt: was die Quelle sagt, was wir
--- normalisiert haben, was Nina daraus schliesst. Vermischt man sie,
+-- normalisiert haben, was Monday daraus schliesst. Vermischt man sie,
 -- liest sich eine Vermutung wie eine Zusage des Arbeitgebers.
 CREATE TABLE IF NOT EXISTS "job_briefs" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,

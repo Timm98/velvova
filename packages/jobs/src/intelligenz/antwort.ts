@@ -16,7 +16,7 @@ import { syntheseFaellig, type Faelligkeit } from "./hintergrund.ts";
  *        ↑                                                    ↓
  *   besser empfehlen  ←  neu rechnen  ←  lernen  ←────────────┘
  *
- * Ohne diese Datei endete der Kreis bei „fragen". Nina stellte eine
+ * Ohne diese Datei endete der Kreis bei „fragen". Monday stellte eine
  * Frage, die Person antwortete — und die Antwort war eine
  * Chatnachricht wie jede andere. Die Klärung blieb offen, dieselbe
  * Frage kam beim nächsten Lauf wieder, und das Profil wusste nichts
@@ -34,7 +34,7 @@ import { syntheseFaellig, type Faelligkeit } from "./hintergrund.ts";
  * `user_stated` steht bei 0,95, `ai_hypothesis` bei höchstens 0,74.
  * Die alte Vermutung verliert an Gewicht, ohne dass sie jemand
  * löschen muss — sie wird überstimmt, nicht gestrichen. Das ist der
- * Unterschied zwischen „Nina hat sich geirrt" und „Nina hat nie
+ * Unterschied zwischen „Monday hat sich geirrt" und „Monday hat nie
  * etwas vermutet".
  */
 

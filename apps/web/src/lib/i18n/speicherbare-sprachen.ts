@@ -41,7 +41,7 @@ async function speicherbareCodes(): Promise<Set<string>> {
   return gemerkt;
 }
 
-/** Sprachen für Ninas Gespräch und für Unterlagen. */
+/** Sprachen für Mondays Gespräch und für Unterlagen. */
 export async function speicherbareSprachen(): Promise<LocaleEintrag[]> {
   const erlaubt = await speicherbareCodes();
   return ninaSprachen().filter((l) => erlaubt.has(l.code));

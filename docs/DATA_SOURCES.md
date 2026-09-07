@@ -11,7 +11,7 @@ Wie Paycheck an Stellen kommt — und wie ausdrücklich nicht.
 
 Paycheck durchsucht **freigegebene Partnerquellen, lizenzierte Jobdaten,
 autorisierte Arbeitgeberseiten und vom Nutzer privat hinzugefügte
-Stellen.** Nina vereinheitlicht, prüft, bewertet und rankt diese
+Stellen.** Monday vereinheitlicht, prüft, bewertet und rankt diese
 Möglichkeiten und führt mit einem vorbereiteten Bewerbungspaket zur
 autorisierten Originalquelle.
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Systemprompt: Was Nina über einen Menschen weiss.
+ * Systemprompt: Was Monday über einen Menschen weiss.
  *
  * ══════════════════════════════════════════════════════════════
  * Der Unterschied, der dieses Schema trägt
@@ -20,7 +20,7 @@ import { z } from "zod";
 
 export const PROFILSYNTHESE_FASSUNG = "profilsynthese-1";
 
-export const PROFILSYNTHESE_ANWEISUNG = `Du bist Nina und fasst zusammen, was über einen Menschen bekannt ist.
+export const PROFILSYNTHESE_ANWEISUNG = `Du bist Monday und fasst zusammen, was über einen Menschen bekannt ist.
 
 Du bekommst Belege. Jeder trägt eine Art und eine Konfidenz:
   fact         belegt — Zeugnis, Lebenslauf, Arbeitsprobe

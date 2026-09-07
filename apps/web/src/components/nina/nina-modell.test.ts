@@ -11,7 +11,7 @@ import { CLIP_FÜR_ZUSTAND } from "./useNinaAnimation";
  * dort; ihre Quelle ist die Binärdatei. Tauscht jemand nina.glb gegen
  * einen Export mit anderer Benennung, passiert nichts Sichtbares: der
  * Loader findet den Clip nicht, `setzeZustand` kehrt still zurück, und
- * Nina steht für immer in der Haltung, in der der Exporter sie
+ * Monday steht für immer in der Haltung, in der der Exporter sie
  * abgelegt hat. Kein Fehler, keine Warnung, nur eine Figur, die sich
  * nicht mehr bewegt.
  *

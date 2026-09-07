@@ -42,16 +42,37 @@ export function Profilbild({
 }) {
   if (kopf) {
     return (
-      <section aria-label="Konto" className="flex flex-wrap items-center gap-6">
-        <Bild bildKennung={bildKennung} name={name} />
+      /* Der Abstand ist grösser als der Rest der Seite: Bild und Name
+         gehören zusammen, sind aber nicht dieselbe Sache. In der
+         Vorlage steht der Name deutlich abgesetzt neben dem Bild,
+         nicht daran geklebt. */
+      <section aria-label="Konto" className="grid gap-6">
+        {/*
+          ══════════════════════════════════════════════════════════
+          Bild und Name auf einer Linie, alles Weitere darunter
+          ══════════════════════════════════════════════════════════
 
-        <div className="grid min-w-0 gap-2">
-          <div className="grid gap-0.5">
-            <h2 className="font-display text-2xl font-normal tracking-[-0.02em]">{name}</h2>
+          Vorher stand alles rechts vom Bild: Name, Kennung UND die
+          beiden Knöpfe. Die Spalte war damit so hoch wie das Bild,
+          und der Name sass irgendwo in ihrer Mitte statt neben dem
+          Gesicht.
+
+          Jetzt trägt die obere Zeile nur, was zusammen die Person
+          benennt — Bild, Name, Kennung, mittig zueinander. Was man
+          TUN kann, steht darunter in eigener Zeile. Dieselbe
+          Trennung wie im Leerzustand: oben, was IST; darunter, was
+          man ändern kann.
+        */}
+        <div className="flex flex-wrap items-center gap-7">
+          <Bild bildKennung={bildKennung} name={name} />
+
+          <div className="grid min-w-0 gap-1">
+            <h2 className="font-display text-3xl font-normal tracking-[-0.02em]">{name}</h2>
             {kennung && <p className="truncate text-sm text-ink-3">{kennung}</p>}
           </div>
-          <Knoepfe bildKennung={bildKennung} />
         </div>
+
+        <Knoepfe bildKennung={bildKennung} />
       </section>
     );
   }
@@ -88,12 +109,12 @@ function Bild({ bildKennung, name }: { bildKennung: string | null; name: string 
           <img
             src={`/app/profilbild?v=${bildKennung}`}
             alt={`Profilbild von ${name}`}
-            className="size-20 shrink-0 rounded-full border border-line object-cover"
+            className="size-28 shrink-0 rounded-full border border-line object-cover"
           />
         ) : (
           <span
             aria-hidden
-            className="grid size-20 shrink-0 place-items-center rounded-full bg-accent text-2xl font-semibold text-accent-on"
+            className="grid size-28 shrink-0 place-items-center rounded-full bg-accent text-3xl font-semibold text-accent-on"
           >
             {name.trim().slice(0, 1).toUpperCase()}
           </span>
@@ -106,20 +127,42 @@ function Bild({ bildKennung, name }: { bildKennung: string | null; name: string 
 function Knoepfe({ bildKennung }: { bildKennung: string | null }) {
   return (
         <div className="grid gap-3">
-          <form action={profilbildHochladen} className="flex flex-wrap items-center gap-3">
-            <label className="grid gap-1.5">
-              <span className="sr-only">Bilddatei wählen</span>
+          {/*
+            ══════════════════════════════════════════════════════
+            Die Dateiauswahl trägt keine Browser-Beschriftung
+            ══════════════════════════════════════════════════════
+
+            Vorher stand hier das nackte `<input type="file">`. Der
+            Browser malt daran seinen eigenen Knopf und daneben
+            „No file chosen" — auf Englisch, mitten in einer deutschen
+            Seite, in einer Schrift, die keine unsere ist. Kein `file:`
+            -Stil ändert diesen Text; er gehört dem Browser.
+
+            Deshalb ist das Feld versteckt und die Beschriftung ein
+            eigener Knopf. `sr-only` statt `hidden`: Ein verstecktes
+            Feld ist für die Tastatur nicht erreichbar, ein
+            `sr-only`-Feld schon — und die Beschriftung führt den
+            Fokus mit.
+
+            Der Name der gewählten Datei erscheint nicht. Er stünde
+            zwischen zwei Knöpfen und wäre bei langen Namen die
+            breiteste Zeile der Seite; das Bild selbst zeigt nach dem
+            Absenden ohnehin, was angekommen ist.
+          */}
+          <form action={profilbildHochladen} className="flex flex-wrap items-center gap-2.5">
+            <label className="inline-flex min-h-9 cursor-pointer items-center rounded-(--radius-control) border border-line-3 px-4 text-sm text-ink transition-colors hover:bg-soft">
+              <span>Bild wählen</span>
               <input
                 type="file"
                 name="bild"
                 accept="image/jpeg,image/png,image/webp"
                 required
-                className="max-w-full text-sm text-ink-2 file:mr-3 file:min-h-9 file:cursor-pointer file:rounded-(--radius-md) file:border file:border-line file:bg-surface file:px-3 file:text-sm file:font-medium file:text-ink hover:file:bg-soft"
+                className="sr-only"
               />
             </label>
             <button
               type="submit"
-              className="inline-flex min-h-9 items-center rounded-(--radius-pill) bg-accent px-4 text-sm font-semibold text-accent-on transition-opacity hover:opacity-90"
+              className="inline-flex min-h-9 items-center rounded-(--radius-control) bg-accent px-4 text-sm font-semibold text-accent-on transition-colors hover:bg-accent-hover"
             >
               {bildKennung ? "Ersetzen" : "Hochladen"}
             </button>
@@ -136,10 +179,15 @@ function Knoepfe({ bildKennung }: { bildKennung: string | null }) {
             </form>
           )}
 
-          <p className="max-w-[46ch] text-2xs leading-relaxed text-ink-3">
-            JPEG, PNG oder WebP, höchstens 2 MB. Es wird nirgends veröffentlicht — nur du
-            siehst es.
-          </p>
+          {/*
+            Der Hinweis auf Formate und Grösse stand hier und ist
+            weg. Er beantwortete eine Frage, die niemand stellt,
+            bevor er es versucht hat — und wer eine 8-MB-Datei wählt,
+            erfährt es beim Absenden, wo die Antwort hingehört.
+
+            Die Formate stehen weiterhin im `accept` des Feldes: Der
+            Dateiwähler zeigt dann von vornherein nur, was geht.
+          */}
         </div>
   );
 }

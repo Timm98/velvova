@@ -18,9 +18,9 @@ import { Bookmark, Calculator, MessagesSquare, Search } from "lucide-react";
  */
 const KARTEN = [
   {
-    href: "/app/nina",
+    href: "/app/monday",
     icon: MessagesSquare,
-    titel: "Mit Nina sprechen",
+    titel: "Mit Monday sprechen",
     text: "Kläre Fragen zu Stellen, Entscheidungen und deinem nächsten Schritt.",
   },
   {

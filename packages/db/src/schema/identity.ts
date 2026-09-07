@@ -209,7 +209,7 @@ export const userSettings = pgTable("user_settings", {
   avatarUrl: text("avatar_url"),
 
   /*
-   * Ob Nina diese Person Arbeitgebern vorschlagen darf.
+   * Ob Monday diese Person Arbeitgebern vorschlagen darf.
    *
    * Voreingestellt aus, und das ist die wichtigste Voreinstellung im
    * Schema. Ein Vorschlag ist etwas anderes als eine Bewerbung: Bei
@@ -368,7 +368,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
  * Drei Pläne.
  *
  * `max` ist nicht „Premium mit höheren Zahlen", sondern ein anderer
- * Umgang: Nina beobachtet dort laufend, vergleicht Stellen und begleitet
+ * Umgang: Monday beobachtet dort laufend, vergleicht Stellen und begleitet
  * Bewerbungen. Deshalb steht er als eigener Wert und nicht als Merkmal
  * an einem Premium-Abo.
  */
@@ -433,11 +433,11 @@ export const invoices = pgTable("invoices", {
 });
 
 /* ══════════════════════════════════════════════════════════════
-   Ninas Einrichtung
+   Mondays Einrichtung
    ══════════════════════════════════════════════════════════════ */
 
 /**
- * Was jemand Nina einmalig erlaubt hat.
+ * Was jemand Monday einmalig erlaubt hat.
  *
  * ── Warum eine eigene Tabelle und nicht `user_settings` ───────
  *
@@ -493,14 +493,14 @@ export const ninaEinrichtung = pgTable("nina_einrichtung", {
   widerrufenAm: timestamp("widerrufen_am", { withTimezone: true }),
 
   /**
-   * Was Nina je Handlung darf.
+   * Was Monday je Handlung darf.
    *
    * ── Warum hier und nicht in einer eigenen Tabelle ──────────
    *
    * `nina_einrichtung` hält bereits die Stufe (`manual` /
    * `observe_and_save` / `prepare_and_connect`) und den
    * Widerrufsstand. Eine zweite Tabelle daneben hiesse: zwei Orte,
-   * an denen steht, was Nina darf — und irgendwann widersprechen sie
+   * an denen steht, was Monday darf — und irgendwann widersprechen sie
    * sich.
    *
    * Die Stufe bleibt die grobe Einstellung. Diese Karte ist die

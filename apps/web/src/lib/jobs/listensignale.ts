@@ -3,7 +3,7 @@ import type { ScoredJob } from "@/lib/matching";
 /**
  * Zwei kurze Signale für eine Zeile in der Liste.
  *
- * Vorher standen dort Ninas ganze Sätze, auf eine Zeile gekürzt:
+ * Vorher standen dort Mondays ganze Sätze, auf eine Zeile gekürzt:
  *
  *   „Deine belegte Erfahrung im Kundenkontakt deckt die genannten …"
  *   „Die Anzeige nennt keine Angabe zum Gehalt, und ohne diese …"
@@ -20,7 +20,7 @@ import type { ScoredJob } from "@/lib/matching";
  *
  * Sie werden ABGELEITET, nicht gekürzt. Jedes Signal hat eine Bedingung,
  * die im Datensatz nachprüfbar ist; keines ist eine Zusammenfassung von
- * Ninas Prosa. Der ganze Satz steht rechts im Detail, wo Platz dafür
+ * Mondays Prosa. Der ganze Satz steht rechts im Detail, wo Platz dafür
  * ist.
  *
  * Höchstens zwei, und die Reihenfolge ist nicht beliebig: was jemanden

@@ -74,7 +74,7 @@ export default async function BewertungenPage({
    */
   return (
     <div className="mx-auto w-full max-w-[1000px] lg:-mx-[120px] lg:w-[calc(100%+240px)] lg:max-w-none">
-      <h1 className="font-display text-[2rem] font-semibold leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]">
+      <h1 className="font-display text-[2rem] font-normal leading-[1.12] tracking-[-0.02em] md:text-[2.75rem]">
         Bewertungen
       </h1>
 
@@ -98,7 +98,7 @@ export default async function BewertungenPage({
           {/* ── Gesamtbild ─────────────────────────────────── */}
           <div className="mt-8 grid gap-8 rounded-(--radius-surface) bg-inset p-6 md:grid-cols-[auto_minmax(0,1fr)] md:gap-12 md:p-8">
             <div className="grid content-start gap-2">
-              <span className="font-display text-[3.5rem] font-semibold leading-none tracking-[-0.03em] tabular">
+              <span className="font-display text-[3.5rem] font-normal leading-none tracking-[-0.02em] tabular">
                 {zahlen.schnitt!.toLocaleString("de-DE", {
                   minimumFractionDigits: 1,
                   maximumFractionDigits: 1,

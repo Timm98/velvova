@@ -4,13 +4,13 @@
 -- Der Kreis, den diese Spalte verhindert
 -- ══════════════════════════════════════════════════════════════
 --
--- Nina merkt eine Stelle vor, weil sie Interesse vermutet. Wuerde
+-- Monday merkt eine Stelle vor, weil sie Interesse vermutet. Wuerde
 -- daraus ein Ereignis entstehen, das wie eine Nutzerhandlung
--- aussieht, bestaetigte Nina ihre eigene Vermutung -- und beim
+-- aussieht, bestaetigte Monday ihre eigene Vermutung -- und beim
 -- naechsten Lauf staerker, und beim uebernaechsten noch staerker.
 --
 -- Am Ende stuende in `verhaltenssignale` ein sehr starkes Signal,
--- dessen Belege ausschliesslich Ninas eigene Handlungen sind. Von
+-- dessen Belege ausschliesslich Mondays eigene Handlungen sind. Von
 -- aussen sieht das aus wie ein Mensch mit klarem Interesse.
 --
 -- Nur `user` verstaerkt. Alles andere wird beobachtet, gezaehlt und

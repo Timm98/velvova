@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 
 /**
- * Was Nina auf DIESER Seite weiß.
+ * Was Monday auf DIESER Seite weiß.
  *
  * Der Umschlag (`build-context-envelope`) trägt, wer die Person ist und
  * wo sie im Vorgang steht. Hier kommt dazu, worüber gerade gesprochen
@@ -17,7 +17,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 export interface PageContext {
   /** Kurzer Satz für den Systemprompt. Leer, wenn es nichts zu sagen gibt. */
   briefing: string;
-  /** Was Nina hier anbieten kann. Erscheint als Vorschläge im Drawer. */
+  /** Was Monday hier anbieten kann. Erscheint als Vorschläge im Drawer. */
   suggestions: string[];
   jobId: string | null;
   applicationId: string | null;
@@ -40,7 +40,7 @@ function gehaltssatz(job: {
   salaryCurrency: string;
   salaryPeriod: string;
 }): string {
-  // Schweigt die Anzeige, schweigt Nina. Eine Schätzung an dieser
+  // Schweigt die Anzeige, schweigt Monday. Eine Schätzung an dieser
   // Stelle wäre eine erfundene Zahl in einer Gehaltsverhandlung.
   if (!job.salaryDisclosed || (job.salaryMin === null && job.salaryMax === null)) {
     return "Gehalt: nicht angegeben (nicht schätzen, nicht behaupten).";

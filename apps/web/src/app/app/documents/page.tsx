@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Upload } from "lucide-react";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { Badge, Button, Card } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
+import { Ablagefeld } from "./Ablagefeld";
 
 export const metadata: Metadata = { title: "Dokumente" };
 export const dynamic = "force-dynamic";
@@ -33,7 +34,7 @@ export default async function DocumentsPage() {
   const { integrations } = await getPageContext();
   const db = await getDb();
 
-  const [uploaded, generated] = await Promise.all([
+  const [uploaded, generated, abgelegt] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx
         .select()
@@ -56,6 +57,32 @@ export default async function DocumentsPage() {
         .orderBy(desc(schema.generatedArtifacts.createdAt))
         .limit(30),
     ),
+    /*
+     * Die zweite Tabelle.
+     *
+     * `documents` trägt, was über die Bewerbungswege hereinkam;
+     * `user_documents` trägt, was jemand selbst hochgeladen hat —
+     * über das Gespräch und seit heute über die Ablage auf dieser
+     * Seite.
+     *
+     * Dass die Seite bisher nur die erste zeigte, war der eigentliche
+     * Mangel: Wer im Gespräch einen Lebenslauf hochlud und danach
+     * hierherkam, sah „Noch keine Unterlagen".
+     */
+    withUser(db, user.id, (tx) =>
+      tx
+        .select({
+          id: schema.userDocuments.id,
+          filename: schema.userDocuments.originalFilename,
+          mimeType: schema.userDocuments.mimeType,
+          sizeBytes: schema.userDocuments.byteSize,
+          kind: schema.userDocuments.declaredKind,
+          createdAt: schema.userDocuments.createdAt,
+        })
+        .from(schema.userDocuments)
+        .where(and(eq(schema.userDocuments.userId, user.id), isNull(schema.userDocuments.deletedAt)))
+        .orderBy(desc(schema.userDocuments.createdAt)),
+    ).catch(() => []),
   ]);
 
   return (
@@ -81,23 +108,46 @@ export default async function DocumentsPage() {
 
       <section aria-labelledby="hochgeladen" className="grid gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 id="hochgeladen" className="font-display text-xl font-semibold">
+          <h2 id="hochgeladen" className="font-display text-xl font-normal">
             Von dir hochgeladen
           </h2>
           <Button asChild variant="secondary" size="sm">
-            <Link href="/app/nina">
+            <Link href="/app/monday">
               <Upload className="size-4" strokeWidth={1.8} />
               Im Gespräch hochladen
             </Link>
           </Button>
         </div>
 
+        <Ablagefeld />
+
+        {abgelegt.length > 0 && (
+          <Card padded={false}>
+            <ul className="divide-y divide-line">
+              {abgelegt.map((doc) => (
+                <li key={doc.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
+                  <FileText className="size-4 shrink-0 text-ink-3" strokeWidth={1.7} />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">{doc.filename}</span>
+                    <span className="block text-xs text-ink-3">
+                      {doc.mimeType} · {Math.round(doc.sizeBytes / 1024)} kB ·{" "}
+                      {doc.createdAt.toLocaleDateString("de-DE")}
+                    </span>
+                  </span>
+                  <Badge>{KIND_LABEL[doc.kind] ?? doc.kind}</Badge>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        )}
+
         {uploaded.length === 0 ? (
-          <EmptyState
-            icon={<Upload className="size-5" strokeWidth={1.7} />}
-            title="Noch keine Unterlagen"
-            body="Ein Lebenslauf beschleunigt das Gespräch erheblich: Nina fragt dann nur noch nach dem, was darin fehlt."
-          />
+          abgelegt.length === 0 && (
+            <p className="text-sm leading-relaxed text-ink-2">
+              Ein Lebenslauf beschleunigt das Gespräch erheblich: Monday fragt dann nur noch nach
+              dem, was darin fehlt.
+            </p>
+          )
         ) : (
           <Card padded={false}>
             <ul className="divide-y divide-line">
@@ -124,7 +174,7 @@ export default async function DocumentsPage() {
       </section>
 
       <section aria-labelledby="erzeugt" className="grid gap-4">
-        <h2 id="erzeugt" className="font-display text-xl font-semibold">
+        <h2 id="erzeugt" className="font-display text-xl font-normal">
           Aus deinem Profil entstanden
         </h2>
 

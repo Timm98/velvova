@@ -31,7 +31,7 @@ describe("anforderungEinstufen", () => {
   });
 
   it("liest im Zweifel als Pflicht, nicht als Wunsch", () => {
-    // Freundlicher wäre „Wunsch". Schlechter auch: Nina schickte
+    // Freundlicher wäre „Wunsch". Schlechter auch: Monday schickte
     // Menschen zu Stellen, deren Grundbedingung sie nicht erfüllen.
     expect(anforderungEinstufen("Kenntnisse in Excel").zwingend).toBe(true);
   });

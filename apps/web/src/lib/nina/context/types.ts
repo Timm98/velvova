@@ -39,7 +39,7 @@ export interface NinaContextEnvelope {
   /**
    * Welcher Plan gilt und was er zulässt.
    *
-   * Nina soll wissen, was sie anbieten kann — nicht, um weniger zu
+   * Monday soll wissen, was sie anbieten kann — nicht, um weniger zu
    * antworten, sondern um nichts anzubieten, das gerade nicht geht.
    * „Ich vergleiche dir die drei Stellen" ist eine Zusage; sie
    * einzulösen setzt eine Berechtigung voraus, die sie kennen muss.

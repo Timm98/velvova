@@ -14,7 +14,7 @@ import { HANDLUNGEN, type Eigeninitiative } from "@paycheck/matching";
 import { requireUser } from "@/lib/auth";
 
 /**
- * Was die Person mit Ninas Eigeninitiative tun kann.
+ * Was die Person mit Mondays Eigeninitiative tun kann.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum jede Handlung eine eigene Aktion hat
@@ -65,7 +65,7 @@ export type Handlungsergebnis =
     };
 
 /**
- * Was in „Von Nina automatisch“ steht.
+ * Was in „Von Monday automatisch“ steht.
  *
  * Nur was noch offen ist oder gerade getan wurde — eine Liste, die
  * jede jemals ausgeführte Handlung zeigt, liest niemand mehr, und
@@ -154,7 +154,7 @@ export async function automatikAbschalten(
   return { abgeschaltet: liste };
 }
 
-/** Die Stufe von Ninas Eigeninitiative. */
+/** Die Stufe von Mondays Eigeninitiative. */
 export async function eigeninitiativeSetzen(stufe: string): Promise<{ ok: boolean }> {
   const user = await requireUser();
   if (stufe !== "zurueckhaltend" && stufe !== "ausgeglichen" && stufe !== "proaktiv")
@@ -205,13 +205,13 @@ export async function eigeninitiativeStand(): Promise<Eigeninitiativestand> {
 
 
 /**
- * Die nächste Sache, die Nina von sich aus sagen möchte.
+ * Die nächste Sache, die Monday von sich aus sagen möchte.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum dieselbe Aktion für Chat und Sprache
  * ══════════════════════════════════════════════════════════════
  *
- * Weil sonst zwei Wege entstünden, auf denen Nina spricht — und
+ * Weil sonst zwei Wege entstünden, auf denen Monday spricht — und
  * zwei Wege heisst früher oder später zwei verschiedene Regeln.
  *
  * Der Vermerk „gesagt“ liegt im Server. Deshalb sagt die Sprache

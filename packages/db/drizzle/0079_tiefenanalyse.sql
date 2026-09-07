@@ -1,4 +1,4 @@
--- Ninas tiefe Analyse einer Stelle.
+-- Mondays tiefe Analyse einer Stelle.
 --
 -- ══════════════════════════════════════════════════════════════
 -- Warum eine eigene Tabelle

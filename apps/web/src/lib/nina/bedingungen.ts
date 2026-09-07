@@ -6,7 +6,7 @@ import { geltungAusSatz, type Geltung } from "./geltung.ts";
  * Aus einem Satz wird ein VORSCHLAG für eine harte Bedingung.
  *
  * Der Fehler, den das behebt, war der grösste im Produkt und zugleich
- * unsichtbar: Jemand sagt Nina „mindestens 45.000 Euro, das ist eine
+ * unsichtbar: Jemand sagt Monday „mindestens 45.000 Euro, das ist eine
  * harte Grenze". Der Satz wurde gespeichert — als Gesprächsverlauf und
  * als Evidenz. In die Tabelle `user_constraints`, die das Matching
  * tatsächlich liest, kam er nie. Sie wurde nur vom Einrichtungsformular

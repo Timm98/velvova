@@ -10,7 +10,7 @@ import {
  * Warum das eine eigene, reine Funktion ist
  * ══════════════════════════════════════════════════════════════
  *
- * Hier steht die Sicherheitsgrenze dieser Seite. Alles, was Nina
+ * Hier steht die Sicherheitsgrenze dieser Seite. Alles, was Monday
  * später im Hintergrund tun darf, entscheidet sich in diesen dreissig
  * Zeilen — und wenn sie in einem Modul stünden, das eine Datenbank
  * braucht, liesse sich keine einzige davon prüfen, ohne eine
@@ -64,10 +64,10 @@ export function gueltigeZeitzone(w: unknown): string {
 
 export function pruefe(wunsch: Wunsch): Pruefergebnis {
   if (!IST_BEDIENART(wunsch.bedienart)) {
-    return { ok: false, fehler: "Bitte wähle, ob du mit Nina sprechen oder schreiben möchtest." };
+    return { ok: false, fehler: "Bitte wähle, ob du mit Monday sprechen oder schreiben möchtest." };
   }
   if (!IST_STUFE(wunsch.stufe)) {
-    return { ok: false, fehler: "Bitte wähle, was Nina im Hintergrund tun darf." };
+    return { ok: false, fehler: "Bitte wähle, was Monday im Hintergrund tun darf." };
   }
 
   /*

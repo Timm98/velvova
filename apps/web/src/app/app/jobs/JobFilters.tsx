@@ -117,10 +117,10 @@ export function JobFilters({ resultCount }: { resultCount: number }) {
         {/*
           Das zweite Suchfeld ist entfallen.
 
-          Es stand direkt unter „Frag Nina …" und versprach dasselbe —
+          Es stand direkt unter „Frag Monday …" und versprach dasselbe —
           zwei Felder für eine Absicht sind keine Wahl, sondern eine
           Frage, die niemand beantworten kann. Der Text kommt jetzt aus
-          dem Nina Search Composer und landet über `?q=` genauso hier.
+          dem Monday Search Composer und landet über `?q=` genauso hier.
         */}
         <label className="sr-only" htmlFor="sort">
           Sortierung

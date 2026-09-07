@@ -109,7 +109,7 @@ await feld.press("Enter");
 /*
  * ── Zuerst auf die Bestätigung, dann auf den Chip ─────────
  *
- * Ninas Bestätigung lebt vier Sekunden — so ist sie gebaut, und die
+ * Mondays Bestätigung lebt vier Sekunden — so ist sie gebaut, und die
  * Prüfung weiter unten verlangt genau das.
  *
  * Hier stand zuerst das Warten auf den Filter-Chip, mit dreissig
@@ -127,14 +127,14 @@ const bestaetigungKam = await p
   .waitFor({ state: "visible", timeout: 15000 })
   .then(() => true)
   .catch(() => false);
-zeile(bestaetigungKam, "Kurze Nina-Bestätigung erscheint");
+zeile(bestaetigungKam, "Kurze Monday-Bestätigung erscheint");
 
 await p.locator('ul[aria-label="Aktive Filter"] button').first()
   .waitFor({ state: "visible", timeout: 30000 });
 
 zeile((await feld.inputValue()) === "", "Das Eingabefeld leert sich");
 const nachEingabe = await text();
-const drawer = await p.locator('[role="dialog"], aside').filter({ hasText: /Nina/ }).count();
+const drawer = await p.locator('[role="dialog"], aside').filter({ hasText: /Monday/ }).count();
 zeile(drawer === 0, "Es öffnet sich KEIN Seitenchat");
 /* Am Chip selbst prüfen, nicht am Seitentext — der Vorschlagssatz
    enthält denselben Betrag und machte die Prüfung wertlos. */

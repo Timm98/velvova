@@ -12,40 +12,84 @@ import type { Berufsfeld } from "@/lib/berufsfelder-laden";
  *
  * Die Reihenfolge kommt aus dem Bestand, nicht aus einer Datei. Sie
  * ändert sich, wenn sich der Arbeitsmarkt ändert.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Die Form der Vorlage — ohne Bilder
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Vorlage zeigt ihre Kategorien als Bildkacheln: Foto oben,
+ * Beschriftung klein DARUNTER und ausserhalb der Kachel, darunter
+ * mittig ein umrandeter Knopf für alle Kategorien.
+ *
+ * Die Beschriftung ausserhalb ist das Wesentliche daran. Innen wäre
+ * sie eine Bildunterschrift auf dem Bild; aussen ist sie eine
+ * Beschriftung des Ganzen, und die Kachel darf ruhig bleiben.
+ *
+ * Bilder haben wir nicht. Eines je Berufsfeld zu besorgen hiesse,
+ * Stockfotos zu nehmen, die nichts über die Stellen dahinter sagen —
+ * ein Lagerregal, das für „Logistik" steht, weil es aussieht wie
+ * Logistik. Statt des Bildes trägt die Kachel deshalb die Zahl, die
+ * ohnehin die eigentliche Auskunft ist.
  */
 export function Berufsfelder({ felder }: { felder: Berufsfeld[] }) {
   if (felder.length === 0) return null;
 
   return (
     <section aria-labelledby="berufsfelder" className="grid gap-6">
-      <h2 id="berufsfelder" className="text-2xl font-semibold text-ink">
+      <h2 id="berufsfelder" className="font-display text-2xl font-normal tracking-[-0.015em] text-ink">
         Berufsfelder mit den meisten offenen Stellen
       </h2>
 
-      <ul className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+      <ul className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
         {felder.map((f) => (
           <li key={f.kldb}>
-            <Link
-              href={`/app/jobs?berufsfeld=${f.kldb}`}
-              className={
-                "grid gap-0.5 rounded-(--radius-md) border border-line bg-raised px-4 py-3.5 " +
-                "transition-colors duration-(--duration-fast) hover:border-ink-3"
-              }
-            >
-              <span className="text-sm font-medium leading-snug text-ink">{f.name}</span>
-              <span className="text-2xs tabular text-ink-3">
-                {f.anzahl.toLocaleString("de-DE")} Stellen
+            <Link href={`/app/jobs?berufsfeld=${f.kldb}`} className="group grid gap-2.5">
+              {/*
+                Die Fläche trägt die Zahl, die Beschriftung steht
+                darunter — wie das Bild und sein Titel in der Vorlage.
+
+                `tabular-nums`: Vier Zahlen nebeneinander, die
+                unterschiedlich breit springen, lesen sich als vier
+                verschiedene Dinge.
+              */}
+              <span
+                className={
+                  "grid h-24 place-items-center rounded-(--radius-surface) bg-soft " +
+                  "font-mono text-2xl tabular-nums text-ink " +
+                  "transition-colors duration-(--duration-fast) group-hover:bg-soft-hover"
+                }
+              >
+                {f.anzahl.toLocaleString("de-DE")}
+              </span>
+
+              <span className="grid gap-0.5">
+                <span className="text-sm leading-snug text-ink transition-colors group-hover:text-accent-text">
+                  {f.name}
+                </span>
+                <span className="text-2xs text-ink-3">offene Stellen</span>
               </span>
             </Link>
           </li>
         ))}
       </ul>
 
-      <p className="text-sm text-ink-2">
-        <Link href="/app/jobs" className="text-accent-text underline underline-offset-[3px]">
-          Alle Berufsfelder entdecken
-        </Link>
-      </p>
+      {/*
+        Mittig und umrandet, nicht als unterstrichener Satz links.
+
+        In der Vorlage schliesst jedes Raster mit einem solchen Knopf
+        ab: Er sagt, dass die Auswahl darüber eine Auswahl ist und
+        nicht alles. Ein Textlink am Rand sagt dasselbe leiser, als
+        es hier gemeint ist.
+      */}
+      <Link
+        href="/app/jobs"
+        className={
+          "mx-auto inline-flex h-11 items-center rounded-(--radius-control) border border-line-3 " +
+          "px-6 text-sm text-ink transition-colors hover:bg-soft"
+        }
+      >
+        Alle Berufsfelder
+      </Link>
     </section>
   );
 }

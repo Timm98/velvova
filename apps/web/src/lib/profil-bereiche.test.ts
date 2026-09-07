@@ -7,7 +7,7 @@ import { bereichAus } from "./profil-bereiche.ts";
  * In der Datenbank stehen zwei Benennungen nebeneinander: das ältere
  * `interview:<bereich>:<detail>` und das aktuelle
  * `nina:v3:<thema>:<stufe>`. Die Rechnung kannte nur das erste — also
- * genau jenes, das die heutige Nina NICHT schreibt.
+ * genau jenes, das die heutige Monday NICHT schreibt.
  *
  * Ergebnis im Betrieb: 326 Belege, ein einziges Karriereprofil, und ein
  * Fortschrittsbalken, der bei null stehen blieb, während das Gespräch
@@ -15,7 +15,7 @@ import { bereichAus } from "./profil-bereiche.ts";
  */
 
 describe("Belege den Bereichen zuordnen", () => {
-  it("versteht das aktuelle Schema von Nina", () => {
+  it("versteht das aktuelle Schema von Monday", () => {
     expect(bereichAus("nina:v3:career_evidence:current_situation")).toBe("experience_episodes");
     expect(bereichAus("nina:v3:constraints:task_preferences")).toBe("hard_constraints");
     expect(bereichAus("nina:v3:preferred_tasks:orientation")).toBe("tasks_and_energy");

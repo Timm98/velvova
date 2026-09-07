@@ -12,7 +12,7 @@ import {
 import { proaktivLauf } from "./lauf.ts";
 
 /**
- * Ninas Eigeninitiative gegen eine echte Datenbank.
+ * Mondays Eigeninitiative gegen eine echte Datenbank.
  *
  * Die Fälle sind die aus dem Auftrag, Abschnitt 19 — von „ein kurzer
  * Blick ergibt nichts" bis „keine sinnvolle Handlung".
@@ -378,7 +378,7 @@ describe("Zurückhaltung", () => {
     const b = await proaktivLauf(db, nutzer, { jetzt: JETZT, sitzungId: "s1" });
     /*
      * Beide Stellen werden vorgemerkt — die Sperre gilt dem Reden,
-     * nicht dem Arbeiten. Nur eine davon sagt Nina auch.
+     * nicht dem Arbeiten. Nur eine davon sagt Monday auch.
      */
     expect(await vormerkungen()).toHaveLength(2);
     expect(b.still).toBeGreaterThanOrEqual(1);
@@ -393,7 +393,7 @@ describe("Zurückhaltung", () => {
     }
     const b = await proaktivLauf(db, nutzer, { jetzt: JETZT, sitzungId: "s1" });
     /*
-     * Auch hier spricht Nina nur einmal über das Vormerken: Zwei
+     * Auch hier spricht Monday nur einmal über das Vormerken: Zwei
      * Nachrichten über dasselbe Thema in derselben Sitzung wären zwei
      * Meldungen für eine Sache.
      */
@@ -407,7 +407,7 @@ describe("Zurückhaltung", () => {
      * Chat, Sprachausgabe und Hintergrunddienst sind drei Prozesse;
      * ein Zähler je Prozess wäre dreimal niedrig.
      */
-    /* Zwei Stellen — erst dann hat Nina überhaupt etwas zu sagen. */
+    /* Zwei Stellen — erst dann hat Monday überhaupt etwas zu sagen. */
     for (const st of [stellen[0]!, stellen[1]!]) {
       await melde("job_viewed", st, 40);
       await melde("job_reopened", st, 30);
@@ -549,10 +549,10 @@ describe("Offene Fragen und Vergleich", () => {
   });
 });
 
-describe("Was Nina zu sagen hat", () => {
+describe("Was Monday zu sagen hat", () => {
   async function nachrichtHerstellen() {
     /*
-     * Zwei Stellen. Eine allein ergibt keine Nachricht mehr — Nina
+     * Zwei Stellen. Eine allein ergibt keine Nachricht mehr — Monday
      * erzählt nicht, was die Person gerade selbst tut.
      */
     for (const st of [stellen[0]!, stellen[1]!]) {
@@ -650,10 +650,10 @@ describe("Eine Aufzeichnung, kein Doppel", () => {
     expect(await vormerkungen()).toHaveLength(1);
   });
 
-  it("schreibt eine Handlung Ninas nie in den Trichter", async () => {
+  it("schreibt eine Handlung Mondays nie in den Trichter", async () => {
     /*
      * `application_events` zeichnet Meilensteine einer Bewerbung auf.
-     * Eine Handlung Ninas gehört dort nicht hinein — sonst stünde in
+     * Eine Handlung Mondays gehört dort nicht hinein — sonst stünde in
      * der Trichterdiagnose ein Aufruf, den niemand gemacht hat.
      */
     await ereignisAufnehmen(db, nutzer, {

@@ -188,7 +188,7 @@ function sqlAus(spalte: string) {
  *
  * Der zweite Fall ist wichtiger, als er aussieht: Er unterscheidet
  * „danach wurde gefragt und es kam nichts" von „danach hat nie jemand
- * gefragt". Ohne ihn fragt Nina im nächsten Gespräch wieder.
+ * gefragt". Ohne ihn fragt Monday im nächsten Gespräch wieder.
  */
 export async function angabeBestaetigen(opt: {
   gespraechId: string;

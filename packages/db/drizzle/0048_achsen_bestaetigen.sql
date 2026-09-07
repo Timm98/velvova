@@ -1,8 +1,8 @@
--- Was Nina aus einer Antwort gelesen hat, muss bestätigt werden können.
+-- Was Monday aus einer Antwort gelesen hat, muss bestätigt werden können.
 --
 -- ── Warum das fehlte ─────────────────────────────────────────
 --
--- Bei den Erkenntnissen macht Nina es längst richtig: Eine abgeleitete
+-- Bei den Erkenntnissen macht Monday es längst richtig: Eine abgeleitete
 -- Aussage steht als unbestätigt da, bis der Mensch sie bestätigt oder
 -- ablehnt. Bei den Achsen fehlte das — der Leser schrieb seinen Wert
 -- direkt ins Profil.

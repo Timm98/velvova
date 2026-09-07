@@ -15,7 +15,7 @@ const B = process.argv[2] ?? "http://localhost:3000";
 const ROUTEN = [
   ["Landingpage", "/"],
   ["Heute", "/app"],
-  ["Nina", "/app/nina"],
+  ["Monday", "/app/monday"],
   ["Jobs", "/app/jobs"],
   ["Jobdetail", null], // wird aus der Liste bestimmt
   ["Bewerbungen", "/app/applications"],
@@ -169,7 +169,7 @@ for (const [name, beschriftung, ziel] of [
   ["Heute → Jobs", "Jobs", "/app/jobs"],
   ["Jobs → Bewerbungen", "Bewerbungen", "/app/applications"],
   ["Bewerbungen → Profil", "Profil", "/app/profile"],
-  ["Profil → Nina", "Nina", "/app/nina"],
+  ["Profil → Monday", "Monday", "/app/monday"],
 ]) {
   const messungen = [];
   for (let i = 0; i < 3; i++) {

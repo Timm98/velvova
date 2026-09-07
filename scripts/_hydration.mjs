@@ -28,7 +28,7 @@ const SEITEN = [
   "/app/jobs",
   "/app/jobs/import",
   "/app/jobs/vergleich",
-  "/app/nina",
+  "/app/monday",
   "/app/notifications",
   "/app/offers",
   "/app/opportunities",

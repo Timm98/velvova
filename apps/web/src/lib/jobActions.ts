@@ -116,7 +116,7 @@ export async function updateApplicationStage(
  * Ein Pflichtfeld hier hiesse: Wer schnell durch eine Liste geht, muss
  * bei jeder Stelle eine Begründung anklicken. Das ist die zuverlässigste
  * Art, schlechte Daten zu bekommen — Leute klicken irgendetwas, und
- * Nina lernt daraus ein Muster, das es nie gab.
+ * Monday lernt daraus ein Muster, das es nie gab.
  *
  * Ohne Grund wird die Ablehnung trotzdem festgehalten. Sie zählt nur
  * nicht für die Mustererkennung, und das ist richtig so.
@@ -125,7 +125,7 @@ export async function updateApplicationStage(
  * Was mit einem erkannten Muster passiert
  * ══════════════════════════════════════════════════════════════
  *
- * Nichts Automatisches. Die Rückgabe enthält die Frage, die Nina
+ * Nichts Automatisches. Die Rückgabe enthält die Frage, die Monday
  * stellen soll — nicht eine Regel, die sie gesetzt hat. Aus sieben
  * Ablehnungen einen stillen Filter zu machen, hiesse Stellen
  * verschwinden zu lassen, ohne dass jemand das entschieden hat.
@@ -142,7 +142,7 @@ export async function stelleAblehnen(
    * Der Wert kommt aus dem Browser und ist damit alles, was jemand
    * schicken will. Ein unbekannter Grund landete sonst in der Tabelle
    * und wäre für die Mustererkennung ein Schlüssel ohne Frage — ein
-   * Muster, zu dem Nina nichts sagen kann.
+   * Muster, zu dem Monday nichts sagen kann.
    */
   const geprueft = grund && grund in ABLEHNUNGSGRUENDE ? grund : null;
 

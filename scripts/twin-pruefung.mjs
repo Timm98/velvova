@@ -18,7 +18,7 @@ const db = await getDb();
 let fehler = 0;
 const zeile = (ok, m) => { console.log(`  ${ok ? "ok  " : "!!  "} ${m}`); if (!ok) fehler++; };
 
-/* 1. Was jemand Nina sagt. */
+/* 1. Was jemand Monday sagt. */
 const antworten = [
   ["own_decisions", "Ich möchte am liebsten freie Hand haben, ohne Rücksprache für jede Kleinigkeit."],
   ["avoided_tasks", "Telefonate mit Kunden vermeide ich, wo es geht — das laugt mich aus."],

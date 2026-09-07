@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
+import type { Kontogruppe } from "./kontoeintraege";
 
 /**
  * Das Kontomenü.
@@ -18,9 +18,10 @@ import { cn } from "@/lib/cn";
 export function AccountMenu({
   userName,
   userEmail,
-  items,
+  gruppen,
   onLogout,
   bildKennung = null,
+  assistent,
 }: {
   userName: string | null;
   userEmail: string;
@@ -34,7 +35,9 @@ export function AccountMenu({
    * nicht neu. Siehe `lib/profilbild-kennung.ts`.
    */
   bildKennung?: string | null;
-  items: { href: string; label: string; icon: LucideIcon }[];
+  gruppen: Kontogruppe[];
+  /** Der Name der Begleitung — für den Hinweis am Fuss des Menüs. */
+  assistent: string;
   onLogout: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -131,36 +134,158 @@ export function AccountMenu({
           /* Gefüllt statt umrandet, wie das Fenster unten rechts: Ein
              schwebendes Feld braucht keinen Rahmen, seine Fläche ist
              seine Grenze. */
-          className="absolute right-0 top-[calc(100%_+_8px)] z-50 w-64 animate-fade-in rounded-(--radius-xl) bg-elevated p-1.5 shadow-xl"
+          /*
+            ══════════════════════════════════════════════════════
+            Die Masse stammen aus der Vorlage, nicht aus dem Gefühl
+            ══════════════════════════════════════════════════════
+
+            Beide Menüs nebeneinander gemessen, auf gleicher Skala:
+
+              Breite        Vorlage 350 px   wir 288
+              Zeilenhöhe            49              35
+              Innenabstand links    32              12
+              Zeichen               20              16
+              Schriftgrad           16              14
+
+            Unseres war überall enger. Der Unterschied liest sich
+            nicht als „kompakt", sondern als gedrängt: Zwölf Zeilen
+            in einem schmalen Feld sehen aus wie eine Liste, durch
+            die man sich arbeiten muss.
+
+            Die Ecken sind flacher (6 statt 12) und es gibt wieder
+            eine Kante — die Vorlage hat beides.
+          */
+          /*
+            Die Füllung liegt zwischen zwei Tokens, mit Absicht.
+            
+            `--surface-1` (#141a28) war zu hell, der Seitengrund
+            (#0c0f18) zu dunkel — das Feld verschwand darin. #10141d
+            liegt dazwischen: dunkler als jede Fläche der Seite,
+            aber noch als eigene Fläche erkennbar, und mit der
+            #545f78-Kante klar abgesetzt.
+            
+            Deshalb hier als Wert und nicht als Token: Es ist die
+            Farbe genau EINES schwebenden Feldes. Ein neues Token für
+            eine Stelle wäre eine Zeile mehr im Kern, die niemand
+            sonst benutzt.
+          */
+          style={{ background: "#10141d" }}
+          className="absolute right-0 top-[calc(100%_+_10px)] z-50 w-[21.75rem] animate-fade-in rounded-(--radius-sm) border border-line-3 px-2 pb-2 pt-12 shadow-xl"
         >
-          <div className="border-b border-line px-3 py-2.5">
-            <p className="truncate text-sm font-medium">{userName ?? "Konto"}</p>
-            <p className="truncate text-xs text-ink-3">{userEmail}</p>
+          {/*
+            ══════════════════════════════════════════════════════
+            Die Spitze zeigt auf das Profilbild
+            ══════════════════════════════════════════════════════
+
+            Ein gedrehtes Quadrat mit zwei sichtbaren Kanten, halb
+            hinter der Fläche. Es sagt, WOHER das Feld kommt — ohne
+            sie schwebt es an der rechten Ecke, und bei zwei Knöpfen
+            nebeneinander (Glocke und Bild) rät man, welcher es
+            geöffnet hat.
+
+            `right-4`: Das Profilbild ist 44 Pixel breit, seine Mitte
+            liegt 22 von der rechten Kante des Behälters. Ein 12er
+            Quadrat trifft sie mit 16 Pixeln Abstand.
+          */}
+          <span
+            aria-hidden
+            style={{ background: "#10141d" }}
+            className="absolute -top-[7px] right-4 size-3 rotate-45 rounded-tl-[2px] border-l border-t border-line-3"
+          />
+
+          {/*
+            ══════════════════════════════════════════════════════
+            Kein Namensblock am Kopf des Menüs
+            ══════════════════════════════════════════════════════
+
+            Hier standen Name und Adresse in einem eigenen Feld mit
+            Trennlinie. In der Vorlage gibt es das nicht — dort
+            beginnt das Menü sofort mit dem ersten Weg.
+
+            Der Grund ist gut: Wer das Menü öffnet, hat gerade auf
+            SEIN Profilbild geklickt. Ihm danach seinen Namen zu
+            zeigen, beantwortet eine Frage, die er nicht gestellt
+            hat — und der Block schob alle Wege zwei Zeilen nach
+            unten.
+
+            Für Vorlesegeräte bleibt die Angabe erhalten: Der Knopf
+            trägt sie bereits als Beschriftung.
+          */}
+
+          {/*
+            Zwei Gruppen mit einer Haarlinie dazwischen — wie in der
+            Vorlage. Oben die Bereiche, in denen man arbeitet, unten
+            das Konto selbst.
+
+            Die Gruppentitel stehen nur für Vorlesegeräte da: Sichtbar
+            trennt die Linie, und zwei Überschriften in einem Menü mit
+            zwölf Zeilen wären mehr Aufwand als Auskunft.
+          */}
+          {gruppen.map((gruppe, i) => (
+            <div key={gruppe.titel}>
+              {/*
+                Die Linie als eigenes Element, nicht als Rand der
+                Gruppe.
+
+                Mit `border-t` an der Gruppe kam der Einzug der Linie
+                (`mx-4`) auch auf ihre Einträge — die zweite Gruppe
+                stand vier Pixel weiter rechts als die erste. In der
+                Vorlage ist die Linie eingerückt und die Einträge
+                stehen auf einer Kante.
+              */}
+              {i > 0 && <div aria-hidden className="mx-5 my-2 border-t border-line-3" />}
+              <h2 className="sr-only">{gruppe.titel}</h2>
+              <ul className="grid gap-0.5">
+                {gruppe.eintraege.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        role="menuitem"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-3.5 rounded-(--radius-sm) px-5 py-3 text-base font-medium text-ink transition-colors hover:bg-sunken"
+                      >
+                        <Icon className="size-[19px] shrink-0 text-ink" strokeWidth={2} />
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ))}
+
+          <>
+            <div aria-hidden className="mx-5 my-2 border-t border-line-3" />
+            {onLogout}
+          </>
+
+          {/*
+            Der Block am Fuss des Menüs — in der Vorlage steht dort
+            eine Bitte um Mithilfe an Studien.
+
+            Bei uns steht dort etwas, das es wirklich gibt: die
+            nächtliche Suche. Ein erfundenes Studienprogramm wäre
+            genau die Art Fläche, die man einmal liest und danach nie
+            wieder — weil beim ersten Klick nichts dahinter war.
+          */}
+          <div aria-hidden className="mx-5 my-2 border-t border-line-3" />
+
+          <div className="px-5 pb-1 pt-1.5">
+            <p className="text-sm font-semibold text-ink">Auch wenn du nicht da bist</p>
+            <p className="mt-1.5 text-xs leading-relaxed text-ink-3">
+              Ein Suchauftrag lässt {assistent} über Nacht weitersuchen und meldet nur, was
+              wirklich passt.
+            </p>
+            <Link
+              href="/app/jobs#nachts"
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-block text-xs text-accent-text underline underline-offset-[3px]"
+            >
+              Suchauftrag einrichten
+            </Link>
           </div>
-
-          <ul className="grid gap-0.5 py-1.5">
-            {items.map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    role="menuitem"
-                    onClick={() => setOpen(false)}
-                    className="flex items-center gap-2.5 rounded-(--radius-sm) px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-sunken hover:text-ink"
-                  >
-                    <Icon className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* Das Abmelden-Formular kommt fertig gestaltet vom Server:
-              es enthält eine Server Action, die eine Client-Komponente
-              nicht auseinandernehmen und neu zusammensetzen darf. */}
-          <div className="border-t border-line pt-1.5">{onLogout}</div>
         </div>
       )}
     </div>

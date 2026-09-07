@@ -21,7 +21,7 @@ import { useNina } from "./NinaProvider";
 /**
  * Aus dem Gespräch wird eine Regel — sichtbar, bestätigt, widerrufbar.
  *
- * Die Lücke, die das schliesst: jemand sagte Nina „mindestens 45.000,
+ * Die Lücke, die das schliesst: jemand sagte Monday „mindestens 45.000,
  * darunter lohnt es nicht", und die Jobseite schrieb weiterhin „Du hast
  * keine Untergrenze festgelegt". Der Satz lag im Gesprächsverlauf, die
  * Rangfolge las `user_constraints`, und zwischen beidem war nichts.
@@ -30,7 +30,7 @@ import { useNina } from "./NinaProvider";
  *
  *   **Vorschlag, nicht Tatsache.** Eine harte Bedingung blendet Stellen
  *   aus. Was ausgeblendet ist, fällt niemandem auf — deshalb darf kein
- *   Muster das allein entscheiden. Hier steht, was Nina verstanden hat,
+ *   Muster das allein entscheiden. Hier steht, was Monday verstanden hat,
  *   mit dem Satz daneben, aus dem sie es hat.
  *
  *   **Der Beleg steht dabei.** Ohne ihn ist die Karte eine Behauptung
@@ -59,7 +59,7 @@ export function Bedingungen() {
    *
    * `sessionStorage` und nicht die Datenbank: das ist eine
    * Aufmerksamkeitsfrage dieser Sitzung, keine Aussage über die
-   * Person. Beim nächsten Besuch darf Nina ruhig noch einmal fragen —
+   * Person. Beim nächsten Besuch darf Monday ruhig noch einmal fragen —
    * inzwischen kann sich etwas geändert haben.
    */
   const [erledigt, setErledigt] = useState<string[]>(() => {

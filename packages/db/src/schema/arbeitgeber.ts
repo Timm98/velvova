@@ -92,7 +92,7 @@ export const jobPostings = pgTable(
      * Muss und Kann getrennt — das ist der Kern.
      *
      * In einer Fliesstextanzeige stehen beide in derselben Aufzählung,
-     * und niemand hält sie auseinander. Getrennt gespeichert führt Nina
+     * und niemand hält sie auseinander. Getrennt gespeichert führt Monday
      * eine fehlende Kann-Fähigkeit als „entwickelbar" statt als
      * Ausschluss — und genau daran scheitern sonst Menschen, die die
      * Arbeit könnten.
@@ -109,7 +109,7 @@ export const jobPostings = pgTable(
 
     /*
      * Die Antwortzeit ist eine Zusage, keine Beschreibung. Sie steht in
-     * der Anzeige, im Dashboard als Frist, und Nina erinnert daran,
+     * der Anzeige, im Dashboard als Frist, und Monday erinnert daran,
      * bevor sie überschritten wird.
      */
     antwortzeit: text("antwortzeit"),
@@ -358,7 +358,7 @@ export const unternehmensprofile = pgTable("unternehmensprofile", {
    *
    * Die Werte liegen als JSON: Zu jedem Wert gehört ein Beispiel, und
    * ein Wert ohne Beispiel ist eine Behauptung. Als Paar gespeichert
-   * lässt sich genau das prüfen — und Nina weist darauf hin.
+   * lässt sich genau das prüfen — und Monday weist darauf hin.
    */
   werte: jsonb("werte").$type<{ wert: string; beispiel: string }[]>().notNull().default([]),
   feedbackRhythmus: text("feedback_rhythmus"),
@@ -503,7 +503,7 @@ export const stellenMatches = pgTable(
  * Die Automatisierungsstufe — je Stelle oder als Vorgabe der
  * Organisation (`postingId is null`).
  *
- * Stufe 1 ist die Vorgabe: Nina rechnet, ein Mensch entscheidet. Eine
+ * Stufe 1 ist die Vorgabe: Monday rechnet, ein Mensch entscheidet. Eine
  * höhere Vorgabe hiesse, dass Nachrichten an Menschen herausgehen,
  * weil niemand die Einstellung gelesen hat.
  */
@@ -547,7 +547,7 @@ export const matchProtokoll = pgTable(
 );
 
 /* ══════════════════════════════════════════════════════════════
-   Nina-Onboarding
+   Monday-Onboarding
    ══════════════════════════════════════════════════════════════ */
 
 /** Woher eine Angabe kommt. */
@@ -569,7 +569,7 @@ export type Angabenstatus =
   | "nicht_angegeben";
 
 /**
- * Ein Einrichtungsgespräch mit Nina.
+ * Ein Einrichtungsgespräch mit Monday.
  *
  * Es gehört der Organisation, nicht der Person: Wer es angefangen hat,
  * steht in `begonnenVon`, fortsetzen darf es jedes Teammitglied. Ein

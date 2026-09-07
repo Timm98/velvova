@@ -141,7 +141,7 @@ describe("Die Kündigungsfrage ist die ehrlichste", () => {
 
 describe("Die Fragereihenfolge folgt dem, was fehlt", () => {
   /*
-   * Nina konnte den Career Twin bisher nur zufällig füllen: Sie nahm
+   * Monday konnte den Career Twin bisher nur zufällig füllen: Sie nahm
    * die erste offene Frage eines Themas, unabhängig davon, ob deren
    * Antwort überhaupt eine Achse trifft — und ob die Achse schon
    * beantwortet war.

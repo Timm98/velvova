@@ -17,7 +17,7 @@ import { auftragBestaetigen, suchauftragAusText } from "@/lib/suchauftrag/aktion
  * 32.000, keine Nachtschicht" ist ein Satz, den man in fünf Sekunden
  * sagt und in einem Formular in zwei Minuten zusammenklickt.
  *
- * Dasselbe Feld bedient Nina im Gespräch und per Sprache — es ruft die
+ * Dasselbe Feld bedient Monday im Gespräch und per Sprache — es ruft die
  * gleiche Aktion.
  *
  * ══════════════════════════════════════════════════════════════
@@ -59,7 +59,7 @@ export function AuftragAusText({ modellBereit }: { modellBereit: boolean }) {
     return (
       <Card>
         <p className="text-sm leading-relaxed text-ink-2">
-          Läuft. Nina prüft von jetzt an neue Stellen dagegen und legt dir hin, was passt.
+          Läuft. Monday prüft von jetzt an neue Stellen dagegen und legt dir hin, was passt.
         </p>
       </Card>
     );
@@ -138,7 +138,7 @@ export function AuftragAusText({ modellBereit }: { modellBereit: boolean }) {
         <div className="grid gap-1.5">
           <h3 className="flex items-center gap-2 text-base font-semibold text-ink">
             <MessageSquarePlus aria-hidden className="size-4 text-ink-3" />
-            Sag Nina, wonach sie suchen soll
+            Sag Monday, wonach sie suchen soll
           </h3>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             In einem Satz, so wie du es sagen würdest. Sie zeigt dir danach, was sie verstanden
@@ -150,7 +150,7 @@ export function AuftragAusText({ modellBereit }: { modellBereit: boolean }) {
             value={satz}
             onChange={(e) => setSatz(e.target.value)}
             placeholder="Lagerstellen in Karlsruhe, mindestens 32.000, keine Nachtschicht"
-            aria-label="Wonach soll Nina suchen?"
+            aria-label="Wonach soll Monday suchen?"
           />
           <Button
             variant="primary"

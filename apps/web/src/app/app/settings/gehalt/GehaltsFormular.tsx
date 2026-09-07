@@ -220,7 +220,7 @@ export function GehaltsFormular({
           </p>
           {vorschau?.abgedeckt ? (
             <>
-              <p className="font-display text-3xl font-semibold tracking-[-0.02em] tabular">
+              <p className="font-display text-3xl font-normal tracking-[-0.02em] tabular">
                 {alsGeld(vorschau.nettoMonat)}
               </p>
               <p className="text-sm text-ink-2">

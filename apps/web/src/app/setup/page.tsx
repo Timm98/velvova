@@ -19,13 +19,13 @@ import { redirect } from "next/navigation";
  *
  * Was daraus geworden ist:
  *
- *   • Standort und Arbeitsmodell fragt Nina im Gespräch, wo sie
+ *   • Standort und Arbeitsmodell fragt Monday im Gespräch, wo sie
  *     hingehören.
  *   • Lebenslauf, Dokumente, Website-Analyse, Aufzeichnung werden im
  *     Moment ihrer Nutzung gefragt — mit Kontext.
  *   • Sprache und Wohnort stehen weiterhin auf der neuen Seite, jetzt
  *     aber mit allen Ländern statt dreien.
- *   • Was Nina im Hintergrund tun darf, ist von einer Hakenliste zu
+ *   • Was Monday im Hintergrund tun darf, ist von einer Hakenliste zu
  *     drei erklärten Stufen geworden.
  *
  * ── Warum eine Weiterleitung und keine gelöschte Datei ────────
@@ -36,5 +36,5 @@ import { redirect } from "next/navigation";
  * denselben Gründen hier liegen.
  */
 export default function SetupWeiterleitung() {
-  redirect("/nina-einrichten");
+  redirect("/monday-einrichten");
 }

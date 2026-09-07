@@ -11,9 +11,9 @@ import { useNinaActions } from "@/components/nina/NinaProvider";
  * Bedingung: der Artikel gehört dem Herausgeber, der Feed erlaubt die
  * Nennung, nicht die Übernahme.
  *
- * „Von Nina erklären lassen" gibt ihr genau das mit, was auf dem
+ * „Von Monday erklären lassen" gibt ihr genau das mit, was auf dem
  * Bildschirm steht — Titel, Quelle, Datum, Anriss — und die Frage, was
- * das für diese Person bedeutet. Nina holt den Artikel NICHT nach; sie
+ * das für diese Person bedeutet. Monday holt den Artikel NICHT nach; sie
  * kann ihn nicht lesen, und sie soll auch nicht so tun. Was sie
  * beitragen kann, ist die Einordnung ins Profil, und dazu braucht sie
  * den Volltext nicht.
@@ -43,7 +43,7 @@ export function ArbeitsweltRadar({
   if (beiträge.length === 0) {
     return (
       <section aria-labelledby="radar" className="grid gap-3">
-        <h2 id="radar" className="font-display text-xl font-semibold tracking-[-0.02em]">
+        <h2 id="radar" className="font-display text-xl font-normal tracking-[-0.02em]">
           Arbeitswelt-Radar
         </h2>
         {/*
@@ -65,7 +65,7 @@ export function ArbeitsweltRadar({
   return (
     <section aria-labelledby="radar" className="grid gap-4">
       <div className="grid gap-1.5">
-        <h2 id="radar" className="font-display text-xl font-semibold tracking-[-0.02em]">
+        <h2 id="radar" className="font-display text-xl font-normal tracking-[-0.02em]">
           Arbeitswelt-Radar
         </h2>
         <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">

@@ -42,7 +42,7 @@ export default async function IntegrationsPage() {
       detail:
         integrations.ai === "connected"
           ? `${integrations.aiProvider} mit dem Modell ${integrations.aiModel}. Übermittelt wird nur der Kontext, den der jeweilige Schritt braucht.`
-          : "Es ist kein Zugangsschlüssel hinterlegt. Nina antwortet dann nicht — es wird bewusst keine Beispielantwort erzeugt, weil sie von einer echten nicht zu unterscheiden wäre.",
+          : "Es ist kein Zugangsschlüssel hinterlegt. Monday antwortet dann nicht — es wird bewusst keine Beispielantwort erzeugt, weil sie von einer echten nicht zu unterscheiden wäre.",
       env: "AI_PROVIDER, OPENAI_API_KEY, OPENAI_PRIMARY_MODEL",
     },
     {

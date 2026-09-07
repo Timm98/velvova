@@ -491,7 +491,7 @@ async function letzteNachrichten(
 
     return zeilen
       .reverse()
-      .map((z) => `${z.role === "user" ? "Person" : "Nina"}: ${z.content.slice(0, 200)}`);
+      .map((z) => `${z.role === "user" ? "Person" : "Monday"}: ${z.content.slice(0, 200)}`);
   }).catch(() => []);
 }
 
@@ -549,7 +549,7 @@ async function frageAblegen(
  * Eine gestellte Frage als beantwortet vermerken.
  *
  * `zugestimmt`, nicht `ausgefuehrt`: Die Person hat geantwortet, und
- * die Antwort hat den Filter geändert. Was Nina daraus macht, steht
+ * die Antwort hat den Filter geändert. Was Monday daraus macht, steht
  * in der Adresse und ist rücknehmbar wie jeder andere Filter.
  */
 async function frageSchliessen(

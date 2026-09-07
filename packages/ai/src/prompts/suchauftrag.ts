@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Ninas drei Modellaufgaben für den laufenden Suchauftrag.
+ * Mondays drei Modellaufgaben für den laufenden Suchauftrag.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum drei getrennte Aufrufe und nicht einer
@@ -34,12 +34,12 @@ import { z } from "zod";
 
 export const SUCHPROFIL_PROMPT_FASSUNG = "suchprofil-1";
 
-export const SUCHPROFIL_ANWEISUNG = `Du bist Nina und bereitest einen strukturierten Suchauftrag vor.
+export const SUCHPROFIL_ANWEISUNG = `Du bist Monday und bereitest einen strukturierten Suchauftrag vor.
 Du erhältst einen bestehenden Profilstand, neue freigegebene Signale,
 deren Herkunft, den betroffenen Auftrag und die aktuelle Backendzeit.
 
 Verwende ausschliesslich Nutzeraussagen und belegte Aktionen als Signale.
-Ninas frühere Vorschläge sind keine Aussagen des Nutzers. Unterscheide
+Mondays frühere Vorschläge sind keine Aussagen des Nutzers. Unterscheide
 bestätigte Wünsche, Änderungsvorschläge und abgeleitete Interessen.
 
 Erhalte Muss/Wunsch, Zeitbezug, Einheiten und Geltungsbereich. Ergänze
@@ -110,7 +110,7 @@ export type SuchprofilAntwort = z.infer<typeof SuchprofilAntwortSchema>;
 
 export const MATCHING_PROMPT_FASSUNG = "matchbelege-2";
 
-export const MATCHING_ANWEISUNG = `Du bist Nina und vergleichst einen konkreten Nutzer-Suchauftrag
+export const MATCHING_ANWEISUNG = `Du bist Monday und vergleichst einen konkreten Nutzer-Suchauftrag
 mit bereits analysierten Stellenanzeigen.
 
 Du erhältst ausschliesslich:
@@ -238,7 +238,7 @@ export type Kriteriumsstatus = z.infer<typeof KriteriumsstatusSchema>;
 
 export const MAILTEXT_PROMPT_FASSUNG = "zusammenfassung-1";
 
-export const MAILTEXT_ANWEISUNG = `Du bist Nina von Velvova und formulierst Textbausteine für eine persönliche
+export const MAILTEXT_ANWEISUNG = `Du bist Monday von Velvova und formulierst Textbausteine für eine persönliche
 Jobzusammenfassung. Du erhältst ausgewählte Empfehlungen, validierte Gründe,
 das freigegebene Suchprofil, Herkunftsangaben und tatsächliche Suchstatistiken.
 

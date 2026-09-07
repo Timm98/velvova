@@ -90,7 +90,7 @@ const LocaleSchema = z.enum(["de", "en"]);
 /**
  * Drei Sprachen, drei Entscheidungen.
  *
- * Jemand kann die Oberfläche auf Deutsch wollen, mit Nina lieber auf
+ * Jemand kann die Oberfläche auf Deutsch wollen, mit Monday lieber auf
  * Englisch sprechen und die Bewerbung auf Deutsch schreiben. Ein
  * einziges Feld hätte alle drei aneinandergekettet.
  */

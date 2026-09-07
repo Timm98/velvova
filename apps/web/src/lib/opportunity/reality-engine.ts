@@ -80,7 +80,7 @@ const ENGPASS_TEXTE: Record<string, { erklaerung: string; handlung: string }> = 
   },
   belegt: {
     erklaerung: "Für viele Anforderungen fehlt in deinem Profil noch ein Beleg.",
-    handlung: "Im Gespräch mit Nina konkrete Situationen ergänzen.",
+    handlung: "Im Gespräch mit Monday konkrete Situationen ergänzen.",
   },
 };
 

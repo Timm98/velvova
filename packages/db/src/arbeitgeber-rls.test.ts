@@ -275,10 +275,10 @@ describe("Die Bewerberin behält ihre Bewerbung", () => {
 });
 
 describe("Das Unternehmen sieht nichts Privates", () => {
-  it("sieht den Nina-Chat der Bewerberin nicht", async () => {
+  it("sieht den Monday-Chat der Bewerberin nicht", async () => {
     /*
      * Die Zusage aus dem Auftrag, wörtlich: „Das Unternehmen darf
-     * niemals den privaten Nina-Chat eines Kandidaten sehen."
+     * niemals den privaten Monday-Chat eines Kandidaten sehen."
      *
      * Sie hängt nicht daran, dass niemand eine solche Abfrage schreibt,
      * sondern daran, dass sie leer zurückkommt, wenn jemand es tut.

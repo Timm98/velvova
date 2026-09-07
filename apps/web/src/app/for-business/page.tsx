@@ -18,7 +18,7 @@ import { laenderbestand } from "@/lib/jobs/laenderbestand";
 import { lageFuer } from "@/lib/landeslage";
 
 export const metadata: Metadata = {
-  title: "Stelle veröffentlichen. Nina findet passende Menschen.",
+  title: "Stelle veröffentlichen. Monday findet passende Menschen.",
   description:
     "Unternehmen veröffentlichen strukturierte Stellen und finden passende Kandidatinnen und " +
     "Kandidaten — ohne private Karrieregespräche offenzulegen.",
@@ -143,7 +143,7 @@ export default async function FuerUnternehmenSeite() {
               >
                 Für Unternehmen
               </p>
-              <h1 className="font-display text-[clamp(2.2rem,4.8vw,3.8rem)] font-semibold leading-[1.02] tracking-[-0.035em]">
+              <h1 className="font-display text-[clamp(2.2rem,4.8vw,3.8rem)] font-normal leading-[1.02] tracking-[-0.02em]">
                 Du suchst keine Bewerbungen.
                 <br />
                 Du suchst{" "}
@@ -196,8 +196,8 @@ export default async function FuerUnternehmenSeite() {
               ein Unternehmen entscheidet, ob es diesem Produkt seine
               Personalauswahl anvertraut.
 
-              Nina selbst ist die ehrlichere Antwort auf dieselbe
-              Frage: Wer hier arbeitet, ist dieselbe Nina wie auf der
+              Monday selbst ist die ehrlichere Antwort auf dieselbe
+              Frage: Wer hier arbeitet, ist dieselbe Monday wie auf der
               Bewerberseite — und genau das ist die Zusage, um die es
               auf dieser Seite geht.
             */}
@@ -234,7 +234,7 @@ export default async function FuerUnternehmenSeite() {
               >
                 Vermittlung
               </p>
-              <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-[1.06] tracking-[-0.03em]">
+              <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-normal leading-[1.06] tracking-[-0.02em]">
                 {brand.assistantName} führt zusammen, was zusammenpasst — auch nachts.
               </h2>
               <p className="text-[17px] leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -297,7 +297,7 @@ export default async function FuerUnternehmenSeite() {
           {/* ── Was über Nacht passiert ───────────────────── */}
           <div className="mx-auto grid w-full max-w-[1240px] gap-10 px-5 pb-20 md:grid-cols-2 md:gap-16 md:px-8 md:pb-24">
             <div className="grid content-start gap-5">
-              <h3 className="font-display text-[clamp(1.4rem,2.4vw,2rem)] font-semibold leading-[1.1] tracking-[-0.03em]">
+              <h3 className="font-display text-[clamp(1.4rem,2.4vw,2rem)] font-normal leading-[1.1] tracking-[-0.02em]">
                 {brand.assistantName} sucht auch dann, wenn ihr nicht sucht.
               </h3>
               <p className="text-[17px] leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -569,7 +569,7 @@ export default async function FuerUnternehmenSeite() {
               >
                 Vertrauen
               </p>
-              <h2 className="font-display text-[clamp(1.9rem,3.4vw,3rem)] font-semibold leading-[1.04] tracking-[-0.03em] text-white">
+              <h2 className="font-display text-[clamp(1.9rem,3.4vw,3rem)] font-normal leading-[1.04] tracking-[-0.02em] text-white">
                 Private Gespräche bleiben privat.
               </h2>
               <p
@@ -654,7 +654,7 @@ export default async function FuerUnternehmenSeite() {
         {/* ── Abschluss ───────────────────────────────────── */}
         <section>
           <div className="mx-auto grid w-full max-w-[1240px] justify-items-center gap-8 px-5 py-20 text-center md:px-8 md:py-28">
-            <h2 className="font-display text-[clamp(2.2rem,4.6vw,3.6rem)] font-semibold leading-[1.02] tracking-[-0.03em]">
+            <h2 className="font-display text-[clamp(2.2rem,4.6vw,3.6rem)] font-normal leading-[1.02] tracking-[-0.02em]">
               Erste Stelle in ein paar Minuten.
             </h2>
             <p
@@ -733,7 +733,7 @@ function UnternehmensAbschnitt({
           >
             {augenbraue}
           </p>
-          <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-[1.06] tracking-[-0.03em]">
+          <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-normal leading-[1.06] tracking-[-0.02em]">
             {titel}
           </h2>
           {einleitung && (
@@ -752,7 +752,7 @@ function UnternehmensAbschnitt({
  * Eine beschriftete Liste.
  *
  * Bewusst ohne Häkchen: Ein Häkchen vor jeder Zeile macht aus einer
- * Aufzählung eine Leistungsliste, und aus Punkten, die Nina *prüft*,
+ * Aufzählung eine Leistungsliste, und aus Punkten, die Monday *prüft*,
  * werden dann Punkte, die sie *garantiert*. Ein Strich sagt nur, dass
  * es mehrere sind.
  */

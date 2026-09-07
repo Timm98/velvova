@@ -67,7 +67,7 @@ export default async function OpportunitiesPage() {
         <p className="max-w-[var(--measure)] rounded-(--radius-lg) bg-lavender px-5 py-4 text-base leading-relaxed text-ink-2">
           Die letzte Stufe — das Prüfen gegen deine harten Bedingungen — braucht dein
           bestätigtes Profil. Alles davor stimmt schon jetzt.{" "}
-          <Link href="/app/nina" className="text-accent-text underline underline-offset-[3px]">
+          <Link href="/app/monday" className="text-accent-text underline underline-offset-[3px]">
             Profil schärfen
           </Link>
         </p>

@@ -137,7 +137,7 @@ export function entscheide(alt: Fakt | null, neu: Fakt): Entscheidung {
 }
 
 /**
- * Die Frage, die Nina stellt.
+ * Die Frage, die Monday stellt.
  *
  * Sie nennt beide Werte. „Hat sich etwas geändert?" ohne die Zahlen
  * zwingt den Menschen, sich zu erinnern, was er wann gesagt hat —

@@ -19,7 +19,7 @@ export * from "./tools.ts";
 // Installationen ohne Schlüssel, die es nie brauchen.
 export { OpenAiConfigurationError } from "./providers/errors.ts";
 
-/* Ninas Gesprächsmaschine: Stufen, Jobreife, strukturierte Ausgabe. */
+/* Mondays Gesprächsmaschine: Stufen, Jobreife, strukturierte Ausgabe. */
 export * from "./nina/index.ts";
 export * from "./dimensionslesen.ts";
 export * from "./modelle.ts";

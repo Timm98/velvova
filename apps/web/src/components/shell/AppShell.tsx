@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { brand } from "@paycheck/config";
 import { usePathname } from "next/navigation";
 import { CreditCard, Globe, LifeBuoy, Palette, ShieldCheck, User } from "lucide-react";
 import { CommandPalette } from "./CommandPalette.tsx";
 import { AccountMenu } from "./AccountMenu.tsx";
-import { kontoEintraege } from "./kontoeintraege.ts";
+import { kontoGruppen } from "./kontoeintraege.ts";
 import { BottomNav, TopNav } from "./TopNav.tsx";
 import { AppHinweisleiste } from "./AppHinweisleiste.tsx";
 import { VelvovaFooter } from "./VelvovaFooter.tsx";
@@ -14,10 +15,10 @@ import type { Landzeile } from "@/lib/jobs/laenderbestand";
 /**
  * Seiten, die eine Arbeitsfläche sind und keinen Fussbereich wollen.
  *
- * Wer gerade eine Bewerbung schreibt oder mit Nina spricht, scrollt
+ * Wer gerade eine Bewerbung schreibt oder mit Monday spricht, scrollt
  * nicht nach unten, um Impressum und Berufsfelder zu finden.
  */
-const ARBEITSFLAECHEN = ["/app/nina", "/app/applications/"];
+const ARBEITSFLAECHEN = ["/app/monday", "/app/applications/"];
 import { cn } from "@/lib/cn";
 
 /**
@@ -34,7 +35,7 @@ import { cn } from "@/lib/cn";
  * 2. **Fünf Bereiche. Nicht zehn.** Alles Weitere ist ein Unterbereich
  *    oder gehört ins Kontomenü.
  *
- * 3. **Nina ist eine Handlung, kein Ort.** Sie steht als Pille rechts
+ * 3. **Monday ist eine Handlung, kein Ort.** Sie steht als Pille rechts
  *    im Header und öffnet den Drawer, ohne die Seite zu verlassen.
  *
  * 4. **Im Header stehen KEINE Schalter für Sprache, Darstellung oder
@@ -85,7 +86,7 @@ export function AppShell({
    * Wohin „Hier entdecken" in der Leiste oben führt — oder `null`.
    *
    * `null` heisst: Es läuft bereits eine nächtliche Suche. Dann steht
-   * dort die App-Ankündigung, und im Gespräch mit Nina gar nichts.
+   * dort die App-Ankündigung, und im Gespräch mit Monday gar nichts.
    */
   nachtsZiel?: string | null;
   assistantName: string;
@@ -109,7 +110,7 @@ export function AppShell({
   stellenGenau?: number;
   proSekunde?: number;
   /* Ob schon ein Gespräch läuft — entscheidet über die Beschriftung
-     im Nina-Streifen. */
+     im Monday-Streifen. */
   gespraechBegonnen?: boolean;
   /* Ob ein Profilbild hinterlegt ist — für das Kontomenü. */
   bildKennung?: string | null;
@@ -131,7 +132,7 @@ export function AppShell({
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const accountItems = kontoEintraege(labels);
+  const accountGruppen = kontoGruppen(labels, brand.assistantName);
 
   /*
    * Seiten, die exakt das Fenster füllen und selbst scrollen.
@@ -141,7 +142,7 @@ export function AppShell({
    * sind. Eine Seite, die sich das selbst ausrechnet, rechnet beim
    * nächsten Headerumbau falsch.
    */
-  const fülltFenster = pathname === "/app/nina";
+  const fülltFenster = pathname === "/app/monday";
 
   /*
    * Wieder dieselbe Breite wie überall.
@@ -168,16 +169,16 @@ export function AppShell({
         * Die App-Leiste über der Navigation — ausser dort, wo das
         * Fenster ganz gefüllt wird.
         *
-        * Im Gespräch mit Nina zählt jede Zeile Höhe. Ein Hinweis auf
+        * Im Gespräch mit Monday zählt jede Zeile Höhe. Ein Hinweis auf
         * eine App, die es noch nicht gibt, ist es nicht wert, dort
         * dreissig Pixel zu kosten.
         */}
       {/*
         ══════════════════════════════════════════════════════════
-        Auch im Gespräch mit Nina
+        Auch im Gespräch mit Monday
         ══════════════════════════════════════════════════════════
 
-        Hier stand `!fülltFenster` — auf `/app/nina` blieb die Leiste
+        Hier stand `!fülltFenster` — auf `/app/monday` blieb die Leiste
         weg, mit dem Argument, ein Hinweis auf eine App, die es noch
         nicht gibt, sei dreissig Pixel Höhe im Gespräch nicht wert.
 
@@ -204,7 +205,8 @@ export function AppShell({
           <AccountMenu
             userName={userName}
             userEmail={userEmail}
-            items={accountItems}
+            gruppen={accountGruppen}
+            assistent={brand.assistantName}
             onLogout={onLogout}
             bildKennung={bildKennung}
           />
@@ -212,14 +214,14 @@ export function AppShell({
       />
 
       {/*
-       * Hier lag der Nina-Streifen mit „Willkommen zurück".
+       * Hier lag der Monday-Streifen mit „Willkommen zurück".
        *
        * Er stand über jeder Seite und begrüsste denselben Menschen ein
        * zweites Mal — die Startseite tut das bereits, mit Namen. Zwei
        * Begrüssungen sind keine Freundlichkeit, sondern eine Zeile, die
        * man wegliest.
        *
-       * Nina steht jetzt auf der Startseite in voller Grösse, und das
+       * Monday steht jetzt auf der Startseite in voller Grösse, und das
        * Dock liegt weiterhin auf jeder Seite.
        */}
 

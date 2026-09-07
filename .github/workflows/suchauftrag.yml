@@ -1,7 +1,7 @@
 name: Suchauftrag
 
 # ─────────────────────────────────────────────────────────────
-# Der Zeitplan für „Nina sucht für dich weiter".
+# Der Zeitplan für „Monday sucht für dich weiter".
 #
 # Ruft `POST /api/intern/suchauftrag` auf der laufenden Anwendung auf.
 # Die Arbeit passiert dort — nur der Server hat die Datenbank und die

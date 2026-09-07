@@ -250,7 +250,7 @@ function Karte({
               ))}
             </ul>
           ) : (
-            <p className="text-2xs text-ink-3">Hier steht noch nichts. Erzähl Nina davon.</p>
+            <p className="text-2xs text-ink-3">Hier steht noch nichts. Erzähl Monday davon.</p>
           )}
 
           {stand.fehlendZwingend.length > 0 && (

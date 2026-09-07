@@ -109,7 +109,7 @@ describe("Beobachtetes wiegt schwerer als Behauptetes", () => {
 
 describe("Bestätigung entscheidet über das Gewicht", () => {
   /*
-   * Was Nina aus einem Nebensatz liest, ist ein Vorschlag — kein
+   * Was Monday aus einem Nebensatz liest, ist ein Vorschlag — kein
    * Befund. Es soll wirken, sonst bliebe das Profil leer; aber nicht
    * so stark wie eine Aussage, der jemand zugestimmt hat.
    */

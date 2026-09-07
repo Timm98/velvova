@@ -1,6 +1,6 @@
 -- Zwei weitere Gesprächsarten (V7 §24.3 und §16).
 --
--- `support`     — Hilfe und FAQ. Nina antwortet dort aus der
+-- `support`     — Hilfe und FAQ. Monday antwortet dort aus der
 --                 Produktdokumentation, nicht aus dem Karriereprofil.
 --                 Die eigene Art ist der Grund, warum sich diese
 --                 Trennung überhaupt durchsetzen lässt: eine

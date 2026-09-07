@@ -24,7 +24,7 @@ import { pruefspur, pruefspurAlsText, WIRKUNGSLOS } from "./pruefspur.ts";
  * Tests. Sondern ob sich das Ganze wie eine Assistentin anfühlt und
  * nicht wie ein Benachrichtigungssystem.
  *
- * Der Massstab ist nicht „Nina macht viel", sondern: Sie erledigt im
+ * Der Massstab ist nicht „Monday macht viel", sondern: Sie erledigt im
  * Hintergrund sinnvolle Arbeit, meldet sich selten, kann jede
  * Handlung erklären, und sie verändert nichts Wichtiges ohne die
  * Person.
@@ -137,7 +137,7 @@ const vormerkungen = () =>
   );
 
 describe("Die Reise", () => {
-  it("Schritt 1 — ein kurzer Blick auf Job A: Nina tut nichts", async () => {
+  it("Schritt 1 — ein kurzer Blick auf Job A: Monday tut nichts", async () => {
     await klick("job_viewed", jobA, 0);
     await klick("job_view_duration", jobA, 1, { sekunden: 12 });
 
@@ -319,7 +319,7 @@ describe("Die Reise", () => {
   });
 });
 
-describe("Wann Nina schweigt", () => {
+describe("Wann Monday schweigt", () => {
   async function vergleichHerstellen() {
     for (const [job, ab] of [
       [jobA, 0],
@@ -348,7 +348,7 @@ describe("Wann Nina schweigt", () => {
     expect(spaeter!.text).toMatch(/gegenübergestellt/);
   });
 
-  it("H — Nina spricht gerade: dieselbe Regel", async () => {
+  it("H — Monday spricht gerade: dieselbe Regel", async () => {
     await vergleichHerstellen();
     expect(await naechsteNachricht(db, person, nach(91), { beschaeftigt: true })).toBeNull();
     expect(await naechsteNachricht(db, person, nach(92), { beschaeftigt: true })).toBeNull();
@@ -520,7 +520,7 @@ describe("Prüfspur", () => {
   it("§13 — die sechs untätigen Handlungen entstehen gar nicht erst", async () => {
     /*
      * Sie stehen in der Regeltabelle und tun noch nichts. Ein Eintrag
-     * von ihnen wäre eine Zeile in „Von Nina vorbereitet", hinter der
+     * von ihnen wäre eine Zeile in „Von Monday vorbereitet", hinter der
      * nichts steht.
      */
     for (const [job, ab] of [

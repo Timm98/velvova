@@ -14,7 +14,7 @@ import { sql } from "drizzle-orm";
 import { users } from "./identity.ts";
 
 /**
- * Was Nina über einen Menschen zusammengetragen hat.
+ * Was Monday über einen Menschen zusammengetragen hat.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das eine Ableitung ist und keine Quelle

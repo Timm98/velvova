@@ -27,7 +27,7 @@ export default async function ApplicationPage({ params }: { params: Promise<{ id
 
   return (
     <Stack gap={6}>
-      {/* Nina weiß ab hier, worüber gesprochen wird. */}
+      {/* Monday weiß ab hier, worüber gesprochen wird. */}
       <NinaScope applicationId={id} />
       <div>
         <p style={{ fontSize: "var(--text-sm)", marginBottom: "var(--space-2)" }}>

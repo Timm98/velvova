@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 /**
  * „Vorlesen".
  *
- * Klein, unaufdringlich, an Ninas Antwort. Er erscheint nur bei
+ * Klein, unaufdringlich, an Mondays Antwort. Er erscheint nur bei
  * gespeicherten Nachrichten: eine Antwort, die gerade erst einläuft,
  * hat noch keine Kennung, und ohne Kennung gäbe es nichts vorzulesen.
  *

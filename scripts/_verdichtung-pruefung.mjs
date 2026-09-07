@@ -29,7 +29,7 @@ const frage = async (text) =>
   await s.evaluate(async (t) => {
     const r = await fetch("/api/nina/chat", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ message: t, route: "/app/nina", kind: "career_interview" }),
+      body: JSON.stringify({ message: t, route: "/app/monday", kind: "career_interview" }),
     });
     const leser = r.body?.getReader();
     while (leser) { const { done } = await leser.read(); if (done) break; }

@@ -361,9 +361,9 @@ export const STUFENNAME: Record<1 | 2 | 3, string> = {
 };
 
 export const STUFENERKLAERUNG: Record<1 | 2 | 3, string> = {
-  1: "Nina rechnet und legt Vorschläge an. Jede Anfrage an eine Person löst ein Mensch aus.",
-  2: "Nina fragt die Profilfreigabe selbst an, sobald ein Vorschlag die Bedingungen erfüllt. Ob ihr danach Interesse sendet, entscheidet ihr.",
-  3: "Nina öffnet den Kontakt selbst — aber nur, wenn beide Seiten diese Kontaktart vorher erlaubt haben und alle Bedingungen erfüllt sind.",
+  1: "Monday rechnet und legt Vorschläge an. Jede Anfrage an eine Person löst ein Mensch aus.",
+  2: "Monday fragt die Profilfreigabe selbst an, sobald ein Vorschlag die Bedingungen erfüllt. Ob ihr danach Interesse sendet, entscheidet ihr.",
+  3: "Monday öffnet den Kontakt selbst — aber nur, wenn beide Seiten diese Kontaktart vorher erlaubt haben und alle Bedingungen erfüllt sind.",
 };
 
 export async function regelLaden(

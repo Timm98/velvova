@@ -127,7 +127,7 @@ export const applicationHandoffs = pgTable("application_handoffs", {
 
 /**
  * Drei Ebenen, im Datenmodell getrennt: was die Quelle sagt, was wir
- * normalisiert haben, was Nina daraus schliesst. Vermischt liest sich
+ * normalisiert haben, was Monday daraus schliesst. Vermischt liest sich
  * eine Vermutung wie eine Zusage des Arbeitgebers.
  */
 export const jobBriefs = pgTable("job_briefs", {

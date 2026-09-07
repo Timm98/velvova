@@ -21,7 +21,7 @@ import { NinaAnimation } from "./useNinaAnimation";
 import type { NinaVisualState } from "./NinaProvider";
 
 /**
- * Nina in drei Dimensionen — mit three.js allein.
+ * Monday in drei Dimensionen — mit three.js allein.
  *
  * Vorher liefen hier `@react-three/fiber` und `@react-three/drei`. Für
  * eine Szene aus genau einem Modell war das der falsche Zuschnitt:
@@ -66,7 +66,7 @@ const MODELL = "/models/nina.glb";
 /*
  * Ein Zwischenspeicher über alle Verbraucher.
  *
- * Die Datei ist 12,4 MB. Gesprächsseite und Drawer zeigen Nina
+ * Die Datei ist 12,4 MB. Gesprächsseite und Drawer zeigen Monday
  * gleichzeitig — ohne diese Zeile lüde jede Stelle sie erneut. Das
  * Versprechen ist die Zusage, nicht das Ergebnis: wer zuerst fragt,
  * löst den Ladevorgang aus, alle weiteren hängen sich an.
@@ -140,7 +140,7 @@ export function NinaScene({
        *
        * Alle elf Materialien sind emissiv und tragen ihre eigene
        * Textur; sie leuchten aus sich heraus. Mit Umgebungslicht 1.4
-       * war Nina ein weißer Fleck: das Szenenlicht hat die
+       * war Monday ein weißer Fleck: das Szenenlicht hat die
        * Eigenleuchtkraft überstrahlt. Ein Hauch genügt für die wenigen
        * nicht-emissiven Kanten.
        */
@@ -194,7 +194,7 @@ export function NinaScene({
       aufheller.position.set(2.5, -2, -1.5);
       szene.add(aufheller);
 
-      // Jede Ansicht bekommt ihre eigene Kopie: zwei Nina-Bilder
+      // Jede Ansicht bekommt ihre eigene Kopie: zwei Monday-Bilder
       // gleichzeitig teilten sich sonst dieselben Objekte.
       const modell = gltf.scene.clone(true);
 
@@ -203,7 +203,7 @@ export function NinaScene({
        *
        * ── Warum überhaupt ──────────────────────────────────
        *
-       * Die elf Materialien der Datei leuchten rein weiss. Damit Nina
+       * Die elf Materialien der Datei leuchten rein weiss. Damit Monday
        * auf heller Seite überhaupt zu sehen war, lag bisher ein
        * violetter Verlauf hinter ihr. Das war ein Hintergrund, der
        * blau aussieht — nicht ein blaues Modell.
@@ -320,7 +320,7 @@ export function NinaScene({
        * Automatisches Einpassen.
        *
        * Feste Werte hätten geraten, wie groß die Datei modelliert ist —
-       * und das war beim ersten Versuch daneben: Nina saß als winziger
+       * und das war beim ersten Versuch daneben: Monday saß als winziger
        * Punkt am Rand. Der Begrenzungsquader kommt aus der Datei, also
        * stimmt es für jedes Modell.
        */
@@ -376,7 +376,7 @@ export function NinaScene({
        *
        * Hier stand `min(devicePixelRatio, 1.5)` mit der Begründung, ein
        * Bild von 180 Pixeln brauche nicht mehr. Das stimmte, solange
-       * Nina 180 Pixel gross war. Auf der Startseite ist sie jetzt
+       * Monday 180 Pixel gross war. Auf der Startseite ist sie jetzt
        * dreimal so gross — und bei 1.5 sah man von den Ringen,
        * Partikeln und Spiralen im Inneren nur noch Matsch.
        *
@@ -402,7 +402,7 @@ export function NinaScene({
        *
        * ACES Filmic ist die richtige Wahl für Szenen mit echtem Licht:
        * es rollt Spitzlichter weich ab, statt sie hart abzuschneiden.
-       * Genau das ist hier falsch. Ninas elf Materialien tragen kein
+       * Genau das ist hier falsch. Mondays elf Materialien tragen kein
        * Licht, sie SIND Licht — `emissiveStrength` zwischen 2 und 25,
        * alle im Blend-Modus. ACES hat diese Werte zusammengedrückt, und
        * übrig blieb ein grauer Schleier: gemessen 80,80,80 bei 32%
@@ -443,7 +443,7 @@ export function NinaScene({
        *
        * Am Behälter abgegriffen, nicht am Fenster: Am Fenster
        * reagierte jeder Core auf der Seite auf jede Mausbewegung
-       * irgendwo — vier Ninas, die sich gemeinsam einer Bewegung
+       * irgendwo — vier Mondays, die sich gemeinsam einer Bewegung
        * zuwenden, die keine von ihnen betrifft.
        */
       let zeigerX = 0;
@@ -579,7 +579,7 @@ export function NinaScene({
        * Ein Browser erlaubt nur eine begrenzte Zahl gleichzeitiger
        * WebGL-Kontexte (oft 16). Wer beim Aufräumen keinen freigibt,
        * verliert nach einigen Seitenwechseln den ältesten — und dann
-       * verschwindet Nina auf einer Seite, auf der sie eben noch war.
+       * verschwindet Monday auf einer Seite, auf der sie eben noch war.
        */
       if (renderer) {
         renderer.dispose();
@@ -597,7 +597,7 @@ export function NinaScene({
   /*
    * `relative` ist hier der Unterschied zwischen sichtbar und nicht.
    *
-   * Der Lichtverlauf hinter Nina ist `absolute` positioniert. Nach den
+   * Der Lichtverlauf hinter Monday ist `absolute` positioniert. Nach den
    * Malregeln von CSS kommt jedes positionierte Element über den nicht
    * positionierten Inhalt — unabhängig von der Reihenfolge im HTML.
    * Die Leinwand stand vorher ohne Positionierung da und lag damit

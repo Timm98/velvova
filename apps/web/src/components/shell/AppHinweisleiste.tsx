@@ -125,7 +125,7 @@ export function AppHinweisleiste({
           ══════════════════════════════════════════════════════════
 
           Weil sie etwas ist, das es GIBT. „Die App kommt bald" ist
-          ein Versprechen; „Nina sucht über Nacht" ist eine Funktion,
+          ein Versprechen; „Monday sucht über Nacht" ist eine Funktion,
           die man einen Klick später sieht.
 
           Eine zweite Leiste darüber wäre die falsche Antwort gewesen:
@@ -154,13 +154,13 @@ export function AppHinweisleiste({
           */}
           {nachtsZiel ? (
             <>
-              <span className="hidden sm:inline">Nina sucht automatisch über Nacht. </span>
+              <span className="hidden sm:inline">Monday sucht automatisch über Nacht. </span>
               <a href={nachtsZiel} className="underline underline-offset-[3px] hover:text-ink">
                 Hier entdecken
               </a>
             </>
           ) : hatApp ? (
-            <>Velvova auch unterwegs — Nina begleitet dich überall.</>
+            <>Velvova auch unterwegs — Monday begleitet dich überall.</>
           ) : (
             <>
               <span className="hidden sm:inline">Velvova auch unterwegs: </span>

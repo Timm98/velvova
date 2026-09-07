@@ -7,7 +7,7 @@
  * musste vorkommen. Bei „Maximal zwei Bürotage rund um Karlsruhe"
  * heisst das, es müsste eine Stelle geben, in deren Titel das Wort
  * „maximal" steht. Es gibt keine. Die Liste wurde leer, und es sah aus,
- * als verstünde Nina den Satz nicht — dabei hat ihn nie jemand gelesen.
+ * als verstünde Monday den Satz nicht — dabei hat ihn nie jemand gelesen.
  *
  * Also zwei Hälften, die verschieden schnell sind:
  *
@@ -16,7 +16,7 @@
  *   Vertragsart, Aktualität — und setzt daraus echte Filter. Das
  *   passiert, bevor irgendein Netzwerkaufruf beginnt.
  *
- *   **Nina ist die langsame.** Sie liest denselben Satz und erklärt in
+ *   **Monday ist die langsame.** Sie liest denselben Satz und erklärt in
  *   einem Satz, was sie berücksichtigt. Sie darf dabei mehr verstehen
  *   als diese Regeln — aber die Liste wartet nicht auf sie.
  *
@@ -75,7 +75,7 @@ export interface Suchintention {
    * ein Satz kann also etwas setzen und etwas anderes wegnehmen.
    */
   entfernen: (keyof Suchintention["filter"])[];
-  /** Was verstanden wurde, in Worten. Für Ninas kurze Erklärung. */
+  /** Was verstanden wurde, in Worten. Für Mondays kurze Erklärung. */
   erkannt: string[];
   /** Der Rest, den keine Regel erklärt. */
   rest: string;
@@ -591,7 +591,7 @@ export function deuteSuchintention(eingabe: string): Suchintention {
 }
 
 /**
- * Ninas Satz dazu (§16.3).
+ * Mondays Satz dazu (§16.3).
  *
  * Bewusst kurz und ohne Fachwort. Wer „maximal zwei Bürotage" schreibt,
  * soll nicht „workModel=hybrid" zurückbekommen.

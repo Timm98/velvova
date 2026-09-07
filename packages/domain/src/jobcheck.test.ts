@@ -28,7 +28,7 @@ const w = (): Widerspruch => ({
   erklaerung: "…",
 });
 
-describe("Nina kann Nein sagen", () => {
+describe("Monday kann Nein sagen", () => {
   it("lehnt ab, wenn eine unverzichtbare Bedingung verletzt ist", () => {
     /*
      * Sie gegen eine gute Passung abzuwägen hiesse, die Entscheidung

@@ -3,7 +3,7 @@ import { Compass } from "lucide-react";
 import type { Suchrichtung } from "@paycheck/matching";
 
 /**
- * Wonach Nina sucht — und warum.
+ * Wonach Monday sucht — und warum.
  *
  * ── Was das für die Person ändert ─────────────────────────────
  *
@@ -40,7 +40,7 @@ export function Suchrichtungen({
   /*
    * Nichts anzeigen, wenn nichts abgeleitet werden konnte.
    *
-   * Ein leerer Kasten „Nina sucht nach: —" wäre schlimmer als kein
+   * Ein leerer Kasten „Monday sucht nach: —" wäre schlimmer als kein
    * Kasten: er verspricht eine Fähigkeit und führt sie sofort ad
    * absurdum. Wer noch nichts erzählt hat, sieht hier nichts.
    */
@@ -80,7 +80,7 @@ export function Suchrichtungen({
       <p className="mt-4 text-sm leading-relaxed text-ink-3">
         Passt eine Richtung nicht?{" "}
         <Link
-          href="/app/nina"
+          href="/app/monday"
           className="inline-flex min-h-6 items-center text-accent-text underline underline-offset-[3px]"
         >
           Sag es {assistantName} im Gespräch

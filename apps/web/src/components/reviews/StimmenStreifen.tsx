@@ -86,7 +86,7 @@ export async function StimmenStreifen() {
   return (
     <section aria-labelledby="stimmen" className="grid gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-        <h2 id="stimmen" className="font-display text-xl font-semibold tracking-[-0.02em]">
+        <h2 id="stimmen" className="font-display text-xl font-normal tracking-[-0.02em]">
           Bisherige Nutzererfahrungen
         </h2>
         {!beispielhaft && zahlen.schnitt !== null && (

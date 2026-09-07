@@ -120,7 +120,7 @@ export default async function LanguageRegionPage() {
           <Field label={`Gespräch mit ${brand.assistantName}`} htmlFor="assistantLocale">
             {/*
               Mehr Sprachen als die Oberfläche (§20.2).
-              Ninas Antworten entstehen im Modell und brauchen keinen
+              Mondays Antworten entstehen im Modell und brauchen keinen
               Katalog. Der Rahmen bleibt dabei in seiner eigenen
               Sprache — das ist keine gemischte Oberfläche, sondern die
               Trennung aus §20.1.

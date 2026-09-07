@@ -26,7 +26,7 @@ import { STUFEN, type Stufe } from "./stufen.ts";
  *
  * ── Was ein Unternehmen NIE sieht ─────────────────────────────
  *
- * Den Nina-Chat, die Lebenshaltung, das aktuelle Gehalt, die
+ * Den Monday-Chat, die Lebenshaltung, das aktuelle Gehalt, die
  * Steuerangaben, andere Bewerbungen, gespeicherte Stellen. Nicht als
  * Vereinbarung, sondern als Zeilensicherheit — geprüft in
  * `arbeitgeber-rls.test.ts` gegen eine echte Datenbank.

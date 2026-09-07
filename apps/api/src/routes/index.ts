@@ -47,7 +47,7 @@ export function registerRoutes(app: FastifyInstance): void {
         zustand: status.ai,
         hinweis:
           status.ai === "not-connected"
-            ? "Kein Anbieter eingerichtet. Nina antwortet nicht — es wird nichts erfunden."
+            ? "Kein Anbieter eingerichtet. Monday antwortet nicht — es wird nichts erfunden."
             : "Anbieter verbunden. Texte werden dorthin uebermittelt.",
       },
       email: {

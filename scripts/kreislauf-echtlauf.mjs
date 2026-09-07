@@ -86,7 +86,7 @@ for (const h of handlungen) {
   if (h.nachricht) console.log(`    „${h.nachricht.slice(0, 96)}"`);
 }
 
-trenner("4. Nina sagt es — genau einmal");
+trenner("4. Monday sagt es — genau einmal");
 const n1 = await j.naechsteNachricht(db, person.id);
 console.log(`  erste Abfrage:  ${n1 ? `„${n1.text.slice(0, 80)}"` : "nichts"}`);
 const n2 = await j.naechsteNachricht(db, person.id);

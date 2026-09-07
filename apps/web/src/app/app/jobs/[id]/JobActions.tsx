@@ -52,7 +52,7 @@ export function JobActions({
         Untereinander, sobald es eng wird.
         
         Zwei feste Spalten in einer 320 Pixel breiten Seitenspalte
-        ergaben zwei Knöpfe zu je 150 Pixeln — „Mit Nina besprechen"
+        ergaben zwei Knöpfe zu je 150 Pixeln — „Mit Monday besprechen"
         braucht mehr und lief über den Nachbarn. Ein Raster mit
         Mindestbreite bricht stattdessen um.
       */}
@@ -81,7 +81,7 @@ export function JobActions({
         {/*
           Zum Job-Chat auf DIESER Seite, nicht zur Hauptseite.
           
-          Der Knopf führte nach /app/nina und liess die Stelle hinter
+          Der Knopf führte nach /app/monday und liess die Stelle hinter
           sich — mit einem leeren Gespräch als Ergebnis. Jetzt springt
           er zum Fragenblock weiter unten, der an diese Stelle gebunden
           ist.

@@ -6,9 +6,9 @@ import { createHash } from "node:crypto";
  * Die Frage klingt spitzfindig und ist der Kern eines Fehlers, den
  * Menschen als „das Ding kommt immer wieder" erlebt haben.
  *
- * Nina leitet aus jeder Nachricht Vermutungen über den Menschen ab.
+ * Monday leitet aus jeder Nachricht Vermutungen über den Menschen ab.
  * Lehnt jemand eine davon ab, wurde bisher die ZEILE als abgelehnt
- * markiert. Zwei Sätze später leitet Nina denselben Satz erneut ab —
+ * markiert. Zwei Sätze später leitet Monday denselben Satz erneut ab —
  * neue Zeile, neue Kennung, kein Vermerk. Die Ablehnung war formal
  * gespeichert und praktisch wirkungslos.
  *

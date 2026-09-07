@@ -85,7 +85,7 @@ export default async function ProfilePage() {
           body={t("profile.empty")}
           action={
             <Button asChild variant="primary">
-              <Link href="/app/nina">
+              <Link href="/app/monday">
                 Gespräch beginnen
                 <ArrowRight className="size-4" strokeWidth={1.9} />
               </Link>

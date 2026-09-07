@@ -1,4 +1,4 @@
--- Ninas Gedächtnis und der Ort, an dem die Person stehengeblieben ist.
+-- Mondays Gedächtnis und der Ort, an dem die Person stehengeblieben ist.
 --
 -- Vor dieser Migration wurde ein Gespräch nirgends abgelegt: der Verlauf
 -- lebte im Zustand einer React-Komponente und war nach dem Neuladen weg.

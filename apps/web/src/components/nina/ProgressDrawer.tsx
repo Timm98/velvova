@@ -83,7 +83,7 @@ export function ProgressDrawer({
       >
         <div className="flex items-start justify-between gap-4 px-7 pb-4 pt-7">
           <div className="grid gap-1">
-            <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">
+            <h2 className="font-display text-xl font-normal tracking-[-0.02em]">
               Was ich über dich weiß
             </h2>
             <p className="text-sm text-ink-2">

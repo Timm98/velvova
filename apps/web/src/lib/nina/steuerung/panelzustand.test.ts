@@ -58,7 +58,7 @@ describe("Panelzustand", () => {
   it("hebt einen Abschnitt hervor, ohne die Ansicht zu wechseln", () => {
     /*
      * Der Abschnitt liegt in der Mitte, das Panel rechts. Wer
-     * hinspringt, soll Ninas Begründung weiterhin sehen.
+     * hinspringt, soll Mondays Begründung weiterhin sehen.
      */
     const z = tun(zeige(ANFANG, "warum_passt"), {
       name: "highlight_section",
@@ -140,7 +140,7 @@ describe("Vorherige Stelle", () => {
     expect(z.vorherigeJobId).toBe(A);
   });
 
-  it("merkt sie sich auch, wenn Nina die Stelle öffnet", () => {
+  it("merkt sie sich auch, wenn Monday die Stelle öffnet", () => {
     const z = tun({ ...ANFANG, jobId: A }, { name: "open_job", args: { jobId: B } } as Aktion);
     expect(z.vorherigeJobId).toBe(A);
   });

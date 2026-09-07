@@ -5,7 +5,7 @@ import { useNinaSteuerung } from "../NinaSteuerung";
 import { cn } from "@/lib/cn";
 
 /**
- * Der Rahmen des Nina-Panels: Kopf, Zurück-Weg, Übergang.
+ * Der Rahmen des Monday-Panels: Kopf, Zurück-Weg, Übergang.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum sich der Inhalt austauscht statt ein Fenster aufzugehen
@@ -45,7 +45,7 @@ export function NinaPanelRahmen({
       {/*
        * Kopfzeile nur in den Unteransichten.
        *
-       * Auf der Übersicht stand hier „Nina" und darunter „Analysiert:
+       * Auf der Übersicht stand hier „Monday" und darunter „Analysiert:
        * <Stellentitel>". Beides ist weg: Der Name benennt die Spalte,
        * in der er steht, und die Statuszeile wiederholte den
        * Stellentitel, der zwei Zentimeter weiter links bereits groß

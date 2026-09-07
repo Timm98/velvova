@@ -26,7 +26,7 @@ export default async function StellenPage({
     <div className="grid gap-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="grid gap-2">
-          <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">Stellen</h1>
+          <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">Stellen</h1>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             Entwürfe sind nur hier sichtbar. Veröffentlichte Stellen stehen im Stellenindex und
             sind als „Direkt vom Arbeitgeber" gekennzeichnet.

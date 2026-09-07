@@ -132,7 +132,7 @@ export function bandAusScore(score: number | null): { befund: Befund; wort: stri
  * untereinander.
  */
 export const OFFEN_SATZ =
-  "Sieht interessant aus — für eine belastbare Einschätzung kennt Nina dich noch nicht gut genug.";
+  "Sieht interessant aus — für eine belastbare Einschätzung kennt Monday dich noch nicht gut genug.";
 
 /**
  * Die Ampel für Passung und Anzeigenqualität.

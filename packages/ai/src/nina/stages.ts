@@ -1,5 +1,5 @@
 /**
- * Ninas Gesprächsstufen.
+ * Mondays Gesprächsstufen.
  *
  * Der entscheidende Satz steht ganz oben, weil alles andere daraus
  * folgt: **das Modell darf die nächste Stufe vorschlagen, entscheiden

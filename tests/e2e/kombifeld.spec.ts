@@ -164,7 +164,7 @@ test.describe("Sprache & Region: durchsuchbare Auswahl", () => {
   });
 });
 
-test.describe("Ninas Kopfzeile", () => {
+test.describe("Mondays Kopfzeile", () => {
   test("bleibt in einer Reihe", async ({ page }) => {
     /*
      * Vorher: 220 Pixel, zwei Reihen. Die drei Knöpfe massen zusammen
@@ -179,7 +179,7 @@ test.describe("Ninas Kopfzeile", () => {
      */
     await loginAsDemo(page);
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.goto("/app/nina");
+    await page.goto("/app/monday");
 
     const kopf = page.locator("header").last();
     await expect(kopf).toBeVisible();

@@ -20,7 +20,7 @@
  * ══════════════════════════════════════════════════════════════
  *
  * Jedes abgeleitete Verhaltenssignal trägt die Ereignisse mit sich, aus denen es
- * entstand. Damit kann Nina sagen „du hast diese Stelle dreimal
+ * entstand. Damit kann Monday sagen „du hast diese Stelle dreimal
  * geöffnet" statt „ich weiss, dass du sie willst" — und die Person
  * kann widersprechen, ohne gegen eine Behauptung anzureden, die
  * niemand belegt hat.
@@ -75,7 +75,7 @@ export interface Ereignis {
   /**
    * Wer es ausgelöst hat.
    *
-   * Nur `user` verstärkt ein Signal. Was Nina selbst getan hat,
+   * Nur `user` verstärkt ein Signal. Was Monday selbst getan hat,
    * bestätigt ihre eigene Vermutung nicht.
    */
   urheber: Urheber;
@@ -220,7 +220,7 @@ export function interesseAusEreignissen(
   /*
    * Nur echte Nutzerhandlungen.
    *
-   * Hätte Nina selbst ein Ereignis ausgelöst — etwa beim Vormerken —,
+   * Hätte Monday selbst ein Ereignis ausgelöst — etwa beim Vormerken —,
    * bestätigte sie damit ihre eigene Vermutung. Der Filter steht hier
    * und nicht beim Laden, damit er auch dann greift, wenn jemand
    * später eine andere Quelle anschliesst.
@@ -339,7 +339,7 @@ export function musterAusEreignissen(
  *
  * Zwei offene Tabs auf derselben Anzeige senden dasselbe Ereignis
  * zweimal. Ohne diese Prüfung entstünde aus einem Blick ein
- * „mehrfach geöffnet", und Nina merkte eine Stelle vor, die niemand
+ * „mehrfach geöffnet", und Monday merkte eine Stelle vor, die niemand
  * zweimal angesehen hat.
  *
  * Der Schlüssel ist bewusst grob: Art, Stelle und angefangene Minute.
@@ -351,7 +351,7 @@ export function entdoppeln(ereignisse: readonly Ereignis[]): Ereignis[] {
   const raus: Ereignis[] = [];
   for (const e of ereignisse) {
     const minute = Math.floor(e.geschehenAm.getTime() / 60_000);
-    /* Der Urheber gehört in den Schlüssel: Eine Handlung Ninas und
+    /* Der Urheber gehört in den Schlüssel: Eine Handlung Mondays und
        eine der Person zur selben Minute sind zwei Ereignisse. */
     const schluessel = `${e.urheber}|${e.art}|${e.jobId ?? ""}|${minute}`;
     if (gesehen.has(schluessel)) continue;

@@ -6,18 +6,18 @@
  * ══════════════════════════════════════════════════════════════
  *
  * Diese Studien belegen **Probleme** und **welche Methoden wirken**.
- * Sie belegen nicht, dass Nina bessere Einstellungen erzeugt — das
+ * Sie belegen nicht, dass Monday bessere Einstellungen erzeugt — das
  * kann keine fremde Studie, weil keine sie untersucht hat.
  *
  * Der Unterschied ist der ganze Wert dieser Seite. „16 Bewerbungen je
- * Einstellung, davon vier geeignet" ist eine Messung des IAB. „Nina
+ * Einstellung, davon vier geeignet" ist eine Messung des IAB. „Monday
  * verdreifacht die Trefferquote" wäre eine Erfindung mit einer echten
  * Zahl daneben — und genau die Sorte Aussage, gegen die dieses Produkt
  * gebaut ist.
  *
  * Eigene Erfolgsquoten kommen erst nach Pilotkunden und eigener
  * Messung, mit Grundgesamtheit und Erhebungszeitraum. Bis dahin steht
- * hier nichts über Nina, was nicht auch ohne Nina wahr wäre.
+ * hier nichts über Monday, was nicht auch ohne Monday wahr wäre.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum die Einschränkungen mitgeführt werden
@@ -43,7 +43,7 @@ export type Belegfeld = {
   titel: string;
   /** Was das Problem ist — in einem Satz, ohne Produktbezug. */
   problem: string;
-  /** Woran Nina daraufhin gebaut ist. Kein Wirkungsversprechen. */
+  /** Woran Monday daraufhin gebaut ist. Kein Wirkungsversprechen. */
   antwort: string[];
   belege: Befund[];
 };
@@ -83,7 +83,7 @@ export const FELDER: Belegfeld[] = [
     problem:
       "Es kommen genug Bewerbungen an. Passen tut ein Bruchteil — und die Lücke liegt zwischen Qualifikation, Beruf und Region, nicht in der Menge.",
     antwort: [
-      "Nina sucht dauerhaft in neuen und aktualisierten Profilen, nicht nur beim Eingang einer Bewerbung.",
+      "Monday sucht dauerhaft in neuen und aktualisierten Profilen, nicht nur beim Eingang einer Bewerbung.",
       "Sie trennt echte Muss-Kriterien von Fähigkeiten, die erlernbar sind.",
       "Der Fit Score zeigt passende Fähigkeiten, Lücken, unbekannte Angaben und die Datengrundlage — nicht nur eine Zahl.",
       "Arbeitszeit, Gehalt, Standort, Remote-Modell, Sprache, Reisebereitschaft und Verfügbarkeit gehen mit ein.",
@@ -165,7 +165,7 @@ export const FELDER: Belegfeld[] = [
       "Im Fit Score zählen nachweisbare, jobrelevante Fähigkeiten. Name, Foto, Alter, Geschlecht, Herkunft und andere geschützte Merkmale gehen nicht ein.",
       "Ausländische Berufsbezeichnungen und alternative Wege werden in übertragbare Fähigkeiten übersetzt.",
       "Fehlende Angaben gelten als unbekannt, nicht als Ausschluss.",
-      "Nina unterscheidet zwischen erfüllt, teilweise erfüllt, erlernbar und nicht passend.",
+      "Monday unterscheidet zwischen erfüllt, teilweise erfüllt, erlernbar und nicht passend.",
       "Unternehmen sehen, welche Bestandteile den Wert beeinflussen. Die Entscheidung bleibt beim Menschen.",
     ],
     belege: [
@@ -242,10 +242,10 @@ export const FELDER: Belegfeld[] = [
     problem:
       "Ob eine Einstellung hält, entscheidet sich an Passung — und die lässt sich zumindest teilweise vorher erkennen.",
     antwort: [
-      "Nina rechnet keine „perfekte Passung“, sondern getrennte Bereiche: Aufgaben, Fähigkeiten, Arbeitsbedingungen, Entwicklung und Erwartungen.",
+      "Monday rechnet keine „perfekte Passung“, sondern getrennte Bereiche: Aufgaben, Fähigkeiten, Arbeitsbedingungen, Entwicklung und Erwartungen.",
       "Unternehmen sehen Übereinstimmungen und mögliche Konflikte nebeneinander.",
       "Gehalt, Arbeitszeit, Remote-Regelung, Reiseanteil, Führung, Team und Entwicklung werden vor dem Kontakt sichtbar.",
-      "Fehlt eine wichtige Angabe, schlägt Nina die Nachfrage vor, statt zu raten.",
+      "Fehlt eine wichtige Angabe, schlägt Monday die Nachfrage vor, statt zu raten.",
     ],
     belege: [
       {
@@ -318,9 +318,9 @@ export const FELDER: Belegfeld[] = [
       "Gute Menschen verschwinden nicht nur wegen anderer Angebote, sondern wenn Unternehmen zu langsam, zu kompliziert oder zu still sind.",
     antwort: [
       "Jeder Kandidat sieht einen klaren Bewerbungsstatus.",
-      "Unternehmen legen ihre Antwortzeit fest; Nina erinnert das Team, bevor sie überschritten wird.",
+      "Unternehmen legen ihre Antwortzeit fest; Monday erinnert das Team, bevor sie überschritten wird.",
       "Wiederverwendbare Profile ersetzen Formulare und Doppeleingaben.",
-      "Nina prüft Anzeigen vor der Veröffentlichung auf fehlende oder widersprüchliche Angaben.",
+      "Monday prüft Anzeigen vor der Veröffentlichung auf fehlende oder widersprüchliche Angaben.",
       "Absagen werden respektvoll vorbereitet — sensible Nachrichten bleiben in eurer Hand.",
     ],
     belege: [
@@ -392,11 +392,11 @@ export const FELDER: Belegfeld[] = [
     problem:
       "Eine Einstellung ist noch kein Erfolg. Sie wird zum Erfolg, wenn die Realität nach dem ersten Arbeitstag zum Versprechen passt.",
     antwort: [
-      "Nina verlangt konkrete Angaben statt austauschbarer Werbeformulierungen.",
+      "Monday verlangt konkrete Angaben statt austauschbarer Werbeformulierungen.",
       "Aufgaben, Gehaltsspanne, Wochenstunden, Überstunden, Remote-Regeln, Führung, Team und Entwicklung stehen strukturiert da.",
       "Der Fit Score vergleicht auch Erwartungen, nicht nur Qualifikationen.",
       "Kandidaten sehen mögliche Konflikte vor ihrer Bewerbung.",
-      "Enthält die Anzeige Versprechen ohne konkrete Angabe, weist Nina darauf hin.",
+      "Enthält die Anzeige Versprechen ohne konkrete Angabe, weist Monday darauf hin.",
     ],
     belege: [
       {

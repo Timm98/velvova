@@ -141,7 +141,7 @@ if (!nutzer) {
   [nutzer] = await withSystem(db, (tx) =>
     tx
       .insert(schema.users)
-      .values({ email: TESTADRESSE, displayName: "Nina-Abnahme (synthetisch)" })
+      .values({ email: TESTADRESSE, displayName: "Monday-Abnahme (synthetisch)" })
       .returning(),
   );
   console.log(`neu angelegt: ${nutzer.id}`);
@@ -465,8 +465,8 @@ if (mail) {
   const fassung = j.zusammenfassungRendern({
     anrede: null,
     betreff: `${posten.rows.length} neue Stelle für dich`,
-    einleitung: "Nina hat deinen bestätigten Suchauftrag weitergeführt.",
-    abschluss: "Wenn etwas nicht passt, sag es Nina — sie ändert den Auftrag.",
+    einleitung: "Monday hat deinen bestätigten Suchauftrag weitergeführt.",
+    abschluss: "Wenn etwas nicht passt, sag es Monday — sie ändert den Auftrag.",
     basisLabel: j.basisLabel(["chat"], new Date()),
     posten: posten.rows.map((r) => ({
       jobId: "vorschau",
@@ -482,7 +482,7 @@ if (mail) {
     })),
     einstellungenUrl: "https://velvova.de/app/suchauftraege",
     abmeldeUrl: "https://velvova.de/abmelden?token=VORSCHAU",
-    absenderName: "Nina von Velvova",
+    absenderName: "Monday von Velvova",
   });
 
   console.log(`Betreff: ${fassung.betreff}`);

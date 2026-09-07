@@ -60,7 +60,7 @@ describe("Sprache und Transkript", () => {
 });
 
 describe("Briefing", () => {
-  it("bleibt aus, wenn Nina nur auf Zuruf sucht", () => {
+  it("bleibt aus, wenn Monday nur auf Zuruf sucht", () => {
     const w = werte(mit({ stufe: "manual", briefingAktiv: true, kanaele: ["email"] }));
     expect(w.briefingAktiv).toBe(false);
     expect(w.kanaele).toEqual([]);

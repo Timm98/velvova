@@ -26,7 +26,7 @@ import { alleModelle, modellFuer, werkzeugeNurUeberResponses, type Modellstufe }
  *
  * Eine Gesundheitsprüfung, die Konfiguration ändert, ist eine
  * Konfigurationsquelle. Dann gäbe es zwei, und die Frage „warum
- * antwortet Nina mit einem anderen Modell" wäre nicht mehr
+ * antwortet Monday mit einem anderen Modell" wäre nicht mehr
  * beantwortbar.
  */
 

@@ -255,7 +255,7 @@ export function computeFit(input: FitInput): FitResult {
          * liessen" ist präzise und liest sich wie ein Prüfbericht.
          * Gemeint ist etwas Einfaches, und so soll es auch dastehen.
          */
-        ? "Nina weiss noch nicht, was du kannst — dafür fehlt das Gespräch."
+        ? "Monday weiss noch nicht, was du kannst — dafür fehlt das Gespräch."
         : `${mustCovered} von ${musts.length} Muss-Anforderungen sind durch bestätigte Erfahrungen gedeckt.` },
     { key: "preferred_tasks", label: "Tätigkeiten, die dir Energie geben", raw: taskRaw,
       weight: w.preferredTasks,
@@ -327,7 +327,7 @@ export function computeFit(input: FitInput): FitResult {
      * der Stelle statt wie eine Lücke bei uns. Der neue sagt dasselbe
      * und klingt wie ein Mensch.
      */
-    : "Sieht interessant aus — für eine belastbare Einschätzung kennt Nina dich noch nicht gut genug.";
+    : "Sieht interessant aus — für eine belastbare Einschätzung kennt Monday dich noch nicht gut genug.";
 
   const topReservation = unknown[0]
     ? `${unknown[0].label} ist unbekannt. ${unknown[0].explanation}`

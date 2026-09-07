@@ -22,12 +22,12 @@ Alternativtext.
 |---|---|---|
 | `werkstatt.svg` | Handwerk, Werkbank, konzentrierte Arbeit mit den Händen | Abschnitt „Nicht jeder weiss …“ |
 | `logistik.svg` | Lager oder Disposition, Regalfluchten, Tageslicht | Geschichte „Ich arbeite im Lager“ |
-| `pflege.svg` | Gesundheitswesen, heller Flur, Gespräch | Abschnitt „Nina denkt nicht in Schlagwörtern“ |
-| `labor.svg` | Labor oder Technik, Bank, präzise Arbeit | Abschnitt „Was Nina über einen Job wissen will“ |
+| `pflege.svg` | Gesundheitswesen, heller Flur, Gespräch | Abschnitt „Monday denkt nicht in Schlagwörtern“ |
+| `labor.svg` | Labor oder Technik, Bank, präzise Arbeit | Abschnitt „Was Monday über einen Job wissen will“ |
 | `buero.svg` | Büro, zwei Bildschirme, ruhige Konzentration | Abschnitt „Wenn du dich entschieden hast“ |
 | `gastronomie.svg` | Gastronomie, Tresen, Übergabe | Zitatfläche „Vielleicht ist dein nächster Job …“ |
 | `technik.svg` | Produktion, Maschine, Werkhalle | Abschnitt „Zwei Seiten“ |
-| `gestaltung.svg` | Gestaltung, Entwurf, Material auf dem Tisch | Abschnitt „Nina bleibt“ |
+| `gestaltung.svg` | Gestaltung, Entwurf, Material auf dem Tisch | Abschnitt „Monday bleibt“ |
 
 ## Was ein Foto NICHT sein darf
 

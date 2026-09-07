@@ -49,7 +49,7 @@ export function Sterne({
                     Gelbe Sterne sind die Voreinstellung jedes
                     Bewertungssystems — und genau deshalb tragen sie
                     keine Marke. Der Akzentton ist derselbe wie bei
-                    Knöpfen, Verweisen und Ninas Core; die Bewertung
+                    Knöpfen, Verweisen und Mondays Core; die Bewertung
                     gehört sichtbar zu diesem Produkt.
 
                     `fill` und `text` gleich gesetzt: Der Stern wird

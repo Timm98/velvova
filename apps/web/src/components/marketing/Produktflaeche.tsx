@@ -27,7 +27,7 @@ export function Produktflaeche() {
           <p className="text-2xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--ed-ink-3)" }}>
             So sieht ein Vorschlag aus
           </p>
-          <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-[1.06] tracking-[-0.03em]">
+          <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-normal leading-[1.06] tracking-[-0.02em]">
             Eine Zahl, die ihre eigene Begründung mitbringt.
           </h2>
           <p className="max-w-[52ch] text-[clamp(1rem,1.3vw,1.1rem)] leading-[1.62]" style={{ color: "var(--ed-ink-2)" }}>
@@ -59,7 +59,7 @@ export function Produktflaeche() {
                 Erfundene Stelle, erfundene Zahlen
               </span>
             </span>
-            <h3 className="font-display text-[clamp(1.2rem,2vw,1.7rem)] font-semibold tracking-[-0.02em] text-white">
+            <h3 className="font-display text-[clamp(1.2rem,2vw,1.7rem)] font-normal tracking-[-0.02em] text-white">
               Senior Controller (m/w/d)
             </h3>
           </div>

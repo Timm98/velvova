@@ -10,7 +10,7 @@ import { naechstesFenster, type Rhythmus } from "../versandfenster.ts";
  * Warum Anlegen und Aktivieren zwei Schritte sind
  * ══════════════════════════════════════════════════════════════
  *
- * Ein Vorschlag von Nina ist ein Vorschlag. Wer nicht antwortet, hat
+ * Ein Vorschlag von Monday ist ein Vorschlag. Wer nicht antwortet, hat
  * nicht zugestimmt — er hat nicht geantwortet.
  *
  * Ein System, das Schweigen als Ja liest, verschickt Mails an

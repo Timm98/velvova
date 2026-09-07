@@ -8,7 +8,7 @@ Jobwechsler. Es erstellt aus realen Erfahrungen ein nachvollziehbares
 Karriereprofil und begleitet von passenden Berufsfeldern über reale
 Stellen bis zu Bewerbung, Interview, Angebot und gutem Job.
 
-Beide Namen — Paycheck und Nina — sind vorläufig und stehen in
+Beide Namen — Paycheck und Monday — sind vorläufig und stehen in
 `packages/config/src/brand.ts`.
 
 ## Das Herzstück
@@ -117,7 +117,7 @@ negativer Wert in einen Score ein.
 
 **7. Unsicherheit sichtbar machen.** Score und Confidence getrennt.
 
-**8. Der Mensch bleibt Entscheider.** Nina empfiehlt, erklärt, fragt nach
+**8. Der Mensch bleibt Entscheider.** Monday empfiehlt, erklärt, fragt nach
 und bereitet vor. Sie sendet und entscheidet nicht.
 
 **9. Keine unnötige Datensammlung.** Jede Kategorie braucht Zweck,

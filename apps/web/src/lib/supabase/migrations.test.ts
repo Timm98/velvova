@@ -55,7 +55,7 @@ const OWNED = [
   "coaching_feedback",
   "notifications",
   "feedback_events",
-  // Ninas Gedächtnis und Vorgangszustand — dieselbe Regel wie überall:
+  // Mondays Gedächtnis und Vorgangszustand — dieselbe Regel wie überall:
   // ohne RLS gilt eine Tabelle nicht als fertig.
   "job_search_campaigns",
   "workflow_states",

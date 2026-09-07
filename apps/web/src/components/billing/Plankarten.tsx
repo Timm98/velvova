@@ -80,13 +80,13 @@ export function Plankarten({
                 <span className="abschnitts-titel text-ink-3">
                   {plan.label}
                 </span>
-                <h3 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+                <h3 className="font-display text-2xl font-normal tracking-[-0.02em]">
                   {plan.name}
                 </h3>
               </div>
 
               <p className="relative flex items-baseline gap-1.5">
-                <span className="font-display text-[2.5rem] font-semibold leading-none tracking-[-0.03em]">
+                <span className="font-display text-[2.5rem] font-normal leading-none tracking-[-0.02em]">
                   {preisText(plan.preisMonatCent)}
                 </span>
                 <span className="text-sm text-ink-3">
@@ -180,7 +180,7 @@ function Funktionsmatrix({ aktuell }: { aktuell: PlanKey }) {
         return (
           <div key={key} className="grid content-start gap-5">
             <div className="flex items-baseline gap-2.5">
-              <h4 className="font-display text-lg font-semibold tracking-[-0.02em]">{plan.name}</h4>
+              <h4 className="font-display text-lg font-normal tracking-[-0.02em]">{plan.name}</h4>
               {key === aktuell && (
                 <span className="rounded-(--radius-pill) bg-lavender px-2.5 py-0.5 abschnitts-titel">
                   aktuell

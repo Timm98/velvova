@@ -30,7 +30,7 @@ Auf der Bewerberseite:
 
 ## Die Trennlinie
 
-**Ein Unternehmen sieht nie:** den Nina-Chat, die Lebenshaltung, das
+**Ein Unternehmen sieht nie:** den Monday-Chat, die Lebenshaltung, das
 aktuelle Gehalt, die Steuerangaben, andere Bewerbungen, gespeicherte
 Stellen, das Karriereprofil.
 
@@ -155,6 +155,6 @@ hängen.
   einen eigenen Durchgang.
 - **Benachrichtigungen.** Weder das Unternehmen bei einer neuen Bewerbung
   noch die Person bei einem Standwechsel.
-- **Nina im Arbeitgeberbereich.** Die Anzeigenprüfung ist die
+- **Monday im Arbeitgeberbereich.** Die Anzeigenprüfung ist die
   deterministische Hälfte. Eine Formulierungshilfe wäre denkbar — sie
   darf aber nie Kandidatendaten sehen.

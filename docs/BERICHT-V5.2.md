@@ -12,7 +12,7 @@ Checkpoint vor diesem Durchgang: `checkpoint-before-v5.2`.
 mit einer Sperre gegen Wiederkehr gesichert.
 
 **Vollständig vorhanden**: Source Registry und Policy Engine, kanonischer
-Stellen-Graph, Job-List/Detail-Ansicht mit Split View, Modell-Router, Ninas
+Stellen-Graph, Job-List/Detail-Ansicht mit Split View, Modell-Router, Mondays
 Gedächtnis, Belegabgleich, Betrugssignale, Chancenfunnel, Anforderungs-
 klassifikation, Aufwandsschätzung, Bedingungsmatrix, Belegqualität.
 
@@ -92,7 +92,7 @@ Quelle.
 
 **Drei Ebenen getrennt im Datenmodell** (`job_brief_facts.layer`):
 `source_fact` — was die Quelle sagt. `normalized_fact` — was wir daraus gemacht
-haben. `nina_interpretation` — was Nina daraus schliesst. Vermischt liest sich
+haben. `nina_interpretation` — was Monday daraus schliesst. Vermischt liest sich
 eine Vermutung wie eine Zusage des Arbeitgebers.
 
 ---
@@ -141,7 +141,7 @@ gefragt — der Moment gehört der Person, nicht unserer Produktverbesserung.
 
 | Variable | Wofür |
 | --- | --- |
-| `OPENAI_API_KEY` | Nina antwortet über echte KI (**neuer Schlüssel, der alte ist verbrannt**) |
+| `OPENAI_API_KEY` | Monday antwortet über echte KI (**neuer Schlüssel, der alte ist verbrannt**) |
 | `SUPABASE_SECRET_KEY` | serverseitige Läufe |
 | `DATABASE_URL` | Migrationen gegen Supabase |
 | `ADZUNA_APP_ID` / `ADZUNA_APP_KEY` | zweite Stellenquelle |
@@ -177,11 +177,11 @@ konfigurierte Supabase-Provider und Redirect-URLs.
 Zustellungen und Sperrliste stehen. Der Versand braucht `RESEND_API_KEY` und
 eine verifizierte Domain mit SPF, DKIM und DMARC.
 
-**Nina Interview V2** mit den neun Passungsdimensionen und der
+**Monday Interview V2** mit den neun Passungsdimensionen und der
 Rollenexploration — konzeptionell aus V5.2 übernommen, nicht gebaut.
 
-**Langfristige Jobbewertung**, **öffentliche FAQ-Nina**, **persönliche
-Support-Nina mit Memory Controls**, **Apply Companion** — nicht begonnen.
+**Langfristige Jobbewertung**, **öffentliche FAQ-Monday**, **persönliche
+Support-Monday mit Memory Controls**, **Apply Companion** — nicht begonnen.
 
 **Sieben Addendum-V5.1-Punkte** haben weiterhin Tabellen, aber keine
 Oberfläche: Candidate Passport, Watchtower, Follow-up, Kanalportfolio,

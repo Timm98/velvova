@@ -64,7 +64,7 @@ describe("Die höchste Stufe", () => {
   it("fällt ohne Einrichtung auf die tiefe zurück", () => {
     /*
      * Wer sie nicht bestellt hat, bekommt sie nicht — und keinen
-     * Fehler. „Hallo Nina" darf nicht das teuerste Modell wecken.
+     * Fehler. „Hallo Monday" darf nicht das teuerste Modell wecken.
      */
     const w = modellFuer(cfg({}), "ULTRA");
     expect(w.modell).toBe("gpt-5");

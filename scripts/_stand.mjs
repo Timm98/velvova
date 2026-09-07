@@ -16,7 +16,7 @@ for (const [name, pfad] of [["heute","/app"], ["jobs","/app/jobs"], ["faq","/app
     kopfHoehe: Math.round(document.querySelector("header")?.getBoundingClientRect().height ?? 0),
     klebrig: getComputedStyle(document.querySelector("header")).position,
   }));
-  console.log(`${name.padEnd(6)} Kopf ${d.kopfHoehe}px (${d.klebrig}) · Nina-Streifen: ${d.streifen}`);
+  console.log(`${name.padEnd(6)} Kopf ${d.kopfHoehe}px (${d.klebrig}) · Monday-Streifen: ${d.streifen}`);
   await s.screenshot({ path: `/tmp/stand-${name}.png`, clip: { x: 0, y: 0, width: 1280, height: 420 } });
 }
 await b.close();

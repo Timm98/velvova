@@ -13,7 +13,7 @@ import { initialen, pruefeBewertung, MIN_TEXT } from "./pruefung.ts";
 const GUELTIG = {
   displayName: "Beispiel Person",
   rating: "5",
-  body: "Nina hat mir geholfen, meine Erfahrung überhaupt erst zu sortieren. Sehr hilfreich.",
+  body: "Monday hat mir geholfen, meine Erfahrung überhaupt erst zu sortieren. Sehr hilfreich.",
   consentPublish: "on",
   consentPrivacy: "on",
 };

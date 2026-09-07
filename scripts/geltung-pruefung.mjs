@@ -17,7 +17,7 @@ await p.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!")
 await p.getByRole("button", { name: /Konto anlegen/i }).click();
 await p.waitForURL(/\/(app|setup)/, { timeout: 60000 });
 
-await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
 const feld = p.locator("textarea, input[type=text]").first();
 await feld.waitFor({ timeout: 15000 });
 await feld.fill("Heute mal maximal 30 Minuten Arbeitsweg, mehr nicht.");
@@ -55,7 +55,7 @@ if (/Nur für diese Suche/.test(t)) {
   console.log(`  ${antwort?.ok() && !/schiefgegangen/i.test(jt) ? "ok  " : "!!  "} Jobliste trägt die Sitzungsbedingung (HTTP ${antwort?.status()}, ${stellen} Stellen)`);
 
   // Und sie lässt sich zurücknehmen.
-  await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+  await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
   await p.waitForTimeout(2500);
   const zurueck = await p.getByRole("button", { name: /Zurücksetzen/i }).count();
   console.log(`  ${zurueck > 0 ? "ok  " : "!!  "} Sitzungsbedingung nach Seitenwechsel sichtbar und rücknehmbar`);

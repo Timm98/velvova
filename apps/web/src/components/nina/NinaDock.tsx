@@ -8,16 +8,16 @@ import { NinaHinweis } from "./NinaHinweis";
 import { useNina } from "./NinaProvider";
 
 /**
- * Nina auf jeder Seite — Knopf und Gesprächsfläche.
+ * Monday auf jeder Seite — Knopf und Gesprächsfläche.
  *
  * Die eine Ausnahme: auf der Vollbildseite des Gesprächs erscheint
- * beides nicht. Nina zweimal gleichzeitig auf demselben Bildschirm wäre
+ * beides nicht. Monday zweimal gleichzeitig auf demselben Bildschirm wäre
  * kein Angebot, sondern eine Verdopplung — und die schwebende Fläche
  * würde ausgerechnet den Composer verdecken, den sie ersetzen soll.
  *
  * ── Warum der Knopf wieder da ist ─────────────────────────────
  *
- * Hier stand: „Nur der Drawer, kein schwebender Knopf mehr. Nina steht
+ * Hier stand: „Nur der Drawer, kein schwebender Knopf mehr. Monday steht
  * seit dem Umbau als Pille im Header." Dann wurde die Pille entfernt —
  * und damit war die Fläche auf keiner Seite mehr zu öffnen. Der Drawer
  * existierte weiter, unerreichbar.
@@ -33,7 +33,7 @@ export function NinaDock({ assistantName }: { assistantName: string }) {
   const pathname = usePathname();
   const nina = useNina();
 
-  if (pathname.startsWith("/app/nina")) return null;
+  if (pathname.startsWith("/app/monday")) return null;
 
   return (
     <>
@@ -58,7 +58,7 @@ export function NinaDock({ assistantName }: { assistantName: string }) {
            * Klein, unten rechts, sonst nirgends.
            *
            * Vorher 48 Pixel mit kräftigem Schatten — das ist die Grösse
-           * eines Support-Widgets, und genau so las es sich. Nina ist
+           * eines Support-Widgets, und genau so las es sich. Monday ist
            * kein Widget, sondern ein Zugang: erreichbar, nicht
            * auffordernd.
            *

@@ -34,7 +34,7 @@ import type { Angabe } from "@/lib/arbeitgeber/onboarding/bewertung";
 export type ZugAntwort = {
   ok: boolean;
   nina: Zug;
-  /** Was Nina aus der Antwort gelesen hat — als Text für den Verlauf. */
+  /** Was Monday aus der Antwort gelesen hat — als Text für den Verlauf. */
   quittung: string;
   angaben: Angabe[];
   /** Ob das Modell mitgelesen hat oder nur die Regeln. */
@@ -124,7 +124,7 @@ export async function zugSenden(eingabe: {
  *
  * Eine Spalte „zuletzt gefragt“ wäre der zweite Ort, an dem dieselbe
  * Tatsache steht — und der, der irgendwann nicht mehr stimmt. Der
- * Verlauf ist die Tatsache: Was Nina gesagt hat, steht darin.
+ * Verlauf ist die Tatsache: Was Monday gesagt hat, steht darin.
  */
 async function gefragtBisher(gespraechId: string, userId: string): Promise<string[]> {
   const { verlaufLaden } = await import("@/lib/arbeitgeber/onboarding/angaben");
@@ -208,7 +208,7 @@ export async function angabeSetzen(eingabe: {
   };
 }
 
-/** Bestätigen, was Nina verstanden hat — oder als „gibt es nicht“ ablegen. */
+/** Bestätigen, was Monday verstanden hat — oder als „gibt es nicht“ ablegen. */
 export async function angabeQuittieren(eingabe: {
   bereich: string;
   feld: string;

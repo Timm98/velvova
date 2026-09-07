@@ -156,7 +156,7 @@ export function StellenFormular({
   return (
     <div className="grid gap-6">
       <div className="flex flex-wrap items-baseline gap-3">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">{stelle.title}</h1>
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">{stelle.title}</h1>
         <span className="rounded-(--radius-pill) bg-inset px-2.5 py-0.5 font-mono text-2xs text-ink-3">
           {stelle.status === "draft"
             ? "Entwurf"
@@ -237,12 +237,12 @@ export function StellenFormular({
 
         Wer eine Anzeige anlegt, schreibt zuerst Titel, Ort, Gehalt und
         Text — das ist der Weg, den alle kennen. Die Felder darunter
-        machen daraus eine Anzeige, mit der Nina rechnen kann; sie
+        machen daraus eine Anzeige, mit der Monday rechnen kann; sie
         davorzustellen hiesse, den Einstieg zu verlängern.
       */}
       <details className="group grid gap-5 rounded-(--radius-md) border border-line p-5" open>
         <summary className="cursor-pointer list-none text-[15px] font-semibold text-ink">
-          Angaben, mit denen {"Nina"} rechnen kann
+          Angaben, mit denen {"Monday"} rechnen kann
         </summary>
 
         <div className="grid gap-5 pt-4 lg:grid-cols-2">
@@ -281,7 +281,7 @@ export function StellenFormular({
             Muss und Kann getrennt — das ist der Kern.
 
             In einer gemeinsamen Aufzählung hält niemand sie
-            auseinander. Getrennt führt Nina eine fehlende
+            auseinander. Getrennt führt Monday eine fehlende
             Kann-Fähigkeit als „entwickelbar" statt als Ausschluss.
           */}
           <div className="grid gap-5 lg:grid-cols-2">

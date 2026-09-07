@@ -66,7 +66,7 @@ describe("Der Deckel auf der Konfidenz", () => {
 describe("Wer im Widerspruch gewinnt", () => {
   it("die Aussage der Person schlägt die Vermutung — auch die sicherere", () => {
     /*
-     * Das Beispiel aus dem Auftrag: Nina leitet „möchte remote" ab
+     * Das Beispiel aus dem Auftrag: Monday leitet „möchte remote" ab
      * (0.62), später sagt die Person „ich will jeden Tag ins Büro".
      *
      * Und der schärfere Fall: Selbst wenn die Vermutung mit 0.95

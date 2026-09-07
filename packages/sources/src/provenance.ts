@@ -7,7 +7,7 @@ import type { TransformType } from "./decision-types.ts";
  * Jede Tatsache, die Velvova über eine Stelle anzeigt, muss sagen
  * können, woher sie kommt. Das ist keine Buchhaltung um ihrer selbst
  * willen: es ist die einzige Möglichkeit, „steht so in der Anzeige"
- * von „hat Nina daraus geschlossen" zu unterscheiden — und diese
+ * von „hat Monday daraus geschlossen" zu unterscheiden — und diese
  * Unterscheidung ist das ganze Produktversprechen.
  *
  * Die Regel, die hier durchgesetzt wird: **eine Zusammenfassung darf
@@ -106,9 +106,9 @@ export function provenanceLabel(record: ProvenanceRecord): string {
     case "normalized":
       return "aus der Anzeige, vereinheitlicht";
     case "ai_summary":
-      return "Zusammenfassung durch Nina";
+      return "Zusammenfassung durch Monday";
     case "inferred":
-      return "Einschätzung von Nina";
+      return "Einschätzung von Monday";
     case "unknown":
       return "Herkunft unklar";
   }

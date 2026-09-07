@@ -24,7 +24,7 @@ export default function AboutPage() {
       <section className="grid gap-8">
         {team.map((m) => (
           <div key={m.name} className="grid gap-2 border-t border-line pt-6">
-            <p className="font-display text-lg font-semibold tracking-[-0.02em]">{m.name}</p>
+            <p className="font-display text-lg font-normal tracking-[-0.02em]">{m.name}</p>
             <p className="abschnitts-titel text-ink-3">
               {m.roleConfirmed ? `${m.role} · ${m.focus}` : m.focus}
             </p>

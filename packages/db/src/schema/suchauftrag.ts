@@ -16,7 +16,7 @@ import { jobs } from "./jobs.ts";
 import { jobAnalysen } from "./nina.ts";
 
 /**
- * „Nina sucht für dich weiter" — der Suchauftrag und alles daran.
+ * „Monday sucht für dich weiter" — der Suchauftrag und alles daran.
  *
  * ══════════════════════════════════════════════════════════════
  * Die Trennung, an der alles hängt

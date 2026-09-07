@@ -166,7 +166,7 @@ export function Gespraech({
           {laeuft && (
             <div className="flex items-center gap-2 text-2xs text-ink-3">
               <Loader2 className="h-3 w-3 animate-spin" />
-              Nina liest mit
+              Monday liest mit
             </div>
           )}
           <div ref={ende} />
@@ -339,7 +339,7 @@ export function Gespraech({
     {/*
       Die Freigaben stehen unter dem Gespräch und nicht darin.
 
-      Sie sind keine Frage, die Nina stellt — sie sind eine
+      Sie sind keine Frage, die Monday stellt — sie sind eine
       Entscheidung über fremde Daten, und die trifft man mit den Augen
       auf der Folgenliste, nicht im Vorbeireden.
     */}

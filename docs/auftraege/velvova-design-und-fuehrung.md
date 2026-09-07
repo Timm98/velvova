@@ -1,4 +1,4 @@
-# Velvova — Designumbau und Nina-Führung
+# Velvova — Designumbau und Monday-Führung
 
 Erteilt am 4.9.2026. Ausdrückliche Reihenfolge des Auftraggebers:
 
@@ -7,7 +7,7 @@ Erteilt am 4.9.2026. Ausdrückliche Reihenfolge des Auftraggebers:
 > sprach- oder schreibsteuerung. währenddessen immer weiter die jobs
 > auch upgraden, damit wir das maximale rausholen."
 
-Also: **A Design zuerst**, danach **B Nina-Führung**. Der Stellenbestand
+Also: **A Design zuerst**, danach **B Monday-Führung**. Der Stellenbestand
 wächst durchgehend weiter.
 
 ---
@@ -28,12 +28,12 @@ Ein durchgehender Kopf über der ganzen Anwendung:
 
 - **Links:** grosses Velvova-Logo.
 - **Mitte:** Suchleiste, beschriftet in der Art „Finde <Zahl> Jobs mit
-  Hilfe von Nina". Führt auf die Stellenseite. Dort kann man tippen
+  Hilfe von Monday". Führt auf die Stellenseite. Dort kann man tippen
   **oder** hineinsprechen.
 - **Rechts, auf Höhe des Logos:** Profil und Glocke für
   Benachrichtigungen.
 - **Unten mittig im Kopf:** die Abschnitte als **Symbol + Text**.
-- **Unter dem Kopf:** Nina mit „Sprich weiter mit Nina". Der Core
+- **Unter dem Kopf:** Monday mit „Sprich weiter mit Monday". Der Core
   bewegt sich, der Knopf blinkt leicht auf beziehungsweise wird heller,
   und die Sucheingabe oben bekommt ebenfalls eine dezente
   Daueranimation, damit sie auffällt.
@@ -69,7 +69,7 @@ abgeknickt oder gequetscht wirken.
 - „Keine Stelle verpassen" unten **entfernen**.
 - Statt „mit den meisten offenen Stellen" lieber **Stellen mit den
   besten Zukunftschancen**.
-- Dort die Möglichkeit, **Nina um andere Auswertungen zu bitten** —
+- Dort die Möglichkeit, **Monday um andere Auswertungen zu bitten** —
   etwa „welche Stellen haben die besten Einstellungschancen" oder „wo
   verdient man am meisten".
 - **Sonst nichts** auf dieser Seite ergänzen.
@@ -78,11 +78,11 @@ abgeknickt oder gequetscht wirken.
 
 1. Ganz oben links die Grundinformationen.
 2. Direkt darunter die wichtigen Knöpfe.
-3. Das Ranking, wie gut die Stelle passt, samt Einschätzung von Nina.
+3. Das Ranking, wie gut die Stelle passt, samt Einschätzung von Monday.
 4. Die Jobprognose für die nächsten Jahre — wie stabil die Stelle ist.
 5. Gehalts- und Routenrechner.
 6. Weitere Informationen zur Stelle.
-7. Eine Funktion, Nina etwas zu dieser Stelle zu fragen — per Sprache
+7. Eine Funktion, Monday etwas zu dieser Stelle zu fragen — per Sprache
    oder kurz geschrieben.
 
 ### A9 Bewerbungsseite — vollständig neu
@@ -98,23 +98,23 @@ abgeknickt oder gequetscht wirken.
   wird, um mehr Nachrichten zu sehen.
 - **Keine dubiosen News.** Nichts Erfundenes, keine unbelegten Quellen.
 
-### A11 Nina im Rahmen
+### A11 Monday im Rahmen
 
 - **Links unten** beim Chatbot: Hilfe und Kontakt — dort muss aber
-  immer Nina sein.
-- Von dort kommen später auch Ninas Nachrichten, wenn man nicht mehr
+  immer Monday sein.
+- Von dort kommen später auch Mondays Nachrichten, wenn man nicht mehr
   auf ihrer Seite ist.
 - „Willkommen zurück" soll den Nutzer **immer namentlich** ansprechen.
 
 ---
 
-## B · Nina-Führung (erst nach Abnahme des Designs)
+## B · Monday-Führung (erst nach Abnahme des Designs)
 
-- Unten auf jeder Seite fragt Nina nach oder meldet, was gerade
+- Unten auf jeder Seite fragt Monday nach oder meldet, was gerade
   geschieht. Auf eine Nachricht kann man **direkt unten** antworten.
 - Im Sprachmodus liegt unten durchgehend ein **Mikrofon mit Animation**;
-  man kann jederzeit mit Nina sprechen.
-- Nina erklärt die ganze Seite, vor allem beim ersten Besuch.
+  man kann jederzeit mit Monday sprechen.
+- Monday erklärt die ganze Seite, vor allem beim ersten Besuch.
 - Zuerst das **Interview**, in dem man sich für Sprechen oder Schreiben
   entscheidet — **jederzeit änderbar**.
 - Nach dem Interview **automatisch auf die Stellenseite**, mit sanftem
@@ -122,11 +122,11 @@ abgeknickt oder gequetscht wirken.
 - Dort wird alles erklärt. Das gerade erklärte Element bekommt eine
   **bläuliche Umrandung**, leuchtet auf oder wird grösser — solange es
   erklärt wird. Knöpfe dürfen heller sein.
-- Ist alles erklärt und eine Stelle gewählt, führt Nina in die weiteren
+- Ist alles erklärt und eine Stelle gewählt, führt Monday in die weiteren
   Abschnitte — gleiches Prinzip.
 - **Nur beim ersten Login** mit Hervorhebung und Nachfragen. Danach
-  leitet Nina weiter, aber ohne Auszeichnung und ohne Rückfragen.
-- Nina **merkt sich** über die ganze Seite hinweg, worum es gerade geht.
+  leitet Monday weiter, aber ohne Auszeichnung und ohne Rückfragen.
+- Monday **merkt sich** über die ganze Seite hinweg, worum es gerade geht.
 
 Diese Ausbaustufe ist zusätzlich an
 `docs/auftraege/nina-interaction-system.md` gebunden; die dortige
@@ -145,6 +145,6 @@ Trennung von Sprach- und Textmodus gilt unverändert.
 - [ ] A7 Stellenliste
 - [ ] A8 Stellendetail
 - [ ] A9 Bewerbungsseite
-- [x] A10 Startseite: News-Teaser, Kundenstimmen, Nina-Einstieg
-- [~] A11 Nina: Streifen entfernt, Core gross auf der Startseite · offen: Farbe und Dauerbewegung
-- [ ] B Nina-Führung
+- [x] A10 Startseite: News-Teaser, Kundenstimmen, Monday-Einstieg
+- [~] A11 Monday: Streifen entfernt, Core gross auf der Startseite · offen: Farbe und Dauerbewegung
+- [ ] B Monday-Führung

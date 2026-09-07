@@ -72,7 +72,7 @@ export interface Karrierebefund {
   abweichungen: { feld: string; erst: unknown; zweit: unknown }[];
   neuGerechnet: boolean;
   grund: string;
-  /** Was Nina der Person sagen soll, wenn die Läufe auseinandergehen. */
+  /** Was Monday der Person sagen soll, wenn die Läufe auseinandergehen. */
   hinweis: string | null;
   /** Die offene Frage, wenn die Datenlage nicht reicht. */
   naechsteFrage: string | null;

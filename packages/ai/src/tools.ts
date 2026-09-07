@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Ninas Werkzeuge.
+ * Mondays Werkzeuge.
  *
  * Das ist die vollständige Liste dessen, was die Assistenz an Daten
  * verändern darf. Alles andere kann sie nicht — nicht weil der Prompt
@@ -93,7 +93,7 @@ export const ToolSchemas = {
    * Warum das ein Werkzeug ist und keine Modellwahl
    * ══════════════════════════════════════════════════════════════
    *
-   * Im Sprachmodus antwortet Nina über das Realtime-Modell. Das ist
+   * Im Sprachmodus antwortet Monday über das Realtime-Modell. Das ist
    * schnell und für ein Gespräch richtig — für eine Karriereanalyse
    * ist es das falsche Werkzeug.
    *

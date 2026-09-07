@@ -13,7 +13,7 @@ import { useNinaActions } from "@/components/nina/NinaProvider";
  *
  * Hier stand `JobKurzfragen`: vier Fragen, die ihre Antwort in einer
  * Ziehharmonika darunter ausklappten. Damit gab es zwei Orte, an denen
- * Nina antwortet — hier und unten rechts —, und beide kannten den
+ * Monday antwortet — hier und unten rechts —, und beide kannten den
  * anderen nicht. Wer erst hier fragte und dann unten, begann von vorn.
  *
  * Jetzt ist ein Klick dasselbe wie das Tippen der Frage: Sie geht in

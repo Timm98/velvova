@@ -19,7 +19,7 @@ import { applications } from "./applications.ts";
 import { documents } from "./applications.ts";
 
 /**
- * Ninas Gedächtnis und der Ort, an dem die Person stehengeblieben ist.
+ * Mondays Gedächtnis und der Ort, an dem die Person stehengeblieben ist.
  *
  * Zwei Dinge, die bisher fehlten und deren Fehlen dieselbe Wirkung
  * hatte: der Verlauf war nach einem Neuladen weg, und wer sein
@@ -31,7 +31,7 @@ import { documents } from "./applications.ts";
 export const ninaConversationKindEnum = pgEnum("nina_conversation_kind", [
   /** Das strukturierte Karrieregespräch. */
   "career_interview",
-  /** Die schwebende Nina auf einer beliebigen Seite. */
+  /** Die schwebende Monday auf einer beliebigen Seite. */
   "assistant",
   /** Eine Suchanfrage in natürlicher Sprache auf der Jobs-Seite. */
   "job_search",
@@ -64,7 +64,7 @@ export const careerInterviewStatusEnum = pgEnum("career_interview_status", [
 ]);
 
 /**
- * Ninas Gesprächsstufen.
+ * Mondays Gesprächsstufen.
  *
  * Sie liegen in der Datenbank und nicht im Modellkontext. Das ist der
  * Unterschied zwischen „der Server weiß, wo wir stehen“ und „das Modell
@@ -105,7 +105,7 @@ export const ninaConversations = pgTable(
     /*
      * Woher das Gespräch kam.
      *
-     * Nicht zur Anzeige, sondern damit Nina beim Wiederaufnehmen weiß,
+     * Nicht zur Anzeige, sondern damit Monday beim Wiederaufnehmen weiß,
      * worüber gesprochen wurde. Die Route ist ohne Anfrageteil
      * gespeichert; Suchparameter können personenbezogene Angaben
      * enthalten.
@@ -167,7 +167,7 @@ export const ninaMessages = pgTable(
 
     /** In welcher Stufe dieser Zug entstand. Sonst ist er später nicht einzuordnen. */
     stage: ninaStageEnum("stage"),
-    /** Was Nina in diesem Zug für richtig hielt: ask, confirm, offer_jobs … */
+    /** Was Monday in diesem Zug für richtig hielt: ask, confirm, offer_jobs … */
     recommendedAction: text("recommended_action"),
 
     model: text("model"),
@@ -215,7 +215,7 @@ export const workflowStates = pgTable("workflow_states", {
   /** Der Schritt im Produktablauf, nicht im Gespräch. */
   currentWorkflowStep: text("current_workflow_step").notNull().default("account_setup"),
 
-  /* ---- Ninas Gesprächsstufe und Jobreife ----
+  /* ---- Mondays Gesprächsstufe und Jobreife ----
      Beides ist eine Serverentscheidung. Das Modell darf die Stufe
      vorschlagen; ob sie gilt, prüft `resolveStage()` gegen die
      tatsächlich vorhandenen Angaben. */
@@ -292,7 +292,7 @@ export const ninaRoleHypotheses = pgTable(
                     Was fehlte, ist die Ebene davor: erkannte
                     Veränderungen, aus denen später eine Nachricht
                     werden KANN.
-     profile_facts  Ninas Gedächtnis, kontrolliert. Bisher verstreut
+     profile_facts  Mondays Gedächtnis, kontrolliert. Bisher verstreut
                     zwischen `evidence_items` (Belege) und
                     `preferences` (Vorlieben) — beides sind Aussagen
                     über den Menschen, aber keines hält Sätze wie
@@ -404,7 +404,7 @@ export const ninaEvents = pgTable(
 );
 
 /**
- * Ninas Gedächtnis — kontrolliert, nicht frei.
+ * Mondays Gedächtnis — kontrolliert, nicht frei.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum kein Chatgedächtnis
@@ -418,7 +418,7 @@ export const ninaEvents = pgTable(
  *
  * ── Warum `bestaetigt` der wichtigste Wert ist ────────────────
  *
- * Nina darf schliessen. Sie darf ihre Schlüsse nur nicht als Wissen
+ * Monday darf schliessen. Sie darf ihre Schlüsse nur nicht als Wissen
  * ausgeben. `bestaetigt = false` heisst: Ein Modell hat das
  * abgeleitet, und es zählt weniger — in der Anzeige, im Matching und
  * bei der Frage, ob ein bestehender Wert überschrieben werden darf.
@@ -426,7 +426,7 @@ export const ninaEvents = pgTable(
  * Genau dieser Fall steht in der Vorgabe: Wer „minimum_salary = 70k"
  * bestätigt hat, dessen Regel überschreibt ein späteres „60k wäre
  * auch okay" NICHT. Es entsteht ein zweiter, unbestätigter Fakt, und
- * Nina fragt nach.
+ * Monday fragt nach.
  *
  * ── Warum `gueltig_bis` ───────────────────────────────────────
  *
@@ -458,7 +458,7 @@ export const profileFacts = pgTable(
   (t) => [
     /* Ein Schlüssel je Person und Bestätigungsstand: Der bestätigte
        Wert und ein abweichender Vorschlag dürfen nebeneinander
-       stehen — genau das ist der Fall, in dem Nina nachfragt. */
+       stehen — genau das ist der Fall, in dem Monday nachfragt. */
     uniqueIndex("profile_facts_schluessel_idx").on(t.userId, t.schluessel, t.bestaetigt),
   ],
 );
@@ -473,7 +473,7 @@ export const profileFacts = pgTable(
  * getragen".
  *
  * Diese hier beantwortet die Frage davor: „warum nicht". Das ist die
- * Auskunft, aus der Nina lernt — und sie entsteht bei Stellen, die
+ * Auskunft, aus der Monday lernt — und sie entsteht bei Stellen, die
  * nie zu einer Bewerbung führen, also gerade dort, wo jene Tabelle
  * leer bleibt.
  *
@@ -508,7 +508,7 @@ export const matchFeedback = pgTable(
 
 
 /**
- * Ninas tiefe Analyse einer Stelle.
+ * Mondays tiefe Analyse einer Stelle.
  *
  * Sie liest Anzeige, Profil, Belege und Bedingungen zusammen und
  * braucht dafür mehrere Modellrunden — Minuten, nicht Sekunden.
@@ -592,7 +592,7 @@ export const jobAnalysen = pgTable(
  * Drei Dinge, die sich ähneln und nie ein Feld werden dürfen:
  *
  *   Profil        wer jemand ist und was er kann
- *   Suchauftrag   wonach Nina im Hintergrund weitersucht
+ *   Suchauftrag   wonach Monday im Hintergrund weitersucht
  *   Listenfilter  was gerade auf dem Bildschirm steht
  *
  * „Zeig mir mal Bayern" ist keine Beauftragung. Wer das in den

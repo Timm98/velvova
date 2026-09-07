@@ -6,7 +6,7 @@ import { handlungEntscheiden, ninaSagtEtwas } from "@/lib/proaktiv/aktionen";
 import type { Ninanachricht } from "@paycheck/jobs";
 
 /**
- * Nina meldet sich von selbst.
+ * Monday meldet sich von selbst.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum sie an derselben Kante steht wie der Hinweis
@@ -26,7 +26,7 @@ import type { Ninanachricht } from "@paycheck/jobs";
  *
  * Wer sie wegklickt, ohne zu antworten, hat sie gelesen — mehr will
  * eine Beobachtung nicht. Nur ein Vorschlag braucht eine Antwort, und
- * der bleibt offen, bis eine kommt: In „Von Nina automatisch“ steht
+ * der bleibt offen, bis eine kommt: In „Von Monday automatisch“ steht
  * er weiter.
  */
 

@@ -391,7 +391,7 @@ export interface Aufgabenlast {
  *
  * Produktentscheidungen, keine Messwerte. Sie sind bewusst hoch
  * angesetzt: Die höchste Stufe soll die Ausnahme sein, nicht der
- * Normalfall. „Hallo Nina" darf sie nie erreichen.
+ * Normalfall. „Hallo Monday" darf sie nie erreichen.
  */
 export const ESKALATION = {
   optionenAb: 4,

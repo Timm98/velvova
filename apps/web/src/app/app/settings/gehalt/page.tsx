@@ -41,7 +41,7 @@ export default async function GehaltPage() {
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Gehalt & Steuern</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Gehalt & Steuern</h2>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
           Mit diesen Angaben schätze ich, was von einem Bruttogehalt übrig bleibt. Je genauer sie
           sind, desto näher liegt die Schätzung — aber die tatsächliche Lohnabrechnung kann immer

@@ -7,7 +7,7 @@ import { praeferenzSchreiben } from "@/lib/karriere/praeferenzen";
 import { ereignisSchreiben } from "./ereignisse";
 
 /**
- * Die eine Stelle, durch die jede Nachricht an Nina geht.
+ * Die eine Stelle, durch die jede Nachricht an Monday geht.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum es nur eine gibt
@@ -18,9 +18,9 @@ import { ereignisSchreiben } from "./ereignisse";
  *   Sprache: Ton → Text → HIER → Antwort → Ton
  *   Text:            Text → HIER → Antwort
  *
- * Zwei Wege hiessen zwei Ninas. Der Unterschied fiele nicht beim
+ * Zwei Wege hiessen zwei Mondays. Der Unterschied fiele nicht beim
  * Bauen auf, sondern erst, wenn jemand beides benutzt und merkt, dass
- * die gesprochene Nina eine Angabe speichert, die die geschriebene
+ * die gesprochene Monday eine Angabe speichert, die die geschriebene
  * überhört — oder umgekehrt.
  *
  * ══════════════════════════════════════════════════════════════
@@ -43,7 +43,7 @@ export type Verarbeitung = {
    * Rückfragen, die entstanden sind.
    *
    * Sie entstehen, wenn eine neue Angabe einer bestätigten
-   * widerspricht. Nina stellt sie im nächsten Zug — nicht sofort
+   * widerspricht. Monday stellt sie im nächsten Zug — nicht sofort
    * mitten im Satz.
    */
   rueckfragen: string[];
@@ -55,7 +55,7 @@ export type Verarbeitung = {
  * Eine Nachricht verarbeiten — vor der Antwort, nicht danach.
  *
  * Die Reihenfolge ist wichtig: Was der Mensch gerade gesagt hat, muss
- * im Profil stehen, BEVOR Nina antwortet. Sonst antwortet sie auf
+ * im Profil stehen, BEVOR Monday antwortet. Sonst antwortet sie auf
  * einen Stand, den sie im selben Zug überholt hat.
  */
 export async function verarbeite(
@@ -97,12 +97,12 @@ export async function verarbeite(
      * Dieselbe Angabe zusätzlich als Vorliebe ablegen.
      *
      * Die beiden Tabellen sind keine Verdopplung, sie beantworten
-     * verschiedene Fragen. `profile_facts` ist Ninas Gedächtnis: „Was
+     * verschiedene Fragen. `profile_facts` ist Mondays Gedächtnis: „Was
      * weiss ich über diesen Menschen?" `preferences` ist der Eingang
      * zum Matching: „Was darf eine Stelle ausschliessen und wie schwer
      * wiegt der Rest?"
      *
-     * Ohne diesen Schritt wüsste Nina im Gespräch von der Bedingung,
+     * Ohne diesen Schritt wüsste Monday im Gespräch von der Bedingung,
      * und die Bewertung wüsste nichts davon — die Person sagt „unter
      * 60.000 nicht" und bekommt weiter Stellen für 48.000.
      *

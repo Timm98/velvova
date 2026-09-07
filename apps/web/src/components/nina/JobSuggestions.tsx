@@ -99,7 +99,7 @@ export function JobSuggestions({
               </span>
             </div>
 
-            <h3 className="mt-3.5 font-display text-[17px] font-semibold leading-snug tracking-[-0.01em]">
+            <h3 className="mt-3.5 font-display text-[17px] font-normal leading-snug tracking-[-0.01em]">
               {job.title}
             </h3>
             <p className="mt-1 text-sm text-ink-2">

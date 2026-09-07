@@ -86,7 +86,7 @@ export interface SourceDecision {
  * Wie ein einzelnes Feld zustande kam.
  *
  * Diese Unterscheidung ist der Kern der Provenienz: „steht so in der
- * Anzeige" und „hat Nina daraus geschlossen" dürfen niemals gleich
+ * Anzeige" und „hat Monday daraus geschlossen" dürfen niemals gleich
  * aussehen.
  */
 export type TransformType =

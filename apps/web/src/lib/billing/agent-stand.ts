@@ -3,7 +3,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { isStale, listJobsForUser, loadProfileContext } from "@/lib/matching";
 
 /**
- * Was Nina für jemanden getan hat, während er nicht hingesehen hat.
+ * Was Monday für jemanden getan hat, während er nicht hingesehen hat.
  *
  * Der Bereich existiert nur für Max — nicht als Belohnung, sondern
  * weil nur dort tatsächlich etwas im Hintergrund passiert. Ihn für
@@ -12,7 +12,7 @@ import { isStale, listJobsForUser, loadProfileContext } from "@/lib/matching";
  *
  * Die Regel für jede Zeile hier: **sie muss aus echten Daten kommen.**
  * Keine erfundenen Zahlen, keine geschätzten „ungefähr", keine Zeile,
- * die immer dasteht. Was Nina nicht belegen kann, sagt sie nicht — und
+ * die immer dasteht. Was Monday nicht belegen kann, sagt sie nicht — und
  * wenn nichts passiert ist, steht hier, dass nichts passiert ist. Das
  * ist eine gültige Auskunft und die einzige ehrliche.
  */

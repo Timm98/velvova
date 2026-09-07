@@ -28,7 +28,7 @@ await s.getByRole("button", { name: /Konto anlegen/i }).click();
 await s.waitForURL(/\/(app|setup)/, { timeout: 45000 });
 
 const SEITEN = [
-  ["/app", /Heute|Nächster|Willkommen|Nina/i],
+  ["/app", /Heute|Nächster|Willkommen|Monday/i],
   ["/app/jobs", /Stellen|Jobs|Suche/i],
   [`/app/jobs/${stelle.id}`, /Arbeitsalltag|Quelle/i],
   ["/app/belege", /Was du belegen kannst/i],

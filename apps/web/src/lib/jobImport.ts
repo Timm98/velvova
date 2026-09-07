@@ -72,7 +72,7 @@ export async function importFromUrl(
       modus: "bookmark",
       hinweis:
         "Auf der Seite stehen keine strukturierten Stellendaten. Füge den Anzeigentext ein, " +
-        "dann analysiert Nina ihn.",
+        "dann analysiert Monday ihn.",
     };
   }
 

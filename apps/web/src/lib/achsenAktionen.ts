@@ -12,7 +12,7 @@ import { requireUser } from "@/lib/auth";
  *
  * Die Zeile bleibt stehen und trägt `bestaetigt = false`. Sie zählt
  * nicht mehr — aber sie ist noch da, mitsamt dem Beleg. Wer wissen
- * will, warum Nina etwas angenommen hat, kann es nachlesen; und wer
+ * will, warum Monday etwas angenommen hat, kann es nachlesen; und wer
  * dieselbe Ableitung ein zweites Mal ablehnt, sieht, dass es nicht das
  * erste Mal war.
  *

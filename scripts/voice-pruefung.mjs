@@ -4,7 +4,7 @@ import { chromium } from "@playwright/test";
  * Prüft die Sprachsitzung, soweit es ohne Mikrofon geht.
  *
  * Was hier NICHT geprüft wird — und was deshalb MANUAL_TEST_REQUIRED
- * bleibt: ob Nina hörbar spricht, ob die Unterbrechung greift, ob die
+ * bleibt: ob Monday hörbar spricht, ob die Unterbrechung greift, ob die
  * Erkennung versteht. Dafür braucht es ein echtes Mikrofon und ein
  * echtes Ohr.
  *
@@ -70,7 +70,7 @@ try {
 }
 
 // 5. Der Knopf existiert in der Oberfläche
-await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
 await p.waitForTimeout(2000);
 const knopf =
   (await p.getByRole("button", { name: /Live sprechen/i }).count()) +

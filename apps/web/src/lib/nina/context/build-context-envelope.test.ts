@@ -9,8 +9,8 @@ import { beschreibungsTokens } from "@paycheck/matching";
  * Der Kontext-Umschlag ist die Stelle, an der zwei Versprechen
  * eingelöst oder gebrochen werden:
  *
- *   1. Nina setzt nach einem Neustart dort fort, wo aufgehört wurde.
- *   2. Nina sieht ausschließlich die Daten der angemeldeten Person.
+ *   1. Monday setzt nach einem Neustart dort fort, wo aufgehört wurde.
+ *   2. Monday sieht ausschließlich die Daten der angemeldeten Person.
  *
  * Beides sind Sicherheits- beziehungsweise Verlässlichkeitsaussagen,
  * und Aussagen dieser Art gehören geprüft. Es läuft echtes Postgres

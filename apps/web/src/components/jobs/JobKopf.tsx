@@ -93,7 +93,7 @@ export interface JobKopfDaten {
   bedingungenWert?: number | null;
   /** Die eigene Gehaltsuntergrenze — Massstab für die Farbe. */
   wunschgehalt?: number | null;
-  /** Ninas ein Satz dafür und ein Satz dagegen. */
+  /** Mondays ein Satz dafür und ein Satz dagegen. */
   grund: string | null;
   vorbehalt: string | null;
   /** Die Empfehlung als Auszeichnung, falls es eine gibt. */
@@ -204,7 +204,7 @@ export function JobKopf({
       >
         <div className="flex flex-wrap items-center gap-2">
           <Badge tone="outline">Quelle: {daten.quelle ?? "unbekannt"}</Badge>
-          {/* Titelschrift wie Ninas Name — dieselbe Begründung: Das
+          {/* Titelschrift wie Mondays Name — dieselbe Begründung: Das
               Datum steht in keiner Spalte, also braucht es keine
               gleichen Zeichenbreiten. */}
           <span className="font-titel text-[11px] text-ink-3">
@@ -333,7 +333,7 @@ export function JobKopf({
          * Stelle überhaupt angeht. Das Gehalt gehört dazu: Ohne die
          * Zahl ist „Bewerbung vorbereiten" eine Handlung ins Blaue.
          *
-         * Alles Weitere — was der Wechsel bringt, warum Nina sie
+         * Alles Weitere — was der Wechsel bringt, warum Monday sie
          * zeigt, die Passung — steht darunter und begründet. Wer
          * begründen will, liest weiter; wer entschieden hat, klickt.
          */}
@@ -361,9 +361,9 @@ export function JobKopf({
 
         {/*
          * Hier stand „Was der Wechsel bringt", danach kurz ein Kasten
-         * „Frag Nina zu dieser Stelle". Beides ist weg.
+         * „Frag Monday zu dieser Stelle". Beides ist weg.
          *
-         * Nina hat ab jetzt genau einen Einstieg: die schwebende
+         * Monday hat ab jetzt genau einen Einstieg: die schwebende
          * Blase unten rechts. Eine zweite Eingabe mitten in der
          * Stellenanzeige wäre ein zweiter Eingang in dieselbe Sitzung
          * — und die Person müsste raten, welcher der richtige ist.
@@ -373,12 +373,12 @@ export function JobKopf({
          */}
 
         {/*
-         * Hier stand „Warum Nina sie zeigt" mit zwei Zeilen Grund und
+         * Hier stand „Warum Monday sie zeigt" mit zwei Zeilen Grund und
          * Vorbehalt darunter.
          *
          * In der Praxis lautete der Text bei fast jeder Stelle „Sieht
          * interessant aus — für eine belastbare Einschätzung kennt
-         * Nina dich noch nicht gut genug", und der Vorbehalt nannte
+         * Monday dich noch nicht gut genug", und der Vorbehalt nannte
          * fehlende Fähigkeiten. Beides stimmt und beides sagt über
          * DIESE Stelle nichts: Es sagt etwas über den Stand des
          * Profils, und das gehört nicht in den Kopf jeder Anzeige.
@@ -393,7 +393,7 @@ export function JobKopf({
           
           Sie stand einmal zwischen Gehalt und Knöpfen und schob damit
           die Handlung nach unten. Jetzt steht sie hinter allem, was
-          sie begründet — Gehalt und die Angaben der Anzeige, „warum Nina sie
+          sie begründet — Gehalt und die Angaben der Anzeige, „warum Monday sie
           zeigt" — und leitet über zu dem, was darunter
           aufgeschlüsselt wird: formale Anforderungen, Fähigkeiten,
           Arbeitsalltag, Sicherheit der Einschätzung.
@@ -464,7 +464,7 @@ export function JobKopf({
           0,5 Matching + 0,3 Qualität + 0,2 Sicherheit, grün erst ab 75
           und nur, wenn kein Einzelwert unter 50 liegt.
           
-          Die Einzelwerte sind nicht verschwunden — die Nina-Analyse
+          Die Einzelwerte sind nicht verschwunden — die Monday-Analyse
           darunter nennt jeden mit seiner Zahl und einem Satz dazu.
           Dort stehen sie im Zusammenhang statt als Balkenreihe.
         */}

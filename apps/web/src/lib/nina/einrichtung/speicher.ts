@@ -11,7 +11,7 @@ import {
 import { pruefe } from "./pruefung";
 
 /**
- * Ninas Einrichtung lesen, schreiben, widerrufen.
+ * Mondays Einrichtung lesen, schreiben, widerrufen.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum jeder Wert hier noch einmal geprüft wird

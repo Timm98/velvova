@@ -1,5 +1,5 @@
 /**
- * Was Nina darf — und was sie nie darf.
+ * Was Monday darf — und was sie nie darf.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum die Zusammenfassung abgeleitet wird
@@ -49,7 +49,7 @@ export const STUFEN: {
   {
     wert: "nur_vorschlagen",
     label: "Nur vorschlagen",
-    erklaerung: "Nina legt dir passende Menschen vor. Jeden Schritt danach machst du.",
+    erklaerung: "Monday legt dir passende Menschen vor. Jeden Schritt danach machst du.",
     darf: [
       "passende Profile suchen und dir anonym vorlegen",
       "dir erklären, warum jemand passt und wo es hakt",
@@ -59,7 +59,7 @@ export const STUFEN: {
     wert: "nach_freigabe",
     label: "Ansprechen, nachdem du zugestimmt hast",
     erklaerung:
-      "Nina schreibt die Anfrage, du liest sie und gibst sie frei. Erst dann geht sie raus.",
+      "Monday schreibt die Anfrage, du liest sie und gibst sie frei. Erst dann geht sie raus.",
     darf: [
       "passende Profile suchen und dir anonym vorlegen",
       "dir erklären, warum jemand passt und wo es hakt",
@@ -70,7 +70,7 @@ export const STUFEN: {
     wert: "selbst_ansprechen",
     label: "Selbst ansprechen",
     erklaerung:
-      "Nina fragt bei passenden Menschen selbst an, ob sie ihr Profil für euch freigeben. " +
+      "Monday fragt bei passenden Menschen selbst an, ob sie ihr Profil für euch freigeben. " +
       "Ob sie zusagen, entscheiden sie.",
     darf: [
       "passende Profile suchen und dir anonym vorlegen",
@@ -84,17 +84,17 @@ export const KONTAKTREGELN: { wert: Kontaktregel; label: string; erklaerung: str
   {
     wert: "immer_einzeln",
     label: "Ich gebe jeden Kontakt einzeln frei",
-    erklaerung: "Auch bei gegenseitigem Interesse fragt Nina dich noch einmal.",
+    erklaerung: "Auch bei gegenseitigem Interesse fragt Monday dich noch einmal.",
   },
   {
     wert: "ab_gegenseitig",
     label: "Kontakt öffnen, sobald beide Seiten Interesse gezeigt haben",
-    erklaerung: "Nina öffnet den Kontakt, ohne dich noch einmal zu fragen.",
+    erklaerung: "Monday öffnet den Kontakt, ohne dich noch einmal zu fragen.",
   },
 ];
 
 /**
- * Was Nina in keiner Einstellung darf.
+ * Was Monday in keiner Einstellung darf.
  *
  * Jeder Satz steht für eine Stelle im Programm. Die Verweise stehen
  * oben im Kopfkommentar — sie gehören zum Satz, nicht in die

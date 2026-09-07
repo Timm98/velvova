@@ -19,7 +19,7 @@ import {
 } from "@paycheck/ai";
 
 /**
- * Ninas Maschinenraum.
+ * Mondays Maschinenraum.
  *
  * Hier passiert das, was die Person nicht sieht und worauf sich alles
  * verlässt: zählen, was tatsächlich bekannt ist; entscheiden, ob eine
@@ -227,7 +227,7 @@ export async function extrahieren(input: {
      * Die Nachricht ist gespeichert, die Antwort steht auf dem
      * Bildschirm. Was fehlt, ist die Auswertung. Ohne diese Zeile
      * fehlte sie stillschweigend: keine Belege, keine Stufe, keine
-     * Reife — und von außen sieht das aus wie „Nina merkt sich
+     * Reife — und von außen sieht das aus wie „Monday merkt sich
      * nichts", nicht wie ein fehlgeschlagener Aufruf.
      */
     console.error(
@@ -448,14 +448,14 @@ conclusion.`;
  *
  * ── Was hier gefehlt hat ──────────────────────────────────────
  *
- * `loadModelContext` gibt Nina die letzten zwölf Züge wörtlich mit,
+ * `loadModelContext` gibt Monday die letzten zwölf Züge wörtlich mit,
  * dazu die Zusammenfassung des Davor. `needsSummary` und
  * `storeSummary` standen fertig im Code, mit Schwelle bei zwanzig
  * Zügen — und keinen einzigen Aufrufer.
  *
  * Gemessen: 181 Gespräche, null Zusammenfassungen, das längste 47
  * Nachrichten. Alles vor dem zwölftletzten Zug war schlicht weg. Von
- * aussen sieht das aus wie „Nina merkt sich nichts" — und war es auch.
+ * aussen sieht das aus wie „Monday merkt sich nichts" — und war es auch.
  *
  * ── Warum nach dem Strom und mit `structuredGenerate` ─────────
  *

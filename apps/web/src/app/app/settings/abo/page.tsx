@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
  *
  * Hier stand vorher „Abo & Zahlung" mit einem Knopf nach `/pricing` —
  * einer eigenen Seite, die aussah wie ein Laden und aus der man mit
- * „Zurück zu Nina" wieder herausfand. Preise sind aber kein Ort, den
+ * „Zurück zu Monday" wieder herausfand. Preise sind aber kein Ort, den
  * man besucht, sondern eine Auskunft über das eigene Konto. Deshalb
  * gibt es die Seite nicht mehr; sie leitet hierher.
  *
@@ -92,7 +92,7 @@ export default async function PlanUndAbrechnungPage() {
         <div className="grid gap-1">
           <span className="abschnitts-titel text-ink-3">Dein Plan</span>
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h2 className="font-display text-3xl font-semibold tracking-[-0.025em]">{plan.name}</h2>
+            <h2 className="font-display text-3xl font-normal tracking-[-0.015em]">{plan.name}</h2>
             <p className="text-base text-ink-2">
               {preisText(plan.preisMonatCent)}
               {plan.preisMonatCent > 0 ? " / Monat" : " · dauerhaft"}
@@ -147,7 +147,7 @@ export default async function PlanUndAbrechnungPage() {
 
       {/* ── Nutzung ─────────────────────────────────────────── */}
       <section className="grid gap-4">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Nutzung</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Nutzung</h2>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
           Was dein Plan zulässt. Grenzen stehen hier, damit du sie kennst, bevor du an sie
           stösst — nicht erst, wenn du sie erreicht hast.
@@ -158,11 +158,11 @@ export default async function PlanUndAbrechnungPage() {
             ["Stellen je Ansicht", grenzText(grenzen.jobsSichtbar)],
             ["Tiefenanalysen im Monat", grenzText(grenzen.tiefenanalysenProMonat)],
             ["Unterlagen im Monat", grenzText(grenzen.dokumenteProMonat)],
-            ["Nachrichten an Nina je Tag", grenzText(grenzen.ninaNachrichtenProTag)],
+            ["Nachrichten an Monday je Tag", grenzText(grenzen.ninaNachrichtenProTag)],
           ].map(([titel, wert]) => (
             <div key={titel} className="grid gap-0.5">
               <dt className="abschnitts-titel text-ink-3">{titel}</dt>
-              <dd className="font-display text-xl font-semibold">{wert}</dd>
+              <dd className="font-display text-xl font-normal">{wert}</dd>
             </div>
           ))}
         </dl>
@@ -172,7 +172,7 @@ export default async function PlanUndAbrechnungPage() {
             <dt className="abschnitts-titel text-ink-3">
               Gespeicherte Stellen
             </dt>
-            <dd className="font-display text-xl font-semibold">
+            <dd className="font-display text-xl font-normal">
               {gespeicherteStellen[0]?.n ?? 0}
             </dd>
           </div>
@@ -180,14 +180,14 @@ export default async function PlanUndAbrechnungPage() {
             <dt className="abschnitts-titel text-ink-3">
               Bewerbungen diesen Monat
             </dt>
-            <dd className="font-display text-xl font-semibold">{bewerbungen[0]?.n ?? 0}</dd>
+            <dd className="font-display text-xl font-normal">{bewerbungen[0]?.n ?? 0}</dd>
           </div>
           {grenzen.beobachteteStellen > 0 && (
             <div className="grid gap-0.5">
               <dt className="abschnitts-titel text-ink-3">
                 Beobachtete Stellen
               </dt>
-              <dd className="font-display text-xl font-semibold">
+              <dd className="font-display text-xl font-normal">
                 bis {grenzen.beobachteteStellen}
               </dd>
             </div>
@@ -195,14 +195,14 @@ export default async function PlanUndAbrechnungPage() {
         </dl>
       </section>
 
-      {/* ── Mehr mit Nina machen ────────────────────────────── */}
+      {/* ── Mehr mit Monday machen ────────────────────────────── */}
       <section className="grid gap-5">
         <div className="grid gap-1">
-          <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">
-            Mehr mit Nina machen
+          <h2 className="font-display text-xl font-normal tracking-[-0.02em]">
+            Mehr mit Monday machen
           </h2>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-            Free bleibt vollständig nutzbar. Die anderen Pläne fügen hinzu, was Nina zusätzlich
+            Free bleibt vollständig nutzbar. Die anderen Pläne fügen hinzu, was Monday zusätzlich
             tun kann — sie machen Free nicht schlechter.
           </p>
         </div>
@@ -217,7 +217,7 @@ export default async function PlanUndAbrechnungPage() {
 
       {/* ── Zahlungsart ─────────────────────────────────────── */}
       <section className="grid gap-3">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Zahlungsart</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Zahlungsart</h2>
         {zahlarten.length > 0 ? (
           <ul className="grid gap-2">
             {zahlarten.map((z) => (
@@ -238,7 +238,7 @@ export default async function PlanUndAbrechnungPage() {
 
       {/* ── Rechnungen ──────────────────────────────────────── */}
       <section className="grid gap-3">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Rechnungen</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Rechnungen</h2>
         {rechnungen.length > 0 ? (
           <ul className="grid gap-2">
             {rechnungen.map((r) => (
@@ -266,7 +266,7 @@ export default async function PlanUndAbrechnungPage() {
       {/* ── Abo beenden ─────────────────────────────────────── */}
       {zugang.plan !== "free" && !zugang.gekuendigtZum && (
         <section className="grid gap-3 border-t border-line-2 pt-8">
-          <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Abo beenden</h2>
+          <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Abo beenden</h2>
           <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
             Du behältst {plan.name} bis zum Ende des bezahlten Zeitraums. Danach gilt wieder
             Free — dein Profil, deine Gespräche und deine Bewerbungen bleiben vollständig

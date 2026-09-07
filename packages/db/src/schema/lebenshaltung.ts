@@ -13,7 +13,7 @@ import { users } from "./identity.ts";
  * nicht in einen Modellkontext gehört.
  *
  * Am Karriereprofil hätten sie deshalb nichts verloren: Von dort
- * fliessen Angaben in Lebensläufe, in Ninas Begründungen und in die
+ * fliessen Angaben in Lebensläufe, in Mondays Begründungen und in die
  * Suchrichtungen. Eine Miete, die versehentlich in einem Anschreiben
  * landet, ist ein Schaden, den keine Korrektur zurückholt.
  *

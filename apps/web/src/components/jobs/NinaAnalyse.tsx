@@ -3,7 +3,7 @@ import { rangbegruendung, type Werte, type Zukunftsdaten } from "@/lib/jobs/rang
 import type { WorkspaceDaten } from "@/app/app/jobs/nina/daten";
 
 /**
- * Ninas Lesart der Stelle — direkt unter dem Kopf.
+ * Mondays Lesart der Stelle — direkt unter dem Kopf.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das die erste Auskunft der Seite ist
@@ -50,7 +50,7 @@ export function NinaAnalyse({
   zukunft?: Zukunftsdaten | null;
 }) {
   /*
-   * Ohne Passung spricht Nina über den Beruf.
+   * Ohne Passung spricht Monday über den Beruf.
    *
    * Die Alternative wäre dreimal „kennt dich noch nicht gut genug" —
    * wahr und für jemanden, der gerade eine Anzeige liest, nutzlos.
@@ -96,7 +96,7 @@ export function NinaAnalyse({
       <p className="text-[15px] leading-relaxed text-ink-2">{begruendung.gesamt}</p>
 
       {/*
-        Als Tabelle: links der Punkt, rechts was Nina dazu sagt.
+        Als Tabelle: links der Punkt, rechts was Monday dazu sagt.
         
         Untereinander mit der Überschrift ÜBER dem Satz las sich das
         wie drei Absätze — man musste jedes Mal neu zuordnen, worauf

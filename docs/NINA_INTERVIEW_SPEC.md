@@ -1,6 +1,6 @@
 # Das Karrieregespräch
 
-Wie Nina fragt, warum in dieser Reihenfolge, und was mit den Antworten
+Wie Monday fragt, warum in dieser Reihenfolge, und was mit den Antworten
 geschieht.
 
 ## Die Haltung
@@ -51,7 +51,7 @@ kann. Genau das soll dieses Produkt ersetzen, nicht belohnen.
 **Eine Frage auf einmal.** Eine Formularwand mit zwölf Feldern ist schneller
 auszufüllen und liefert schlechtere Antworten.
 
-**Nachfragen statt annehmen.** Bleibt eine Antwort vage, fragt Nina nach dem
+**Nachfragen statt annehmen.** Bleibt eine Antwort vage, fragt Monday nach dem
 Konkreten: was genau getan wurde, was daraus wurde. Aus „ich bin teamfähig“
 wird nichts; aus „ich habe eine Eskalation übernommen und bis zur Lösung
 begleitet“ wird ein Beleg.
@@ -84,7 +84,7 @@ Modells. Nach einem Neustart, einem Gerätewechsel oder drei Tagen Pause steht
 dieselbe Antwort bereit:
 
 > Zuletzt: Bewerbung begonnen. Offen ist: Bewerbung fortsetzen. Möchtest du
-> dort weitermachen? — Nina
+> dort weitermachen? — Monday
 
 Liegt kein Ereignis vor, behauptet die Antwort nichts. Das ist der Unterschied
 zwischen Erinnern und So-tun-als-ob.

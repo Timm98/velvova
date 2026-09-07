@@ -19,14 +19,14 @@ import { ABLEHNUNGSGRUENDE } from "@/lib/nina/musterregeln";
  * Die Reihenfolge ist der Punkt. Ein Dialog, der vor dem Ablegen einen
  * Grund verlangt, macht aus einer Nebensache eine Unterbrechung — und
  * wer schnell durch eine Liste geht, klickt dann irgendetwas an.
- * Daraus lernt Nina Muster, die es nie gab.
+ * Daraus lernt Monday Muster, die es nie gab.
  *
  * ══════════════════════════════════════════════════════════════
  * Was mit dem Grund passiert
  * ══════════════════════════════════════════════════════════════
  *
  * Er wird gezählt, nicht angewendet. Häuft sich derselbe Grund, stellt
- * Nina eine Frage — sie setzt keinen Filter. Der Unterschied ist, ob
+ * Monday eine Frage — sie setzt keinen Filter. Der Unterschied ist, ob
  * Stellen verschwinden, weil jemand das entschieden hat, oder weil ein
  * Zähler eine Schwelle überschritten hat.
  */

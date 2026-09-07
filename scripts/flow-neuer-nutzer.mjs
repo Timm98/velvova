@@ -25,14 +25,14 @@ await schritt("Registrierung", async () => {
   return new URL(p.url()).pathname;
 });
 
-await schritt("Nina-Seite erreichbar", async () => {
-  await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await schritt("Monday-Seite erreichbar", async () => {
+  await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
   const t = await p.locator("body").innerText();
   if (/schiefgegangen|Fehler/i.test(t.slice(0, 400))) throw new Error("Fehlerseite");
   return `${t.replace(/\s+/g, " ").length} Zeichen Text`;
 });
 
-await schritt("Nachricht an Nina absendbar", async () => {
+await schritt("Nachricht an Monday absendbar", async () => {
   const feld = p.locator("textarea, input[type=text]").first();
   await feld.waitFor({ timeout: 15000 });
   await feld.fill("Ich arbeite im Lager, aber das Koerperliche macht mich fertig. Mit Kunden komme ich gut klar und ich mache oft die Schichtplanung.");
@@ -40,7 +40,7 @@ await schritt("Nachricht an Nina absendbar", async () => {
   return "gesendet";
 });
 
-await schritt("Nina antwortet", async () => {
+await schritt("Monday antwortet", async () => {
   await p.waitForTimeout(30000);
   const t = (await p.locator("body").innerText()).replace(/\s+/g, " ");
   if (t.length < 300) throw new Error("kaum Text auf der Seite");

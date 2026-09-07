@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, X } from "lucide-react";
 
 /**
- * Ninas eine Rückfrage zur laufenden Suche — unten rechts.
+ * Mondays eine Rückfrage zur laufenden Suche — unten rechts.
  *
  * ══════════════════════════════════════════════════════════════
  * Die Regel, die dieses Fenster von einem Chat unterscheidet
@@ -21,7 +21,7 @@ import { Loader2, X } from "lucide-react";
  *
  * Das ist auch der Grund, warum die Antwort NICHT in den
  * Gesprächsverlauf wandert: Sie ist eine Einstellung, keine Nachricht.
- * Wer das ganze Gespräch will, öffnet Nina — dafür gibt es die Blase.
+ * Wer das ganze Gespräch will, öffnet Monday — dafür gibt es die Blase.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum die Antwort denselben Weg geht wie die Eingabe oben

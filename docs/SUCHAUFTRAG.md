@@ -1,4 +1,4 @@
-# Nina sucht für dich weiter — Betrieb
+# Monday sucht für dich weiter — Betrieb
 
 Der persönliche Suchauftrag: Hintergrundsuche, nachvollziehbares
 Matching, persönliche Zusammenfassung. Dieses Dokument beschreibt, was
@@ -276,7 +276,7 @@ Prozent des Bestands — und zwar genau die, für die die feine Prüfung
 
 ### Systemprompt 1 — aus einem Satz ein Auftrag
 
-„Nina, such für mich weiter nach Lagerstellen in Karlsruhe oder
+„Monday, such für mich weiter nach Lagerstellen in Karlsruhe oder
 komplett remote, mindestens 32.000, keine Nachtschicht."
 
 Der Einstieg aus Chat, Sprache und dem Feld unter „Suchaufträge". Das

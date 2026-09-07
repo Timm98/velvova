@@ -3,7 +3,7 @@ import { BEREICHSNAME, FELDER, LEERFORMELN, type OnboardingFeld } from "./felder
 import type { Fund } from "./leser";
 
 /**
- * Was Nina als Nächstes sagt.
+ * Was Monday als Nächstes sagt.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum die Frage aus einer Regel kommt und nicht aus dem Modell
@@ -29,7 +29,7 @@ import type { Fund } from "./leser";
  */
 
 export type Zug = {
-  /** Was Nina sagt. */
+  /** Was Monday sagt. */
   text: string;
   /** Worauf sich die Frage bezieht — für Hervorhebung in der Vorschau. */
   bezug: { bereich: string; feld: string } | null;
@@ -37,7 +37,7 @@ export type Zug = {
   fertig: boolean;
 };
 
-/* ── Bestätigung: was Nina verstanden hat ─────────────────────── */
+/* ── Bestätigung: was Monday verstanden hat ─────────────────────── */
 
 /** Einen Wert so schreiben, wie ein Mensch ihn vorlesen würde. */
 export function wertText(wert: unknown): string {
@@ -58,7 +58,7 @@ export function wertText(wert: unknown): string {
 const LABEL = new Map(FELDER.map((f) => [`${f.bereich}.${f.feld}`, f.label]));
 
 /**
- * Was Nina zurückspiegelt.
+ * Was Monday zurückspiegelt.
  *
  * Nur die Werte, keine Bewertung. „Ich habe verstanden: 25
  * Mitarbeitende“ lässt sich widersprechen; „Klingt nach einem
@@ -190,7 +190,7 @@ export function naechsterZug(opt: {
   /*
    * Es gibt keine Frage mehr, aber es fehlt noch etwas — das
    * passiert bei Feldern ohne eigene `frage`, etwa `standort.ort`.
-   * Dann benennt Nina die Lücke, statt „fertig“ zu sagen.
+   * Dann benennt Monday die Lücke, statt „fertig“ zu sagen.
    */
   const fehlt = [...anzeige.fehlendZwingend, ...matching.fehlendZwingend][0];
   if (fehlt) {

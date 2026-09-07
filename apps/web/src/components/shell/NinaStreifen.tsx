@@ -6,11 +6,11 @@ import { ArrowRight } from "lucide-react";
 import { NinaVisual } from "@/components/nina/NinaVisual";
 
 /**
- * Der Nina-Streifen unter der Kopfzeile.
+ * Der Monday-Streifen unter der Kopfzeile.
  *
  * ── Warum er hier steht ───────────────────────────────────────
  *
- * Nina war bisher ein Punkt in der Navigation wie jeder andere —
+ * Monday war bisher ein Punkt in der Navigation wie jeder andere —
  * ein Wort zwischen fünf Wörtern. Sie ist aber nicht ein Bereich der
  * Anwendung, sondern die Art, wie man sie bedient. Ein eigener
  * Streifen direkt unter dem Kopf sagt das, ohne eine Seite dafür zu
@@ -22,9 +22,9 @@ import { NinaVisual } from "@/components/nina/NinaVisual";
  * jede Software sagt. Mit Namen ist es eine Feststellung: Wir wissen,
  * wer du bist, und das Gespräch von gestern läuft weiter.
  *
- * ── Warum nicht auf Ninas eigener Seite ───────────────────────
+ * ── Warum nicht auf Mondays eigener Seite ───────────────────────
  *
- * Dort steht Nina bereits in voller Grösse. Ein zweites, kleineres
+ * Dort steht Monday bereits in voller Grösse. Ein zweites, kleineres
  * Abbild derselben Figur direkt darüber ist keine Wiedererkennung,
  * sondern ein Doppelbild.
  */
@@ -38,7 +38,7 @@ export function NinaStreifen({
   /**
    * Ob es schon ein Gespräch gibt.
    *
-   * Der Knopf hiess erst „Sprich weiter mit Nina" — unabhängig davon,
+   * Der Knopf hiess erst „Sprich weiter mit Monday" — unabhängig davon,
    * ob je ein Wort gefallen war. „Weiter" zu jemandem zu sagen, mit
    * dem man noch nie gesprochen hat, ist die Art Freundlichkeit, die
    * sofort als Automatismus auffliegt.
@@ -53,7 +53,7 @@ export function NinaStreifen({
   /*
    * Nur auf der Startseite, sonst nirgends.
    *
-   * Zuerst stand der Streifen auf jeder Seite ausser Ninas eigener.
+   * Zuerst stand der Streifen auf jeder Seite ausser Mondays eigener.
    * Das war einer zu viel: Wer bereits in der Trefferliste steht oder
    * eine Bewerbung schreibt, hat sich für eine Tätigkeit entschieden —
    * ein dauerhaft blinkender Knopf daneben, der ihn woanders hinruft,
@@ -99,7 +99,7 @@ export function NinaStreifen({
         </p>
 
         <Link
-          href="/app/nina"
+          href="/app/monday"
           className="nina-streifen__knopf inline-flex h-12 shrink-0 items-center gap-2.5 rounded-(--radius-pill) bg-accent px-6 text-base font-semibold text-accent-on transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <span className="hidden md:inline">{knopf}</span>

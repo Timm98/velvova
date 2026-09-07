@@ -432,7 +432,7 @@ export function zuRawListing(s: Stelle, detail: Detail | null): RawListing | nul
    * Ohne Beschreibung ist die Stelle für uns wertlos.
    *
    * Die gesamte Einschätzung hängt am Text: Aufgaben, Anforderungen,
-   * Ninas Begründung, die Gehaltslesung. Eine Zeile mit Titel und Firma
+   * Mondays Begründung, die Gehaltslesung. Eine Zeile mit Titel und Firma
    * stünde in der Liste und gäbe beim Öffnen nichts her.
    */
   if (!ref || !titel || !firma || text.length < 40) return null;

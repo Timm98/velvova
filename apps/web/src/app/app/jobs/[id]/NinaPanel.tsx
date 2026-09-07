@@ -42,7 +42,7 @@ export function NinaPanel({
         {prompts.map((prompt) => (
           <li key={prompt.key}>
             <Link
-              href={`/app/nina?job=${jobId}&ask=${prompt.key}`}
+              href={`/app/monday?job=${jobId}&ask=${prompt.key}`}
               className="flex items-center justify-between gap-3 rounded-(--radius-md) bg-raised/70 px-3.5 py-2.5 text-sm transition-colors hover:bg-raised"
             >
               {prompt.label}

@@ -164,8 +164,8 @@ await pc.goto(`${B}/app/jobs/bewerben/${postingId}`, { waitUntil: "domcontentloa
 await pc.waitForTimeout(2500);
 const bewerbenSeite = await text(pc);
 zeile(/Was NICHT übermittelt wird/.test(bewerbenSeite), "Die Bewerbungsseite sagt, was NICHT übermittelt wird");
-zeile(/Gespräch mit Nina/.test(bewerbenSeite) && /Lebenshaltung/.test(bewerbenSeite),
-  "Nina-Chat und Lebenshaltung sind ausdrücklich ausgenommen");
+zeile(/Gespräch mit Monday/.test(bewerbenSeite) && /Lebenshaltung/.test(bewerbenSeite),
+  "Monday-Chat und Lebenshaltung sind ausdrücklich ausgenommen");
 
 await pc.getByLabel("Name", { exact: true }).fill("Carla Berg");
 await pc.getByLabel("In einem Satz").fill("Disponentin mit vier Jahren Erfahrung im Nahverkehr");
@@ -180,7 +180,7 @@ await pa.waitForTimeout(2500);
 const bewerbungen = await text(pa);
 zeile(/Carla Berg/.test(bewerbungen), "Die Bewerbung steht im Arbeitgeberbereich");
 zeile(/Disponentin mit vier Jahren/.test(bewerbungen), "Die freigegebene Kurzbeschreibung ist dabei");
-zeile(!/Lebenshaltung|Nina-Chat|Steuerklasse/.test(bewerbungen.replace(/Ihr Karrieregespräch[^.]+\./, "")),
+zeile(!/Lebenshaltung|Monday-Chat|Steuerklasse/.test(bewerbungen.replace(/Ihr Karrieregespräch[^.]+\./, "")),
   "Nichts Privates in der Ansicht");
 
 // ── Absage ohne Grund ─────────────────────────────────────────

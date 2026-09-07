@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Ninas Stimme als Tonstrom.
+ * Mondays Stimme als Tonstrom.
  *
  * Der wichtigste Teil steht in der Eingabeprüfung: **es geht keine
  * Zeichenkette vom Client hinein.** Der Client nennt eine
@@ -22,7 +22,7 @@ export const maxDuration = 60;
  * Der Unterschied ist nicht theoretisch. Eine Route, die beliebigen
  * Text vorliest, ist ein fremdfinanzierter Sprachsynthesedienst: wer
  * die Adresse kennt, lässt darüber Hörbücher erzeugen, und die Rechnung
- * kommt hierher. Außerdem könnte Nina dann Sätze sagen, die sie nie
+ * kommt hierher. Außerdem könnte Monday dann Sätze sagen, die sie nie
  * gesagt hat.
  *
  * Die Zeilensicherheit sorgt dafür, dass niemand die Nachricht eines
@@ -59,17 +59,17 @@ export async function POST(request: Request) {
     return Response.json({ error: "Nachricht nicht gefunden." }, { status: 404 });
   }
 
-  // Nur Nina wird vorgelesen. Die eigene Nachricht vorgelesen zu
+  // Nur Monday wird vorgelesen. Die eigene Nachricht vorgelesen zu
   // bekommen wäre kein Merkmal, sondern ein Fehler.
   if (nachricht.role !== "assistant") {
-    return Response.json({ error: "Nur Ninas Antworten werden vorgelesen." }, { status: 400 });
+    return Response.json({ error: "Nur Mondays Antworten werden vorgelesen." }, { status: 400 });
   }
 
   try {
     /*
      * Das Abbruchsignal der Anfrage geht durch.
      *
-     * Schließt der Browser die Verbindung — weil die Person Nina
+     * Schließt der Browser die Verbindung — weil die Person Monday
      * unterbricht oder die Seite wechselt —, hört auch die Erzeugung
      * auf. Ohne diese Weitergabe läuft die Rechnung weiter, während
      * niemand mehr zuhört.

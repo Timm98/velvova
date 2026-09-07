@@ -61,10 +61,10 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
 /**
- * Ninas Gespräch — eine Route für alle Seiten.
+ * Mondays Gespräch — eine Route für alle Seiten.
  *
  * Vorher gab es einen Weg für das Interview und keinen für den Rest.
- * Deshalb konnte Nina auf einer Jobseite nichts, und deshalb war ein
+ * Deshalb konnte Monday auf einer Jobseite nichts, und deshalb war ein
  * Gespräch nach dem Seitenwechsel verschwunden.
  *
  * Vier Eigenschaften, die zusammen den Unterschied zwischen einem
@@ -204,7 +204,7 @@ export async function POST(request: Request) {
    * überschreiben.
    *
    * Die Reihenfolge ist der Punkt: Was gerade gesagt wurde, muss im
-   * Profil stehen, BEVOR Nina antwortet. Sonst antwortet sie auf
+   * Profil stehen, BEVOR Monday antwortet. Sonst antwortet sie auf
    * einen Stand, den sie im selben Zug überholt hat.
    *
    * Scheitert es, geht das Gespräch weiter. Eine Extraktion ist eine
@@ -216,7 +216,7 @@ export async function POST(request: Request) {
    * Die Verarbeitung läuft NEBEN dem Rest, nicht davor.
    *
    * Sie stand hier als `await` — mit dem Argument, was gerade gesagt
-   * wurde, müsse im Profil stehen, BEVOR Nina antwortet. Das Argument
+   * wurde, müsse im Profil stehen, BEVOR Monday antwortet. Das Argument
    * gilt weiterhin für das Profil; für die ANTWORTZEIT war es teuer:
    * Bei einer Angabe kostet die Verarbeitung einen eigenen
    * Modellaufruf, und der lag vor allen anderen Vorbereitungen.
@@ -282,7 +282,7 @@ export async function POST(request: Request) {
    *
    * Gemessen im Bestand: 61 Menschen haben angefangen, ein einziger
    * steht auf `completed`. `entryRoute` schickt alle anderen bei jedem
-   * Besuch zurück ins Gespräch, obwohl Nina längst genug weiss.
+   * Besuch zurück ins Gespräch, obwohl Monday längst genug weiss.
    *
    * ── Warum `ready` und nicht „genug Fragen" ────────────────────
    *
@@ -357,10 +357,10 @@ export async function POST(request: Request) {
      * Die offene Rückfrage kommt in die Seitenlage.
      *
      * Wenn die gerade gelesene Angabe einer bestätigten widerspricht,
-     * darf Nina nicht so tun, als sei nichts gewesen — und sie darf
+     * darf Monday nicht so tun, als sei nichts gewesen — und sie darf
      * auch nicht einfach überschreiben. Sie fragt.
      *
-     * Der Satz steht bewusst hier und nicht als eigene Nachricht: Nina
+     * Der Satz steht bewusst hier und nicht als eigene Nachricht: Monday
      * soll ihn in ihre Antwort einweben, nicht als Formular
      * dazwischenschieben.
      */
@@ -428,11 +428,11 @@ export async function POST(request: Request) {
 
   /*
    * ══════════════════════════════════════════════════════════════
-   * Hat die Person gerade eine Frage von Nina beantwortet?
+   * Hat die Person gerade eine Frage von Monday beantwortet?
    * ══════════════════════════════════════════════════════════════
    *
    * Wenn ja, wird die Antwort ein Beleg — und die Klärung schliesst
-   * sich. Ohne diesen Schritt fragte Nina dieselbe Sache in zehn
+   * sich. Ohne diesen Schritt fragte Monday dieselbe Sache in zehn
    * Minuten noch einmal, und für die Person sähe es aus, als käme
    * ihre Antwort nirgends an.
    *
@@ -495,7 +495,7 @@ export async function POST(request: Request) {
          *
          * Ein Zug kann mit einem Werkzeugaufruf enden statt mit Text.
          * Dann hat das Modell etwas getan und nie gesagt, was dabei
-         * herauskam — in der Oberfläche sieht das aus, als hätte Nina
+         * herauskam — in der Oberfläche sieht das aus, als hätte Monday
          * geschwiegen. Genau so war es: der Werkzeugaufruf lief, die
          * Antwort blieb leer.
          *
@@ -591,7 +591,7 @@ export async function POST(request: Request) {
          * Werkzeuge.
          *
          * Ein Modell, das nur Werkzeuge aufruft, hat gearbeitet und
-         * nichts gesagt. In der Oberfläche ist das nicht von „Nina
+         * nichts gesagt. In der Oberfläche ist das nicht von „Monday
          * antwortet nicht“ zu unterscheiden — und genau so war es zu
          * beobachten: zwei von drei Zügen kamen mit null Zeichen an.
          *
@@ -686,7 +686,7 @@ export async function POST(request: Request) {
          *
          * Ein abgebrochener Strom hinterlässt sonst eine Frage ohne
          * Antwort im Verlauf — und beim nächsten Laden sieht es aus,
-         * als hätte Nina nichts gesagt, obwohl sie angefangen hatte.
+         * als hätte Monday nichts gesagt, obwohl sie angefangen hatte.
          */
         if (antwort.trim().length > 0 || werkzeuge.length > 0) {
           const gespeichert = await appendMessage(user.id, gespräch.id, {
@@ -717,7 +717,7 @@ export async function POST(request: Request) {
           /*
            * Das Gespräch verdichten, wenn es lang geworden ist.
            *
-           * Ohne diesen Aufruf sah Nina nur die letzten zwölf Züge und
+           * Ohne diesen Aufruf sah Monday nur die letzten zwölf Züge und
            * nichts davor — die Zusammenfassung, die das auffangen
            * soll, wurde nie geschrieben. Gemessen: 181 Gespräche, null
            * Zusammenfassungen, das längste 47 Nachrichten.
@@ -761,7 +761,7 @@ export async function POST(request: Request) {
                 .catch(() => undefined);
 
               /*
-               * Jobs nur, wenn der Server sie erlaubt UND Nina sie
+               * Jobs nur, wenn der Server sie erlaubt UND Monday sie
                * gerade zeigen will.
                *
                * Zwei Bedingungen, die beide gelten müssen: die Reife ist
@@ -811,7 +811,7 @@ export async function POST(request: Request) {
 
         /*
          * ══════════════════════════════════════════════════════════
-         * Was Nina weiss, geht mit hinaus
+         * Was Monday weiss, geht mit hinaus
          * ══════════════════════════════════════════════════════════
          *
          * Synthese, Karriereanalyse, offene Frage, Widersprüche,
@@ -886,7 +886,7 @@ async function runTool(
        * ══════════════════════════════════════════════════════════
        *
        * Dasselbe Werkzeug für Chat und Sprache. Im Sprachmodus
-       * antwortet Nina über das Realtime-Modell — schnell und für ein
+       * antwortet Monday über das Realtime-Modell — schnell und für ein
        * Gespräch richtig, für eine Karriereanalyse das falsche
        * Werkzeug. Statt es tiefer denken zu lassen, fordert es die
        * Analyse an und erzählt danach das Ergebnis.

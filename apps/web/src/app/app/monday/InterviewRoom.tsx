@@ -24,7 +24,7 @@ import { cn } from "@/lib/cn";
  *
  * Was diese Fassung anders macht als die vorige:
  *
- *   **Die Frage bekommt Raum.** Ninas aktuelle Frage steht groß und
+ *   **Die Frage bekommt Raum.** Mondays aktuelle Frage steht groß und
  *   frei auf der Fläche, nicht in einer Sprechblase. Eine Frage nach
  *   dem eigenen Berufsweg in einem grauen Kasten liest sich wie ein
  *   Formularfeld.
@@ -41,7 +41,7 @@ import { cn } from "@/lib/cn";
  *
  *   **Nur der Nachrichtenstrom scrollt.** Kopf und Eingabefeld stehen
  *   fest. Vorher scrollte die ganze Seite: nach zwanzig Nachrichten war
- *   Nina aus dem Bild, und wer etwas schreiben wollte, musste erst
+ *   Monday aus dem Bild, und wer etwas schreiben wollte, musste erst
  *   wieder nach unten. Auf dem Telefon kam die Tastatur dazu und schob
  *   das Feld vollends weg.
  */
@@ -166,7 +166,7 @@ export function InterviewRoom({
   }, [nina.messages, amEnde, nachUnten]);
 
   /*
-   * Zwei Dinge am Scrollzustand: ob die Pille weg darf, und ob Nina
+   * Zwei Dinge am Scrollzustand: ob die Pille weg darf, und ob Monday
    * klein werden soll. Beides aus derselben Messung, damit nicht zwei
    * Zuhörer dasselbe Layout zweimal berechnen.
    */
@@ -245,7 +245,7 @@ export function InterviewRoom({
    * Die zuletzt fertig gestreamte Antwort.
    *
    * Sie ist das Signal zum Vorlesen. Bewusst erst, wenn `streaming`
-   * vorbei ist: eine halb fertige Antwort vorzulesen hiesse, Nina beim
+   * vorbei ist: eine halb fertige Antwort vorzulesen hiesse, Monday beim
    * Nachdenken zuzuhören.
    */
   const letzteAntwort = (() => {
@@ -264,7 +264,7 @@ export function InterviewRoom({
     fertigeAntwort: letzteAntwort,
   });
 
-  // Das Mikrofon soll Ninas Bild bewegen: zuhören, denken, sprechen.
+  // Das Mikrofon soll Mondays Bild bewegen: zuhören, denken, sprechen.
   useEffect(() => {
     nina.setListening(live.stand.zustand === "hört");
   }, [live.stand.zustand, nina]);
@@ -302,7 +302,7 @@ export function InterviewRoom({
        * ist (`bg-page/85`), lag der Verlauf teilweise HINTER ihm — es
        * sah aus, als leuchte die Kopfzeile nach unten.
        *
-       * Nina hat ihren eigenen Schein, und der sitzt dort, wo er
+       * Monday hat ihren eigenen Schein, und der sitzt dort, wo er
        * hingehört: `inset-[-18%]` um ihre Fläche. Ein zweites Licht
        * über die ganze Seitenbreite fügt nichts hinzu, das eine Person
        * benennen könnte — es macht nur den oberen Rand unruhig.
@@ -310,13 +310,13 @@ export function InterviewRoom({
 
       <div className="relative mx-auto flex h-full w-full max-w-[820px] flex-col">
         {/* ── Kopf ────────────────────────────────────────────── */}
-        {/* `gap-x-6`, nicht 4: das Licht hinter Nina reicht bewusst 18%
+        {/* `gap-x-6`, nicht 4: das Licht hinter Monday reicht bewusst 18%
             über ihre Fläche hinaus (`inset-[-18%]`), bei 120px also gut
             20 Pixel. Mit dem kleineren Abstand lag der Schein auf dem
-            Wort „Nina". */}
+            Wort „Monday". */}
         <header className="flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 pt-6 pb-5">
           {/*
-           * Nina schrumpft, sobald das Gespräch läuft.
+           * Monday schrumpft, sobald das Gespräch läuft.
            *
            * Gross am Anfang: da ist sie das Einzige auf der Fläche und
            * soll es sein. Klein, sobald jemand scrollt — dann gehört
@@ -326,7 +326,7 @@ export function InterviewRoom({
            *
            * Der erste Versuch war eine Box mit `overflow-hidden`, die
            * ihre Grösse animiert. Das Ergebnis war ein dunkelvioletter
-           * Kasten: das weiche Licht hinter Nina liegt bewusst
+           * Kasten: das weiche Licht hinter Monday liegt bewusst
            * ausserhalb ihrer Fläche (`inset-[-18%]`), und die Hülle hat
            * es an vier geraden Kanten abgeschnitten.
            *
@@ -340,11 +340,11 @@ export function InterviewRoom({
            * Auf dem Telefon immer die kleine Fassung.
            *
            * Bei 390 Pixeln bricht die Kopfzeile ohnehin in zwei Reihen:
-           * Nina mit Titel oben, die Knöpfe darunter. Mit dem grossen
+           * Monday mit Titel oben, die Knöpfe darunter. Mit dem grossen
            * Bild ergab das 220 Pixel — ein Viertel eines 844 Pixel hohen
            * Bildschirms, bevor eine einzige Nachricht zu sehen war.
            *
-           * Auf dem Telefon ist Platz das knappste Gut. Ninas Grösse
+           * Auf dem Telefon ist Platz das knappste Gut. Mondays Grösse
            * darf dort nicht die Hälfte des Gesprächs kosten; ab `sm`
            * bleibt sie gross, weil dort Raum dafür da ist.
            */}
@@ -364,7 +364,7 @@ export function InterviewRoom({
           <NinaCore />
 
           <div className="grid min-w-0 flex-1 gap-0.5">
-            <h1 className="font-display text-xl font-semibold tracking-[-0.02em]">
+            <h1 className="font-display text-xl font-normal tracking-[-0.02em]">
               {assistantName}
             </h1>
             {/* Eine menschliche Statuszeile. Keine Zahl, keine Strecke. */}
@@ -381,7 +381,7 @@ export function InterviewRoom({
            * Drei Handlungen, drei Ränge — vorher drei gleich laute Knöpfe.
            *
            * Gemessen: 232 + 229 + 208 Pixel, zusammen 677 in einer
-           * Spalte von 820. Neben Nina und der Statuszeile ging das
+           * Spalte von 820. Neben Monday und der Statuszeile ging das
            * nicht auf, also brach die Gruppe in eine zweite Reihe und
            * die Kopfzeile war 220 Pixel hoch — ein Viertel des Fensters,
            * bevor eine einzige Nachricht zu sehen war.
@@ -395,7 +395,7 @@ export function InterviewRoom({
            *   einem Symbol eindampft — „über dich" ist genau der Teil,
            *   auf den es ankommt.
            *
-           *   „Live sprechen" verliert Ninas Namen. Er steht als
+           *   „Live sprechen" verliert Mondays Namen. Er steht als
            *   Überschrift zwei Zentimeter daneben; ihn im Knopf zu
            *   wiederholen kostete 70 Pixel und sagte nichts Neues. Die
            *   ganze Formulierung bleibt als aria-label für alle, die
@@ -422,7 +422,7 @@ export function InterviewRoom({
                * eine Nachricht zu sehen war.
                *
                * „über dich" ist der Teil, auf den es ankommt, und er
-               * bleibt: er unterscheidet „was Nina weiss" von „was Nina
+               * bleibt: er unterscheidet „was Monday weiss" von „was Monday
                * kann". Weg fällt nur das Verb, das aus dem Zusammenhang
                * ohnehin klar ist. Für Vorlesegeräte bleibt der ganze
                * Satz über `aria-label`.
@@ -435,7 +435,7 @@ export function InterviewRoom({
             {/*
              * Die drei Aktionen als EINE Gruppe.
              *
-             * Vorher waren es drei gleichrangige Flex-Kinder neben Nina
+             * Vorher waren es drei gleichrangige Flex-Kinder neben Monday
              * und der Statuszeile. In einer 820 Pixel breiten Spalte
              * passte das nicht: jeder Knopf brach einzeln um, die
              * Kopfzeile wuchs auf vier Reihen und 220 Pixel — ein
@@ -488,7 +488,7 @@ export function InterviewRoom({
                    * Gedämpft über die Textfarbe, nicht über Deckkraft.
                    *
                    * `opacity-45` senkt den Kontrast von allem darunter —
-                   * axe hat das auf /app/nina als Verstoss gemeldet.
+                   * axe hat das auf /app/monday als Verstoss gemeldet.
                    * `text-ink-3` ist geprüft und erreicht 4,5:1 auf
                    * jeder Fläche; der Knopf sieht trotzdem inaktiv aus,
                    * weil ihm die Umrandung und der Hover fehlen.
@@ -597,7 +597,7 @@ export function InterviewRoom({
              * Hier standen 28 beziehungsweise 32 Pixel in der
              * Überschriftenschrift, mit der Begründung, eine erste
              * Frage verdiene Raum. Genau diese Begründung stand ein
-             * paar Zeilen weiter unten schon einmal — für Ninas
+             * paar Zeilen weiter unten schon einmal — für Mondays
              * Antworten — und wurde dort verworfen: In Schaugrösse
              * liest es sich wie die Ausgabe eines Sprachmodells und
              * nicht wie ein Satz von jemandem, der einem
@@ -605,7 +605,7 @@ export function InterviewRoom({
              *
              * Der Satz wurde damals für die Antworten korrigiert und
              * für die Eröffnung vergessen. Jetzt trägt sie dieselben
-             * Klassen wie jede Nachricht von Nina — dieselbe Grösse,
+             * Klassen wie jede Nachricht von Monday — dieselbe Grösse,
              * dieselbe Schrift, dasselbe Mass.
              */
             <p className="max-w-[var(--measure)] whitespace-pre-wrap text-base leading-relaxed text-ink">
@@ -620,7 +620,7 @@ export function InterviewRoom({
                *
                * Eine Frage in Schaugröße wirkt einladend. Eine
                * zehnzeilige Zusammenfassung in derselben Größe wirkt
-               * erschlagend, und genau die kommt regelmäßig: Nina fasst
+               * erschlagend, und genau die kommt regelmäßig: Monday fasst
                * nach vier bis sechs Antworten zusammen.
                */
               const istLetzte =
@@ -639,7 +639,7 @@ export function InterviewRoom({
                      *
                      * Lavendel war ein Zwischenschritt: Grau las sich
                      * als „deaktiviert", also wurde es ein sehr helles
-                     * Violett. Neben Ninas blauem Kern, dem blauen
+                     * Violett. Neben Mondays blauem Kern, dem blauen
                      * Sendeknopf und den blauen Verweisen war das die
                      * einzige Farbe auf der Seite, die zu nichts
                      * gehörte.
@@ -654,7 +654,7 @@ export function InterviewRoom({
                     </p>
                   ) : (
                     /*
-                      * Ninas Antworten laufen wie der Rest der Seite.
+                      * Mondays Antworten laufen wie der Rest der Seite.
                       *
                       * ── Was hier stand ────────────────────────────
                       *
@@ -698,7 +698,7 @@ export function InterviewRoom({
 
           {/* ── Zustimmung, Stellen zu sehen ──────────────────── */}
           {/*
-           * Der eine Klick zwischen „Nina bietet an“ und „Stellen sind
+           * Der eine Klick zwischen „Monday bietet an“ und „Stellen sind
            * da“.
            *
            * Ohne ihn erscheinen Vorschläge, weil ein Modell fand, es sei
@@ -748,12 +748,12 @@ export function InterviewRoom({
             mit Aussagen aus dem Gespräch und je drei Knöpfen:
             stimmt, stimmt nicht, weglegen.
 
-            Sie hing mitten im Verlauf, zwischen Ninas letzter Frage
+            Sie hing mitten im Verlauf, zwischen Mondays letzter Frage
             und dem Eingabefeld. Wer gerade antworten wollte, bekam
             stattdessen drei ältere Aussagen zur Beurteilung vorgelegt
             — und musste an ihnen vorbei, um weiterzuschreiben.
 
-            Ein Gespräch verträgt keine Zwischenprüfung. Was Nina
+            Ein Gespräch verträgt keine Zwischenprüfung. Was Monday
             verstanden hat, gehört dorthin, wo man es in Ruhe ansieht,
             und nicht zwischen zwei Sätze.
 
@@ -779,7 +779,7 @@ export function InterviewRoom({
           {/*
            * „Neue Antwort" statt eines Sprungs.
            *
-           * Sie erscheint nur, wenn Nina etwas geschrieben hat, während
+           * Sie erscheint nur, wenn Monday etwas geschrieben hat, während
            * die Person weiter oben las. Ein Klick bringt sie nach
            * unten — freiwillig.
            */}
@@ -849,17 +849,17 @@ export function InterviewRoom({
 
             Gedacht waren sie als Starthilfe für jemanden, der vor
             einem leeren Feld sitzt. In der Wirkung sind sie das
-            Gegenteil dessen, worum es in diesem Gespräch geht: Nina
+            Gegenteil dessen, worum es in diesem Gespräch geht: Monday
             fragt, was jemand kann und will — und darunter stehen vier
             fertige Antworten. Man wählt eine, statt zu erzählen, und
-            Nina bekommt ein Schlagwort statt einer Situation.
+            Monday bekommt ein Schlagwort statt einer Situation.
 
             Genau daraus lässt sich aber nichts belegen. Aus „Ich bin
             angestellt" wird kein Nachweis; aus zwei Sätzen darüber,
             was man gerade macht, schon.
 
             `IMPULSE_JE_STUFE` bleibt oben stehen. Falls Impulse
-            zurückkommen, dann als Rückfrage von Nina, wenn jemand
+            zurückkommen, dann als Rückfrage von Monday, wenn jemand
             wirklich nicht weiterweiss — nicht als Dauerangebot unter
             jedem Feld.
           */}

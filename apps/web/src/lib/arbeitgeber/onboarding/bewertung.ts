@@ -26,7 +26,7 @@ import {
  * Warum unbestätigte Angaben nur halb zählen
  * ══════════════════════════════════════════════════════════════
  *
- * Was Nina auf einer Website gefunden hat, ist eine Vermutung mit
+ * Was Monday auf einer Website gefunden hat, ist eine Vermutung mit
  * Fundstelle. Sie wie eine bestätigte Angabe zu zählen hiesse, dass
  * ein Profil vollständig aussieht, obwohl niemand es gelesen hat — und
  * genau dieser Fall ist der gefährliche: Ein Gründungsjahr von der
@@ -116,7 +116,7 @@ export function bewerte(ergebnis: Ergebnis, angaben: Angabe[]): Ergebnisstand {
 }
 
 /**
- * Woran Nina Anstoss nimmt.
+ * Woran Monday Anstoss nimmt.
  *
  * Ausschliesslich Aussagen über die Angaben — nie über das
  * Unternehmen. „Diese Formulierung sagt nichts" ist eine Aussage über
@@ -181,7 +181,7 @@ function warnungen(angaben: Angabe[], felder: OnboardingFeld[]): Warnung[] {
 }
 
 /**
- * Der Satz, mit dem Nina zusammenfasst.
+ * Der Satz, mit dem Monday zusammenfasst.
  *
  * Zahlen statt Adjektiven: „Ich habe 31 Angaben übernommen, sieben
  * davon von eurer Website, und drei offene Fragen erkannt." Wer das

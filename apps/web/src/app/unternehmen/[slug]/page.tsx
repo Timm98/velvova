@@ -96,7 +96,7 @@ export default async function UnternehmensSeite({
           <section className="border-b border-line">
             <div className="mx-auto grid w-full max-w-(--breite-inhalt) gap-6 px-5 py-12 md:px-8 md:py-16">
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="font-display text-[clamp(2rem,4.4vw,3rem)] font-semibold leading-[1.05] tracking-[-0.03em]">
+                <h1 className="font-display text-[clamp(2rem,4.4vw,3rem)] font-normal leading-[1.05] tracking-[-0.02em]">
                   {org.name}
                 </h1>
                 {/*
@@ -199,7 +199,7 @@ export default async function UnternehmensSeite({
             <section key={bereich.id} className="border-b border-line">
               <div className="mx-auto grid w-full max-w-(--breite-inhalt) gap-8 px-5 py-12 md:grid-cols-[0.8fr_1.2fr] md:px-8 md:py-16">
                 <div className="grid content-start gap-3">
-                  <h2 className="font-display text-[clamp(1.4rem,2.4vw,1.9rem)] font-semibold tracking-[-0.02em]">
+                  <h2 className="font-display text-[clamp(1.4rem,2.4vw,1.9rem)] font-normal tracking-[-0.02em]">
                     {bereich.titel}
                   </h2>
                 </div>

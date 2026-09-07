@@ -21,7 +21,7 @@ import { BestandProvider } from "@/components/marketing/BestandProvider";
  * Zwei Dinge hängen daran, dass dieses Layout beim Seitenwechsel
  * bestehen bleibt:
  *
- * 1. **Nina überlebt die Navigation.** Der Provider sitzt hier, also
+ * 1. **Monday überlebt die Navigation.** Der Provider sitzt hier, also
  *    behält das Gespräch seinen Zustand, während die Seite darunter
  *    ausgetauscht wird. Läge er in einer einzelnen Seite, wäre er nach
  *    jedem Klick weg.
@@ -161,7 +161,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {children}
       </AppShell>
 
-      {/* Nina auf jeder authentifizierten Seite. Sie liegt außerhalb von
+      {/* Monday auf jeder authentifizierten Seite. Sie liegt außerhalb von
           <AppShell>, damit sie über allem schwebt und nicht im Raster
           des Inhalts steckt. */}
       <NinaDock assistantName={brand.assistantName} />

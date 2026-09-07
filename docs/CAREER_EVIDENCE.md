@@ -19,7 +19,7 @@ freigegeben werden.
 
 ```
 Erzählung          "Ich hab da mal 'ne Eskalation übernommen."
-   ↓  Nina fragt nach dem Konkreten
+   ↓  Monday fragt nach dem Konkreten
 Episode            was genau, über welchen Zeitraum, mit welchem Ergebnis
    ↓  daraus abgeleitet
 Aussage            "Führt Eskalationen bis zur Lösung"      [unbestätigt]

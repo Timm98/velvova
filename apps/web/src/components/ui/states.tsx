@@ -31,15 +31,31 @@ export function EmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <div className="grid justify-items-center gap-4 rounded-(--radius-surface) bg-soft px-6 py-14 text-center">
-      {icon && (
-        <div className="grid size-12 place-items-center rounded-(--radius-full) bg-raised text-ink-3 shadow-sm">
-          {icon}
+    /*
+      ══════════════════════════════════════════════════════════════
+      Die Handlung steht AUSSERHALB der Fläche
+      ══════════════════════════════════════════════════════════════
+
+      Vorher lag alles in einem Kasten: Zeichen, Überschrift, Text und
+      Knopf. Das liest sich als Werbefläche — ein Kasten, der einem
+      etwas anbietet, und den man deshalb überliest.
+
+      Die Vorlage trennt: In der Fläche steht, was IST („Starten Sie
+      Ihre Uhrensammlung" — hier ist noch nichts). Darunter, frei auf
+      der Seite, steht, was man TUN kann. Die Fläche beschreibt einen
+      Zustand, der Knopf gehört der Seite.
+
+      Das Zeichen steht ohne Plättchen darum. Ein Kreis mit Schatten
+      um ein Zeichen, das schon in einer Fläche steht, ist die dritte
+      Ebene für dieselbe Aussage.
+    */
+    <div className="grid justify-items-center gap-5">
+      <div className="grid w-full justify-items-center gap-3 rounded-(--radius-surface) bg-soft px-6 py-12 text-center">
+        {icon && <div className="text-ink-3">{icon}</div>}
+        <div className="grid gap-1.5">
+          <h3 className="font-display text-lg font-normal">{title}</h3>
+          <p className="mx-auto max-w-[52ch] text-sm leading-relaxed text-ink-2">{body}</p>
         </div>
-      )}
-      <div className="grid gap-2">
-        <h3 className="text-base font-semibold">{title}</h3>
-        <p className="mx-auto max-w-[46ch] text-sm leading-relaxed text-ink-2">{body}</p>
       </div>
       {action}
     </div>
@@ -214,7 +230,30 @@ export function PageHeader({
           und die deutsche Sprache hat viele — kann sonst jede
           Spaltenbreite sprengen, egal wie klein die Schrift ist.
         */}
-        <h1 className="font-display text-3xl font-semibold tracking-[-0.03em] break-words sm:text-4xl">
+        {/*
+          ══════════════════════════════════════════════════════════
+          Normale Strichstärke, nicht halbfett
+          ══════════════════════════════════════════════════════════
+
+          Die auffälligste Eigenschaft der Vorlage ist keine Farbe und
+          kein Radius, sondern das Gewicht: Ihre Überschriften stehen
+          in normaler Strichstärke. „Beeindruckende Zahlen, Daten und
+          Fakten", „Entdecken Sie Chrono24", „Chrono24 Hilfe und FAQ",
+          „Profil", „Watch Collection" — alle 400, keine einzige fett.
+
+          Getragen wird der Rang von der GRÖSSE, nicht vom Gewicht.
+          Fett dazu ist doppelt gemoppelt: Eine Überschrift, die schon
+          durch ihre Grösse heraussticht, wirkt fett wie ein Ausruf.
+
+          Kleine Beschriftungen bleiben halbfett — Kartentitel,
+          Spaltenköpfe. Dort trägt die Grösse nichts, und das Gewicht
+          ist die einzige Auszeichnung, die bleibt. Die Vorlage macht
+          das genauso.
+
+          Die enge Laufweite geht mit zurück: -0.03em war für fette
+          Buchstaben gerechnet, die von sich aus mehr Fläche haben.
+        */}
+        <h1 className="font-display text-3xl font-normal tracking-[-0.02em] break-words sm:text-4xl">
           {title}
         </h1>
         {lead && <p className={cn("max-w-[var(--measure)] text-base text-ink-2", leadClassName)}>{lead}</p>}
@@ -243,7 +282,9 @@ export function Section({
     <section aria-labelledby={headingId} className="grid gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="grid gap-1">
-          <h2 id={headingId} className="font-display text-lg font-semibold tracking-[-0.02em]">
+          {/* Normale Strichstärke, wie beim Seitenkopf — und aus
+              demselben Grund. Siehe dort. */}
+          <h2 id={headingId} className="font-display text-xl font-normal tracking-[-0.015em]">
             {title}
           </h2>
           {description && (

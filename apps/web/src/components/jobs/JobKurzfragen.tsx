@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 /**
  * Kurzfragen zu einer Stelle — auf der Stellenseite (§13.3).
  *
- * Vorher waren das vier Links nach `/app/nina?job=…`. Ein Klick nahm
+ * Vorher waren das vier Links nach `/app/monday?job=…`. Ein Klick nahm
  * einem also genau das weg, worüber man gerade eine Frage hatte: die
  * Anzeige. Man landete in einem leeren Gespräch, musste zurück,
  * suchte die Stelle wieder — und stellte die Frage nicht.

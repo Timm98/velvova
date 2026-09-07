@@ -35,8 +35,8 @@ Unternehmen, das nichts gemacht hat.
 |---|---|
 | „Passung nicht berechenbar" | „Passung noch offen" |
 | „Datenbasis zu dünn" | „Passung noch offen" |
-| „Noch keine belegte Passung — dafür fehlen bestätigte Angaben." | „Sieht interessant aus — für eine belastbare Einschätzung kennt Nina dich noch nicht gut genug." |
-| „Es liegen noch keine bestätigten Belege vor, an denen sich die Anforderungen messen liessen." | „Nina weiss noch nicht, was du kannst — dafür fehlt das Gespräch." |
+| „Noch keine belegte Passung — dafür fehlen bestätigte Angaben." | „Sieht interessant aus — für eine belastbare Einschätzung kennt Monday dich noch nicht gut genug." |
+| „Es liegen noch keine bestätigten Belege vor, an denen sich die Anforderungen messen liessen." | „Monday weiss noch nicht, was du kannst — dafür fehlt das Gespräch." |
 
 ### Netto-Rechner — im Job-Detail, aufklappbar
 
@@ -83,7 +83,7 @@ niemand gewählt hat.
 Eine kurze Eingabe ist ein Filter, kein Gespräch:
 
 - Filter gesetzt · Feld geleert · kleine Bestätigung, die nach 4 s verschwindet
-- **Kein Seitenchat** — der öffnet nur noch auf „Mit Nina besprechen"
+- **Kein Seitenchat** — der öffnet nur noch auf „Mit Monday besprechen"
 - Der erledigte Vorschlag verschwindet, andere rücken nach
 - Bei Unklarheit eine kleine Rückfrage an derselben Stelle
 

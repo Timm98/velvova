@@ -113,7 +113,7 @@ export async function loadInterview(): Promise<InterviewView> {
    *
    * Sie steuern die Reihenfolge der Fragen innerhalb eines Themas:
    * zuerst die, die eine offene Achse treffen kann. Ohne das füllte
-   * Nina den Twin nur zufällig — sie stellte die erste offene Frage,
+   * Monday den Twin nur zufällig — sie stellte die erste offene Frage,
    * unabhängig davon, ob deren Antwort überhaupt etwas hergibt.
    *
    * Bei einem Fehler bleibt die Liste leer, und alles verhält sich wie
@@ -159,7 +159,7 @@ export async function loadInterview(): Promise<InterviewView> {
      *
      * Der vierte Filter ist der wichtigste und war der Fehler: eine
      * Aussage, deren INHALT schon einmal abgelehnt oder weggelegt
-     * wurde, kommt nicht wieder — auch wenn Nina sie zwei Sätze später
+     * wurde, kommt nicht wieder — auch wenn Monday sie zwei Sätze später
      * erneut ableitet und dabei eine neue Zeile anlegt. Vorher hing die
      * Entscheidung an der Kennung, und die neue Zeile war unbelastet.
      * Für den Menschen sah das aus, als bewirke das Wegklicken nichts.
@@ -251,7 +251,7 @@ export async function submitAnswer(
    *
    * Der Twin entscheidet über Passung, Alltagsvergleich und
    * Rollenkarte — und war leer, bis jemand von Hand zehn Regler
-   * bewegte. Nina stellt die Fragen längst („Welche Entscheidungen
+   * bewegte. Monday stellt die Fragen längst („Welche Entscheidungen
    * möchtest du selbst treffen dürfen?"); die Antworten wurden nur
    * nie zu etwas, womit sich rechnen liess.
    *

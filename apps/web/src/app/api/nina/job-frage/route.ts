@@ -9,12 +9,12 @@ export const dynamic = "force-dynamic";
 /**
  * Eine Kurzfrage zu genau einer Stelle (§13.3).
  *
- * Der Zuschnitt ist der Punkt: Nina bekommt diese eine Anzeige und das
+ * Der Zuschnitt ist der Punkt: Monday bekommt diese eine Anzeige und das
  * Profil dieser Person — nicht das laufende Karrieregespräch, nicht die
  * Liste, nicht andere Stellen. Die Antwort gehört zu dieser Seite und
  * soll sie nicht verlassen.
  *
- * Was Nina ausdrücklich NICHT tut: den Arbeitsalltag ausschmücken, weil
+ * Was Monday ausdrücklich NICHT tut: den Arbeitsalltag ausschmücken, weil
  * die Anzeige dazu schweigt. Eine Stellenanzeige sagt wenig; das
  * Wertvolle ist zu sagen, WAS sie verschweigt, nicht die Lücke
  * plausibel zu füllen.
@@ -56,7 +56,7 @@ export async function POST(request: Request): Promise<NextResponse> {
    *
    * Was in der Anzeige nicht steht, steht hier als „nicht angegeben" —
    * nicht als Leerstelle, die ein Modell auffüllen darf. Der
-   * Unterschied entscheidet, ob Nina berichtet oder dichtet.
+   * Unterschied entscheidet, ob Monday berichtet oder dichtet.
    */
   const fakten = [
     `Titel: ${j.title}`,

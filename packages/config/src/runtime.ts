@@ -44,7 +44,7 @@ const RuntimeSchema = z.object({
      * Haus nicht verlässt — und der darf keinen Umbau erfordern.
      */
     /* "none" statt "mock": es gibt keinen simulierten Anbieter mehr.
-       Ohne eingerichteten Anbieter antwortet Nina nicht — sie erfindet
+       Ohne eingerichteten Anbieter antwortet Monday nicht — sie erfindet
        nichts. */
     provider: z.enum(["none", "openai", "anthropic", "self_hosted"]).default("none"),
     apiKey: z.string().optional(),
@@ -110,7 +110,7 @@ const RuntimeSchema = z.object({
      * ══════════════════════════════════════════════════════════════
      *
      * Ein Grundwert würde sie überall einschalten, wo niemand sie
-     * bestellt hat. „Hallo Nina" darf nicht das teuerste Modell
+     * bestellt hat. „Hallo Monday" darf nicht das teuerste Modell
      * wecken.
      *
      * Fehlt der Eintrag, gibt es die Stufe nicht, und alles, was sie
@@ -129,8 +129,8 @@ const RuntimeSchema = z.object({
    * Stimme.
    *
    * "browser" ist die Spracherkennung des Geräts. Sie ist ehrlich
-   * benannt: nichts verlässt das Gerät, aber es ist auch nicht Nina,
-   * die zuhört — es ist ein Diktiergerät. Als vollständige Sprach-Nina
+   * benannt: nichts verlässt das Gerät, aber es ist auch nicht Monday,
+   * die zuhört — es ist ein Diktiergerät. Als vollständige Sprach-Monday
    * darf sie nirgends ausgegeben werden.
    *
    * "openai" ist die echte Sprachverbindung über die Realtime- bzw.
@@ -145,10 +145,10 @@ const RuntimeSchema = z.object({
     provider: z.enum(["none", "browser", "openai", "anthropic"]).default("browser"),
     storeTranscripts: z.coerce.boolean().default(false),
     /*
-     * Ninas Stimme.
+     * Mondays Stimme.
      *
      * Getrennt vom `provider` oben: der beschreibt, wie ZUGEHÖRT wird
-     * (Diktat im Browser, Realtime bei OpenAI). Hier steht, wie Nina
+     * (Diktat im Browser, Realtime bei OpenAI). Hier steht, wie Monday
      * SPRICHT. Beides zusammenzulegen hieße, dass ein fehlendes
      * Mikrofon ihre Stimme abschaltet.
      *
@@ -164,7 +164,7 @@ const RuntimeSchema = z.object({
      * Wie zugehört wird.
      *
      * Getrennt von `tts`, weil es ein anderer Anbieter ist und getrennt
-     * ausfallen darf: ohne Spracherkennung bleibt Ninas Stimme, ohne
+     * ausfallen darf: ohne Spracherkennung bleibt Mondays Stimme, ohne
      * Stimme bleibt die Spracherkennung, und ohne beides bleibt der
      * Text. Ein gemeinsamer Schalter würde aus einem halben Ausfall
      * einen ganzen machen.
@@ -173,7 +173,7 @@ const RuntimeSchema = z.object({
       /* Das Transkriptionsmodell innerhalb der Realtime-Sitzung. */
       modelId: z.string().default("gpt-4o-transcribe"),
       /* Ab wann gilt Stille als Ende eines Redebeitrags. 600 ms ist
-         kurz genug, dass niemand auf Nina wartet, und lang genug, dass
+         kurz genug, dass niemand auf Monday wartet, und lang genug, dass
          eine Denkpause mitten im Satz nicht als Ende zählt. */
       silenceMs: z.coerce.number().default(600),
     }),
@@ -355,7 +355,7 @@ export function integrationStatus(cfg: RuntimeConfig) {
           : "not-connected",
     storage: cfg.storage.driver === "s3" && cfg.storage.s3?.bucket ? "connected" : "local",
     /* "browser" ist eine echte, aber begrenzte Fähigkeit: Diktat auf dem
-       Gerät, keine sprechende Nina. Sie als "connected" auszuweisen
+       Gerät, keine sprechende Monday. Sie als "connected" auszuweisen
        hätte genau die Verwechslung erzeugt, die hier verboten ist. */
     voice:
       cfg.voice.provider === "none"

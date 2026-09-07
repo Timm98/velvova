@@ -150,11 +150,11 @@ const config: NextConfig = {
        * gebraucht werden. Genau der Fehler, der oben bei `/jobs`
        * schon einmal gemacht wurde.
        *
-       * Nur die Wurzel: `/app/nina`, `/app/jobs` und die übrigen
+       * Nur die Wurzel: `/app/monday`, `/app/jobs` und die übrigen
        * Unterseiten bleiben unberührt.
        */
       { source: "/app", destination: "/", permanent: false },
-      { source: "/nina", destination: "/app/nina", permanent: true },
+      { source: "/nina", destination: "/app/monday", permanent: true },
       { source: "/profile", destination: "/app/profile", permanent: true },
       { source: "/applications", destination: "/app/applications", permanent: true },
     ];
@@ -181,7 +181,7 @@ const config: NextConfig = {
          * Ohne diesen Kopf fragt der Browser bei jeder Vollnavigation
          * neu an — bestenfalls mit 304, schlechtestenfalls mit dem
          * ganzen Download. Ein Jahr `immutable` ist hier richtig: soll
-         * eine neue Nina kommen, bekommt sie einen neuen Namen.
+         * eine neue Monday kommen, bekommt sie einen neuen Namen.
          */
         source: "/models/:datei*",
         headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],

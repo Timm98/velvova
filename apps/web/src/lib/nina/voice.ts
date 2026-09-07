@@ -1,7 +1,7 @@
 import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
 
 /**
- * Ninas Stimme.
+ * Mondays Stimme.
  *
  * Ausschließlich serverseitig. Der Zugangsschlüssel steht in dieser
  * Datei nirgends und verlässt sie nie: er wird aus der Konfiguration
@@ -11,11 +11,11 @@ import { loadRuntimeConfig, type RuntimeConfig } from "@paycheck/config";
  *
  * Die Arbeitsteilung ist wichtig und soll wichtig bleiben:
  *
- *   **OpenAI ist Ninas Gehirn.** Was sie sagt, entsteht dort — mit
+ *   **OpenAI ist Mondays Gehirn.** Was sie sagt, entsteht dort — mit
  *   Gedächtnis, Career Evidence, Stufenmaschine und allem, was daran
  *   hängt.
  *
- *   **ElevenLabs ist Ninas Stimme.** Es bekommt fertigen Text und gibt
+ *   **ElevenLabs ist Mondays Stimme.** Es bekommt fertigen Text und gibt
  *   Ton zurück. Es entscheidet nichts, es weiß nichts über den
  *   Menschen, und es bekommt keinen Kontext.
  *
@@ -77,7 +77,7 @@ export interface Sprachausgabe {
 /**
  * Text zu Ton.
  *
- * `signal` ist kein Beiwerk: bricht die Person Nina mitten im Satz ab,
+ * `signal` ist kein Beiwerk: bricht die Person Monday mitten im Satz ab,
  * muss auch die Erzeugung aufhören. Ohne Abbruch läuft die Rechnung
  * weiter, während niemand mehr zuhört — und die Antwort kommt
  * womöglich Sekunden später über eine bereits neue.
@@ -96,7 +96,7 @@ export async function spreche(
   /*
    * Eine Obergrenze, die zur Sache passt.
    *
-   * Ninas Antworten sind laut Systemprompt 60 bis 120 Wörter. 5000
+   * Mondays Antworten sind laut Systemprompt 60 bis 120 Wörter. 5000
    * Zeichen sind großzügig und verhindern trotzdem, dass ein Fehler
    * anderswo hier eine Rechnung erzeugt.
    */
@@ -131,7 +131,7 @@ export async function spreche(
           text: gekürzt,
           model_id: cfg.voice.tts.modelId,
           voice_settings: {
-            /* Ruhig und gleichmäßig: Nina soll verständlich sein, nicht
+            /* Ruhig und gleichmäßig: Monday soll verständlich sein, nicht
                ausdrucksstark. Eine Karriereberatung, die dramatisch
                klingt, klingt unglaubwürdig. */
             stability: 0.5,

@@ -1,7 +1,7 @@
 import type { Abschnitt, Aktion, Ansicht } from "./aktionen";
 
 /**
- * Was das Nina-Panel gerade zeigt.
+ * Was das Monday-Panel gerade zeigt.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum ein Stapel und kein einzelner Wert
@@ -138,7 +138,7 @@ export function naechster(z: Panelzustand, e: Ereignis): Panelzustand {
          *
          * Der Abschnitt liegt in der MITTE, das Panel steht rechts.
          * Wer „die Arbeitszeiten sind unklar" liest und dorthin
-         * springt, soll Ninas Satz weiterhin sehen — sonst verliert er
+         * springt, soll Mondays Satz weiterhin sehen — sonst verliert er
          * beim Hinsehen den Grund, warum er hinsieht.
          */
         return { ...z, hervorgehoben: args.abschnitt };

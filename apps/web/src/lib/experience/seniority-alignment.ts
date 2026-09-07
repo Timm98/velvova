@@ -31,7 +31,7 @@ export interface SeniorityAssessment {
   jobLevel: SeniorityLevel;
   /** Was ein Arbeitgeber fragen könnte. Neutral formuliert. */
   riskReasons: string[];
-  /** Was Nina die Person fragen sollte, um die Motivation zu belegen. */
+  /** Was Monday die Person fragen sollte, um die Motivation zu belegen. */
   questions: string[];
   headline: string;
   confidence: number;

@@ -10,7 +10,7 @@ Stand: 01.09.2026, 09:10 Uhr. Arbeitsbaum nicht committet (wie vereinbart).
   Seiten geben für ein gewöhnliches Konto korrekt 404, 6 zeigen geprüfte
   Leerzustände (Bewerbungen, Karriere, Angebote, Rollen, Bewertungen)
 - Jobbestand: **1.447 echte Stellen** aus 5 Quellen
-- Flow 1 (Registrierung → Nina antwortet → Jobs → Detail → Begründung):
+- Flow 1 (Registrierung → Monday antwortet → Jobs → Detail → Begründung):
   vollständig grün, 0 JS-Fehler, 0 HTTP-5xx
 - Flow 4 (Job → Bewerbung vorbereiten → Brücke → Paketstatus): grün
 
@@ -36,7 +36,7 @@ sauber.
 
 ## Bilder: von keinem auf fünfzehn
 
-Das Projekt hatte **zwei Bilddateien** (Icon, Nina-GLB). Ursache: Stufe 3
+Das Projekt hatte **zwei Bilddateien** (Icon, Monday-GLB). Ursache: Stufe 3
 des Bildsystems wartete auf eine Bibliothek, die niemand angelegt hatte,
 also fiel jede Stelle auf den gerechneten Verlauf durch.
 
@@ -54,10 +54,10 @@ also fiel jede Stelle auf den gerechneten Verlauf durch.
   verdrahtet.
 - **Landing**: graue Platzhalterbalken durch echten Beispiel-Match
   ersetzt; Gehalt grün, starker Fit violett, fehlende Angabe kursiv.
-- **Landing**: Nina war eine dunkle Scheibe — der fast deckende
+- **Landing**: Monday war eine dunkle Scheibe — der fast deckende
   Hintergrund ist für das 3D-Modell gedacht, wurde aber auch unter dem
   Ersatzbild gemalt. Jetzt an die Szene gebunden.
-- **Nina-Seite**: leerer Gesprächszustand war oben mit 500 px Leere
+- **Monday-Seite**: leerer Gesprächszustand war oben mit 500 px Leere
   darunter; jetzt zentriert.
 - **Mobile Jobs**: ~190 px Vorspann und Vorschläge eingespart.
 
@@ -74,7 +74,7 @@ also fiel jede Stelle auf den gerechneten Verlauf durch.
 - Zustandsmaschine vollständig (verbinden, sprache_beginnt,
   teiltranskript, redebeitrag_fertig, denkt, spricht, ton_verweigert …)
 
-Ob Nina hörbar spricht und ob die Unterbrechung greift:
+Ob Monday hörbar spricht und ob die Unterbrechung greift:
 **MANUAL_TEST_REQUIRED** — dafür braucht es ein echtes Mikrofon.
 
 ## Bildzuordnung repariert
@@ -124,7 +124,7 @@ In der Datenbank stehen zwei nebeneinander:
     interview:experience_episodes:solved_problem   (älter, 115 Belege)
     nina:v3:career_evidence:current_situation      (aktuell, 180 Belege)
 
-Gezählt wurde nur das erste — also genau jenes, das die heutige Nina
+Gezählt wurde nur das erste — also genau jenes, das die heutige Monday
 NICHT schreibt. Wer heute ein Gespräch führte, sammelte Belege, die für
 den Fortschritt nicht zählten.
 
@@ -234,13 +234,13 @@ Treffer. Wer die Begriffszahl erhöht, muss das Limit mit erhöhen.
 ## Offen — ehrlich
 
 - **Nicht erledigt**: der Großteil der 28 Bereiche aus deiner Matrix.
-  Belegt sind inzwischen Auth, Career Profile, Nina, Jobs, Matching,
+  Belegt sind inzwischen Auth, Career Profile, Monday, Jobs, Matching,
   Bewerbung, Einstellungen, Abrechnung, Sicherheit, Mobile, Live Voice
   (bis zur Mikrofongrenze) und Career Coach.
 
 - **Company Intelligence, ehrlich eingeordnet**: Firmen*daten* sind breit
   integriert — die `companies`-Tabelle wird von zwölf Nicht-Test-Dateien
-  benutzt (Abgleich, Import, Bewerbungen, Angebote, Nina-Chat), und die
+  benutzt (Abgleich, Import, Bewerbungen, Angebote, Monday-Chat), und die
   Coresignal-Anreicherung existiert. Firmen*intelligenz* im Sinn von
   Phase 12 — Einstellungssignale, Vertrauensschicht, verdeckte Chancen —
   ist **nicht gebaut**: Die Tabellen `company_signals` und

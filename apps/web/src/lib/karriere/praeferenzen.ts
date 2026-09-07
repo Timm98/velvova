@@ -15,7 +15,7 @@ import { entscheide, type Fakt, type Faktquelle } from "./faktenregeln";
  * Formular gesetzt hat, in einem Feld. Das reicht, solange die Person
  * selbst tippt.
  *
- * Es reicht nicht mehr, sobald Nina zuhört. Aus einem Gespräch kommen
+ * Es reicht nicht mehr, sobald Monday zuhört. Aus einem Gespräch kommen
  * Angaben mit sehr verschiedener Qualität:
  *
  *   „Unter 60.000 mache ich es nicht"   → hart, sicher, vom Menschen
@@ -70,7 +70,7 @@ export async function praeferenzenLaden(userId: string): Promise<Praeferenzzeile
  * braucht und diese Abfrage in der heissen Schleife jeder Bewertung
  * steht — eine Zeile je harter Bedingung statt aller Vorlieben.
  *
- * `bestaetigt` ist Bedingung: Eine Vorliebe, die Nina aus drei
+ * `bestaetigt` ist Bedingung: Eine Vorliebe, die Monday aus drei
  * Ablehnungen abgeleitet hat, darf keine Stelle ausschliessen, solange
  * niemand sie bestätigt hat. Sonst wird aus einem Verdacht ein Filter,
  * den die Person nie gesetzt hat.
@@ -182,7 +182,7 @@ export async function praeferenzSchreiben(
 /**
  * Eine abgeleitete Vorliebe bestätigen.
  *
- * Der eigene Weg dafür ist Absicht. Nina darf ableiten, aber nur ein
+ * Der eigene Weg dafür ist Absicht. Monday darf ableiten, aber nur ein
  * Mensch darf bestätigen — und erst ab dann darf die Vorliebe eine
  * Stelle ausschliessen. Ohne diese Trennung wäre `bestaetigt` ein Feld,
  * das die Ableitung selbst setzen könnte.

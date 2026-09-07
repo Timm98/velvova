@@ -10,7 +10,7 @@ import {
 } from "./relevanz.ts";
 
 /**
- * Was Nina über einen Menschen weiss — und wann sie es anspricht.
+ * Was Monday über einen Menschen weiss — und wann sie es anspricht.
  *
  * ══════════════════════════════════════════════════════════════
  * Die Naht zwischen zwei Systemen
@@ -36,7 +36,7 @@ import {
  * entschieden.
  *
  * Was daraus folgt, ist eine Aussage der Person über sich selbst —
- * und die kann Nina nicht an ihrer Stelle treffen.
+ * und die kann Monday nicht an ihrer Stelle treffen.
  */
 
 export interface Klaerungsstand {
@@ -284,7 +284,7 @@ export const KONFLIKT_AB_PASSUNG = 75;
 /** Ab welcher Passung ein Treffer als stark gilt. */
 export const TREFFER_AB_PASSUNG = 80;
 
-/** Wie viele starke Treffer zusammenkommen müssen, damit Nina es sagt. */
+/** Wie viele starke Treffer zusammenkommen müssen, damit Monday es sagt. */
 export const TREFFER_AB_ANZAHL = 3;
 
 /**

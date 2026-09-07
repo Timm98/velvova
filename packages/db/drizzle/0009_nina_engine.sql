@@ -1,4 +1,4 @@
--- Ninas Gesprächsmaschine: Stufe, Jobreife, Rollenhypothesen.
+-- Mondays Gesprächsmaschine: Stufe, Jobreife, Rollenhypothesen.
 --
 -- Die Stufe liegt in der Datenbank und nicht im Modellkontext. Das ist
 -- der ganze Unterschied: ein Modell, das seinen eigenen Fortschritt
@@ -19,7 +19,7 @@ ALTER TABLE "workflow_states" ADD COLUMN IF NOT EXISTS "job_readiness_state" "jo
 --> statement-breakpoint
 ALTER TABLE "workflow_states" ADD COLUMN IF NOT EXISTS "job_readiness_score" integer DEFAULT 0 NOT NULL;
 --> statement-breakpoint
--- Zustimmung ist eine eigene Spalte und kein abgeleiteter Wert: Nina
+-- Zustimmung ist eine eigene Spalte und kein abgeleiteter Wert: Monday
 -- zeigt ohne sie nichts bildschirmfüllend an, und "hat wohl zugestimmt"
 -- ist keine Grundlage dafür.
 ALTER TABLE "workflow_states" ADD COLUMN IF NOT EXISTS "agreed_to_see_jobs" boolean DEFAULT false NOT NULL;
@@ -28,7 +28,7 @@ ALTER TABLE "workflow_states" ADD COLUMN IF NOT EXISTS "profile_completeness" in
 --> statement-breakpoint
 
 -- Die Stufe, in der eine Nachricht entstanden ist. Ohne sie lässt sich
--- später nicht rekonstruieren, unter welcher Annahme Nina gefragt hat.
+-- später nicht rekonstruieren, unter welcher Annahme Monday gefragt hat.
 ALTER TABLE "nina_messages" ADD COLUMN IF NOT EXISTS "stage" "nina_stage";
 --> statement-breakpoint
 ALTER TABLE "nina_messages" ADD COLUMN IF NOT EXISTS "recommended_action" text;

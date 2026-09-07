@@ -8,7 +8,7 @@ import { Berufsszenario, type Szenario } from "./Berufsszenario";
  *
  * ── Warum das hier steht ──────────────────────────────────────
  *
- * An dieser Stelle stand „Nina sucht nicht nach Schlagwörtern" mit
+ * An dieser Stelle stand „Monday sucht nicht nach Schlagwörtern" mit
  * einer Liste aus Häkchen. Das beschrieb eine Technik. Was einen
  * Menschen bei der Berufswahl tatsächlich umtreibt, ist die Frage, ob
  * es den Beruf in zehn Jahren noch gibt.

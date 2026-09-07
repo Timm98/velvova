@@ -475,7 +475,7 @@ export async function zusammenfassungBauen(
         posten: vorlagenposten,
         einstellungenUrl: `${optionen.basisUrl}/app/suchauftraege`,
         abmeldeUrl,
-        absenderName: "Nina von Velvova",
+        absenderName: "Monday von Velvova",
       });
 
       const [einstellung] = await tx

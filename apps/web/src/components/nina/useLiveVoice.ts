@@ -15,14 +15,14 @@ import { STILLE } from "@/lib/nina/stille";
  * Der Weg ist der aus V7 §14.3, und zwar genau in dieser Reihenfolge:
  *
  *   Mikrofon → OpenAI Realtime (nur Transkription)
- *            → Ninas normale Textantwort
+ *            → Mondays normale Textantwort
  *            → ElevenLabs → Lautsprecher
  *
  * Der Umweg über den eigenen Server für den Text ist Absicht. Eine
  * Realtime-Sitzung könnte direkt antworten und sprechen — dann käme
- * die Antwort aber an Ninas Systemprompt, ihrer Stufenmaschine und
+ * die Antwort aber an Mondays Systemprompt, ihrer Stufenmaschine und
  * ihrem Gedächtnis vorbei, und ihre Stimme wäre eine andere als im
- * Textmodus. Nina wäre im Sprachmodus jemand anderes.
+ * Textmodus. Monday wäre im Sprachmodus jemand anderes.
  *
  * Was hier NICHT steht, ist ebenso wichtig: keine
  * `webkitSpeechRecognition`, keine `speechSynthesis`. Beides wäre in
@@ -57,7 +57,7 @@ export function useLiveVoice({
   send,
   fertigeAntwort,
 }: {
-  /** Schickt einen Redebeitrag in Ninas normalen Textweg. */
+  /** Schickt einen Redebeitrag in Mondays normalen Textweg. */
   send: (text: string) => Promise<void>;
   /** Die zuletzt fertig gestreamte Antwort, oder null. */
   fertigeAntwort: { id: string } | null;
@@ -78,8 +78,8 @@ export function useLiveVoice({
    *
    * Das Ergebnis war der stillste aller Fehler: `play()` lehnte mit
    * `NotAllowedError` ab, der `catch` machte daraus „Ton zu Ende", die
-   * Zustandsmaschine ging weiter, als hätte Nina gesprochen. Nichts
-   * blinkte rot. Nina war einfach stumm.
+   * Zustandsmaschine ging weiter, als hätte Monday gesprochen. Nichts
+   * blinkte rot. Monday war einfach stumm.
    *
    * Ein einmal freigegebenes Element bleibt freigegeben: man darf ihm
    * später eine neue Quelle geben und erneut abspielen, ohne dass eine
@@ -116,7 +116,7 @@ export function useLiveVoice({
        * und löst dann einen Ladefehler aus. Und das Element auf `null`
        * zu setzen, wie vorher, würde beim nächsten Redebeitrag ein
        * neues erzwingen — ein nicht freigegebenes. Genau das war der
-       * Grund, warum Nina nach der ersten Unterbrechung endgültig
+       * Grund, warum Monday nach der ersten Unterbrechung endgültig
        * verstummte.
        */
       audio.current.removeAttribute("src");
@@ -151,7 +151,7 @@ export function useLiveVoice({
       if (wirkung.schliesse) schliessen();
       if (wirkung.sende) {
         void send(wirkung.sende).catch(() => {
-          melde({ art: "fehler", text: "Nina konnte nicht antworten." });
+          melde({ art: "fehler", text: "Monday konnte nicht antworten." });
         });
       }
     },
@@ -206,7 +206,7 @@ export function useLiveVoice({
         .catch(() => {
           /*
            * Bleibt der Browser dabei, geht das Gespräch trotzdem
-           * weiter — geschrieben steht Ninas Antwort ja da. Gemerkt
+           * weiter — geschrieben steht Mondays Antwort ja da. Gemerkt
            * wird nur, dass die Freigabe fehlt, damit die Oberfläche
            * es sagen kann statt still zu bleiben.
            */
@@ -244,7 +244,7 @@ export function useLiveVoice({
         // ── 2. Mikrofon ───────────────────────────────────────────
         const strom = await navigator.mediaDevices.getUserMedia({
           audio: {
-            // Ohne diese drei hört die Erkennung Nina aus dem eigenen
+            // Ohne diese drei hört die Erkennung Monday aus dem eigenen
             // Lautsprecher und hält es für eine Unterbrechung — das
             // Gespräch würde sich selbst ins Wort fallen.
             echoCancellation: true,
@@ -341,10 +341,10 @@ export function useLiveVoice({
   const beenden = useCallback(() => melde({ art: "beenden" }), [melde]);
 
   /*
-   * Ninas Antwort vorlesen.
+   * Mondays Antwort vorlesen.
    *
    * Erst wenn sie fertig gestreamt ist. Satzweise zu sprechen, während
-   * der Text noch läuft, wäre schneller — aber dann spricht Nina den
+   * der Text noch läuft, wäre schneller — aber dann spricht Monday den
    * Anfang einer Antwort, die sie selbst noch korrigiert, und beim
    * Unterbrechen gibt es zwei Warteschlangen statt einer.
    */
@@ -393,7 +393,7 @@ export function useLiveVoice({
          *
          * Genau hier verschwand die Ursache vorher: `NotAllowedError`
          * wurde wie ein zu Ende gespieltes Stück behandelt. Jetzt geht
-         * das Gespräch zwar weiter — Ninas Antwort steht geschrieben
+         * das Gespräch zwar weiter — Mondays Antwort steht geschrieben
          * da —, aber die Oberfläche erfährt davon.
          */
         if (fehler instanceof DOMException && fehler.name === "NotAllowedError") {

@@ -95,7 +95,7 @@ export async function dismissEvidence(evidenceId: string): Promise<void> {
       })
       .where(and(eq(schema.evidenceItems.id, evidenceId), eq(schema.evidenceItems.userId, user.id)));
   });
-  revalidatePath("/app/nina");
+  revalidatePath("/app/monday");
 }
 
 export async function editEvidence(evidenceId: string, statement: string): Promise<void> {

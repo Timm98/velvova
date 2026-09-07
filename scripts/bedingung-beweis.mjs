@@ -3,7 +3,7 @@ import { chromium } from "@playwright/test";
 /**
  * Der Beweis für die Kette, die gefehlt hat.
  *
- * Jemand nennt Nina eine Gehaltsuntergrenze. Bis vor kurzem endete das
+ * Jemand nennt Monday eine Gehaltsuntergrenze. Bis vor kurzem endete das
  * im Gesprächsverlauf: `user_constraints` blieb leer, und die Jobseite
  * schrieb „Du hast keine Untergrenze festgelegt".
  *
@@ -40,7 +40,7 @@ await p.getByRole("button", { name: /Konto anlegen/i }).click();
 await p.waitForURL(/\/(app|setup)/, { timeout: 40000 });
 
 // ── 1. Die Grenze aussprechen ───────────────────────────────────
-await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
 const feld = p.getByRole("textbox").first();
 await feld.fill("Mindestens 52000 Euro brutto im Jahr, darunter lohnt es sich für mich nicht.");
 await feld.press("Enter");
@@ -112,7 +112,7 @@ if (id) {
 }
 
 // ── 5. Aufheben ─────────────────────────────────────────────────
-await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
 await p.waitForTimeout(2500);
 const weg = p.getByRole("button", { name: /Bedingung .* aufheben/i }).first();
 if (await weg.isVisible().catch(() => false)) {

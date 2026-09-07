@@ -379,7 +379,7 @@ export function BewertungAbgebenKnopf({ className }: { className?: string }) {
           />
           <div className="relative m-0 w-full max-w-[38rem] rounded-t-(--radius-surface) bg-surface p-6 shadow-2xl sm:m-6 sm:rounded-(--radius-surface) sm:p-8">
             <div className="mb-6 flex items-start justify-between gap-4">
-              <h2 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+              <h2 className="font-display text-2xl font-normal tracking-[-0.02em]">
                 Deine Bewertung
               </h2>
               <button

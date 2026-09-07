@@ -9,7 +9,7 @@ import {
 } from "@paycheck/jobs";
 
 /**
- * Was Nina im Gespräch über die Person weiss — und was sie fragt.
+ * Was Monday im Gespräch über die Person weiss — und was sie fragt.
  *
  * ══════════════════════════════════════════════════════════════
  * Die Lücke, die diese Datei schliesst
@@ -17,7 +17,7 @@ import {
  *
  * Die Intelligenzschicht rechnete Widersprüche, Wissenslücken und
  * Synthesen — und legte sie in Tabellen ab. Das Gespräch las sie
- * nicht. Nina stellte eine Frage über den proaktiven Weg, die Person
+ * nicht. Monday stellte eine Frage über den proaktiven Weg, die Person
  * antwortete im Chat, und die Antwort war eine Nachricht wie jede
  * andere: Die Klärung blieb offen, dieselbe Frage kam wieder.
  *
@@ -33,7 +33,7 @@ import {
  * ══════════════════════════════════════════════════════════════
  *
  * Weil die nächste Nachricht der Person nicht zwangsläufig eine
- * Antwort ist. Wer Nina gestern eine Frage beantwortet bekommen hat
+ * Antwort ist. Wer Monday gestern eine Frage beantwortet bekommen hat
  * und heute „zeig mir Lagerjobs" schreibt, hat nicht geantwortet —
  * und diesen Satz als Aussage über die Arbeitszeit abzulegen wäre
  * ein erfundener Beleg.
@@ -64,7 +64,7 @@ export interface Offenefrage {
  *
  * ── Warum `gezeigt_am` und nicht `erstellt_am` ────────────────
  *
- * Weil eine Frage, die Nina zwar vorbereitet, aber nie gesagt hat,
+ * Weil eine Frage, die Monday zwar vorbereitet, aber nie gesagt hat,
  * keine Frage ist. `erstellt_am` sagt, wann sie etwas zu fragen
  * hatte; `gezeigt_am`, wann die Person es gelesen hat.
  */
@@ -192,7 +192,7 @@ export interface Intelligenzstand {
 }
 
 /**
- * Alles, was Nina über die Person weiss, in einer Form für den Client.
+ * Alles, was Monday über die Person weiss, in einer Form für den Client.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das schon jetzt hinausgeht, obwohl es niemand anzeigt
@@ -205,7 +205,7 @@ export interface Intelligenzstand {
  *
  * ── Warum höchstens ein proaktiver Hinweis ────────────────────
  *
- * Weil Nina eine Assistentin ist und kein Postfach. Drei Hinweise
+ * Weil Monday eine Assistentin ist und kein Postfach. Drei Hinweise
  * gleichzeitig sind keine Aufmerksamkeit, sondern eine Liste — und
  * eine Liste liest man später, also nie.
  */

@@ -12,7 +12,7 @@ import type { Zukunftsangabe } from "@/lib/jobs/zukunft";
  * Drei Zeilen aus der Bewertung:
  *
  *   Dafür spricht: Sieht interessant aus — für eine belastbare
- *   Einschätzung kennt Nina dich noch nicht gut genug.
+ *   Einschätzung kennt Monday dich noch nicht gut genug.
  *   Zu prüfen: Belegte Fähigkeiten und Qualifikationen ist unbekannt.
  *   Sicherheit gemindert durch: Dein Profil ist noch nicht vollständig …
  *

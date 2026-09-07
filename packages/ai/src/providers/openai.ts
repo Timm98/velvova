@@ -77,7 +77,7 @@ function isRetryable(error: unknown): boolean {
  *     Unsupported parameter: 'temperature' is not supported with this model.
  *
  * Der Aufruf schlägt dabei vollständig fehl, es kommt kein einziges
- * Zeichen zurück. In einem Ereignisstrom sieht das aus wie „Nina hat
+ * Zeichen zurück. In einem Ereignisstrom sieht das aus wie „Monday hat
  * nicht geantwortet“, nicht wie ein Konfigurationsfehler — und genau so
  * ist es hier aufgefallen: die Nutzernachrichten landeten in der
  * Datenbank, die Antworten nicht.
@@ -445,7 +445,7 @@ export async function* streamOpenAiConversation(
    *
    * Ohne diesen zweiten Teil endet ein Zug mit einem Werkzeugaufruf und
    * ganz ohne Text — das Modell hat etwas getan und nie erzählt, was
-   * dabei herauskam. In der Oberfläche sieht das aus, als hätte Nina
+   * dabei herauskam. In der Oberfläche sieht das aus, als hätte Monday
    * geschwiegen.
    */
   const eingabe: Record<string, unknown>[] = options.messages.map((m) => ({

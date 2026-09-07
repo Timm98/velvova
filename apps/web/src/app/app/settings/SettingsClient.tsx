@@ -108,7 +108,7 @@ export function AuffindbarSchalter({ an, seit }: { an: boolean; seit: Date | nul
           {pending && <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>…</span>}
         </span>
         <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginTop: 2 }}>
-          Nina darf dich Unternehmen als möglichen Treffer vorschlagen — anonym. Name und
+          Monday darf dich Unternehmen als möglichen Treffer vorschlagen — anonym. Name und
           Kontaktdaten bleiben verborgen, bis du eine Anfrage einzeln freigibst und beide Seiten
           Interesse gezeigt haben.
         </p>

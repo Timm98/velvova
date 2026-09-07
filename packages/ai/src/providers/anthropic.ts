@@ -139,7 +139,7 @@ export class AnthropicProvider implements AiProvider {
    * Werkzeuggespräch ist für diesen Anbieter noch nicht umgesetzt.
    *
    * Bewusst ein klarer Fehler statt eines stillen Rückfalls auf reinen
-   * Text: ein Gespräch, in dem Nina nichts speichern kann, sieht aus
+   * Text: ein Gespräch, in dem Monday nichts speichern kann, sieht aus
    * wie ein Gespräch — und verliert alles.
    */
   // eslint-disable-next-line require-yield

@@ -1,4 +1,4 @@
-# Ninas Gedächtnis und der Vorgangszustand
+# Mondays Gedächtnis und der Vorgangszustand
 
 ## Warum das nicht im Prompt liegen darf
 
@@ -59,7 +59,7 @@ das ausdrücklich — `USER_JUMPED_BACK` ist der einzige Weg.
 
 ## Wiederaufnahme
 
-`resumeMessage()` bildet den Satz, mit dem Nina ein Gespräch aufnimmt —
+`resumeMessage()` bildet den Satz, mit dem Monday ein Gespräch aufnimmt —
 aus gespeicherten Ereignissen. Liegt kein Ereignis vor, behauptet sie
 nichts:
 
@@ -85,10 +85,10 @@ Absicherung durchrutscht.
 ## Was noch fehlt
 
 - Der Kontext-Umschlag (`build-context-envelope.ts`) ist entworfen, aber
-  noch nicht an die Streaming-Route angeschlossen: Nina liest den
+  noch nicht an die Streaming-Route angeschlossen: Monday liest den
   Vorgangszustand noch nicht.
 - Das Abrufen relevanter Gedächtniseinträge über pgvector braucht ein
   Einbettungsmodell — also einen OpenAI-Schlüssel.
-- Die Oberfläche „Was Nina über mich weiß" fehlt.
+- Die Oberfläche „Was Monday über mich weiß" fehlt.
 
 Diese drei Punkte sind der nächste Schritt, nicht ein erledigter.

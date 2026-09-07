@@ -5,7 +5,7 @@ import { FileText, Loader2, Paperclip, X } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
- * Ein Dokument an Nina geben.
+ * Ein Dokument an Monday geben.
  *
  * Der Knopf ist klein, der Vorgang dahinter ist es nicht: hier wandert
  * ein Lebenslauf oder ein Zeugnis auf einen fremden Server. Deshalb wird
@@ -15,7 +15,7 @@ import { cn } from "@/lib/cn";
  * Die Reichweite ist die eigentliche Frage, und die Voreinstellung ist
  * die engste:
  *
- *   **Nur dieses Gespräch** — Nina liest es jetzt, es fliesst nicht ins
+ *   **Nur dieses Gespräch** — Monday liest es jetzt, es fliesst nicht ins
  *   Profil. Die Voreinstellung, weil sie am wenigsten voraussetzt.
  *
  *   **Fürs Profil** — die Funde können bestätigt werden und zählen
@@ -23,7 +23,7 @@ import { cn } from "@/lib/cn";
  *   Kleingedruckten.
  *
  * Was auch bei „fürs Profil" nicht passiert: nichts wird automatisch
- * übernommen. Was Nina im Dokument findet, ist ein Vorschlag mit
+ * übernommen. Was Monday im Dokument findet, ist ein Vorschlag mit
  * Fundstelle — bestätigen muss die Person.
  */
 
@@ -43,7 +43,7 @@ const REICHWEITEN = [
   {
     key: "chat_only",
     label: "Nur dieses Gespräch",
-    erklaerung: "Nina liest es jetzt. Es fliesst nicht in dein Profil.",
+    erklaerung: "Monday liest es jetzt. Es fliesst nicht in dein Profil.",
   },
   {
     key: "career_profile",

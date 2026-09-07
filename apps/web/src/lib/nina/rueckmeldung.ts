@@ -6,7 +6,7 @@ import { ereignisSchreiben } from "./ereignisse";
 import { musterErkennen } from "./musterregeln";
 
 /**
- * Rückmeldungen zu Vorschlägen — und was Nina daraus schliessen darf.
+ * Rückmeldungen zu Vorschlägen — und was Monday daraus schliessen darf.
  *
  * ── Die Reihenfolge ist die Aussage ───────────────────────────
  *

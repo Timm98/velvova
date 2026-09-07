@@ -43,7 +43,7 @@ export const UserConstraintsSchema = z.object({
    * sondern ein leerer Arbeitsmarkt mit falscher Erklärung.
    *
    * `null` heisst jetzt: nicht gesagt. Die Suche schränkt dann nicht
-   * ein — und Nina fragt, sobald es einen Anlass gibt. Eine offene
+   * ein — und Monday fragt, sobald es einen Anlass gibt. Eine offene
    * Frage ist ehrlicher als eine geratene Antwort.
    */
   country: z.string().length(2).nullable().default(null),

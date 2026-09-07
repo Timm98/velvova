@@ -6,17 +6,17 @@ Erteilt am 5.9.2026. Grundlage für `/for-business`.
 
 **Du suchst keine Bewerbungen. Du suchst den richtigen Menschen.**
 
-Veröffentliche deine Stelle — und Nina beginnt zu arbeiten. Sie versteht
+Veröffentliche deine Stelle — und Monday beginnt zu arbeiten. Sie versteht
 nicht nur Qualifikationen und Berufserfahrung, sondern auch Erwartungen,
 Arbeitsweise, Persönlichkeit und langfristige Ziele. Während klassische
-Jobportale darauf warten, dass sich jemand bewirbt, sucht Nina aktiv nach
+Jobportale darauf warten, dass sich jemand bewirbt, sucht Monday aktiv nach
 Menschen, die zur Stelle und zum Unternehmen passen.
 
-Knöpfe: *Unternehmen registrieren* · *Nina für Unternehmen ansehen*
+Knöpfe: *Unternehmen registrieren* · *Monday für Unternehmen ansehen*
 
-## Nina sucht auch dann, wenn du nicht suchst
+## Monday sucht auch dann, wenn du nicht suchst
 
-Stellen bleiben nicht einfach online stehen. Nina vergleicht fortlaufend
+Stellen bleiben nicht einfach online stehen. Monday vergleicht fortlaufend
 neue und bestehende Profile mit den offenen Stellen — auch bei Menschen,
 die die Anzeige nie gesehen haben.
 
@@ -24,7 +24,7 @@ die die Anzeige nie gesehen haben.
 Veränderungen im Fit Score erkennen · Vorschläge machen · **mit
 Einwilligung beider Seiten** verbinden · das Team informieren.
 
-> Nina schläft nicht. Dein Recruiting muss trotzdem nicht rund um die Uhr
+> Monday schläft nicht. Dein Recruiting muss trotzdem nicht rund um die Uhr
 > arbeiten.
 
 ## Fit Score — mehr als ein Lebenslaufvergleich
@@ -45,7 +45,7 @@ langfristiger Fit (gibt es eine realistische Perspektive?).
 
 ## Verbinden nur mit Einwilligung
 
-1. Nina erkennt eine hohe Übereinstimmung.
+1. Monday erkennt eine hohe Übereinstimmung.
 2. Die Person bekommt eine verständliche Erklärung, warum die Stelle
    passen könnte.
 3. Sie entscheidet, ob ihr Profil für dieses Unternehmen freigegeben wird.
@@ -63,12 +63,12 @@ Arbeitsweise · Remote/Hybrid/Präsenz · Verantwortungsniveau · Lern- und
 Entwicklungsbereitschaft · Gehaltsspanne und Arbeitszeit · Reise- und
 Pendelbereitschaft · Karriereziele · Muss- und Kann-Kriterien.
 
-Nina unterscheidet **Muss**, **Wunsch** und **entwickelbar** — niemand
+Monday unterscheidet **Muss**, **Wunsch** und **entwickelbar** — niemand
 fällt raus, weil ein Schlagwort fehlt.
 
 ## Stellenanzeigen, die passende Menschen erreichen
 
-Nina prüft: verständliche Aufgaben · realistische und nötige
+Monday prüft: verständliche Aufgaben · realistische und nötige
 Anforderungen · Widersprüche zwischen Muss und Kann · Transparenz bei
 Arbeitszeit, Ort und Gehalt · Sprache, die niemanden unbeabsichtigt
 ausschliesst · Stimmigkeit von Erfahrung und Verantwortung · fehlende
@@ -115,7 +115,7 @@ Quereinsteiger entdecken · Bearbeitungszeit verkürzen · schneller
 zurückmelden · Fehlbesetzungen durch falsche Erwartungen vermeiden ·
 langfristige Passung gewichten · Aufwand messbar machen.
 
-## Nina lernt — kontrolliert
+## Monday lernt — kontrolliert
 
 Welche Profile zu Gesprächen führten · welche Kriterien weniger wichtig
 waren als gedacht · warum Menschen abgesagt haben · welche
@@ -129,6 +129,6 @@ Bewertung ausschliessen. Die Entscheidung bleibt beim Menschen.
 
 ## Abschluss
 
-**Klassische Jobportale zeigen Reichweite. Nina schafft Verbindungen.**
+**Klassische Jobportale zeigen Reichweite. Monday schafft Verbindungen.**
 
 Nicht mehr Profile durchsuchen. Die richtigen Menschen kennenlernen.

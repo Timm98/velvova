@@ -7,7 +7,7 @@ import { Button, Card } from "@/components/ui";
 import { auftragBestaetigen, suchauftragAusFiltern } from "@/lib/suchauftrag/aktionen";
 
 /**
- * „Diese Suche von Nina weiterführen lassen."
+ * „Diese Suche von Monday weiterführen lassen."
  *
  * ══════════════════════════════════════════════════════════════
  * Was hier vorher nicht stimmte
@@ -63,7 +63,7 @@ export function Jobalarm({
         <div className="grid gap-1.5">
           <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
             <Check aria-hidden className="size-4 text-positive" />
-            Nina sucht ab jetzt weiter.
+            Monday sucht ab jetzt weiter.
           </h2>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             Der Auftrag läuft unter{" "}
@@ -87,7 +87,7 @@ export function Jobalarm({
       <Card>
         <div className="grid gap-4">
           <div className="grid gap-2">
-            <h2 className="text-base font-semibold text-ink">So würde Nina weitersuchen</h2>
+            <h2 className="text-base font-semibold text-ink">So würde Monday weitersuchen</h2>
             <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
               <strong className="font-medium text-ink">{entwurf.name}</strong> — mit den Filtern,
               die du gerade gesetzt hast. Nichts davon ist bisher aktiv.
@@ -129,7 +129,7 @@ export function Jobalarm({
         <div className="grid gap-2">
           <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
             <Bell aria-hidden className="size-4 text-ink-3" />
-            Nina sucht weiter, auch wenn du nicht da bist.
+            Monday sucht weiter, auch wenn du nicht da bist.
           </h2>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             Sie merkt sich diese Suche und prüft von da an jede neue Stelle dagegen — Tag für

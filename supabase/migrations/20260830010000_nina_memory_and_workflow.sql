@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- Ninas Gedächtnis und der Zustand des Vorgangs
+-- Mondays Gedächtnis und der Zustand des Vorgangs
 -- ═══════════════════════════════════════════════════════════════
 --
 -- Der Zustand liegt in der Datenbank, nicht im Prompt und nicht im

@@ -45,7 +45,7 @@ export default async function OnboardingPage() {
       <header className="grid gap-1 pb-5">
         <h1 className="text-xl font-600 text-ink">Stelle einrichten</h1>
         <p className="max-w-[62ch] text-sm text-ink-2">
-          Erzähl Nina von der Stelle. Aus einem Gespräch entstehen vier Dinge —
+          Erzähl Monday von der Stelle. Aus einem Gespräch entstehen vier Dinge —
           eure Unternehmensseite, die Anzeige, die Matching-Regeln und der
           Bewerbungsablauf. Rechts siehst du live, was daraus wird.
         </p>

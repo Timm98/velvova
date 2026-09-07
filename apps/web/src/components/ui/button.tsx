@@ -39,15 +39,32 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        /*
+         * ══════════════════════════════════════════════════════════
+         * Flach, und der Nebenknopf umrandet statt gefüllt
+         * ══════════════════════════════════════════════════════════
+         *
+         * Der Hauptknopf trug Schatten und oben eine helle Innenkante
+         * — die Mittel, mit denen man einen Knopf plastisch macht.
+         * Die Vorlage benutzt keines davon: Die Farbe allein sagt,
+         * dass es der Hauptweg ist.
+         *
+         * Der Nebenknopf war eine gefüllte erhöhte Fläche. Auf
+         * dunklem Grund steht er damit fast so laut wie der blaue
+         * daneben, und zwei laute Knöpfe nebeneinander sagen nicht
+         * mehr, welcher gemeint ist. Umrandet und durchsichtig tritt
+         * er zurück, ohne zu verschwinden — so macht es die Vorlage
+         * bei „Mehr zu den Sicherheitsleistungen" und „Alle
+         * Kategorien".
+         */
         primary: [
-          "bg-accent text-accent-on shadow-sm",
-          "hover:bg-accent-hover hover:shadow-md",
+          "bg-accent text-accent-on",
+          "hover:bg-accent-hover",
           "active:bg-accent-pressed",
-          "inset-shadow-[0_1px_0_hsl(0_0%_100%/0.14)]",
         ],
         secondary: [
-          "bg-raised text-ink shadow-sm",
-          "hover:bg-soft hover:shadow-md",
+          "border border-line-3 bg-transparent text-ink",
+          "hover:bg-soft",
         ],
         ghost: ["text-ink-2 hover:bg-soft hover:text-ink"],
         subtle: ["bg-soft text-ink hover:bg-soft-hover"],

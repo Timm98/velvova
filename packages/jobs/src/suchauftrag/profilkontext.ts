@@ -51,7 +51,7 @@ export interface Profilkontext extends Bewertungsprofil {
  *   ai_hypothesis · constraint   44 Belege   Konfidenz 0.90
  *   user_stated   · motive       78 Belege   Konfidenz 0.82
  *
- * Ninas Vermutungen trugen mehr Gewicht als das, was die Menschen
+ * Mondays Vermutungen trugen mehr Gewicht als das, was die Menschen
  * selbst gesagt haben. Wer diese Zahlen ungeprüft in den Fit rechnet,
  * lässt das System die Person in ihrer eigenen Sache überstimmen.
  *

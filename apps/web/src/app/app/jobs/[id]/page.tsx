@@ -164,7 +164,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
    *      30/90/180-Schleife kann nie beginnen, weil es keine
    *      eingefrorene Vorhersage gibt, gegen die man prüfen könnte.
    *   2. Der Arbeitgeber sieht bei jeder Bewerbung ein leeres Fit-Band.
-   *   3. Nina weiss nicht, wie die Stelle bewertet wurde, über die
+   *   3. Monday weiss nicht, wie die Stelle bewertet wurde, über die
    *      gerade gesprochen wird.
    *
    * ── Warum `after` und nicht davor ─────────────────────────────
@@ -327,7 +327,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="grid gap-8">
-      {/* Nina weiß ab hier, worüber gesprochen wird. */}
+      {/* Monday weiß ab hier, worüber gesprochen wird. */}
       <NinaScope jobId={job.id} />
       <ViewTracker jobId={job.id} />
 
@@ -1078,7 +1078,7 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
           {/*
             Derselbe Inline-Chat wie in der geteilten Ansicht.
             
-            Hier standen Links nach /app/nina?job=… — ein Klick nahm
+            Hier standen Links nach /app/monday?job=… — ein Klick nahm
             einem die Anzeige weg, über die man gerade eine Frage hatte.
             Jetzt bleibt die Stelle stehen und die Antwort erscheint
             darunter, gebunden an genau diese job_id.

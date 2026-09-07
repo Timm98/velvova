@@ -1,5 +1,5 @@
 /**
- * Der Nina Core — das Hero-Bild der Landingpage.
+ * Der Monday Core — das Hero-Bild der Landingpage.
  *
  * ── Was hier vorher stand und warum es weg ist ────────────────
  *
@@ -11,7 +11,7 @@
  * Hier ist stattdessen EINE Komposition mit drei Stationen auf einer
  * durchgehenden Linie:
  *
- *   was jemand sagt  →  Nina  →  was dabei herauskommt
+ *   was jemand sagt  →  Monday  →  was dabei herauskommt
  *
  * Die Linie ist der Punkt. Sie behauptet einen Zusammenhang, und der
  * Zusammenhang ist die ganze Produktidee.
@@ -146,7 +146,7 @@ export function NinaCore() {
         ))}
       </ul>
 
-      {/* ── Mitte: Nina ───────────────────────────────────── */}
+      {/* ── Mitte: Monday ───────────────────────────────────── */}
       <div className="absolute left-[44%] top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
         <div
           className="nina-core__orb grid size-[clamp(84px,10vw,132px)] place-items-center rounded-full"
@@ -157,7 +157,7 @@ export function NinaCore() {
           }}
         >
           <span
-            className="grid size-[62%] place-items-center rounded-full font-display text-[clamp(13px,1.5vw,18px)] font-semibold"
+            className="grid size-[62%] place-items-center rounded-full font-display text-[clamp(13px,1.5vw,18px)] font-normal"
             style={{ background: "var(--ed-surface)", color: "var(--ed-ink)" }}
           >
             N

@@ -62,7 +62,7 @@ export function middleware(request: NextRequest): NextResponse {
        schwarz. */
     `worker-src 'self' blob:`,
     /*
-     * `blob:` ist für Ninas Stimme nötig.
+     * `blob:` ist für Mondays Stimme nötig.
      *
      * Der Ton kommt als Strom von der eigenen Route, wird im Browser zu
      * einem Blob und über einen Objekt-URL abgespielt. Ohne `blob:`

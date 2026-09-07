@@ -46,7 +46,7 @@ describe("Offene Erkenntnisse", () => {
     /*
      * Die eigentliche Reparatur.
      *
-     * Nina leitet dieselbe Vermutung aus der nächsten Nachricht erneut
+     * Monday leitet dieselbe Vermutung aus der nächsten Nachricht erneut
      * ab: neue Zeile, neue Kennung, minimal andere Schreibweise. Weil
      * die Ablehnung vorher an der Kennung hing, war die neue Zeile
      * unbelastet — und die Fläche kam zurück.

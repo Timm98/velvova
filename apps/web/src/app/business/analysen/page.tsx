@@ -73,7 +73,7 @@ export default async function AnalysenPage() {
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h1 className="font-display text-[clamp(1.7rem,3vw,2.2rem)] font-semibold tracking-[-0.025em]">
+        <h1 className="font-display text-[clamp(1.7rem,3vw,2.2rem)] font-normal tracking-[-0.015em]">
           Analysen
         </h1>
         <p className="max-w-[62ch] text-[15px] leading-relaxed text-ink-2">

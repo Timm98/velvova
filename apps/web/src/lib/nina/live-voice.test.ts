@@ -45,7 +45,7 @@ describe("Live-Gespräch", () => {
     expect(stand.zustand, "nach dem Ton wird von allein weiter zugehört").toBe("hört");
   });
 
-  it("bricht Nina ab, sobald jemand dazwischenspricht", () => {
+  it("bricht Monday ab, sobald jemand dazwischenspricht", () => {
     const bisSpricht = spiele([
       ...bisZugehört,
       { art: "sprache_beginnt" },
@@ -79,9 +79,9 @@ describe("Live-Gespräch", () => {
     /*
      * Der Fehler, um den es eigentlich geht.
      *
-     * Jemand unterbricht Nina. Die Tonerzeugung des alten Zuges war
+     * Jemand unterbricht Monday. Die Tonerzeugung des alten Zuges war
      * aber schon unterwegs und trifft eine Sekunde später ein. Ohne
-     * Zugnummer fängt Nina dann an, die alte Antwort zu sprechen —
+     * Zugnummer fängt Monday dann an, die alte Antwort zu sprechen —
      * mitten in den neuen Satz hinein.
      */
     const sprechend = (() => {
@@ -102,7 +102,7 @@ describe("Live-Gespräch", () => {
 
   it("antwortet nicht auf ein Geräusch", () => {
     // Ein Husten erzeugt einen leeren Redebeitrag. Ohne diese Regel
-    // schickt er eine leere Anfrage los, und Nina antwortet auf nichts.
+    // schickt er eine leere Anfrage los, und Monday antwortet auf nichts.
     const stand = spiele([...bisZugehört, { art: "sprache_beginnt" }]).stand;
     const leer = weiter(stand, { art: "redebeitrag_fertig", text: "   " });
     expect(leer.wirkung.sende).toBeUndefined();
@@ -157,7 +157,7 @@ describe("Verweigerte Tonwiedergabe", () => {
    *
    * Safari erlaubt Ton nur nach einer Nutzerhandlung. Wurde `play()`
    * abgelehnt, lief das vorher als „ton_endet" durch die Maschine — sie
-   * ging in „hört" und sah damit exakt so aus, als hätte Nina
+   * ging in „hört" und sah damit exakt so aus, als hätte Monday
    * gesprochen und ausgeredet. Kein Zustand, kein Text, nichts
    * unterschied den stummen Fall vom gelungenen.
    *

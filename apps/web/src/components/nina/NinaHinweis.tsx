@@ -12,13 +12,13 @@ import { useNina } from "./NinaProvider";
  * Warum es sie gibt
  * ══════════════════════════════════════════════════════════════
  *
- * Nina hat nur noch einen Einstieg: eine 36 Pixel grosse Blase unten
+ * Monday hat nur noch einen Einstieg: eine 36 Pixel grosse Blase unten
  * rechts. Das ist beabsichtigt leise — und leise heisst auch
  * übersehbar. Ohne einen einzigen Hinweis merkt niemand, dass die
  * Seite fragen lässt.
  *
  * Sie sagt zwei Dinge, und das zweite ist das wichtigere: dass man
- * Nina NICHT braucht. Wer filtern will, filtert oben. Ein Hinweis,
+ * Monday NICHT braucht. Wer filtern will, filtert oben. Ein Hinweis,
  * der nur für sich wirbt, macht aus einem Angebot eine Pflicht.
  *
  * ══════════════════════════════════════════════════════════════

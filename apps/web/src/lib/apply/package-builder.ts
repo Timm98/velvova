@@ -29,7 +29,7 @@ export interface PackageItem {
 export interface DocumentDiff {
   original: string;
   revised: string;
-  /** Warum Nina das geändert hat. */
+  /** Warum Monday das geändert hat. */
   rationale: string;
   /** Welche bestätigte Erfahrung den Satz trägt. */
   evidenceIds: string[];

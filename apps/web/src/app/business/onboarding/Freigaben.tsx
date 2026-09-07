@@ -18,7 +18,7 @@ import { angabeSetzen } from "./aktionen";
  *
  * ── Warum kein Schalter, der alles auf einmal erlaubt ─────────
  *
- * „Nina alles überlassen“ wäre ein Klick und eine Zustimmung, deren
+ * „Monday alles überlassen“ wäre ein Klick und eine Zustimmung, deren
  * Umfang niemand gelesen hat. Zwei getrennte Entscheidungen zwingen
  * dazu, zweimal hinzusehen — und die zweite (der Kontakt) ist die,
  * bei der es um fremde Daten geht.
@@ -43,7 +43,7 @@ export function Freigaben({
   return (
     <section className="grid gap-5 rounded-[12px] border border-line-3 bg-surface p-4">
       <header className="grid gap-1">
-        <h2 className="text-sm font-600 text-ink">Was Nina für euch tun darf</h2>
+        <h2 className="text-sm font-600 text-ink">Was Monday für euch tun darf</h2>
         <p className="max-w-[62ch] text-2xs text-ink-2">
           Zwei Entscheidungen. Beide lassen sich jederzeit ändern, und eine Änderung
           gilt ab sofort — nicht erst für die nächste Stelle.
@@ -53,7 +53,7 @@ export function Freigaben({
       {/* ── Stufe ─────────────────────────────────────────── */}
       <fieldset className="grid gap-2">
         <legend className="pb-1 text-2xs uppercase tracking-wide text-ink-3">
-          Wie weit Nina von sich aus geht
+          Wie weit Monday von sich aus geht
         </legend>
         {STUFEN.map((s) => (
           <label
@@ -111,7 +111,7 @@ export function Freigaben({
       {/* ── Die Zusammenfassung ───────────────────────────── */}
       <div className="grid gap-3 rounded-[8px] bg-inset p-3 sm:grid-cols-2">
         <div className="grid content-start gap-1.5">
-          <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Nina darf</h3>
+          <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Monday darf</h3>
           <ul className="grid gap-1">
             {stand.darf.map((d) => (
               <li key={d} className="flex gap-2 text-2xs text-ink">
@@ -123,7 +123,7 @@ export function Freigaben({
         </div>
 
         <div className="grid content-start gap-1.5">
-          <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Nina darf nicht</h3>
+          <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Monday darf nicht</h3>
           <ul className="grid gap-1">
             {stand.niemals.map((n) => (
               <li key={n} className="flex gap-2 text-2xs text-ink">

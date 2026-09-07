@@ -80,7 +80,7 @@ export const FOTOS: readonly Foto[] = [
     alt: "Bibliothekarin berät eine Besucherin am Regal",
     pfad: "/fotos/beruf/bibliothek.webp", klein: "/fotos/beruf/bibliothek-klein.webp" },
   { art: "marke", slug: "velvova-logo", gruppe: null, kldb: [],
-    alt: "Velvova-Wortmarke, powered by Nina",
+    alt: "Velvova-Wortmarke, powered by Monday",
     pfad: "/fotos/marke/velvova-logo.webp", klein: "/fotos/marke/velvova-logo-klein.webp" },
   { art: "beruf", slug: "tiermedizin", gruppe: "healthcare", kldb: ["81"],
     alt: "Tierärztin untersucht einen Hund in der Praxis",

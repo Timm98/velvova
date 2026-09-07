@@ -113,7 +113,7 @@ describe("Sprachregistry", () => {
 });
 
 describe("Trennung der drei Sprachwerte (§20.1)", () => {
-  it("erlaubt für Nina mehr Sprachen als für die Oberfläche", () => {
+  it("erlaubt für Monday mehr Sprachen als für die Oberfläche", () => {
     /*
      * Die Regel, die dreimal fest verdrahtet war — in der Auswahlliste,
      * im Datenbanktyp und in der Formularprüfung. Zweimal davon still:
@@ -124,7 +124,7 @@ describe("Trennung der drei Sprachwerte (§20.1)", () => {
     expect(nutzbareUiSprachen().length).toBeLessThan(ninaSprachen().length);
   });
 
-  it("hält jede Nina-Sprache für gültig, jede Oberflächensprache aber nicht", () => {
+  it("hält jede Monday-Sprache für gültig, jede Oberflächensprache aber nicht", () => {
     expect(istLocaleCode("tr")).toBe(true);
     expect(istLocaleCode("uk")).toBe(true);
     expect(istLocaleCode("klingon")).toBe(false);

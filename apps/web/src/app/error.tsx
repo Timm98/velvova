@@ -63,7 +63,7 @@ export default function ErrorBoundary({
   return (
     <div className="grid min-h-[60vh] place-items-center px-5 py-16">
       <div className="grid max-w-[46ch] gap-5">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
           Da ist etwas schiefgegangen.
         </h1>
 

@@ -160,7 +160,7 @@ describe("Fall D — mehrere Absagen wegen Kundenkontakt ergeben ein Muster", ()
 
   it("formuliert eine Frage statt einer Regel", () => {
     /*
-     * Ein Muster ist ein Verdacht, keine Anweisung. Nina fragt nach,
+     * Ein Muster ist ein Verdacht, keine Anweisung. Monday fragt nach,
      * statt still zu filtern — sonst verschwinden Stellen aus der
      * Liste, ohne dass jemand das entschieden hätte.
      */
@@ -193,7 +193,7 @@ describe("Fall E — Stelle ändert Gehalt und Remote-Tage, Match wird neu berec
   it("meldet Rauschen nicht", () => {
     /*
      * Ohne Schwelle würde jede Neuberechnung eine Meldung erzeugen.
-     * Nina wäre dann eine Benachrichtigungsquelle, die man abschaltet.
+     * Monday wäre dann eine Benachrichtigungsquelle, die man abschaltet.
      */
     expect(verbesserung(60, 62, ["gehalt"])).toBeNull();
   });

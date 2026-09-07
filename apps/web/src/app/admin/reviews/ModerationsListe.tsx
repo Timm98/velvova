@@ -59,7 +59,7 @@ export function ModerationsListe({
   return (
     <section className="grid gap-4">
       <div>
-        <h2 className="font-display text-lg font-semibold tracking-[-0.02em]">{titel}</h2>
+        <h2 className="font-display text-lg font-normal tracking-[-0.02em]">{titel}</h2>
         <p className="mt-1 text-sm text-ink-3">{hinweis}</p>
       </div>
 

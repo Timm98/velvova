@@ -10,7 +10,7 @@ import { schema, withUser, type Database } from "@paycheck/db";
  *
  * Weil ein Lebenslauf-Upload selten allein kommt. Die Person lädt
  * die Datei hoch, korrigiert eine Angabe, sieht sich drei Stellen an
- * und schreibt Nina eine Nachricht — alles in zehn Minuten. Wer bei
+ * und schreibt Monday eine Nachricht — alles in zehn Minuten. Wer bei
  * jedem dieser Schritte eine Synthese anstösst, bezahlt fünfmal das
  * tiefe Modell für fünf Bilder, die sich kaum unterscheiden.
  *
@@ -83,7 +83,7 @@ export async function anstoesse(
            * `updatedAt`, nicht `createdAt`.
            *
            * Eine erneut hochgeladene oder neu ausgewertete Datei ist
-           * derselbe Anstoss wie eine neue: Was Nina über den Menschen
+           * derselbe Anstoss wie eine neue: Was Monday über den Menschen
            * weiss, hat sich geändert.
            */
           gt(schema.userDocuments.updatedAt, seit),
@@ -100,10 +100,10 @@ export async function anstoesse(
     /*
      * Nur `user`.
      *
-     * Was Nina selbst getan hat, ist kein Anstoss, über Nina neu
+     * Was Monday selbst getan hat, ist kein Anstoss, über Monday neu
      * nachzudenken. Sonst entstünde derselbe Kreis, den `urheber` in
-     * den Verhaltenssignalen verhindert: Nina merkt vor, das gilt als
-     * Aktivität, Nina rechnet neu, merkt wieder vor.
+     * den Verhaltenssignalen verhindert: Monday merkt vor, das gilt als
+     * Aktivität, Monday rechnet neu, merkt wieder vor.
      */
     const zeilen = await tx
       .select({ art: schema.nutzerEreignisse.art, n: count() })

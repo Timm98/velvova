@@ -88,7 +88,7 @@ describe("Vorgangszustand", () => {
 
 describe("Wiederaufnahme", () => {
   it("behauptet nichts, wofür kein Ereignis vorliegt", () => {
-    const message = resumeMessage(initialState(), "Nina");
+    const message = resumeMessage(initialState(), "Monday");
     expect(message).not.toContain("Zuletzt:");
     expect(message).toContain("anfangen");
   });
@@ -101,7 +101,7 @@ describe("Wiederaufnahme", () => {
       { type: "SEARCH_EXECUTED", resultCount: 12 },
       { type: "APPLICATION_STARTED", applicationId: "44444444-4444-4444-4444-444444444444" },
     ]);
-    const message = resumeMessage(state, "Nina");
+    const message = resumeMessage(state, "Monday");
     expect(message).toContain("Zuletzt: Bewerbung begonnen");
     expect(message).toContain("Offen ist:");
     // Substantive bleiben groß. Der Satz geht ungefiltert an die

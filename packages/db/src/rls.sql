@@ -102,8 +102,8 @@ DECLARE
     -- enthält Aussagen über ihr Profil. Ohne Richtlinie stünde sie
     -- jedem offen, der die Kennung kennt.
     'job_tiefenanalysen',
-    -- Ninas Einrichtung und deren Protokoll. Die eine Zeile sagt, was
-    -- eine Person Nina erlaubt hat; das Protokoll, wann sie es erlaubt
+    -- Mondays Einrichtung und deren Protokoll. Die eine Zeile sagt, was
+    -- eine Person Monday erlaubt hat; das Protokoll, wann sie es erlaubt
     -- und wann sie es zurueckgenommen hat. Ohne Richtlinie liesse sich
     -- die Hintergrundsuche eines fremden Kontos einschalten -- und der
     -- Nachweis darueber im selben Zug faelschen.
@@ -214,7 +214,7 @@ DECLARE
     'application_screening_answers','application_handoffs',
     'connected_identities','auth_identity_audit',
     'email_preferences','email_deliveries',
-    -- Ninas Gedächtnis. Alle drei tragen eine Nutzerkennung, und genau
+    -- Mondays Gedächtnis. Alle drei tragen eine Nutzerkennung, und genau
     -- hier liegt das Gespräch: wer diesen Filter vergisst, gibt fremde
     -- Karrieregespräche frei.
     'nina_conversations','nina_messages','workflow_states',
@@ -248,11 +248,11 @@ DECLARE
     --
     -- Sie stehen bewusst in eigenen Tabellen und nicht am
     -- Karriereprofil — von dort fliessen Angaben in Lebenslaeufe, in
-    -- Ninas Begruendungen und in die Suchrichtungen. Eine Miete, die
+    -- Mondays Begruendungen und in die Suchrichtungen. Eine Miete, die
     -- versehentlich in einem Anschreiben landet, ist ein Schaden, den
     -- keine Korrektur zurueckholt.
     'living_costs','current_employment',
-    -- „Nina sucht fuer dich weiter" (Migration 0082).
+    -- „Monday sucht fuer dich weiter" (Migration 0082).
     --
     -- Der Suchauftrag ist die verdichtetste Aussage ueber einen
     -- Menschen, die das Produkt speichert: wonach er sucht, ab welchem
@@ -778,11 +778,11 @@ CREATE POLICY geo_referenz_read ON geo_referenz FOR SELECT USING (true)
 
 --> statement-breakpoint
 /*
- * Ninas Eigeninitiative.
+ * Mondays Eigeninitiative.
  *
  * Fuenf Tabellen, alle mit `user_id`. Was hier steht, ist besonders
  * heikel: `nutzer_ereignisse` sagt, wann jemand welche Stelle wie
- * lange angesehen hat, und `verhaltenssignale` sagt, was Nina daraus
+ * lange angesehen hat, und `verhaltenssignale` sagt, was Monday daraus
  * schliesst.
  *
  * Ein Kandidat, der den Ereignisstrom eines anderen lesen koennte,
@@ -846,7 +846,7 @@ CREATE POLICY nina_eigeninitiative_self ON nina_eigeninitiative
 /*
  * Profilintelligenz.
  *
- * Was Nina ueber einen Menschen zusammengetragen hat -- Staerken,
+ * Was Monday ueber einen Menschen zusammengetragen hat -- Staerken,
  * Widersprueche, offene Fragen. Fuer die Person selbst die
  * wertvollste Auskunft im Produkt, fuer jeden anderen ein Einblick,
  * den niemand erlaubt hat.
@@ -880,7 +880,7 @@ CREATE POLICY profil_klaerungen_self ON profil_klaerungen
  * Es enthaelt keine Inhalte -- nur Anlass, Zustand und Fehlerklasse.
  * Trotzdem traegt es eine Nutzerkennung, und damit gilt dieselbe
  * Regel wie ueberall: Wer die Zeilen eines anderen lesen kann, kann
- * sehen, wann und wie oft Nina sich mit ihm beschaeftigt hat.
+ * sehen, wann und wie oft Monday sich mit ihm beschaeftigt hat.
  */
 ALTER TABLE profil_laeufe ENABLE ROW LEVEL SECURITY
 --> statement-breakpoint

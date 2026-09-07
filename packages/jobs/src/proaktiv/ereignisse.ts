@@ -142,7 +142,7 @@ export async function ereignisAufnehmen(
    * ── Warum nur, was die Person selbst tat ────────────────────
    *
    * `application_events` ist die Aufzeichnung von Meilensteinen einer
-   * Bewerbung. Eine Handlung Ninas gehört dort nicht hinein — sonst
+   * Bewerbung. Eine Handlung Mondays gehört dort nicht hinein — sonst
    * stünde in der Trichterdiagnose ein Aufruf, den niemand gemacht
    * hat.
    */
@@ -241,7 +241,7 @@ async function trichterEreignis(
 }
 
 /**
- * Wie weit Nina zurückblickt.
+ * Wie weit Monday zurückblickt.
  *
  * Vierzehn Tage ist eine Produktentscheidung, kein Messwert — dieselbe
  * Spanne, nach der ein abgeleitetes Signal verfällt. Länger

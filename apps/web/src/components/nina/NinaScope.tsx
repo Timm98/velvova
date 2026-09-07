@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { useNinaActions, type NinaScopeValue } from "./NinaProvider";
 
 /**
- * Was diese Seite Nina über sich sagt.
+ * Was diese Seite Monday über sich sagt.
  *
- * Eine Seite rendert `<NinaScope jobId={…} />`, und ab dann weiß Nina,
+ * Eine Seite rendert `<NinaScope jobId={…} />`, und ab dann weiß Monday,
  * worüber gesprochen wird. Beim Verlassen der Seite fällt es weg — der
  * Provider leert den Bereich beim Routenwechsel.
  *

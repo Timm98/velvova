@@ -5,11 +5,11 @@ import { STILLE } from "@/lib/nina/stille";
 
 
 /**
- * Ninas Stimme im Browser.
+ * Mondays Stimme im Browser.
  *
  * Der schwierige Teil ist nicht das Abspielen, sondern das Aufhören.
  *
- * Wenn jemand Nina unterbricht — Stopp drückt, das Mikrofon aktiviert,
+ * Wenn jemand Monday unterbricht — Stopp drückt, das Mikrofon aktiviert,
  * eine neue Nachricht schickt oder die Seite wechselt — muss dreierlei
  * gleichzeitig passieren: der Ton verstummt, die Anfrage bricht ab, und
  * die alte Antwort darf nicht Sekunden später doch noch losreden.
@@ -69,7 +69,7 @@ export function useNinaVoice() {
     setAktiveNachricht(null);
   }, []);
 
-  // Beim Verlassen der Komponente verstummt Nina. Ohne das läuft der Ton
+  // Beim Verlassen der Komponente verstummt Monday. Ohne das läuft der Ton
   // nach einem Seitenwechsel weiter, während der Auslöser weg ist.
   useEffect(() => stoppen, [stoppen]);
 

@@ -19,7 +19,7 @@ import { z } from "zod";
 
 export const KARRIEREANALYSE_FASSUNG = "karriereanalyse-1";
 
-export const KARRIEREANALYSE_ANWEISUNG = `Du bist Nina und beurteilst, welche beruflichen Wege einem Menschen offenstehen.
+export const KARRIEREANALYSE_ANWEISUNG = `Du bist Monday und beurteilst, welche beruflichen Wege einem Menschen offenstehen.
 
 Du bekommst: was über die Person bekannt ist, mit Belegen und Konfidenz.
 

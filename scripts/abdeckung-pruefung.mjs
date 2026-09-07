@@ -7,7 +7,7 @@ import { chromium } from "@playwright/test";
  *
  * Die erste Fassung wartete überall auf `networkidle` und blieb nach
  * knapp vierzehn Minuten hängen. Der Grund ist kein Fehler im Produkt:
- * Die Nina-Seite hält für das Streamen der Antwort eine Verbindung
+ * Die Monday-Seite hält für das Streamen der Antwort eine Verbindung
  * offen, und solange die steht, wird das Netz nie „ruhig". Ein Test,
  * der darauf wartet, wartet für immer.
  *
@@ -26,7 +26,7 @@ await p.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!")
 await p.getByRole("button", { name: /Konto anlegen/i }).click();
 await p.waitForURL(/\/(app|setup)/, { timeout: 60000 });
 
-await p.goto(`${B}/app/nina`, { waitUntil: "domcontentloaded" });
+await p.goto(`${B}/app/monday`, { waitUntil: "domcontentloaded" });
 const feld = p.locator("textarea, input[type=text]").first();
 await feld.waitFor({ timeout: 20000 });
 await feld.fill(

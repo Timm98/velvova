@@ -111,9 +111,9 @@ describe("Alterung", () => {
 });
 
 describe("Hinweis", () => {
-  it("nennt Nina als Urheberin und verweist aufs Original", () => {
-    const d = briefDisclaimer("Nina");
-    expect(d).toContain("Nina");
+  it("nennt Monday als Urheberin und verweist aufs Original", () => {
+    const d = briefDisclaimer("Monday");
+    expect(d).toContain("Monday");
     expect(d).toMatch(/Originalanzeige/);
   });
 });

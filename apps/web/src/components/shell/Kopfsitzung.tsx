@@ -1,6 +1,7 @@
 import { and, count, eq, isNull } from "drizzle-orm";
 import { LogOut } from "lucide-react";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { brand } from "@paycheck/config";
 import { currentUser, kennung } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { logoutAction } from "@/app/(auth)/actions";
@@ -118,6 +119,7 @@ export async function kopfsitzung(): Promise<Kopfsitzung> {
      */
     accountMenu: (
       <Kontobereich
+        assistent={brand.assistantName}
         userName={nutzer.displayName}
         userEmail={kennung(nutzer)}
         bildKennung={profilbildKennung(einstellungen?.avatarPfad)}
@@ -132,9 +134,9 @@ export async function kopfsitzung(): Promise<Kopfsitzung> {
           <form action={logoutAction}>
             <button
               type="submit"
-              className="flex w-full items-center gap-2.5 rounded-(--radius-sm) px-3 py-2 text-sm text-ink-2 transition-colors hover:bg-soft hover:text-ink"
+              className="flex w-full items-center gap-3.5 rounded-(--radius-sm) px-5 py-3 text-base font-medium text-ink transition-colors hover:bg-soft"
             >
-              <LogOut className="size-4 shrink-0 text-ink-3" strokeWidth={1.8} />
+              <LogOut className="size-[19px] shrink-0 text-ink" strokeWidth={2} />
               {t("nav.logout")}
             </button>
           </form>

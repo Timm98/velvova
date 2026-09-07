@@ -1,4 +1,4 @@
--- Ninas Sprachen (V7 §20.2).
+-- Mondays Sprachen (V7 §20.2).
 --
 -- Der Aufzählungstyp `locale` kannte genau zwei Werte: 'de' und 'en'.
 -- Für die OBERFLÄCHE reicht das auch weiterhin — mehr Sprachen gibt es
@@ -6,7 +6,7 @@
 -- Registry selbst.
 --
 -- Für das GESPRÄCH und für BEWERBUNGSUNTERLAGEN reicht es nicht.
--- Ninas Antworten entstehen im Modell und brauchen keinen Katalog; wer
+-- Mondays Antworten entstehen im Modell und brauchen keinen Katalog; wer
 -- lieber auf Türkisch über seine Laufbahn spricht, soll das können,
 -- während die Oberfläche deutsch bleibt. Genau diese Trennung steht in
 -- §20.1, und ohne die zusätzlichen Werte liesse sie sich nicht

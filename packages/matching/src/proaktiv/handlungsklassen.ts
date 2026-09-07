@@ -1,5 +1,5 @@
 /**
- * Was Nina von selbst darf — und was nicht.
+ * Was Monday von selbst darf — und was nicht.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum diese Tabelle im Code steht und nicht im Prompt
@@ -12,30 +12,30 @@
  *
  * Deshalb steht hier eine geschlossene Liste. Das Modell bekommt die
  * erlaubten Handlungen als Eingabe und darf aus ihnen wählen. Was
- * nicht in dieser Datei steht, existiert für Nina nicht.
+ * nicht in dieser Datei steht, existiert für Monday nicht.
  *
  * ══════════════════════════════════════════════════════════════
  * Die drei Klassen
  * ══════════════════════════════════════════════════════════════
  *
- *   auto_allowed    Nina handelt selbst und sagt es hinterher
- *   propose_first   Nina fragt und handelt nach Zustimmung
- *   explicit_only   Nina handelt nur auf ausdrücklichen Auftrag
+ *   auto_allowed    Monday handelt selbst und sagt es hinterher
+ *   propose_first   Monday fragt und handelt nach Zustimmung
+ *   explicit_only   Monday handelt nur auf ausdrücklichen Auftrag
  *
  * Die Grenze zwischen der ersten und der zweiten Klasse ist nicht
  * „wie nützlich", sondern: Lässt es sich zurücknehmen, kostet es
  * nichts, geht nichts nach draussen, und ändert es nichts, was die
  * Person bestätigt hat?
  *
- * Vier Ja — dann darf Nina. Ein Nein genügt für `propose_first`.
+ * Vier Ja — dann darf Monday. Ein Nein genügt für `propose_first`.
  */
 
 export type Handlungsklasse = "auto_allowed" | "propose_first" | "explicit_only";
 
 export interface Handlungsregel {
-  /** Was Nina dabei prüfen und begründen muss. */
+  /** Was Monday dabei prüfen und begründen muss. */
   klasse: Handlungsklasse;
-  /** In der Sprache der Person — steht so in „Von Nina automatisch". */
+  /** In der Sprache der Person — steht so in „Von Monday automatisch". */
   beschreibung: string;
   /**
    * Ob die Person sie einzeln abschalten kann.
@@ -49,20 +49,20 @@ export interface Handlungsregel {
 }
 
 /**
- * Die elf Handlungen, die Nina von selbst ausführen darf.
+ * Die elf Handlungen, die Monday von selbst ausführen darf.
  *
  * ── Warum keine davon „speichern" heisst ──────────────────────
  *
  * „Gespeichert" bedeutet in Velvova: Ich will diese Stelle bewusst
  * behalten. Das ist eine Aussage der Person über sich selbst, und
- * Nina kann sie nicht an ihrer Stelle treffen.
+ * Monday kann sie nicht an ihrer Stelle treffen.
  *
- * `interesting` ist die ehrliche Zwischenstufe: Nina hat Interesse
- * VERMUTET. Der Unterschied steht auch in der Oberfläche — „Von Nina
+ * `interesting` ist die ehrliche Zwischenstufe: Monday hat Interesse
+ * VERMUTET. Der Unterschied steht auch in der Oberfläche — „Von Monday
  * vorgemerkt", nicht „Gespeichert".
  */
 export const HANDLUNGEN: Record<string, Handlungsregel> = {
-  /* ── Klasse A: Nina handelt selbst ──────────────────────────── */
+  /* ── Klasse A: Monday handelt selbst ──────────────────────────── */
 
   job_vormerken: {
     klasse: "auto_allowed",
@@ -114,7 +114,7 @@ export const HANDLUNGEN: Record<string, Handlungsregel> = {
   },
   analyse_vorbereiten: {
     klasse: "auto_allowed",
-    beschreibung: "Ninas Einschätzung zu einer Stelle im Voraus berechnen",
+    beschreibung: "Mondays Einschätzung zu einer Stelle im Voraus berechnen",
     abschaltbar: true,
     rueckgaengigStunden: null,
   },
@@ -139,7 +139,7 @@ export const HANDLUNGEN: Record<string, Handlungsregel> = {
     /*
      * Melden, nicht filtern.
      *
-     * Die Stellen sind ohnehin in der Liste; Nina sagt nur, dass
+     * Die Stellen sind ohnehin in der Liste; Monday sagt nur, dass
      * ungewöhnlich gute dabei sind. Es lässt sich zurücknehmen, es
      * kostet nichts, es geht nichts nach draussen, und es ändert
      * nichts, was die Person bestätigt hat — die vier Ja.
@@ -149,7 +149,7 @@ export const HANDLUNGEN: Record<string, Handlungsregel> = {
     rueckgaengigStunden: null,
   },
 
-  /* ── Klasse B: Nina fragt zuerst ────────────────────────────── */
+  /* ── Klasse B: Monday fragt zuerst ────────────────────────────── */
 
   suchauftrag_aendern: {
     klasse: "propose_first",
@@ -306,7 +306,7 @@ export type Handlungsart = keyof typeof HANDLUNGEN;
  * Die Fassung dieser Tabelle.
  *
  * Sie steht an jeder ausgeführten Handlung. Ohne sie liesse sich
- * später nicht sagen, nach welcher Regel Nina damals gehandelt hat —
+ * später nicht sagen, nach welcher Regel Monday damals gehandelt hat —
  * und „warum hat sie das gemacht" wäre nicht beantwortbar, sobald
  * jemand die Tabelle ändert.
  */
@@ -317,7 +317,7 @@ export function handlungBekannt(art: string): art is Handlungsart {
 }
 
 /**
- * Ob Nina diese Handlung ohne Rückfrage ausführen darf.
+ * Ob Monday diese Handlung ohne Rückfrage ausführen darf.
  *
  * ── Warum eine unbekannte Handlung `false` ergibt ─────────────
  *

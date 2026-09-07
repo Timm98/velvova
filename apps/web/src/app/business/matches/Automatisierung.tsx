@@ -11,7 +11,7 @@ import { cn } from "@/lib/cn";
  * ── Warum die Regel immer sichtbar ist, auch auf Stufe 1 ──────
  *
  * Eine Automatisierung, die man nicht sieht, kann man nicht prüfen.
- * Deshalb steht hier immer, was gilt — auch wenn das „Nina rechnet, ein
+ * Deshalb steht hier immer, was gilt — auch wenn das „Monday rechnet, ein
  * Mensch entscheidet" ist. Wer sie später hochstellt, hat vorher
  * gelesen, was die Stufen bedeuten, statt es aus einem Namen zu raten.
  *

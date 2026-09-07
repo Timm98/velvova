@@ -6,7 +6,7 @@ import type { JobVorschlag } from "./JobSuggestions";
 import { useNinaVoice } from "./useNinaVoice";
 
 /**
- * Ninas Zustand für die ganze Anwendung.
+ * Mondays Zustand für die ganze Anwendung.
  *
  * Der Provider sitzt im Layout der authentifizierten Seiten. Das ist
  * kein Detail, sondern der ganze Punkt: das Layout bleibt beim
@@ -15,7 +15,7 @@ import { useNinaVoice } from "./useNinaVoice";
  * Umweg über die URL, ohne dass irgendetwas synchronisiert werden muss.
  *
  * Wer auf einer Stellenseite fragt „was fehlt mir hier?“ und dann zu den
- * Bewerbungen wechselt, spricht weiter mit derselben Nina über dieselbe
+ * Bewerbungen wechselt, spricht weiter mit derselben Monday über dieselbe
  * Stelle. Der Server weiß es ohnehin — die Gesprächskennung geht bei
  * jeder Anfrage mit, und der Verlauf liegt in der Datenbank. Der
  * Provider sorgt nur dafür, dass die Oberfläche nicht vergisst, was der
@@ -46,7 +46,7 @@ export interface NinaReadiness {
 }
 
 /**
- * Was Nina gerade tut — für das Auge.
+ * Was Monday gerade tut — für das Auge.
  *
  * Ausdrücklich eine ABLEITUNG aus dem, was ohnehin schon bekannt ist,
  * und keine zweite Zustandsmaschine daneben. Zwei Maschinen für
@@ -67,7 +67,7 @@ interface NinaActions {
   /**
    * Die Blase kurz hervorheben.
    *
-   * Für Knöpfe an anderer Stelle, die zu Nina führen: Sie öffnen die
+   * Für Knöpfe an anderer Stelle, die zu Monday führen: Sie öffnen die
    * Fläche und lassen gleichzeitig das Sprechsymbol blinken. Ohne das
    * springt die Fläche irgendwo am Rand auf, und wer den Knopf oben
    * gedrückt hat, sucht sie.
@@ -82,7 +82,7 @@ interface NinaActions {
   ) => void;
   setScope: (scope: NinaScopeValue) => void;
   agreeToSeeJobs: () => void;
-  /** Eine Antwort mit Ninas Stimme vorlesen. */
+  /** Eine Antwort mit Mondays Stimme vorlesen. */
   speak: (messageId: string) => void;
   /** Sofort verstummen: Ton, Anfrage und Warteschlange. */
   stopSpeaking: () => void;
@@ -119,12 +119,12 @@ interface NinaState {
   stageStatus: string | null;
   /** Was der Server über die Jobreife weiß. */
   readiness: NinaReadiness | null;
-  /** Jobvorschläge, die Nina in diesem Zug gezeigt hat. Höchstens drei. */
+  /** Jobvorschläge, die Monday in diesem Zug gezeigt hat. Höchstens drei. */
   jobs: JobVorschlag[];
   /** Der aktuelle Fortschritt. `null`, solange der Server nichts geschickt hat. */
   progressGroups: { key: string; label: string; done: boolean }[] | null;
   /**
-   * Bietet Nina gerade Stellen an?
+   * Bietet Monday gerade Stellen an?
    *
    * Kommt aus `recommended_action` und ist die Voraussetzung dafür,
    * dass die Oberfläche einen Zustimmungsknopf zeigt. Ohne diesen
@@ -132,15 +132,15 @@ interface NinaState {
    * genau das soll nicht passieren.
    */
   offeringJobs: boolean;
-  /** Von der Seite gesetzt, damit Nina weiß, worüber gesprochen wird. */
+  /** Von der Seite gesetzt, damit Monday weiß, worüber gesprochen wird. */
   scope: NinaScopeValue;
-  /** Spricht Nina gerade? Welche Nachricht? */
+  /** Spricht Monday gerade? Welche Nachricht? */
   speakingMessageId: string | null;
   isSpeaking: boolean;
   isListening: boolean;
   /** Nur die Sprachausgabe betreffend. Der Textchat läuft weiter. */
   voiceError: string | null;
-  /** Die Ableitung für das Nina-Bild. */
+  /** Die Ableitung für das Monday-Bild. */
   visualState: NinaVisualState;
 }
 
@@ -154,7 +154,7 @@ type NinaContextValue = NinaActions & NinaState;
  * irgendetwas ändert — und beim Streamen ändert sich `messages`
  * buchstäblich bei jedem Zeichen. Der Header, die Navigation, die
  * Jobliste, alles unter dem Provider lief also mehrmals pro Sekunde neu
- * durch, nur weil Nina einen Buchstaben geschrieben hat.
+ * durch, nur weil Monday einen Buchstaben geschrieben hat.
  *
  * Deshalb getrennt:
  *
@@ -182,7 +182,7 @@ function fehlenderProvider(): never {
 /**
  * Nur die Handlungen.
  *
- * Für alles, was Nina auslöst, ohne ihren Verlauf zu zeigen. Diese
+ * Für alles, was Monday auslöst, ohne ihren Verlauf zu zeigen. Diese
  * Bauteile rendern beim Streamen nicht mit.
  */
 export function useNinaActions(): NinaActions {
@@ -192,7 +192,7 @@ export function useNinaActions(): NinaActions {
 /**
  * Der Zustand, falls es einen gibt.
  *
- * Für Stellen, an denen Nina AUSSERHALB der Anwendung erscheint — auf
+ * Für Stellen, an denen Monday AUSSERHALB der Anwendung erscheint — auf
  * der Startseite etwa. Dort gibt es keinen Provider, weil es kein
  * Gespräch gibt, und `useNina()` würde zu Recht werfen.
  *
@@ -224,7 +224,7 @@ export function NinaProvider({
   children: React.ReactNode;
   initialConversationId?: string | null;
   /**
-   * Ninas Antworten von selbst vorlesen.
+   * Mondays Antworten von selbst vorlesen.
    *
    * Voreinstellung AUS. Ton, der ungefragt losgeht, ist im Büro, im Zug
    * und im Wartezimmer ein Problem — und wer einen Job sucht, sitzt oft
@@ -299,7 +299,7 @@ export function NinaProvider({
 
   /*
    * Der Bereich wird von der Seite gemeldet und beim Verlassen wieder
-   * geleert. Ohne das Leeren würde Nina auf der Bewerbungsübersicht
+   * geleert. Ohne das Leeren würde Monday auf der Bewerbungsübersicht
    * noch die Stelle von vorhin für den aktuellen Kontext halten — und
    * genau solche Verwechslungen sind hier verboten.
    */
@@ -346,7 +346,7 @@ export function NinaProvider({
      *
      * Vorher lief diese Anfrage bei jedem Seitenaufbau — auch auf
      * `/app/jobs`, wo der Verlauf niemanden interessiert, und auf
-     * `/app/nina`, wo die Seite ihn ohnehin serverseitig mitbringt. Sie
+     * `/app/monday`, wo die Seite ihn ohnehin serverseitig mitbringt. Sie
      * war also fast immer überflüssig und hing beim Navigieren als
      * abgebrochene Anfrage im Netzwerkprotokoll.
      *
@@ -413,9 +413,9 @@ export function NinaProvider({
   }, []);
 
   /*
-   * Das Mikrofon unterbricht Nina.
+   * Das Mikrofon unterbricht Monday.
    *
-   * Wer zu sprechen anfängt, während Nina spricht, will nicht warten,
+   * Wer zu sprechen anfängt, während Monday spricht, will nicht warten,
    * bis sie ausgeredet hat — er will, dass sie aufhört. Das ist der
    * Unterschied zwischen einem Gespräch und einer Ansage.
    */
@@ -430,11 +430,11 @@ export function NinaProvider({
   /*
    * Welcher Faden gerade gilt.
    *
-   * Der Pfad entscheidet: unter /app/nina läuft das Karrieregespräch,
-   * überall sonst die schwebende Nina. Eine Frage auf dem Radar gehört
+   * Der Pfad entscheidet: unter /app/monday läuft das Karrieregespräch,
+   * überall sonst die schwebende Monday. Eine Frage auf dem Radar gehört
    * nicht ins Interview — und umgekehrt.
    */
-  const art: "career_interview" | "assistant" = pathname.startsWith("/app/nina")
+  const art: "career_interview" | "assistant" = pathname.startsWith("/app/monday")
     ? "career_interview"
     : "assistant";
 
@@ -449,7 +449,7 @@ export function NinaProvider({
          entscheidet daran, ob sie etwas anzeigen darf. */
       setSendezaehler((n) => n + 1);
       // Eine neue Frage unterbricht die laufende Antwort. Sonst redet
-      // Nina über die eigene nächste Antwort hinweg.
+      // Monday über die eigene nächste Antwort hinweg.
       stimme.stoppen();
 
       const eigeneId = `lokal-${Date.now()}`;
@@ -500,7 +500,7 @@ export function NinaProvider({
           setMessages((m) => m.filter((n) => n.id !== antwortId));
           setError(
             daten?.message ??
-              "Nina ist gerade nicht erreichbar. Deine Nachricht ist gespeichert.",
+              "Monday ist gerade nicht erreichbar. Deine Nachricht ist gespeichert.",
           );
           return;
         }
@@ -720,7 +720,7 @@ export function NinaProvider({
      *
      * Vorher fiel die eine Kennung auf `null` — und damit auch die des
      * Karrieregesprächs, selbst wenn man gerade nur die schwebende
-     * Nina geleert hat. Beim nächsten Öffnen begann das Interview von
+     * Monday geleert hat. Beim nächsten Öffnen begann das Interview von
      * vorn, obwohl es weiterlief.
      */
     setKennungen((k) => ({ ...k, [art]: null }));
@@ -792,7 +792,7 @@ export function NinaProvider({
       /*
        * Die Reihenfolge ist die Rangfolge.
        *
-       * Zuhören schlägt Sprechen (das Mikrofon hat Nina eben
+       * Zuhören schlägt Sprechen (das Mikrofon hat Monday eben
        * unterbrochen), Sprechen schlägt Denken (der Ton läuft bereits),
        * Denken schlägt Stille. Keine Zeitschaltung, keine Zufälle —
        * jeder Zustand hat eine technische Ursache.

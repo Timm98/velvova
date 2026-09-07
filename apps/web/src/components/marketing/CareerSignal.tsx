@@ -132,7 +132,7 @@ export function CareerSignal({ stationen }: { stationen: Station[] }) {
 
           <div className="min-w-0">
             <p
-              className="font-display text-[1.0625rem] font-semibold leading-tight tracking-[-0.015em] md:text-xl"
+              className="font-display text-[1.0625rem] font-normal leading-tight tracking-[-0.015em] md:text-xl"
               style={{ color: "var(--ed-ink)" }}
             >
               {station.label}

@@ -100,16 +100,16 @@ export async function ensureConversation(
        * Kennung genügte. Das war die Ursache der Kontextvermischung,
        * über die sich Menschen beschwert haben:
        *
-       *   Jemand führt das Karrieregespräch unter /app/nina. Der
+       *   Jemand führt das Karrieregespräch unter /app/monday. Der
        *   Client merkt sich dessen Kennung. Danach geht er auf den
-       *   Arbeitswelt-Radar und fragt Nina etwas über eine Meldung.
+       *   Arbeitswelt-Radar und fragt Monday etwas über eine Meldung.
        *   Der Client schickt `kind: "assistant"` — aber dieselbe
        *   Kennung. Und diese Zeile gab dann das KARRIEREGESPRÄCH
        *   zurück.
        *
        * Die Frage zur Nachricht landete also im Interview, wurde dort
        * Teil des Verlaufs und floss in die nächste Interviewfrage ein.
-       * Sichtbar war das als Nina, die mitten im Karrieregespräch über
+       * Sichtbar war das als Monday, die mitten im Karrieregespräch über
        * eine Schlagzeile sprach.
        *
        * Eine Kennung, deren Art nicht stimmt, ist kein Auftrag, sondern

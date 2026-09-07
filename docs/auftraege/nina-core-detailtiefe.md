@@ -1,4 +1,4 @@
-# Nina-Core — Detailtiefe und Markenobjekt
+# Monday-Core — Detailtiefe und Markenobjekt
 
 Erteilt am 5.9.2026. Baut auf `docs/auftraege/nina-core-glb.md` auf; die
 GLB-Datei bleibt Grundlage, Form und Position bleiben erhalten.

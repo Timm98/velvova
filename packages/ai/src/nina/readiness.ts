@@ -1,7 +1,7 @@
 import type { StageEvidence } from "./stages.ts";
 
 /**
- * Wann darf Nina Jobs zeigen?
+ * Wann darf Monday Jobs zeigen?
  *
  * Zwei Fehler wären möglich, und beide sind teuer:
  *
@@ -165,7 +165,7 @@ export function evaluateReadiness(input: ReadinessInput): ReadinessResult {
    * Ein ausdrücklicher Wunsch schlägt die Punktzahl.
    *
    * „Zeig mir Jobs“ ist keine Frage, die man mit „erst noch acht
-   * Antworten“ beantwortet. Nina zeigt dann etwas — und sagt in
+   * Antworten“ beantwortet. Monday zeigt dann etwas — und sagt in
    * derselben Nachricht, was für eine verlässlichere Reihenfolge fehlt.
    * Was hier NICHT passiert: so zu tun, als wäre die Reihenfolge
    * belastbar.
@@ -221,7 +221,7 @@ export function evaluateReadiness(input: ReadinessInput): ReadinessResult {
 }
 
 /**
- * Wie viele Ergebnisse darf Nina jetzt zeigen?
+ * Wie viele Ergebnisse darf Monday jetzt zeigen?
  *
  * Nie mehr als drei im Gespräch — auch bei `ready` nicht. Die
  * vollständige Liste hat eine eigene Seite; ein Gespräch ist der

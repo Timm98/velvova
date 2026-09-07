@@ -25,9 +25,9 @@ import { BELEGE_FUER_ANALYSE, hinweisAus } from "../intelligenz/karriere.ts";
  *
  * ── Warum die Zahl aus `nina_handlungen` kommt ────────────────
  *
- * Weil dort steht, was Nina tatsächlich GESAGT hat — `gezeigt_am`
+ * Weil dort steht, was Monday tatsächlich GESAGT hat — `gezeigt_am`
  * wird gesetzt, wenn die Nachricht die Person erreicht hat. Ein
- * Zähler an der Klärung selbst würde zählen, was Nina sagen WOLLTE,
+ * Zähler an der Klärung selbst würde zählen, was Monday sagen WOLLTE,
  * und das sind zwei verschiedene Zahlen: Die meisten Gelegenheiten
  * sterben in der Zurückhaltung, ohne dass jemand sie gesehen hat.
  */
@@ -89,7 +89,7 @@ const STELLEN_GRENZE = 20;
  * die die Person in der Stellenliste sieht — und irgendwann
  * widersprächen sie einander.
  *
- * Das ist derselbe Fehler wie „Nina-Analyse erfindet Zahlen, die
+ * Das ist derselbe Fehler wie „Monday-Analyse erfindet Zahlen, die
  * oben nicht stehen": zwei Rechnungen für dieselbe Frage.
  */
 export async function stellenlageLaden(
@@ -105,7 +105,7 @@ export async function stellenlageLaden(
    * Die Person sieht in der Stellenliste eine Zahl. Hier eine zweite
    * zu rechnen hiesse, ihr gleich zwei verschiedene Antworten auf
    * dieselbe Frage zu geben — genau der Fehler, der in der
-   * Stellenansicht schon einmal auffiel („Nina erfindet Zahlen, die
+   * Stellenansicht schon einmal auffiel („Monday erfindet Zahlen, die
    * oben nicht stehen").
    *
    * Beide Spalten kommen aus derselben Bewertung; `overall` ist die

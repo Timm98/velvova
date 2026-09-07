@@ -12,7 +12,7 @@ import type { Fixkosten } from "./rechnung.ts";
  * ── Was diese Datei bewusst NICHT tut ─────────────────────────
  *
  * Sie erzeugt keine Karriere-Belege. Was hier gespeichert wird, geht
- * nicht in `evidence_items`, nicht in Ninas Begründungen, nicht in
+ * nicht in `evidence_items`, nicht in Mondays Begründungen, nicht in
  * Suchrichtungen und nicht in Bewerbungsunterlagen.
  *
  * Das ist keine Vorsichtsmassnahme, sondern die Bedingung, unter der

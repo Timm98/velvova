@@ -4,7 +4,7 @@ import { and, eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 
 /**
- * Ninas tiefe Analyse einer Stelle — starten, lesen, fortschreiben.
+ * Mondays tiefe Analyse einer Stelle — starten, lesen, fortschreiben.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum sie lange dauern darf

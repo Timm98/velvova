@@ -4,11 +4,11 @@ import { NinaVisual } from "./NinaVisual";
 import { cn } from "@/lib/cn";
 
 /**
- * Nina als kleines rundes Zeichen neben Name und Status.
+ * Monday als kleines rundes Zeichen neben Name und Status.
  *
  * ── Warum es diese Fassung gibt ───────────────────────────────
  *
- * Im Gespräch stand Nina mit 120 Pixeln über der ersten Nachricht,
+ * Im Gespräch stand Monday mit 120 Pixeln über der ersten Nachricht,
  * auf dem Telefon mit 72. Zusammen mit Titel, Statuszeile und Knöpfen
  * war der obere Bereich damit ein Viertel des Bildschirms hoch, bevor
  * ein einziger Satz zu sehen war.
@@ -24,7 +24,7 @@ import { cn } from "@/lib/cn";
  * sieht nach einem Fehler aus, nicht nach Gestaltung — und genau das
  * war er.
  *
- * Die grosse Fassung bleibt für Stellen, an denen Nina die Hauptsache
+ * Die grosse Fassung bleibt für Stellen, an denen Monday die Hauptsache
  * ist. Dort wird `NinaVisual` direkt benutzt.
  */
 export function NinaCore({ className }: { className?: string }) {
@@ -35,7 +35,7 @@ export function NinaCore({ className }: { className?: string }) {
        * Kein Verlauf dahinter.
        *
        * `grund="verlauf"` legt eine leuchtende Fläche hinter das
-       * Modell — auf der Startseite richtig, wo Nina allein auf einer
+       * Modell — auf der Startseite richtig, wo Monday allein auf einer
        * grossen Fläche steht. Im Gespräch sitzt sie in einer Zeile
        * neben Überschrift und Statuszeile; dort ist der Schein ein
        * heller Fleck hinter Text und kein Licht.

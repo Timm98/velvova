@@ -6,7 +6,7 @@ import { Button, Card } from "@/components/ui";
 import { achseBeurteilen } from "@/lib/achsenAktionen";
 
 /**
- * Was Nina aus dem Gespräch gelesen hat — zur Bestätigung.
+ * Was Monday aus dem Gespräch gelesen hat — zur Bestätigung.
  *
  * ── Warum überhaupt gefragt wird ──────────────────────────────
  *
@@ -15,11 +15,11 @@ import { achseBeurteilen } from "@/lib/achsenAktionen";
  * abgeleitet und nicht nachgefragt, behauptet sie etwas über ihn, das
  * er so nie gesagt hat.
  *
- * Bei den Erkenntnissen macht Nina das längst richtig. Hier fehlte es.
+ * Bei den Erkenntnissen macht Monday das längst richtig. Hier fehlte es.
  *
  * ── Warum die Belegstelle dabeisteht ──────────────────────────
  *
- * „Nina meint, du magst keinen Kundenkontakt" lässt sich nur
+ * „Monday meint, du magst keinen Kundenkontakt" lässt sich nur
  * beantworten, wenn man weiss, woran sie es festmacht. Mit dem Zitat
  * wird aus einer Behauptung eine überprüfbare Frage.
  */

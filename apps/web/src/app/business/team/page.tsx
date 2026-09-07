@@ -62,7 +62,7 @@ export default async function TeamPage({
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">Team</h1>
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">Team</h1>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
           Alle hier Aufgeführten können die Bewerbungen dieser Organisation sehen. Deshalb steht
           die Liste allen offen — ändern kann sie nur die Verwaltung.

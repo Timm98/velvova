@@ -11,7 +11,7 @@
 -- ── Die Trennlinie, die dieses Schema durchzieht ──────────────
 --
 -- Ein Unternehmen darf NIEMALS sehen:
---   * den privaten Nina-Chat einer Person
+--   * den privaten Monday-Chat einer Person
 --   * ihre Lebenshaltung, ihre Steuerangaben, ihr aktuelles Gehalt
 --   * ihre anderen Bewerbungen
 --   * ihre gespeicherten Stellen und ihr Karriereprofil, solange sie es

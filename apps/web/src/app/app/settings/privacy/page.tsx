@@ -95,7 +95,7 @@ export default async function PrivacySettingsPage() {
   const consentState = Object.fromEntries(consents.map((c) => [c.kind, c.granted]));
 
   /*
-   * Ninas Einrichtung steht ganz oben.
+   * Mondays Einrichtung steht ganz oben.
    *
    * Sie ist das, was die meisten hier suchen: was im Hintergrund
    * passiert. Die Anbieterangaben darunter erklären, wohin Text geht

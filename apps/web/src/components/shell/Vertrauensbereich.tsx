@@ -1,7 +1,7 @@
 import { Check, ShieldCheck } from "lucide-react";
 
 /**
- * Wofür Nina gebaut wird.
+ * Wofür Monday gebaut wird.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum hier die Vision steht und nicht eine Merkmalsliste
@@ -37,10 +37,10 @@ import { Check, ShieldCheck } from "lucide-react";
  * der rechten Spalte.
  */
 const PUNKTE = [
-  "Nina sucht weiter, wenn du nicht suchst — und zeigt dir morgens nur das, was wirklich zu dir passt.",
+  "Monday sucht weiter, wenn du nicht suchst — und zeigt dir morgens nur das, was wirklich zu dir passt.",
   "Jede Empfehlung wird erklärt: was passt, was noch offen ist und was dagegen spricht.",
   "Du bleibst anonym. Wer du bist, erfährt ein Unternehmen erst, wenn beide Seiten zugestimmt haben.",
-  "Nina erkennt auch Chancen, die es als Anzeige noch gar nicht gibt.",
+  "Monday erkennt auch Chancen, die es als Anzeige noch gar nicht gibt.",
   "Sie merkt sich, was du abgelehnt hast, und fragt nicht zweimal dasselbe.",
 ];
 
@@ -51,7 +51,7 @@ const PUNKTE = [
  * Merkmal ist, sondern die Bedingung, unter der alle anderen gelten.
  */
 const GRENZE =
-  "Nina darf suchen, vergleichen und vorbereiten. Was sie veröffentlichen, " +
+  "Monday darf suchen, vergleichen und vorbereiten. Was sie veröffentlichen, " +
   "versenden oder verbindlich entscheiden darf, bestimmst immer du.";
 
 const GRUNDLAGEN = [
@@ -66,12 +66,12 @@ export function Vertrauensbereich() {
     <section aria-labelledby="vertrauen" className="grid gap-8 lg:grid-cols-2 lg:gap-12">
       <div className="grid content-start gap-5">
         <h2 id="vertrauen" className="max-w-[20ch] text-2xl font-semibold leading-tight text-ink">
-          Andere zeigen dir Stellen. Nina arbeitet weiter.
+          Andere zeigen dir Stellen. Monday arbeitet weiter.
         </h2>
 
         <p className="max-w-[var(--measure)] text-[15px] leading-relaxed text-ink-2">
           Bei einer Stellenbörse musst du immer wieder selbst suchen. Hier erklärst
-          du einmal, was du kannst und erreichen willst — und Nina prüft von da an
+          du einmal, was du kannst und erreichen willst — und Monday prüft von da an
           weiter, was sich verändert.
         </p>
 

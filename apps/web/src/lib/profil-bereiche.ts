@@ -46,7 +46,7 @@ export const BEREICHE = [
  *   nina:v3:career_evidence:current_situation      (aktuell)
  *
  * Die Abdeckung erkannte bisher nur das erste. Das zweite ist aber das
- * Schema, das die heutige Nina schreibt — und es stellt mit 180 von 326
+ * Schema, das die heutige Monday schreibt — und es stellt mit 180 von 326
  * Belegen die Mehrheit. Ergebnis: Wer heute ein Gespräch führte, sammelte
  * Belege, die für den Fortschritt nicht zählten. Der Balken stand still,
  * während das Gespräch lief, und niemand konnte sagen warum.

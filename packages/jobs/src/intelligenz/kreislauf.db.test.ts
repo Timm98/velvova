@@ -26,7 +26,7 @@ import { naechsteNachricht, handlungBeantworten } from "../proaktiv/einstellunge
  *      ↓      acht gemerkte Vertriebsstellen      → Gegenbelege
  *   NOTICE    Widerspruch erkannt
  *      ↓
- *   ASK       Nina fragt — einmal, mit Zustimmung
+ *   ASK       Monday fragt — einmal, mit Zustimmung
  *      ↓
  *   LEARN     „Direkter Verkauf nicht, Beratung schon."
  *      ↓
@@ -172,7 +172,7 @@ describe("Der geschlossene Kreis", () => {
     await profilsynthese(db, { userId: person, jetzt: JETZT });
     await proaktivLauf(db, person, { jetzt: spaeter(1), sitzungId: "s1" });
 
-    /* Nina sagt es — und der Server merkt sich, dass sie es gesagt hat. */
+    /* Monday sagt es — und der Server merkt sich, dass sie es gesagt hat. */
     const nachricht = await naechsteNachricht(db, person, spaeter(2));
     expect(nachricht).not.toBeNull();
 

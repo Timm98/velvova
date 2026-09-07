@@ -90,7 +90,7 @@ export function UpgradeBlatt({
             <span className="abschnitts-titel text-ink-3">
               {ziel.label}
             </span>
-            <h2 id="upgrade-titel" className="font-display text-2xl font-semibold tracking-[-0.02em]">
+            <h2 id="upgrade-titel" className="font-display text-2xl font-normal tracking-[-0.02em]">
               {runter ? `Zu ${ziel.name} wechseln` : `Auf ${ziel.name} wechseln`}
             </h2>
           </div>
@@ -108,7 +108,7 @@ export function UpgradeBlatt({
 
         {!runter && (
           <p className="flex items-baseline gap-1.5">
-            <span className="font-display text-3xl font-semibold tracking-[-0.03em]">
+            <span className="font-display text-3xl font-normal tracking-[-0.02em]">
               {preisText(ziel.preisMonatCent)}
             </span>
             <span className="text-sm text-ink-3">pro Monat</span>

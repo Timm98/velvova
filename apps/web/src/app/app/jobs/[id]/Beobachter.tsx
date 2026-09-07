@@ -62,7 +62,7 @@ export function Beobachter({ jobId }: { jobId: string }) {
        * Zufall zu füllen.
        */
       if (gerundet >= 5) melde("job_view_duration", { jobId, kontext: { sekunden: gerundet } });
-      /* Am Ende der Ansicht darf Nina einmal nachdenken. */
+      /* Am Ende der Ansicht darf Monday einmal nachdenken. */
       spuelen(true);
     };
   }, [jobId]);

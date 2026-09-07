@@ -1,7 +1,7 @@
 # Auftrag: Produktionsreife — nach dem Umbau
 
 Erteilt am 4.9.2026, ausdrücklich **nach** allem anderen. Kein weiterer
-Redesign-Durchgang: Velvova-Gestaltung, Nina, Stellensuche, Matching,
+Redesign-Durchgang: Velvova-Gestaltung, Monday, Stellensuche, Matching,
 Profile, Bewerbungen, Geschäftskundenteil, bestehende Anbindungen und
 Hell/Dunkel bleiben funktionsfähig.
 
@@ -36,21 +36,21 @@ Firmen- oder Rechtsangaben erfinden.
    Beschriftungen, ARIA nur wo nötig, Fokusfalle und -rückgabe in
    Dialogen, Alternativtexte, Kontrast, Fehler- und Ladeansagen,
    Sprunglink. **Sichtbaren Fokus nicht entfernen.**
-6. **Nina-Core barrierefrei**: `prefers-reduced-motion` respektieren.
-   Der Core darf nicht die einzige Auskunft über Ninas Zustand sein —
-   Textentsprechungen „Nina hört zu / denkt nach / spricht".
+6. **Monday-Core barrierefrei**: `prefers-reduced-motion` respektieren.
+   Der Core darf nicht die einzige Auskunft über Mondays Zustand sein —
+   Textentsprechungen „Monday hört zu / denkt nach / spricht".
 7. **Responsiv** bei 320, 375, 390, 430, 768, 1024, 1280, 1440+ px.
    Kein Querlauf, nichts abgeschnitten. Echtes mobiles Verhalten, nicht
    die geschrumpfte Desktopfassung.
-8. **Leistung**: Bilder, Logos, Flaggen, Zahlungsbilder, Nina-GLB,
+8. **Leistung**: Bilder, Logos, Flaggen, Zahlungsbilder, Monday-GLB,
    Schriften, Bündel, Routenladen. Moderne Bildformate wo sinnvoll,
    Vektor wo besser. Lazy Loading, Code-Aufteilung, dynamische Importe.
-   Die grosse Nina-Umgebung nur laden, wo sie gebraucht wird; kein
+   Die grosse Monday-Umgebung nur laden, wo sie gebraucht wird; kein
    doppeltes Three.js.
 9. **Schriftladen** ohne Layoutsprung; `font-display`, Preload nur wenn
    begründet, Rückfallkette, keine überflüssigen Schnitte.
 10. **Above the fold**: Suche ohne Scrollen sichtbar, Hauptaktion „Jobs
-    finden", zweite „Mit Nina suchen". Keine generische KI-Marketingseite.
+    finden", zweite „Mit Monday suchen". Keine generische KI-Marketingseite.
 11. **Aktionshierarchie** primär/sekundär/tertiär/destruktiv, keine
     zwei gleich dominanten Knöpfe nebeneinander.
 12. **Formulare** durchgehend: Beschriftungen, Prüfung im Browser und
@@ -63,14 +63,14 @@ Firmen- oder Rechtsangaben erfinden.
     Abzeichen. Komponenten und Datenmodell so bauen, dass sie später
     gefüllt werden können.
 15. **Transparenz je Stelle**: Unternehmen, Ort, Gehalt, Arbeitsmodell,
-    Art, Datum, Quelle, Bewerbungsweg, Prüfstand, Nina-Passung und
+    Art, Datum, Quelle, Bewerbungsweg, Prüfstand, Monday-Passung und
     deren Sicherheit. Fehlendes nicht erfinden.
 16. **Sozialer Beleg** nur mit echten Daten — keine erfundenen
     Bewertungen, Nutzerzahlen, Arbeitgeberzahlen, Erfolgsquoten.
 17. **Leere Zustände** mit Handlung statt leerer Fläche.
 18. **Ladezustände** mit Skeletten statt Sprüngen und Spinnern.
 19. **Fehlerzustände** für Dienstausfall, entfallene Stelle, Zeitablauf,
-    Nina nicht erreichbar, Bewerbung fehlgeschlagen, Anmeldung,
+    Monday nicht erreichbar, Bewerbung fehlgeschlagen, Anmeldung,
     Zahlung — je mit Weg zurück, `support@velvova.com`.
 20. **404 und 500** in Velvova-Gestalt, ohne Stacktrace.
 21. **Sicherheit**: keine Geheimnisse im Frontend, keine Schlüssel im

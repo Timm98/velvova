@@ -10,13 +10,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * ══════════════════════════════════════════════════════════════
  *
  * `useLiveVoice` schickt jeden fertigen Redebeitrag sofort ab. Das ist
- * im Gespräch mit Nina richtig — dort sind Redebeiträge kurz.
+ * im Gespräch mit Monday richtig — dort sind Redebeiträge kurz.
  *
  * Hier beschreibt jemand eine Stelle. Der Satz „Wir suchen einen
  * Controller … ähm … also jemanden, der die Monatsabschlüsse macht"
  * enthält eine Pause, und die Pause ist das Ende eines Redebeitrags.
  * Automatisch abgeschickt entstünden daraus zwei Züge, von denen der
- * erste die Hälfte der Auskunft enthält — und Nina fragte nach etwas,
+ * erste die Hälfte der Auskunft enthält — und Monday fragte nach etwas,
  * das im nächsten Atemzug gekommen wäre.
  *
  * Deshalb füllt das Diktat das Textfeld, und der Mensch drückt ab.

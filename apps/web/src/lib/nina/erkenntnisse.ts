@@ -11,7 +11,7 @@ import { inhaltskennung } from "./inhaltskennung.ts";
  *   verworfen  → wurde weggelegt, ohne Urteil.
  *   INHALT schon erledigt → kommt nicht wieder.
  *
- * Der letzte Punkt war der Fehler. Nina leitet dieselbe Vermutung aus
+ * Der letzte Punkt war der Fehler. Monday leitet dieselbe Vermutung aus
  * der nächsten Nachricht erneut ab — neue Zeile, neue Kennung. Weil die
  * Ablehnung an der Kennung hing, war die neue Zeile unbelastet, und für
  * den Menschen sah es aus, als bewirke das Ablehnen nichts.

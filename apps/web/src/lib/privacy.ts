@@ -97,7 +97,7 @@ export async function updateSettings(formData: FormData): Promise<void> {
    * Register misst das an den Katalogen.
    *
    * GESPRÄCH und UNTERLAGEN dürfen jede eingetragene Sprache annehmen
-   * (§20.2): Ninas Antworten entstehen im Modell und brauchen keinen
+   * (§20.2): Mondays Antworten entstehen im Modell und brauchen keinen
    * Katalog.
    *
    * Vorher stand hier zum dritten Mal `["de", "en"]` fest verdrahtet —

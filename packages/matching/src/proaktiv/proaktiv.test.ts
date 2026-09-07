@@ -56,7 +56,7 @@ function zustand(teil: Partial<Zustand> = {}): Zustand {
    ═══════════════════════════════════════════════════════════════ */
 
 describe("Handlungsklassen", () => {
-  it("lässt Nina nur die elf vorgesehenen Handlungen selbst ausführen", () => {
+  it("lässt Monday nur die elf vorgesehenen Handlungen selbst ausführen", () => {
     expect(handlungenDerKlasse("auto_allowed")).toHaveLength(11);
   });
 
@@ -85,7 +85,7 @@ describe("Handlungsklassen", () => {
     /*
      * Ein Tippfehler im Modellausgabefeld darf keine erlaubte
      * Handlung ergeben. Was nicht in der Tabelle steht, existiert
-     * für Nina nicht.
+     * für Monday nicht.
      */
     expect(handlungBekannt("job_bewerben")).toBe(false);
     expect(darfSelbstHandeln("job_bewerben")).toBe(false);
@@ -359,7 +359,7 @@ describe("Zurückhaltung", () => {
     nachricht: "Ich habe sie für dich vorgemerkt.",
   };
 
-  it("I — abgeschaltete Automatik hält Nina zurück", () => {
+  it("I — abgeschaltete Automatik hält Monday zurück", () => {
     const z = zustand({ abgeschaltet: new Set(["job_vormerken"]) });
     expect(darfJetzt(g, z, JETZT)).toEqual({ erlaubt: false, grund: "abgeschaltet" });
   });
@@ -471,13 +471,13 @@ describe("Freigabe — die letzte Prüfung", () => {
 });
 
 
-describe("C — Nina verstärkt sich nicht selbst", () => {
-  it("zählt Ninas eigene Handlungen nicht als Interesse", () => {
+describe("C — Monday verstärkt sich nicht selbst", () => {
+  it("zählt Mondays eigene Handlungen nicht als Interesse", () => {
     /*
-     * Würde Ninas Vormerkung als Nutzerhandlung zählen, bestätigte
+     * Würde Mondays Vormerkung als Nutzerhandlung zählen, bestätigte
      * sie ihre eigene Vermutung — beim nächsten Lauf stärker, beim
      * übernächsten noch stärker. Am Ende stünde ein sehr starkes
-     * Signal da, dessen Belege ausschliesslich Nina sind.
+     * Signal da, dessen Belege ausschliesslich Monday sind.
      */
     const s = interesseAusEreignissen(
       JOB,
@@ -505,7 +505,7 @@ describe("C — Nina verstärkt sich nicht selbst", () => {
     expect(s).toBeNull();
   });
 
-  it("lässt echte Handlungen neben Ninas gelten", () => {
+  it("lässt echte Handlungen neben Mondays gelten", () => {
     /* Die Vermischung darf die echten Hinweise nicht entwerten. */
     const s = interesseAusEreignissen(
       JOB,
@@ -523,7 +523,7 @@ describe("C — Nina verstärkt sich nicht selbst", () => {
     expect(s!.belege).toHaveLength(3);
   });
 
-  it("hält ein Muster aus Ninas Handlungen nicht für eine Tendenz", () => {
+  it("hält ein Muster aus Mondays Handlungen nicht für eine Tendenz", () => {
     const s = musterAusEreignissen(
       [
         ereignis("salary_opened", { jobId: "a", urheber: "nina" }),
@@ -537,7 +537,7 @@ describe("C — Nina verstärkt sich nicht selbst", () => {
   });
 
   it("unterscheidet beim Entdoppeln nach Urheber", () => {
-    /* Eine Handlung Ninas und eine der Person zur selben Minute sind
+    /* Eine Handlung Mondays und eine der Person zur selben Minute sind
        zwei Ereignisse, kein Doppel. */
     const gleich = new Date("2026-09-06T11:30:00Z");
     const roh = [

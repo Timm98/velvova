@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NINA_STAGES } from "./stages.ts";
 
 /**
- * Was Nina außer der sichtbaren Antwort noch liefert.
+ * Was Monday außer der sichtbaren Antwort noch liefert.
  *
  * Die Extraktion läuft als eigener, günstiger Aufruf NACH dem
  * sichtbaren Strom. Das ist Absicht: die Person hat ihre Antwort dann
@@ -31,7 +31,7 @@ const KurzerSatz = z.string().min(3).max(300);
  * `required` steht — sonst lehnt sie das Schema mit HTTP 400 ab, und
  * zwar bevor ein einziges Token entsteht. Genau das ist passiert: die
  * Auswertung schlug bei jedem Zug fehl, und von außen sah es aus, als
- * würde Nina sich nichts merken.
+ * würde Monday sich nichts merken.
  *
  * Also: keine `.optional()`, keine `.default()` im Wire-Schema. Wo
  * wirklich nichts da sein kann, steht `.nullable()` — eine leere Liste
@@ -146,7 +146,7 @@ export type NinaRoleHypothesis = z.infer<typeof Rollenhypothese>;
  * Die Anweisung für den Extraktionslauf.
  *
  * Getrennt vom Gesprächsprompt, weil es eine andere Aufgabe ist: dort
- * spricht Nina mit einem Menschen, hier liest ein Modell ein Protokoll.
+ * spricht Monday mit einem Menschen, hier liest ein Modell ein Protokoll.
  * Beides in einen Prompt zu packen macht beides schlechter.
  */
 export const EXTRACTION_SYSTEM_DE = `Du liest einen Gesprächsausschnitt zwischen einer Karrierebegleitung und einem Menschen und hältst fest, was daraus über den Menschen hervorgeht.

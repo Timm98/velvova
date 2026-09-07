@@ -48,7 +48,7 @@ const SPALTEN: Spalte[] = [
   {
     titel: "Für Bewerber",
     links: [
-      { href: "/app/nina", label: "Mit Nina sprechen" },
+      { href: "/app/monday", label: "Mit Monday sprechen" },
       { href: "/app/career", label: "Profil" },
       { href: "/app/applications", label: "Bewerbungen" },
       { href: "/app/jobs?gespeichert=1", label: "Gespeicherte Jobs" },
@@ -144,7 +144,7 @@ export function VelvovaFooter({
         */}
         <div className="grid gap-8 md:grid-cols-3 md:gap-10">
           <div className="grid content-start gap-3">
-            <h2 className="text-sm font-semibold text-ink">Nina sucht über Nacht</h2>
+            <h2 className="text-sm font-semibold text-ink">Monday sucht über Nacht</h2>
             {/*
               Beide Wege enden am selben Kasten auf der Jobseite.
 

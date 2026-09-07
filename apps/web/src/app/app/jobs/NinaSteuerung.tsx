@@ -52,7 +52,7 @@ import {
  * Was hier NICHT passiert
  * ══════════════════════════════════════════════════════════════
  *
- * Serveraktionen laufen nicht von selbst durch, nur weil Nina sie
+ * Serveraktionen laufen nicht von selbst durch, nur weil Monday sie
  * vorschlägt. `darfOhneRueckfrage` trennt: Eine Ansicht öffnen ist
  * gefahrlos, eine Bewerbung anlegen ist es nicht. Kommt eine
  * Serveraktion aus dem Modell, landet sie als Vorschlag in
@@ -66,7 +66,7 @@ type Steuerung = {
   /** Eine Aktion ausführen. `vonNina` entscheidet über die Rückfrage. */
   ausfuehren: (name: string, args?: unknown, vonNina?: boolean) => void;
   zurueck: () => void;
-  /** Eine Serveraktion, auf die Nina wartet. */
+  /** Eine Serveraktion, auf die Monday wartet. */
   offeneBitte: Aktion | null;
   bitteBestaetigen: () => void;
   bitteVerwerfen: () => void;
@@ -98,7 +98,7 @@ export function NinaSteuerungProvider({
    * Die Auswahl links ist die Wahrheit über die aktuelle Stelle.
    *
    * Sie steht in der Adresse, damit ein geteilter Link funktioniert.
-   * Ändert sie sich — durch Klick oder durch Nina —, muss das Panel
+   * Ändert sie sich — durch Klick oder durch Monday —, muss das Panel
    * folgen, sonst zeigt es die Analyse der vorigen Stelle.
    */
   useEffect(() => {
@@ -144,7 +144,7 @@ export function NinaSteuerungProvider({
       if (aktion.name === "suchauftrag_pausieren" || aktion.name === "suchauftrag_aussetzen") {
         const ziel = aktion.args.auftragId ?? (await einzigerAuftrag());
         const id = typeof ziel === "string" ? ziel : ziel.ok ? ziel.id : null;
-        /* Bei mehreren Aufträgen wird nicht geraten. Nina fragt nach —
+        /* Bei mehreren Aufträgen wird nicht geraten. Monday fragt nach —
            den Grund bekommt sie über den Rückgabeweg des Chats. */
         if (id === null) return;
         if (aktion.name === "suchauftrag_pausieren") await auftragPause(id);
@@ -185,7 +185,7 @@ export function NinaSteuerungProvider({
       const p = aktionPruefen(name, args);
       if (!p.ok) {
         /* Ein abgelehnter Vorschlag ist kein Absturz. Er wird
-           verworfen; Nina bekommt den Grund über den Rückgabeweg des
+           verworfen; Monday bekommt den Grund über den Rückgabeweg des
            Chats, nicht über eine Ausnahme hier. */
         console.warn("[nina] Aktion abgelehnt:", p.grund);
         return;

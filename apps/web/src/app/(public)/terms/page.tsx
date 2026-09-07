@@ -47,7 +47,7 @@ export default async function TermsPage() {
         <p className="font-mono text-2xs uppercase tracking-[0.16em] text-accent-text">
           Nutzungsbedingungen
         </p>
-        <h1 className="font-display text-[2.5rem] font-semibold leading-[1.06] tracking-[-0.03em]">
+        <h1 className="font-display text-[2.5rem] font-normal leading-[1.06] tracking-[-0.02em]">
           Was wir zusagen.
         </h1>
       </header>

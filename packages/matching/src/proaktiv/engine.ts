@@ -8,7 +8,7 @@ import {
 import type { Verhaltenssignal } from "./signale.ts";
 
 /**
- * Wann Nina von selbst etwas tut — und wann sie besser schweigt.
+ * Wann Monday von selbst etwas tut — und wann sie besser schweigt.
  *
  * ══════════════════════════════════════════════════════════════
  * Regeln zuerst, Modell nur wenn nötig
@@ -34,7 +34,7 @@ import type { Verhaltenssignal } from "./signale.ts";
 
 export interface Gelegenheit {
   handlung: Handlungsart;
-  /** Warum — in der Sprache der Person, für „Warum hat Nina das gemacht?" */
+  /** Warum — in der Sprache der Person, für „Warum hat Monday das gemacht?" */
   begruendung: string;
   jobId: string | null;
   belegEreignisse: string[];
@@ -84,7 +84,7 @@ export interface Zurueckhaltung {
  *
  * ── Was die Einstellung NICHT ändert ──────────────────────────
  *
- * Welche Handlungen erlaubt sind. „Proaktiv" macht Nina häufiger,
+ * Welche Handlungen erlaubt sind. „Proaktiv" macht Monday häufiger,
  * nicht mächtiger. Wer die Häufigkeit mit der Berechtigung
  * vermischt, baut eine Einstellung, mit der sich Sicherheitsregeln
  * abschalten lassen.
@@ -98,7 +98,7 @@ export const ZURUECKHALTUNG: Record<Eigeninitiative, Zurueckhaltung> = {
 };
 
 export interface Zustand {
-  /** Wann Nina zuletzt von sich aus etwas gesagt hat. */
+  /** Wann Monday zuletzt von sich aus etwas gesagt hat. */
   letzteNachricht: Date | null;
   /** Wie viele proaktive Hinweise in dieser Sitzung schon kamen. */
   inSitzung: number;
@@ -130,7 +130,7 @@ export interface Zurueckhaltungsbefund {
  * ── Warum stilles Handeln die Grenzen nicht sprengt ───────────
  *
  * Eine Handlung ohne Nachricht stört niemanden. Sie taucht in „Von
- * Nina automatisch" auf, wo die Person sie sieht, wenn sie hinsieht.
+ * Monday automatisch" auf, wo die Person sie sieht, wenn sie hinsieht.
  * Die Abstände hier gelten dem Unterbrechen, nicht dem Arbeiten.
  */
 export function darfJetzt(
@@ -174,7 +174,7 @@ export function darfJetzt(
    ═══════════════════════════════════════════════════════════════ */
 
 /**
- * Ab welcher Signalstärke Nina von selbst vormerkt.
+ * Ab welcher Signalstärke Monday von selbst vormerkt.
  *
  * Produktentscheidung, kein Messwert. 0,5 entspricht genau der
  * Mindestzahl an Hinweisen — schwächer wäre ein einzelner Klick.
@@ -372,16 +372,16 @@ export function freigeben(
    * ══════════════════════════════════════════════════════════════
    *
    * Ein Test hat das aufgedeckt: Zwei Stellen, beide mit genug
-   * Hinweisen, und Nina merkte nur die erste vor. Grund war
+   * Hinweisen, und Monday merkte nur die erste vor. Grund war
    * `thema_schon_dran` — sie hatte in dieser Sitzung bereits über
    * eine Vormerkung gesprochen.
    *
    * Das war falsch. Die Person hätte die zweite Stelle verloren, weil
-   * Nina zu höflich war, ein zweites Mal darüber zu reden. Die
+   * Monday zu höflich war, ein zweites Mal darüber zu reden. Die
    * Sperren sollen verhindern, dass sie nervt — nicht, dass sie hilft.
    *
-   * Also: Was Nina selbst darf, tut sie auch dann, wenn sie gerade
-   * nichts sagen darf. Nur eben still. Der Eintrag steht in „Von Nina
+   * Also: Was Monday selbst darf, tut sie auch dann, wenn sie gerade
+   * nichts sagen darf. Nur eben still. Der Eintrag steht in „Von Monday
    * automatisch", wo die Person ihn sieht, wenn sie hinsieht.
    *
    * ── Warum das für `propose_first` nicht gilt ────────────────

@@ -80,7 +80,7 @@ export function Composer({
   skipLabel?: string;
   className?: string;
   /**
-   * Ninas Name — schaltet den Dokumentknopf frei.
+   * Mondays Name — schaltet den Dokumentknopf frei.
    *
    * Bewusst nicht überall: der Composer steht auch im Interview, wo
    * gerade eine bestimmte Frage beantwortet wird. Eine Büroklammer
@@ -127,7 +127,7 @@ export function Composer({
     if (autoFocus) feld.current?.focus();
   }, [autoFocus]);
 
-  // Beim Verlassen der Komponente aufräumen. Ohne das bleibt Nina im
+  // Beim Verlassen der Komponente aufräumen. Ohne das bleibt Monday im
   // Zustand „hört zu", während niemand mehr spricht.
   useEffect(
     () => () => {
@@ -153,9 +153,9 @@ export function Composer({
     /*
      * Das Mikrofon meldet sich beim Provider an.
      *
-     * Zwei Dinge hängen daran: Nina verstummt sofort (wer zu sprechen
+     * Zwei Dinge hängen daran: Monday verstummt sofort (wer zu sprechen
      * anfängt, will nicht warten, bis sie ausgeredet hat), und das
-     * Nina-Bild wechselt auf „zuhören".
+     * Monday-Bild wechselt auf „zuhören".
      */
     onListeningChange?.(true);
 
@@ -357,7 +357,7 @@ export function Composer({
         {dokumenteFür && (
           <DokumentKnopf
             assistantName={dokumenteFür}
-            // Was Nina gelesen hat, gehört ins Gespräch — sonst passiert
+            // Was Monday gelesen hat, gehört ins Gespräch — sonst passiert
             // es unsichtbar in einem Aufklappfeld und niemand weiss,
             // worauf sich ihre nächste Antwort stützt.
             onFertig={(zusammenfassung) => onSend(zusammenfassung)}

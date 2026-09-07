@@ -169,7 +169,7 @@ describe("6 — der Lebenslauf belegt Python", () => {
   });
 });
 
-describe("7 — Nina vermutet Führungsinteresse", () => {
+describe("7 — Monday vermutet Führungsinteresse", () => {
   it("bleibt eine Vermutung und trägt keine Entscheidung", () => {
     const beleg = b("könnte an Führung interessiert sein", "ai_hypothesis", 0.9);
     expect(erkenntnisart(beleg)).toBe("inference");
@@ -180,7 +180,7 @@ describe("7 — Nina vermutet Führungsinteresse", () => {
 describe("1 — „Ich habe keine Fähigkeiten“", () => {
   it("lässt aus Erfahrung belegte Fähigkeiten stehen", () => {
     /*
-     * Nina widerspricht nicht mit „doch, hast du". Sie hat Belege,
+     * Monday widerspricht nicht mit „doch, hast du". Sie hat Belege,
      * und die sind Fakten — unabhängig davon, wie jemand über sich
      * spricht.
      */

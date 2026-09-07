@@ -39,7 +39,7 @@ const PUBLIC_PAGES = [
  */
 const APP_PAGES = [
   "/app",
-  "/app/nina",
+  "/app/monday",
   "/app/career",
   "/app/jobs",
   "/app/applications",

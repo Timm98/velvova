@@ -11,7 +11,7 @@ import {
 } from "@/lib/proaktiv/aktionen";
 
 /**
- * Was Nina von selbst getan hat — und wie man es rückgängig macht.
+ * Was Monday von selbst getan hat — und wie man es rückgängig macht.
  *
  * ══════════════════════════════════════════════════════════════
  * Drei Fragen, die jeder Eintrag beantworten muss
@@ -26,12 +26,12 @@ import {
  * nicht darin, ob jemand widerspricht — sondern ob er könnte.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum „Von Nina vorgemerkt“ und nicht „Gespeichert“
+ * Warum „Von Monday vorgemerkt“ und nicht „Gespeichert“
  * ══════════════════════════════════════════════════════════════
  *
  * „Gespeichert“ heisst in Velvova: Ich will diese Stelle bewusst
  * behalten. Das ist eine Aussage der Person über sich selbst, und
- * Nina kann sie nicht an ihrer Stelle treffen. Sie hat Interesse
+ * Monday kann sie nicht an ihrer Stelle treffen. Sie hat Interesse
  * vermutet — mehr steht hier nicht.
  */
 export function VonNinaAutomatisch({ eintraege }: { eintraege: Automatikeintrag[] }) {
@@ -41,10 +41,10 @@ export function VonNinaAutomatisch({ eintraege }: { eintraege: Automatikeintrag[
         <div className="grid gap-1.5">
           <h3 className="flex items-center gap-2 text-base font-semibold text-ink">
             <Sparkles aria-hidden className="size-4 text-ink-3" />
-            Von Nina automatisch
+            Von Monday automatisch
           </h3>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-            Nina hat noch nichts von selbst gemacht. Sobald du dir Stellen mehrfach ansiehst,
+            Monday hat noch nichts von selbst gemacht. Sobald du dir Stellen mehrfach ansiehst,
             merkt sie sie für dich vor und schreibt hier hin, warum.
           </p>
         </div>
@@ -58,12 +58,12 @@ export function VonNinaAutomatisch({ eintraege }: { eintraege: Automatikeintrag[
         <div className="grid gap-1">
           <h3 className="flex items-center gap-2 text-base font-semibold text-ink">
             <Sparkles aria-hidden className="size-4 text-ink-3" />
-            Von Nina automatisch
+            Von Monday automatisch
           </h3>
           <p className="text-sm text-ink-2">
             {eintraege.length === 1
-              ? "Eine Sache, die Nina für dich gemacht hat."
-              : `${eintraege.length} Sachen, die Nina für dich gemacht hat.`}{" "}
+              ? "Eine Sache, die Monday für dich gemacht hat."
+              : `${eintraege.length} Sachen, die Monday für dich gemacht hat.`}{" "}
             Du kannst jede davon zurücknehmen.
           </p>
         </div>
@@ -104,7 +104,7 @@ function Eintrag({ eintrag }: { eintrag: Automatikeintrag }) {
     return (
       <div className="rounded-lg border border-line-2 px-3 py-2.5 text-sm text-ink-2">
         {erledigt === "behalten" ? "Behalten." : "Zurückgenommen."}
-        {abgeschaltet ? " Nina macht das nicht mehr automatisch." : null}
+        {abgeschaltet ? " Monday macht das nicht mehr automatisch." : null}
       </div>
     );
   }
@@ -113,7 +113,7 @@ function Eintrag({ eintrag }: { eintrag: Automatikeintrag }) {
     <div className="grid gap-2 rounded-lg border border-line-2 px-3 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={eintrag.brauchtZustimmung ? "caution" : "assistant"}>
-          {eintrag.brauchtZustimmung ? "Vorschlag" : "Von Nina vorgemerkt"}
+          {eintrag.brauchtZustimmung ? "Vorschlag" : "Von Monday vorgemerkt"}
         </Badge>
         <span className="text-sm font-medium text-ink">{eintrag.beschreibung}</span>
       </div>

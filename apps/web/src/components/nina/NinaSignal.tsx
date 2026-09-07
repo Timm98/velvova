@@ -1,9 +1,9 @@
 import { cn } from "@/lib/cn";
 
 /**
- * Nina Signal.
+ * Monday Signal.
  *
- * Kein Chatbot-Symbol, kein Gesicht, keine Sprechblase. Nina ist eine
+ * Kein Chatbot-Symbol, kein Gesicht, keine Sprechblase. Monday ist eine
  * Analysefähigkeit, kein Gegenüber — und ein menschelndes Symbol würde
  * genau das versprechen, was das Produkt nicht einlöst.
  *
@@ -41,10 +41,10 @@ const SIZES = {
   /*
    * Die Grösse für den Auftritt, nicht für die Zeile.
    *
-   * Auf der Startseite steht Nina in einer Fläche von 180 Pixeln. Mit
+   * Auf der Startseite steht Monday in einer Fläche von 180 Pixeln. Mit
    * `xl` füllte sie davon 72 — ein kleiner Punkt in der Mitte einer
    * grossen leeren Box, umgeben vom dekorativen Schein des Abschnitts.
-   * Das las sich nicht als „Nina", sondern als „hier lädt noch etwas".
+   * Das las sich nicht als „Monday", sondern als „hier lädt noch etwas".
    *
    * Der Fehler war nicht der Schein und nicht die Box, sondern das
    * Verhältnis: Ein Bauteil, das für einen Kopfzeilenpunkt gebaut ist,
@@ -173,7 +173,7 @@ export function BrandMark({
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <NinaSignal state={state} size={size} />
       {showName && (
-        <span className="font-display text-[15px] font-semibold tracking-[-0.02em]">{name}</span>
+        <span className="font-display text-[15px] font-normal tracking-[-0.02em]">{name}</span>
       )}
     </span>
   );

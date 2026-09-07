@@ -2,12 +2,12 @@ import { listJobsForUser, loadProfileContext } from "@/lib/matching";
 import type { JobVorschlag } from "@/components/nina/JobSuggestions";
 
 /**
- * Die höchstens drei Vorschläge, die Nina im Gespräch zeigen darf.
+ * Die höchstens drei Vorschläge, die Monday im Gespräch zeigen darf.
  *
  * Sie kommen aus derselben Bewertungslogik wie die vollständige Liste —
  * nicht aus dem Modell. Das ist der Punkt: eine Reihenfolge, die ein
  * Sprachmodell erfindet, lässt sich nicht begründen und nicht prüfen.
- * Nina darf entscheiden, WANN sie etwas zeigt; WAS oben steht,
+ * Monday darf entscheiden, WANN sie etwas zeigt; WAS oben steht,
  * entscheidet die Bewertung.
  *
  * Was hier nie passiert: eine Zahl erfinden. Ist kein Gehalt angegeben,
@@ -31,7 +31,7 @@ function gehalt(salary: {
   currency: string;
   period: string;
 }): string | null {
-  // Schweigt die Anzeige, schweigt Nina. `disclosed === false` heißt
+  // Schweigt die Anzeige, schweigt Monday. `disclosed === false` heißt
   // "keine Angabe" und nie "null Euro".
   if (!salary.disclosed || (salary.min === null && salary.max === null)) return null;
   const von = salary.min?.toLocaleString("de-DE");

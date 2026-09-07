@@ -6,12 +6,12 @@
  * ══════════════════════════════════════════════════════════════
  *
  * Seit die Intelligenzschicht Widersprüche, Wissenslücken und
- * Unsicherheiten erkennt, hat Nina jederzeit etwas zu sagen. Bei
+ * Unsicherheiten erkennt, hat Monday jederzeit etwas zu sagen. Bei
  * einem durchschnittlichen Profil stehen ein bis zwei Widersprüche,
  * eine offene Frage und mehrere schwache Vermutungen gleichzeitig.
  *
  * Alles davon anzuzeigen wäre kein Assistent, sondern ein Postfach.
- * Die Zurückhaltung in `engine.ts` regelt, WIE OFT Nina spricht.
+ * Die Zurückhaltung in `engine.ts` regelt, WIE OFT Monday spricht.
  * Diese Datei regelt, WORÜBER — und das ist die schwierigere Frage:
  * Wenn nur eine Meldung durchkommt, muss es die richtige sein.
  *
@@ -128,7 +128,7 @@ export const ANLAEUFE_MAX = 2;
  *
  * Weil die Neuheit ein Gewicht ist und kein Verbot: Ein sehr
  * gewichtiger Hinweis kommt auch mit 0,25 Neuheit noch über die
- * Schwelle, und dann fragt Nina ein drittes und viertes Mal
+ * Schwelle, und dann fragt Monday ein drittes und viertes Mal
  * dasselbe.
  *
  * Einmal fragen, einmal nachfassen, dann still sein. Wer nach dem

@@ -15,7 +15,7 @@ import {
 } from "@/lib/suchauftrag/aktionen";
 
 /**
- * „Nina sucht für dich weiter."
+ * „Monday sucht für dich weiter."
  *
  * ══════════════════════════════════════════════════════════════
  * Warum vier Knöpfe und nicht einer
@@ -97,7 +97,7 @@ export function SuchauftragKarte({ auftrag }: { auftrag: Auftragsansicht }) {
             <Button
               variant="primary"
               disabled={laeuft}
-              onClick={() => tun(() => auftragBestaetigen(auftrag.id), "Läuft. Nina meldet sich, wenn etwas passt.")}
+              onClick={() => tun(() => auftragBestaetigen(auftrag.id), "Läuft. Monday meldet sich, wenn etwas passt.")}
             >
               <Check aria-hidden className="size-4" />
               Ja, so suchen
@@ -161,7 +161,7 @@ export function SuchauftragKarte({ auftrag }: { auftrag: Auftragsansicht }) {
 
 function zustandssatz(a: Auftragsansicht): string {
   if (a.status === "entwurf")
-    return "Noch nicht aktiviert. Nina sucht erst, wenn du zustimmst.";
+    return "Noch nicht aktiviert. Monday sucht erst, wenn du zustimmst.";
   if (a.status === "pausiert") return "Pausiert. Deine Treffer bleiben erhalten.";
 
   const teile: string[] = [];

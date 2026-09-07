@@ -81,7 +81,7 @@ describe("JobSearchReadinessEngine", () => {
     expect(r.score).toBeLessThan(70);
   });
 
-  it("C — vollständiges Profil mit Zustimmung: Nina darf Jobs anbieten", () => {
+  it("C — vollständiges Profil mit Zustimmung: Monday darf Jobs anbieten", () => {
     const r = evaluateReadiness(
       mit({
         goals: 1, hasLocation: true, hasRemotePreference: true,
@@ -96,7 +96,7 @@ describe("JobSearchReadinessEngine", () => {
   });
 
   it("C ohne Zustimmung: nicht ready, egal wie vollständig", () => {
-    // Zustimmung ist Voraussetzung, nicht Bonus. Ohne sie zeigt Nina
+    // Zustimmung ist Voraussetzung, nicht Bonus. Ohne sie zeigt Monday
     // nichts bildschirmfüllend an.
     const r = evaluateReadiness(
       mit({

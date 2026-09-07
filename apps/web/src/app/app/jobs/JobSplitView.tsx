@@ -42,7 +42,7 @@ export function JobSplitView({
   explicitSelection: boolean;
   detail: React.ReactNode;
   /**
-   * Ninas Spalte.
+   * Mondays Spalte.
    *
    * Als Knoten hereingereicht, nicht hier gebaut: Die Daten dafür —
    * Passung, Gehaltsvergleich, Unternehmen — liegen auf dem Server,
@@ -307,7 +307,7 @@ export function JobSplitView({
         )}
       </div>
 
-      {/* ── Nina ───────────────────────────────────────────── */}
+      {/* ── Monday ───────────────────────────────────────────── */}
       {ninaPanel && selectedId ? (
         <div
           className={cn(
@@ -317,7 +317,7 @@ export function JobSplitView({
              * Als dritte Spalte hat es nicht getragen: Bei 1200 Pixeln
              * bleiben nach Liste und Anzeige keine 400 übrig, und mit
              * weniger ist die Gegenüberstellung zweier Stellen nicht
-             * lesbar. Unter der Seite hat Ninas Panel die volle Breite
+             * lesbar. Unter der Seite hat Mondays Panel die volle Breite
              * und die Spalten darüber ihr gewohntes Verhältnis.
              */
             "min-w-0 lg:col-span-2",

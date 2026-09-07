@@ -33,7 +33,7 @@ export default async function RolesPage() {
         <EmptyState
           title={t("states.emptyTitle")}
           body="Richtungen entstehen aus dem Gespräch. Sobald genug Themen abgedeckt sind, erscheinen sie hier."
-          action={<Link href="/app/nina" className={buttonClass("primary")}>{t("jobs.lockedCta")}</Link>}
+          action={<Link href="/app/monday" className={buttonClass("primary")}>{t("jobs.lockedCta")}</Link>}
         />
       </Stack>
     );

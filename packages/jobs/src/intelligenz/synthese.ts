@@ -227,7 +227,7 @@ async function klaerungenSchreiben(
      * und der nächste Lauf legte fröhlich eine neue offene daneben.
      *
      * Für die Person sah das so aus: Sie beantwortet die Frage nach
-     * dem Vertrieb, und zehn Minuten später fragt Nina wieder. Genau
+     * dem Vertrieb, und zehn Minuten später fragt Monday wieder. Genau
      * der Eindruck, den die ganze Belegkette vermeiden soll — dass
      * das Gesagte nirgends ankommt.
      */
@@ -281,7 +281,7 @@ async function klaerungenSchreiben(
      * oder übergangen ist. Bis dahin steht sie und wartet.
      *
      * Widersprüche sind davon ausgenommen: Sie entstehen nicht, weil
-     * Nina etwas wissen will, sondern weil etwas nicht zusammenpasst.
+     * Monday etwas wissen will, sondern weil etwas nicht zusammenpasst.
      * Zwei unabhängige Widersprüche sind zwei Sachverhalte.
      */
     if (frage && !entschieden.has(frage.schluessel)) {

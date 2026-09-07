@@ -1,4 +1,4 @@
-# Auftrag: Nina Core aus dem echten GLB — nach dem Velvova-Umbau
+# Auftrag: Monday Core aus dem echten GLB — nach dem Velvova-Umbau
 
 Erteilt am 4.9.2026. Ausdrücklich **nach** dem Umbau umzusetzen.
 
@@ -76,8 +76,8 @@ drosseln, `prefers-reduced-motion` respektieren (Animation stark
 reduzieren, Tonreaktion aus).
 
 ## Einbau
-Auf der Nina-Seite deutlich grösser als heute. Desktop rund 80–110 px
-an Ninas Namensbereich, im Sprachmodus deutlich grösser und mittig, im
+Auf der Monday-Seite deutlich grösser als heute. Desktop rund 80–110 px
+an Mondays Namensbereich, im Sprachmodus deutlich grösser und mittig, im
 Textchat kleiner. Keine KI-Dashboard-Optik.
 
 ## Entwicklerhilfe

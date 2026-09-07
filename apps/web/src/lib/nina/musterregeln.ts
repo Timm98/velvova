@@ -53,9 +53,9 @@ export const MIN_ANTEIL = 0.5;
  * Eine Liste, zwei Verwender: Die Oberfläche bietet genau diese
  * Auswahl an, und die Mustererkennung versteht genau diese Schlüssel.
  * Zwei getrennte Listen wären der sichere Weg zu einem Grund, den
- * jemand anklicken kann und auf den Nina nie reagiert.
+ * jemand anklicken kann und auf den Monday nie reagiert.
  *
- * `label` steht auf dem Knopf, `frage` stellt Nina, wenn sich der
+ * `label` steht auf dem Knopf, `frage` stellt Monday, wenn sich der
  * Grund häuft.
  */
 export const ABLEHNUNGSGRUENDE: Record<string, { label: string; frage: string }> = {
@@ -85,7 +85,7 @@ export const ABLEHNUNGSGRUENDE: Record<string, { label: string; frage: string }>
    * Er liesse sich als Unterfall davon führen, wäre dann aber
    * unsichtbar: Wer dreimal wegen Kundenkontakt ablehnt und einmal
    * wegen der Fachaufgaben, hätte unter einem gemeinsamen Grund vier
-   * Ablehnungen ohne erkennbares Muster — und Nina fragte nach den
+   * Ablehnungen ohne erkennbares Muster — und Monday fragte nach den
    * Tätigkeiten allgemein, statt nach dem, was tatsächlich stört.
    *
    * Er ist ausserdem der Grund, bei dem eine stille Filterregel am
@@ -157,7 +157,7 @@ export function musterErkennen(rueckmeldungen: Rueckmeldung[]): Muster | null {
     const anteil = treffer / mitGrund.length;
     if (treffer < MIN_TREFFER || anteil < MIN_ANTEIL) continue;
     /* Ohne ausformulierte Frage kein Muster: Ein Ereignis, zu dem
-       Nina nichts sagen kann, hilft niemandem. */
+       Monday nichts sagen kann, hilft niemandem. */
     const frage = ABLEHNUNGSGRUENDE[grund]?.frage;
     if (!frage) continue;
     if (!bester || treffer > bester.treffer) {

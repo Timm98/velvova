@@ -1,13 +1,13 @@
 /**
- * Die Wissensbasis für Hilfe, FAQ und Ninas Supportchat.
+ * Die Wissensbasis für Hilfe, FAQ und Mondays Supportchat.
  *
- * Eine Datei, zwei Verbraucher: die Hilfeseite zeigt sie, Nina
+ * Eine Datei, zwei Verbraucher: die Hilfeseite zeigt sie, Monday
  * antwortet aus ihr. Das ist Absicht — stünden die Antworten zweimal
- * da, liefen sie auseinander, und Nina erklärte irgendwann etwas
+ * da, liefen sie auseinander, und Monday erklärte irgendwann etwas
  * anderes als die Seite daneben.
  *
  * Der Zuschnitt folgt V7 §24.3: das hier ist **Produktwissen**, kein
- * Karrierewissen. Nina darf im Supportchat erklären, wie Velvova
+ * Karrierewissen. Monday darf im Supportchat erklären, wie Velvova
  * arbeitet und was mit den Daten geschieht. Sie darf dort nicht auf das
  * Karriereprofil zugreifen — das ist eine Zugriffsentscheidung, keine
  * Frage des Tonfalls, und sie steht deshalb in der Gesprächsart
@@ -25,7 +25,7 @@ export interface HilfeEintrag {
 
 export type HilfeBereich =
   | "Erste Schritte"
-  | "Nina und das Gespräch"
+  | "Monday und das Gespräch"
   | "Stellen und Passung"
   | "Bewerbungen"
   | "Daten und Datenschutz"
@@ -37,10 +37,10 @@ export const HILFE: HilfeEintrag[] = [
     bereich: "Erste Schritte",
     frage: "Was macht Velvova anders als eine Jobbörse?",
     antwort:
-      "Eine Jobbörse beginnt mit einem Suchbegriff. Velvova beginnt mit dir: Nina führt ein " +
+      "Eine Jobbörse beginnt mit einem Suchbegriff. Velvova beginnt mit dir: Monday führt ein " +
       "Gespräch über deine Erfahrungen, Stärken und Bedingungen und leitet daraus ab, welche " +
       "Stellen wirklich passen. Die Reihenfolge entsteht aus begründeter Passung, nicht aus " +
-      "Werbebudget. Was Nina nicht belegen kann, sagt sie als unbelegt.",
+      "Werbebudget. Was Monday nicht belegen kann, sagt sie als unbelegt.",
     synonyme: ["unterschied", "jobbörse", "stepstone", "indeed", "warum"],
   },
   {
@@ -48,8 +48,8 @@ export const HILFE: HilfeEintrag[] = [
     bereich: "Erste Schritte",
     frage: "Wie fange ich an?",
     antwort:
-      "Mit dem Karrieregespräch unter „Nina“. Es dauert so lange, wie du möchtest, und du " +
-      "kannst jederzeit pausieren — der Stand bleibt erhalten. Je mehr Nina bestätigt " +
+      "Mit dem Karrieregespräch unter „Monday“. Es dauert so lange, wie du möchtest, und du " +
+      "kannst jederzeit pausieren — der Stand bleibt erhalten. Je mehr Monday bestätigt " +
       "bekommt, desto begründeter wird die Reihenfolge deiner Stellen.",
     synonyme: ["start", "beginnen", "erste schritte", "onboarding"],
   },
@@ -88,22 +88,22 @@ export const HILFE: HilfeEintrag[] = [
   },
   {
     id: "nina-sprache",
-    bereich: "Nina und das Gespräch",
-    frage: "Kann Nina in einer anderen Sprache mit mir sprechen?",
+    bereich: "Monday und das Gespräch",
+    frage: "Kann Monday in einer anderen Sprache mit mir sprechen?",
     antwort:
       "Ja. Unter „Sprache & Region“ lassen sich drei Dinge getrennt einstellen: die Sprache " +
-      "der Oberfläche, die Sprache im Gespräch mit Nina und die Sprache deiner " +
-      "Bewerbungsunterlagen. Nina spricht mehr Sprachen, als die Oberfläche übersetzt ist — " +
+      "der Oberfläche, die Sprache im Gespräch mit Monday und die Sprache deiner " +
+      "Bewerbungsunterlagen. Monday spricht mehr Sprachen, als die Oberfläche übersetzt ist — " +
       "die Oberfläche wird nur dann in einer Sprache angeboten, wenn ihre Texte wirklich " +
       "vorliegen.",
     synonyme: ["sprache", "englisch", "türkisch", "übersetzung", "language"],
   },
   {
     id: "sprachmodus",
-    bereich: "Nina und das Gespräch",
+    bereich: "Monday und das Gespräch",
     frage: "Wie funktioniert das Live-Gespräch?",
     antwort:
-      "Du sprichst, Nina hört zu, denkt nach und antwortet mit ihrer Stimme. Du kannst sie " +
+      "Du sprichst, Monday hört zu, denkt nach und antwortet mit ihrer Stimme. Du kannst sie " +
       "jederzeit unterbrechen — sobald du zu reden anfängst, hört sie auf. Für den " +
       "Sprachmodus brauchen wir eine eigene Einwilligung; sie ist von der allgemeinen " +
       "KI-Nutzung getrennt und jederzeit widerrufbar. Ohne Mikrofon läuft alles unverändert " +
@@ -156,7 +156,7 @@ export const HILFE: HilfeEintrag[] = [
 
 export const HILFE_BEREICHE: HilfeBereich[] = [
   "Erste Schritte",
-  "Nina und das Gespräch",
+  "Monday und das Gespräch",
   "Stellen und Passung",
   "Bewerbungen",
   "Daten und Datenschutz",
@@ -196,7 +196,7 @@ export function sucheHilfe(begriff: string): HilfeEintrag[] {
     .map((x) => x.eintrag);
 }
 
-/** Was Nina im Supportchat als Grundlage bekommt. */
+/** Was Monday im Supportchat als Grundlage bekommt. */
 export function hilfeAlsKontext(): string {
   return HILFE.map((e) => `F: ${e.frage}\nA: ${e.antwort}`).join("\n\n");
 }

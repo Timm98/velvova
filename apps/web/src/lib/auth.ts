@@ -281,7 +281,7 @@ export const currentUser = cache(async function currentUser(): Promise<SessionUs
    * Entscheidung; eine Kopfzeile ist ein Hinweis, und ein Hinweis
    * überschreibt keine Entscheidung.
    *
-   * Nina folgt automatisch: Sie bekommt `locale` durchgereicht.
+   * Monday folgt automatisch: Sie bekommt `locale` durchgereicht.
    */
   const sprache =
     row.locale ?? (await besucherSprache().then((s) => s.sprache).catch(() => "de" as const));

@@ -8,7 +8,7 @@
 -- niemals ein Feld werden duerfen:
 --
 --   Profil        wer jemand ist und was er kann
---   Suchauftrag   wonach Nina im Hintergrund weitersucht
+--   Suchauftrag   wonach Monday im Hintergrund weitersucht
 --   Listenfilter  was gerade auf dem Bildschirm zu sehen ist
 --
 -- „Zeig mir mal Bayern" ist keine Beauftragung. Wer das in den

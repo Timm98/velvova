@@ -60,7 +60,7 @@ describe("Planaufbau", () => {
 
 describe("Berechtigungen", () => {
   it("hat für jede einen Hinweistext", () => {
-    // Ohne Text erschiene an der Stelle, wo Nina etwas anbietet, ein
+    // Ohne Text erschiene an der Stelle, wo Monday etwas anbietet, ein
     // leerer Kasten — sichtbar, aber ohne Aussage.
     for (const b of BERECHTIGUNGEN) {
       expect(HINWEIS_TEXT[b], b).toBeDefined();

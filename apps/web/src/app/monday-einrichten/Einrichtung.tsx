@@ -15,7 +15,7 @@ import {
 import { einrichtungAbschliessen, ohneHintergrund, weiterInsGespraech } from "./aktionen";
 
 /**
- * Nina einrichten — einmal je Konto.
+ * Monday einrichten — einmal je Konto.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum nichts vorausgewählt ist
@@ -218,7 +218,7 @@ export function Einrichtung({ start }: { start: Stand }) {
   /* ── Die Einrichtung ────────────────────────────────────────── */
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(280px,380px)_1fr] lg:items-start lg:gap-12">
-      {/* Links: Nina */}
+      {/* Links: Monday */}
       <aside className="grid justify-items-center gap-4 lg:sticky lg:top-24">
         {/*
           Dieselbe Grösse und Einfassung wie auf der Startseite und
@@ -235,10 +235,10 @@ export function Einrichtung({ start }: { start: Stand }) {
         <NinaVisual size="xl" strategie="sichtbar" grund="keiner" state={coreZustand} />
         <p className="max-w-[26ch] text-center text-2xs leading-relaxed text-ink-3">
           {stand.bedienart === "sprache"
-            ? "Nina hört zu, sobald du das Gespräch startest."
+            ? "Monday hört zu, sobald du das Gespräch startest."
             : stand.stufe && stand.stufe !== "manual"
-              ? "Nina arbeitet dann auch, wenn du gerade nicht da bist."
-              : "Nina wartet auf deine Entscheidung."}
+              ? "Monday arbeitet dann auch, wenn du gerade nicht da bist."
+              : "Monday wartet auf deine Entscheidung."}
         </p>
       </aside>
 
@@ -341,7 +341,7 @@ export function Einrichtung({ start }: { start: Stand }) {
           {rechte && (
             <div className="grid gap-3 rounded-[12px] border border-line-3 p-4 sm:grid-cols-2">
               <div className="grid content-start gap-1.5">
-                <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Nina darf</h3>
+                <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Monday darf</h3>
                 <ul className="grid gap-1">
                   {rechte.darf.map((d) => (
                     <li key={d} className="flex gap-2 text-2xs text-ink">
@@ -352,7 +352,7 @@ export function Einrichtung({ start }: { start: Stand }) {
                 </ul>
               </div>
               <div className="grid content-start gap-1.5">
-                <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Nina darf nicht</h3>
+                <h3 className="text-2xs font-600 uppercase tracking-wide text-ink-3">Monday darf nicht</h3>
                 <ul className="grid gap-1">
                   {rechte.niemals.map((n) => (
                     <li key={n} className="flex gap-2 text-2xs text-ink">
@@ -463,7 +463,7 @@ export function Einrichtung({ start }: { start: Stand }) {
           <div className="grid gap-1.5">
             <h2 className="text-lg font-600 text-ink">Sprache und Wohnort</h2>
             <p className="max-w-[62ch] text-sm leading-relaxed text-ink-2">
-              Damit Nina in deiner Sprache antwortet und weiss, welcher Arbeitsmarkt
+              Damit Monday in deiner Sprache antwortet und weiss, welcher Arbeitsmarkt
               für dich gilt. Beides lässt sich in den Einstellungen ändern.
             </p>
           </div>
@@ -544,7 +544,7 @@ export function Einrichtung({ start }: { start: Stand }) {
           </div>
           {!vollstaendig && (
             <p className="text-2xs text-ink-3">
-              Wähle oben, wie du mit Nina arbeiten möchtest und was sie im Hintergrund tun darf.
+              Wähle oben, wie du mit Monday arbeiten möchtest und was sie im Hintergrund tun darf.
             </p>
           )}
         </div>

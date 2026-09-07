@@ -138,7 +138,7 @@ export function nutzbareUiSprachen(): LocaleEintrag[] {
 }
 
 /**
- * Nina darf mehr Sprachen als die Oberfläche (§20.2, letzter Absatz).
+ * Monday darf mehr Sprachen als die Oberfläche (§20.2, letzter Absatz).
  *
  * Ihre Antworten entstehen im Modell und brauchen keinen Katalog. Die
  * Oberfläche drumherum bleibt dabei in ihrer eigenen Sprache — das ist

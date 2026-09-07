@@ -29,7 +29,7 @@ import type { ScoreFactor } from "@paycheck/domain";
  * Ein unbekannter Wert ist kein schlechter Wert. Eine Stelle ohne
  * Gehaltsangabe ist nicht schlecht bezahlt — es steht nur nichts da.
  * Deshalb ist `fehlende_angabe` eine eigene Art und kein Konflikt:
- * Nina kann danach fragen, statt die Stelle abzuwerten.
+ * Monday kann danach fragen, statt die Stelle abzuwerten.
  */
 export type Faktorart =
   | "positiv"
@@ -48,7 +48,7 @@ export type Einstufung = {
  * Ab hier gilt ein Faktor als tragend statt nur als vorhanden.
  *
  * Unterhalb von 0.7 ist etwas erfüllt, aber nicht gut erfüllt — und
- * „gut" ist das Wort, das Nina benutzt, wenn sie einen Faktor als
+ * „gut" ist das Wort, das Monday benutzt, wenn sie einen Faktor als
  * positiv nennt. Wer die Schwelle senkt, macht ihre Aussagen wohlwollend
  * bis zur Bedeutungslosigkeit.
  */
@@ -97,7 +97,7 @@ export function einstufen(
    * Der Schwellwert ist absichtlich hoch: Wenn jemand sagt, etwas sei
    * nicht verhandelbar, ist eine Erfüllung zu 65 % keine Erfüllung. Was
    * darunter liegt, blockt — mit einer Schwere, die sich nach dem
-   * Abstand richtet, damit Nina „geht nicht" von „geht knapp nicht"
+   * Abstand richtet, damit Monday „geht nicht" von „geht knapp nicht"
    * unterscheiden kann.
    */
   if (hart && faktor.raw < GUT) {

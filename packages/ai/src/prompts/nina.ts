@@ -1,7 +1,7 @@
 import { brand } from "@paycheck/config";
 
 /**
- * Ninas Systemprompt.
+ * Mondays Systemprompt.
  *
  * Genau eine Datei. Nicht in Komponenten dupliziert, nicht je Route
  * variiert, nicht zur Laufzeit zusammengestückelt — der Text unten ist
@@ -395,7 +395,7 @@ export function buildNinaSystemPrompt(ctx: NinaPromptContext): string {
    *
    * Sie steht hier, damit das Modell nicht behauptet, es könne schon
    * eine belastbare Liste zeigen, wenn der Server das anders sieht. Was
-   * fehlt, steht dabei — sonst kann Nina nicht sagen, warum sie noch
+   * fehlt, steht dabei — sonst kann Monday nicht sagen, warum sie noch
    * fragt.
    */
   if (ctx.jobReadiness) {

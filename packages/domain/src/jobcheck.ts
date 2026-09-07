@@ -12,7 +12,7 @@ import type { Widerspruch } from "./widersprueche.ts";
  * Ein Produkt, das nur „bewirb dich" und „bewirb dich lieber nicht"
  * kennt, hat für die wichtigere Entscheidung keine Sprache.
  *
- * ── Warum Nina auch von Stellen abraten muss, die man bekäme ──
+ * ── Warum Monday auch von Stellen abraten muss, die man bekäme ──
  *
  * Die stärkste Aussage, die dieses Produkt machen kann, ist: „Du
  * könntest diesen Job wahrscheinlich bekommen. Ich glaube trotzdem

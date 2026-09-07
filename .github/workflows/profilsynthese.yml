@@ -1,7 +1,7 @@
 name: Profilsynthese
 
 # ─────────────────────────────────────────────────────────────
-# Der Wecker für Ninas Hintergrundanalyse.
+# Der Wecker für Mondays Hintergrundanalyse.
 #
 # Ruft `POST /api/intern/profilsynthese` auf der laufenden Anwendung
 # auf. Die Arbeit passiert dort — nur der Server hat die Datenbank und

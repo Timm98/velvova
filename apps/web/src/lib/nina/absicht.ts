@@ -1,5 +1,5 @@
 /**
- * Was jemand von Nina will.
+ * Was jemand von Monday will.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das eine Regel ist und kein Modellaufruf
@@ -22,12 +22,12 @@
  *
  * Der Sprachmodus wandelt Ton in Text und schickt denselben Text
  * hierher. Es gibt keine zweite Absichtserkennung für Gesprochenes —
- * sonst gäbe es zwei Ninas, die sich unterschiedlich verhalten, und
+ * sonst gäbe es zwei Mondays, die sich unterschiedlich verhalten, und
  * der Unterschied fiele erst auf, wenn jemand beides benutzt.
  */
 
 export type Absicht =
-  /** Ein gewöhnlicher Satz. Nina antwortet, sonst nichts. */
+  /** Ein gewöhnlicher Satz. Monday antwortet, sonst nichts. */
   | "unterhaltung"
   /** Enthält Angaben über die Person — Extraktion läuft. */
   | "profil_angabe"

@@ -1,5 +1,5 @@
 /**
- * Was Nina weiss, was sie vermutet, und wie man das auseinanderhält.
+ * Was Monday weiss, was sie vermutet, und wie man das auseinanderhält.
  *
  * ══════════════════════════════════════════════════════════════
  * Der Befund, der dieses Modul ausgelöst hat
@@ -11,7 +11,7 @@
  *   ai_hypothesis · experience_episode  53 Belege   Konfidenz 0.90
  *   user_stated   · motive              78 Belege   Konfidenz 0.82
  *
- * Ninas Vermutungen trugen eine höhere Konfidenz als das, was die
+ * Mondays Vermutungen trugen eine höhere Konfidenz als das, was die
  * Menschen selbst gesagt haben.
  *
  * Das ist keine Ungenauigkeit, sondern eine Umkehrung: Wenn eine
@@ -157,7 +157,7 @@ export type Vergleichsausgang = "a" | "b" | "gleichrangig";
  * Das Beispiel aus dem Auftrag
  * ══════════════════════════════════════════════════════════════
  *
- *   Nina hat abgeleitet: „möchte wahrscheinlich remote"  (0.62)
+ *   Monday hat abgeleitet: „möchte wahrscheinlich remote"  (0.62)
  *   Später sagt die Person: „ich will jeden Tag ins Büro"
  *
  * Die Aussage gewinnt — nicht weil sie neuer ist, sondern weil sie

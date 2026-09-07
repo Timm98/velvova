@@ -76,7 +76,7 @@ export class NinaAnimation {
    *
    * Überblendet, statt umzuschalten: ein harter Wechsel springt
    * sichtbar, weil die Figur in einer anderen Haltung steht, sobald
-   * Nina zu denken anfängt. Beide Aktionen laufen kurz gleichzeitig.
+   * Monday zu denken anfängt. Beide Aktionen laufen kurz gleichzeitig.
    */
   setzeZustand(state: NinaVisualState, sofort = false): void {
     const name = CLIP_FÜR_ZUSTAND[state];

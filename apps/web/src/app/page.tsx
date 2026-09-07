@@ -26,6 +26,7 @@ import { StimmenAbschnitt } from "@/components/reviews/StimmenAbschnitt";
 import { Landeshinweis, Laenderschalter } from "@/components/marketing/Landeshinweis";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { bestandszahl, type Bestandszahl } from "@/lib/jobs/bestandszahl";
+import { kennzahlenband, type Kennzahlenband } from "@/lib/jobs/kennzahlenband";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { landesname, lageFuer, type Landeslage } from "@/lib/landeslage";
 
@@ -46,9 +47,9 @@ import { landesname, lageFuer, type Landeslage } from "@/lib/landeslage";
  * Pflegelauf stündlich neu schreibt.
  */
 export const metadata: Metadata = {
-  title: "Du suchst keinen Job. Nina findet den richtigen für dich.",
+  title: "Du suchst keinen Job. Monday findet den richtigen für dich.",
   description:
-    "Nina lernt, was dir wichtig ist, prüft echte Stellen und zeigt dir nicht nur, was passen " +
+    "Monday lernt, was dir wichtig ist, prüft echte Stellen und zeigt dir nicht nur, was passen " +
     "könnte — sondern warum. Unternehmen veröffentlichen Stellen und finden passende Menschen.",
 };
 
@@ -64,8 +65,8 @@ export const metadata: Metadata = {
  *
  * Drei Entscheidungen tragen den Umbau:
  *
- *   **Eine Komposition statt drei Karten.** Der Nina Core zeigt einen
- *   Zusammenhang — was jemand sagt, was Nina daraus macht, was dabei
+ *   **Eine Komposition statt drei Karten.** Der Monday Core zeigt einen
+ *   Zusammenhang — was jemand sagt, was Monday daraus macht, was dabei
  *   herauskommt. Der Zusammenhang IST die Produktidee.
  *
  *   **Rhythmus statt Gleichförmigkeit.** Hell, weiss, lavendel, dunkel,
@@ -111,7 +112,7 @@ export default async function LandingPage() {
    * Sie kommt deshalb aus dem Bestand, nicht aus dem Entwurf, und
    * wächst mit dem Bestand mit — der Pflegelauf zählt stündlich nach.
    */
-  const [bestand, laender, sitzung] = await Promise.all([
+  const [bestand, laender, sitzung, zahlen] = await Promise.all([
     bestandszahl(),
     laenderbestand(),
     /*
@@ -122,6 +123,8 @@ export default async function LandingPage() {
      * ist, soll dieselbe Seite sehen, nur mit seinem Namen darüber.
      */
     kopfsitzung(),
+    /* Vier Zahlen, alle aus der Datenbank — siehe `Zahlenband`. */
+    kennzahlenband(),
   ]);
 
   return (
@@ -184,6 +187,10 @@ export default async function LandingPage() {
         <Bewerbung />
         <NachDerBewerbung />
         <ZweiSeiten />
+        {/* Die Zahlen stehen spät: Wer bis hierher gelesen hat, will
+            wissen, ob das Versprochene eine Grundlage hat. Am Anfang
+            wären sie eine Behauptung ohne Zusammenhang. */}
+        <Zahlenband zahlen={zahlen} />
         <FuerUnternehmen />
           <StimmenAbschnitt />
         <Abschluss />
@@ -219,7 +226,7 @@ export default async function LandingPage() {
  *
  * ── Warum der Datenteil dazugehört ────────────────────────────
  *
- * „Nina kennt deinen ganzen Weg" ist ein Versprechen und zugleich
+ * „Monday kennt deinen ganzen Weg" ist ein Versprechen und zugleich
  * eine Aussage darüber, was wir speichern. Beides in einem Absatz zu
  * lesen, ist ehrlicher, als das eine hier und das andere in der
  * Datenschutzerklärung zu haben.
@@ -256,7 +263,7 @@ function NachDerBewerbung() {
 
           {/*
             Der Datenteil steht bewusst hier und nicht nur in der
-            Datenschutzerklärung: Wer liest, dass Nina sich alles
+            Datenschutzerklärung: Wer liest, dass Monday sich alles
             merkt, fragt sich im selben Moment, wo das liegt.
           */}
           <p
@@ -314,7 +321,7 @@ function Kopfzeile() {
                 "conic-gradient(from 180deg, var(--ed-violet), var(--ed-ice), var(--ed-mint), var(--ed-violet))",
             }}
           />
-          <span className="font-display text-[15px] font-semibold tracking-[-0.02em]">
+          <span className="font-display text-[15px] font-normal tracking-[-0.02em]">
             {brand.name}
           </span>
         </Link>
@@ -406,7 +413,7 @@ function Fusszeile({ lage }: { lage: Landeslage }) {
                   "conic-gradient(from 180deg, var(--ed-violet), var(--ed-ice), var(--ed-mint), var(--ed-violet))",
               }}
             />
-            <span className="font-display text-[15px] font-semibold">{brand.name}</span>
+            <span className="font-display text-[15px] font-normal">{brand.name}</span>
           </span>
           <p className="max-w-[34ch] text-sm leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
             Karriere ist eine Folge von Entscheidungen. Wir liefern die Grundlage dafür — begründet,
@@ -468,13 +475,120 @@ function Fusszeile({ lage }: { lage: Landeslage }) {
  * der Stellenseite noch einmal gebraucht wird. Zwei Fassungen
  * desselben Versprechens liefen irgendwann auseinander.
  */
+/**
+ * Das Zahlenband — die Form aus der Vorlage, unsere Zahlen.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum vier und nicht sechs
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Vorlage stellt hier sechs Zahlen nebeneinander: Besucher im
+ * Monat, zufriedene App-Nutzer, Jahre am Markt. Die Form ist gut —
+ * grosse Zahl, kleine Erklärung darunter, viel Luft, keine Kästen.
+ *
+ * Die Zahlen sind es nicht, jedenfalls für uns: Wir messen keine
+ * Besucher, es gibt keine App, und das Produkt ist nicht zwanzig
+ * Jahre alt. Hier stehen deshalb nur Zahlen aus der Datenbank, und
+ * jede einzelne lässt sich nachrechnen — die Stellen über die Suche,
+ * die Länder über `?land=XX`, die Quellen über die Herkunftsangabe an
+ * jeder Anzeige.
+ *
+ * Steht keine davon zur Verfügung, entfällt der Abschnitt ganz. Ein
+ * Band mit einer Zahl ist kein Band.
+ */
+function Zahlenband({ zahlen }: { zahlen: Kennzahlenband }) {
+  if (zahlen.length < 3) return null;
+
+  return (
+    <Abschnitt grund="weiss">
+      <Ueberschrift>Was tatsächlich im Bestand steht</Ueberschrift>
+
+      {/*
+        Kein Kasten je Zahl.
+
+        Die Vorlage setzt sie frei auf die Fläche, in ein Raster mit
+        viel Luft. Ein Rahmen um jede Zahl würde sie zu Karten machen
+        — und Karten liest man einzeln, ein Band liest man als eine
+        Aussage.
+      */}
+      {/*
+        Die Spaltenzahl folgt der Anzahl, nicht umgekehrt.
+
+        Fest vier Spalten hiessen bei drei Zahlen: drei links, rechts
+        eine leere Spur. Das liest sich als fehlende vierte Zahl —
+        also als Lücke, wo keine ist. Die vierte („neu in 24 Stunden")
+        erscheint erst, wenn der Verlauf so weit zurückreicht.
+
+        Zwei feste Klassen statt einer gebauten: Tailwind erzeugt nur,
+        was wörtlich im Quelltext steht.
+      */}
+      <dl
+        className={`mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 ${
+          zahlen.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"
+        }`}
+      >
+        {zahlen.map((z) => (
+          <div key={z.bedeutung} className="grid justify-items-center gap-2 text-center">
+            <dt className="sr-only">{z.bedeutung}</dt>
+            {/*
+              Die Zahlenschrift mit fester Ziffernbreite: Vier Zahlen
+              nebeneinander, die alle verschieden breit springen,
+              lesen sich als vier verschiedene Dinge.
+            */}
+            <dd
+              className="font-mono text-[clamp(2rem,4vw,2.75rem)] font-normal tabular-nums"
+              style={{ color: "var(--ed-ink)" }}
+            >
+              {z.text}
+            </dd>
+            <p className="max-w-[24ch] text-sm leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
+              {z.bedeutung}
+            </p>
+          </div>
+        ))}
+      </dl>
+
+      <p className="mt-10 text-center text-2xs" style={{ color: "var(--ed-ink-3)" }}>
+        Stündlich nachgezählt. Jede Zahl lässt sich über die Suche überprüfen.
+      </p>
+    </Abschnitt>
+  );
+}
+
 function NachtsAbschnitt() {
   return (
-    <Abschnitt grund="lavendel">
-      <div className="mx-auto max-w-[52rem]">
-        <NachtsWeiter />
-      </div>
-    </Abschnitt>
+    /*
+      Kein `Abschnitt` mehr um das Band.
+      
+      `Abschnitt` legt seinen Inhalt immer in den 1240er-Behälter mit
+      Innenabstand — genau das, was ein randloses Bild nicht haben
+      darf. Der Abschnitt steht deshalb hier direkt, mit der Fläche
+      des Rhythmus, und das Band füllt ihn von Kante zu Kante.
+      
+      Die Schrift IM Band steht trotzdem im Raster: `randlos` legt sie
+      in denselben Behälter, in dem alles darüber und darunter steht.
+    */
+    <section style={{ background: "var(--ed-canvas)" }} className="pb-20 md:pb-28">
+      {/*
+        Kein lavendelfarbener Grund mehr und kein Abstand nach oben.
+
+        Der Rhythmus der Startseite wechselt die Flächen — hell,
+        weiss, lavendel, dunkel —, damit eine lange Seite Absätze
+        bekommt. Bei einem randlosen Foto kehrt sich das um: Über und
+        unter dem Bild standen zwei lila Streifen, und das Bild sah
+        aus wie hineingelegt statt wie ein eigener Abschnitt.
+
+        Ein Foto über die volle Breite IST der Absatz. Es braucht
+        keine Fläche, die ihn zusätzlich behauptet.
+
+        Der Grund ist `--ed-canvas`, eine Stufe neben den Abschnitten
+        davor und danach. Damit zeichnet sich über und unter dem Bild
+        eine feine Kante ab — auf Ansage: Sie setzt das Band als
+        eigenen Abschnitt ab, ohne den lauten Lavendelstreifen, der
+        vorher hier stand.
+      */}
+      <NachtsWeiter randlos />
+    </section>
   );
 }
 
@@ -617,7 +731,7 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
 
             ── Abgemeldet: die Zahl ──────────────────────────
 
-            Vorher stand hier „Du suchst keinen Job. Nina findet den
+            Vorher stand hier „Du suchst keinen Job. Monday findet den
             richtigen für dich." — eine Aussage über uns. Was jemand
             beim ersten Besuch wissen will, ist, ob es hier überhaupt
             genug zu finden gibt. Das beantwortet eine Zahl, und zwar
@@ -637,7 +751,7 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
           */}
           <h1 /* Vier Zeilen statt drei: etwas kleiner gesetzt und enger
               geführt, sonst reicht der Hero über den Falz hinaus. */
-            className="font-display text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-[-0.035em]">
+            className="font-display text-[clamp(2rem,4.4vw,3.4rem)] font-normal leading-[1.04] tracking-[-0.02em]">
             {anrede ? (
               <>
                 Willkommen
@@ -686,14 +800,14 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
           {/*
             Auch der Hauptweg unterscheidet sich.
 
-            „Mit Nina sprechen" führt auf die Registrierung — für
+            „Mit Monday sprechen" führt auf die Registrierung — für
             jemanden, der bereits ein Konto hat, ist das eine Sackgasse
             mit dem Namen eines Angebots. Angemeldet führt derselbe
             Knopf dorthin, wo das Gespräch schon liegt.
           */}
           <div className="flex flex-wrap items-center gap-3">
             {anrede ? (
-              <Hauptknopf href="/app/nina">Gespräch fortsetzen</Hauptknopf>
+              <Hauptknopf href="/app/monday">Gespräch fortsetzen</Hauptknopf>
             ) : (
               <Hauptknopf href="/register">Mit {brand.assistantName} sprechen</Hauptknopf>
             )}
@@ -711,8 +825,8 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
             Das echte Modell, nicht die Marketing-Attrappe.
             
             Hier stand `NinaCore` — eine gezeichnete Kugel aus CSS. Auf
-            der Seite, auf der jemand zum ersten Mal sieht, was Nina
-            ist, gehört Nina selbst hin, mit denselben Clips und
+            der Seite, auf der jemand zum ersten Mal sieht, was Monday
+            ist, gehört Monday selbst hin, mit denselben Clips und
             derselben Farbe wie in der Anwendung.
           */}
           {/*
@@ -752,7 +866,7 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
               Inhalt — er ist der Inhalt der rechten Spalte. Mit
               „beiInteresse" wartete er auf die erste Bewegung, einen
               Tastendruck oder ein Scrollen; wer die Seite öffnete und
-              stehenblieb, sah dauerhaft den Platzhalter statt Nina.
+              stehenblieb, sah dauerhaft den Platzhalter statt Monday.
               Das war kein Ladezustand, sondern ein Endzustand.
 
               Die Fläche steht dabei von Anfang an: `aspect-square`
@@ -761,7 +875,7 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
             */}
             <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
           </div>
-{/* Der erklärende Satz stand hier und ist weg: Was Nina tut,
+{/* Der erklärende Satz stand hier und ist weg: Was Monday tut,
               steht links im Hero — zweimal dasselbe auf einem
               Bildschirm liest niemand. */}
         </div>
@@ -775,7 +889,7 @@ function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | nul
  * 03 direkt unter dem Hero.
  *
  * Die Nummerierung versprach eine Reihenfolge, die es nicht gibt:
- * Nina versteht, prüft und bleibt dabei nicht nacheinander, sondern
+ * Monday versteht, prüft und bleibt dabei nicht nacheinander, sondern
  * durchgehend. Und inhaltlich stand dort dasselbe wie im Hero, nur
  * in drei Teile zerlegt.
  */
@@ -852,7 +966,7 @@ function ZuerstDerMensch() {
           </Fliess>
 
           {/*
-            Was Nina konkret tut — drei Schritte, keine Behauptung.
+            Was Monday konkret tut — drei Schritte, keine Behauptung.
 
             „Game changer" schreibt jede zweite Produktseite über sich
             selbst. Was den Unterschied macht, lässt sich benennen: Sie
@@ -872,7 +986,7 @@ function ZuerstDerMensch() {
               ],
               [
                 "Sie zeigt den Beruf, wie er wirklich ist",
-                "Was der Alltag verlangt und wie es mit dem Beruf weitergeht — Arbeitszeiten, Belastung, Aussichten. Grundlage sind Forschung, amtliche Daten und die Erfahrungsberichte, die Nutzer hier hinterlassen. Wer sich etwas anderes vorgestellt hat, merkt es dadurch vorher statt im dritten Monat, und Nina nennt dann den ähnlichen Weg, der besser passt.",
+                "Was der Alltag verlangt und wie es mit dem Beruf weitergeht — Arbeitszeiten, Belastung, Aussichten. Grundlage sind Forschung, amtliche Daten und die Erfahrungsberichte, die Nutzer hier hinterlassen. Wer sich etwas anderes vorgestellt hat, merkt es dadurch vorher statt im dritten Monat, und Monday nennt dann den ähnlichen Weg, der besser passt.",
               ],
             ].map(([titel, text]) => (
               <li key={titel} className="grid gap-1">
@@ -1051,7 +1165,7 @@ function JobIntelligenz() {
     /*
      * Kein eigener dunkler Abschnitt mehr.
      *
-     * „Was Nina über einen Job wissen will" stand auf dunklem Grund,
+     * „Was Monday über einen Job wissen will" stand auf dunklem Grund,
      * die Rechnung darunter auf hellem — zwei Kapitel für eine
      * Aussage. Zusammen gelesen ist es eine: Was steht in der Anzeige,
      * und was bleibt davon übrig.
@@ -1104,7 +1218,7 @@ function JobIntelligenz() {
                 So sieht eine geprüfte Anzeige bei uns aus
               </span>
             </span>
-            <h3 className="font-display text-[clamp(1.2rem,2vw,1.7rem)] font-semibold tracking-[-0.02em] text-white">
+            <h3 className="font-display text-[clamp(1.2rem,2vw,1.7rem)] font-normal tracking-[-0.02em] text-white">
               Operations Coordinator (m/w/d)
             </h3>
             <p className="text-sm" style={{ color: "rgba(244,245,250,.66)" }}>
@@ -1403,7 +1517,7 @@ function LifeFit({ lage }: { lage: Landeslage }) {
 
               Als fertige Tabelle liest sich der Kasten wie ein
               Bildschirmfoto. Läuft die Rechnung durch, sieht man, was
-              Nina bei jeder Stelle tut — und die Endwerte sind
+              Monday bei jeder Stelle tut — und die Endwerte sind
               dieselben wie vorher, nur der Weg dorthin ist sichtbar.
             */}
             {/*
@@ -1655,7 +1769,7 @@ function Bewerbung() {
           {/* Die Schlusszeile trägt die ganze Aussage des Abschnitts —
               deshalb steht sie allein und nicht als vierter Absatz. */}
           <p
-            className="mt-2 font-display text-xl font-semibold leading-snug"
+            className="mt-2 font-display text-xl font-normal leading-snug"
             style={{ color: "var(--ed-ink)" }}
           >
             Du bringst die Fähigkeiten mit. {brand.assistantName} macht sie sichtbar.
@@ -1697,7 +1811,7 @@ function ZweiSeiten() {
             style={{ background: "var(--ed-surface)", boxShadow: "var(--ed-shadow-soft)" }}
           >
             <Augenbraue>Für dich</Augenbraue>
-            <p className="font-display text-[clamp(1.2rem,2vw,1.6rem)] font-semibold leading-[1.25] tracking-[-0.02em]">
+            <p className="font-display text-[clamp(1.2rem,2vw,1.6rem)] font-normal leading-[1.25] tracking-[-0.02em]">
               „{brand.assistantName} weiss, was ich suche.“
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -1710,8 +1824,8 @@ function ZweiSeiten() {
 
             Hier stand ein „N" in einem Farbkreis — ein Platzhalter aus
             der Zeit, als das Modell noch nicht eingebunden war.
-            Zwischen den beiden Seiten steht Nina; dann soll dort auch
-            Nina stehen.
+            Zwischen den beiden Seiten steht Monday; dann soll dort auch
+            Monday stehen.
           */}
           <div className="grid place-items-center py-4 md:py-0">
             <div className="size-24 md:size-28">
@@ -1724,7 +1838,7 @@ function ZweiSeiten() {
             style={{ background: "var(--ed-surface)", boxShadow: "var(--ed-shadow-soft)" }}
           >
             <Augenbraue>Für Unternehmen</Augenbraue>
-            <p className="font-display text-[clamp(1.2rem,2vw,1.6rem)] font-semibold leading-[1.25] tracking-[-0.02em]">
+            <p className="font-display text-[clamp(1.2rem,2vw,1.6rem)] font-normal leading-[1.25] tracking-[-0.02em]">
               „{brand.assistantName} weiss, wen wir brauchen.“
             </p>
             <p className="text-sm leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -1764,7 +1878,7 @@ function FuerUnternehmen() {
 
           <ul className="grid gap-3 pt-2">
             {[
-              "Stellen mit Nina schreiben und prüfen lassen",
+              "Stellen mit Monday schreiben und prüfen lassen",
               "Passende Menschen entdecken statt Profile durchsuchen",
               "Bewerbungen im Team bearbeiten, mit Rollen und Protokoll",
               "Die eigene Stelle mit dem Markt vergleichen",
@@ -1803,7 +1917,7 @@ function FuerUnternehmen() {
           style={{ background: "#12151f", boxShadow: "0 40px 120px rgba(0,0,0,.45)" }}
         >
           <div className="flex flex-wrap items-baseline justify-between gap-3">
-            <h3 className="font-display text-[clamp(1.1rem,1.8vw,1.5rem)] font-semibold text-white">
+            <h3 className="font-display text-[clamp(1.1rem,1.8vw,1.5rem)] font-normal text-white">
               Senior Controller (m/w/d)
               <span className="sr-only"> — Beispielansicht</span>
             </h3>

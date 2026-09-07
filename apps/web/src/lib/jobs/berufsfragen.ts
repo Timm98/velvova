@@ -10,7 +10,7 @@
  * Gesprächsfragen. Vier Modellaufrufe je Stelle, deren Ergebnis in
  * einer Ziehharmonika verschwand.
  *
- * Jetzt stehen dort nur die Fragen. Beantwortet werden sie von Nina
+ * Jetzt stehen dort nur die Fragen. Beantwortet werden sie von Monday
  * in der Blase unten rechts — dort, wo alle anderen Antworten auch
  * stehen. Eine Frage, die man anklickt, ist dieselbe Frage, die man
  * hätte tippen können; sie soll nicht an einem anderen Ort landen.
@@ -90,7 +90,7 @@ export type Stellenlage = {
  *
  * Eine Frage kann nichts erfinden. Sie setzt den Beruf und eine
  * Beobachtung über die Anzeige in einen Satz — beides steht fest.
- * Beantwortet wird sie von Nina, und dort liest das Modell mit.
+ * Beantwortet wird sie von Monday, und dort liest das Modell mit.
  *
  * Vier, nicht acht: Eine Liste, die man überfliegt, ist keine Auswahl
  * mehr.

@@ -24,7 +24,7 @@ await p.waitForURL(/\/(app|setup)/, { timeout: 40000 });
 const SEITEN = [
   ["Landingpage", "/"],
   ["Heute", "/app"],
-  ["Nina", "/app/nina"],
+  ["Monday", "/app/monday"],
   ["Jobs", "/app/jobs"],
   ["Bewerbungen", "/app/applications"],
   ["Profil", "/app/profile"],

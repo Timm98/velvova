@@ -126,7 +126,7 @@ describe("Aus einem Satz", () => {
   it("legt einen Entwurf an, der nicht sucht", async () => {
     const b = await suchprofilAusText(db, {
       userId: nutzer,
-      text: "Nina, such für mich weiter nach Lagerstellen in Karlsruhe, mindestens 32.000.",
+      text: "Monday, such für mich weiter nach Lagerstellen in Karlsruhe, mindestens 32.000.",
       quelle: "chat",
       jetzt: new Date(JETZT.getTime() + 1000),
       prompt: PROMPT,

@@ -29,7 +29,7 @@ export default function ContactPage() {
       {/* ── Team ─────────────────────────────────────────────── */}
       <section className="grid gap-6 border-t border-line pt-8">
         <div className="grid gap-2">
-          <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Wer dahintersteht</h2>
+          <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Wer dahintersteht</h2>
           <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
             Kein Callcenter. Die Nachricht landet bei den Leuten, die das Produkt bauen.
           </p>

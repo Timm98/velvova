@@ -34,8 +34,8 @@ const PRUEFUNGEN = [
     darfNicht: ["das ist keine schlechte Angabe"],
   },
   {
-    name: "Nina",
-    pfad: () => "/app/nina",
+    name: "Monday",
+    pfad: () => "/app/monday",
     muss: ["Live sprechen", "Was ich über dich weiß"],
     darfNicht: [],
   },
@@ -71,8 +71,8 @@ for (const pr of PRUEFUNGEN) {
    * Kleingeschrieben vergleichen.
    *
    * `innerText` liefert den GERENDERTEN Text — und CSS `uppercase`
-   * schlägt darauf durch. Eine Überschrift „Warum Nina sie zeigt" kommt
-   * als „WARUM NINA SIE ZEIGT" zurück. Der erste Anlauf dieses Skripts
+   * schlägt darauf durch. Eine Überschrift „Warum Monday sie zeigt" kommt
+   * als „WARUM MONDAY SIE ZEIGT" zurück. Der erste Anlauf dieses Skripts
    * meldete deshalb zwei Routen als fehlerhaft, die in Ordnung waren.
    */
   const text = (await p.locator("body").innerText()).replace(/\s+/g, " ").toLowerCase();

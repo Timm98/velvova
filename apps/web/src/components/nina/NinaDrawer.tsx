@@ -10,13 +10,13 @@ import { useNina } from "./NinaProvider";
 /**
  * Die schwebende Gesprächsfläche.
  *
- * Bewusst kein Modal über der ganzen Seite: Nina ist eine Begleitung,
+ * Bewusst kein Modal über der ganzen Seite: Monday ist eine Begleitung,
  * kein Unterbrecher. Auf breiten Geräten sitzt sie unten rechts über
  * dem Inhalt, auf schmalen als Bogen von unten — dort, wo der Daumen
  * ist.
  *
  * Was hier NICHT steht: kein Anbieterhinweis, kein technischer Zustand,
- * keine Kennzeichnung. Läuft Nina, redet sie. Läuft sie nicht, steht da
+ * keine Kennzeichnung. Läuft Monday, redet sie. Läuft sie nicht, steht da
  * ein Satz und kein Gespräch.
  */
 
@@ -26,7 +26,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
   /*
    * ── Nur, was auf DIESER Seite gefragt wurde ─────────────────
    *
-   * Nina behält ihr Gedächtnis über Seitenwechsel hinweg — sie muss
+   * Monday behält ihr Gedächtnis über Seitenwechsel hinweg — sie muss
    * wissen, worüber vorhin gesprochen wurde, sonst ist „und beim
    * anderen Job?" nicht beantwortbar. Was sie behält, gehört aber
    * nicht auf den Bildschirm: Wer eine neue Seite öffnet, fände unten
@@ -54,7 +54,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
    * Vorher merkte sie sich selbst, ob hier schon gefragt wurde — und
    * bekam nichts mit, wenn die Frage von woanders kam: aus den
    * Berufsfragen der Stellenanzeige etwa. Die Antwort lief dann, war
-   * aber unsichtbar. Genau das sah aus wie „Nina antwortet gar nicht".
+   * aber unsichtbar. Genau das sah aus wie „Monday antwortet gar nicht".
    *
    * Jetzt zählt der Provider jedes `send`, und diese Fläche merkt sich
    * beim Seitenwechsel nur den Stand. Was danach dazukommt, gehört
@@ -125,7 +125,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
          * rechts sähe aus wie ein Support-Widget.
          *
          * Der Einwand war richtig für ein Chatfenster mit Verlauf.
-         * Seit nur noch Ninas letzte Nachricht darin steht, ist die
+         * Seit nur noch Mondays letzte Nachricht darin steht, ist die
          * Fläche zu neunzig Prozent leer — und eine bildschirmhohe
          * leere Spalte für zwei Zeilen Text ist das Gegenteil von
          * dezent. Sie verdeckte ausserdem die rechte Spalte der
@@ -145,7 +145,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
         Kein Rahmen mehr um alles.
         
         Hier lag eine Karte, die Nachricht und Eingabe zusammen
-        einfasste. Damit sah Ninas Antwort aus wie ein Teil des
+        einfasste. Damit sah Mondays Antwort aus wie ein Teil des
         Eingabefelds — als hätte man sie selbst hineingeschrieben.
         
         Jetzt sind es zwei getrennte Elemente untereinander: oben die
@@ -164,7 +164,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
         {/*
          * ── Was hier NICHT mehr steht ────────────────────────
          *
-         * Ein Kopf: erst Ninas Bild mit Namen und vier Knöpfen, dann
+         * Ein Kopf: erst Mondays Bild mit Namen und vier Knöpfen, dann
          * Name und Minimieren, dann ein Kreuz. Jetzt nichts. Zwei Wege
          * hinaus bleiben — Escape und ein erneuter Tipp auf die Blase,
          * die umschaltet statt nur zu öffnen.
@@ -172,7 +172,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
          * Eine Gesprächsliste: frühere Unterhaltungen zum
          * Wiederöffnen. Genau der Chatverlauf, den das neue Prinzip
          * nicht will. `nina.loadConversation` bleibt im Provider; die
-         * Vollbildseite unter `/app/nina` ist der Ort dafür.
+         * Vollbildseite unter `/app/monday` ist der Ort dafür.
          *
          * Stellenvorschläge (`JobSuggestions`): drei Jobkarten in
          * einer 340 Pixel breiten Blase sprengen sie, und Ergebnisse
@@ -182,7 +182,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
          */}
 
         {/*
-         * ── Ninas Nachricht als eigene Blase ────────────────
+         * ── Mondays Nachricht als eigene Blase ────────────────
          *
          * Sie steht für sich, mit eigenem Grund und eigenem Rand, und
          * verschwindet, sobald die nächste kommt. `key` an der
@@ -190,7 +190,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
          * austauscht statt den Text im selben Knoten zu ersetzen —
          * sonst liefe der Übergang nur beim ersten Mal.
          *
-         * Der Rollbereich sitzt IN der Blase: Schreibt Nina
+         * Der Rollbereich sitzt IN der Blase: Schreibt Monday
          * ausnahmsweise viel, rollt der Text darin, statt die Blase
          * über den Bildschirm wachsen zu lassen.
          */}

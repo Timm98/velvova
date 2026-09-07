@@ -7,9 +7,9 @@ import { useNinaFallsVorhanden, type NinaVisualState } from "./NinaProvider";
 import { cn } from "@/lib/cn";
 
 /**
- * Nina, wie man sie sieht.
+ * Monday, wie man sie sieht.
  *
- * Das 3D-Modell ist die eine Darstellung von Nina — nicht neben einem
+ * Das 3D-Modell ist die eine Darstellung von Monday — nicht neben einem
  * Kreis, einem Avatar oder einem KI-Symbol, sondern statt ihnen. Wo es
  * nicht laufen kann, tritt dasselbe Signal an seine Stelle, das die
  * Anwendung ohnehin kennt: dieselbe Formsprache, dieselben Zustände.
@@ -49,7 +49,7 @@ const GRÖSSE = {
   sm: "h-[86px] w-[86px]",
   md: "h-[144px] w-[144px]",
   lg: "h-[216px] w-[216px]",
-  /* Für den Einstieg auf der Startseite: dort ist Nina der Grund, warum
+  /* Für den Einstieg auf der Startseite: dort ist Monday der Grund, warum
      jemand die Seite geöffnet hat, und darf entsprechend gross sein. */
   /*
    * Relativ, nicht fest.
@@ -118,7 +118,7 @@ export function NinaVisual({
    *
    *   `verlauf`  ein weicher radialer Schein aus tiefem Indigo. Er
    *              gibt dem Leuchten etwas, wogegen es leuchtet — nötig
-   *              überall dort, wo Nina auf heller Fläche steht.
+   *              überall dort, wo Monday auf heller Fläche steht.
    *
    *   `keiner`   nichts. Nur richtig, wenn der Aufrufer selbst für
    *              einen dunklen Grund sorgt; sonst ist das Modell auf
@@ -128,14 +128,14 @@ export function NinaVisual({
   /**
    * Die Zustände der Reihe nach durchlaufen.
    *
-   * Nur für den Einstieg auf der Startseite gedacht. Dort steht Nina,
+   * Nur für den Einstieg auf der Startseite gedacht. Dort steht Monday,
    * ohne dass ein Gespräch läuft — und ein Modell, das ruhig atmet,
    * zeigt nicht, was es kann. Der Durchlauf spielt CALM, Thinking und
    * Talking nacheinander, mit den Überblendungen, die das Modell
    * ohnehin mitbringt.
    *
    * Überall sonst bleibt der Zustand, was er ist: die Auskunft
-   * darüber, was Nina gerade tut. Ihn dort zu erfinden hiesse, eine
+   * darüber, was Monday gerade tut. Ihn dort zu erfinden hiesse, eine
    * Aussage über die Anwendung zu fälschen.
    */
   zyklus?: boolean;
@@ -143,20 +143,20 @@ export function NinaVisual({
    * Wann das Modell geholt wird.
    *
    *   `sichtbar`     sobald die Fläche ins Blickfeld kommt und der
-   *                  Browser Luft hat. Für die Anwendung: dort ist Nina
+   *                  Browser Luft hat. Für die Anwendung: dort ist Monday
    *                  der Grund, warum jemand die Seite geöffnet hat.
    *
    *   `beiInteresse` zusätzlich erst, wenn der Mensch bleibt — scrollt,
    *                  die Maus bewegt, etwas anfasst. Für die
    *                  Startseite: 9,7 MB sind viel für jemanden, der
    *                  nach zwei Sekunden wieder weg ist. Wer bleibt,
-   *                  bekommt Nina; wer nur vorbeischaut, bekommt das
+   *                  bekommt Monday; wer nur vorbeischaut, bekommt das
    *                  Signal und keine Rechnung.
    */
   strategie?: "sichtbar" | "beiInteresse";
 }) {
   /*
-   * Nina zeigt sich auch dort, wo kein Gespräch läuft.
+   * Monday zeigt sich auch dort, wo kein Gespräch läuft.
    *
    * Auf der Startseite gibt es keinen NinaProvider — es gibt ja nichts
    * zu besprechen. Mit `useNina()` hätte diese Komponente die Seite
@@ -199,16 +199,16 @@ export function NinaVisual({
 
   const beiFehler = useCallback((fehler: unknown) => {
     // Der Grund gehört in die Konsole der Entwicklung, nicht auf den
-    // Bildschirm der Person. Sie sieht Nina — nur flach.
-    console.warn("Nina 3D nicht verfügbar:", fehler);
+    // Bildschirm der Person. Sie sieht Monday — nur flach.
+    console.warn("Monday 3D nicht verfügbar:", fehler);
     setGescheitert(true);
   }, []);
 
   /*
-   * Nina wird geladen, wenn sie zu sehen ist — nicht beim Seitenaufbau.
+   * Monday wird geladen, wenn sie zu sehen ist — nicht beim Seitenaufbau.
    *
    * Die Datei ist 9,7 MB über die Leitung. Auf der Startseite steht
-   * Nina weit rechts im Blickfeld und ist für den ersten Eindruck
+   * Monday weit rechts im Blickfeld und ist für den ersten Eindruck
    * unwichtig; sie trotzdem sofort zu holen hiess, jedem Besucher
    * 9,7 MB aufzuerlegen, bevor er einen Satz gelesen hat.
    *
@@ -255,7 +255,7 @@ export function NinaVisual({
      * kein zweites Mal, solange das Element im Blickfeld BLEIBT. Wer
      * die Seite öffnete und danach die Maus bewegte, löste also nichts
      * aus: das Interesse kam an, aber niemand fragte mehr nach.
-     * Ergebnis: Nina erschien auf der Startseite nie.
+     * Ergebnis: Monday erschien auf der Startseite nie.
      */
     const vielleichtStarten = () => {
       if (!interesse || !sichtbar) return;
@@ -320,7 +320,7 @@ export function NinaVisual({
       data-nina-visual={zustand}
     >
       {/*
-       * Der Grund, auf dem Nina sichtbar wird.
+       * Der Grund, auf dem Monday sichtbar wird.
        *
        * Das Modell besteht aus elf rein weiß leuchtenden, transparenten
        * Materialien mit bis zu 25-facher Emissionsstärke — es ist für
@@ -338,7 +338,7 @@ export function NinaVisual({
        * Nur unter dem Modell, nicht unter dem Ersatzbild.
        *
        * Diese Fläche ist fast deckendes Indigo. Unter der leuchtenden
-       * 3D-Nina ist sie richtig: das Leuchten braucht etwas, wogegen es
+       * 3D-Monday ist sie richtig: das Leuchten braucht etwas, wogegen es
        * leuchtet. Unter dem flachen Signal ist sie falsch — dort steht
        * dann eine dunkle Scheibe mit einem dünnen Drahtring darauf.
        *
@@ -380,7 +380,7 @@ export function NinaVisual({
         <NinaVisualFallback state={zustand} size={size === "sm" ? "lg" : size === "md" ? "xl" : "hero"} />
       )}
 
-      <span className="sr-only">Nina: {ZUSTAND_TEXT[zustand]}</span>
+      <span className="sr-only">Monday: {ZUSTAND_TEXT[zustand]}</span>
     </div>
   );
 }

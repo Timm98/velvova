@@ -5,7 +5,7 @@ import { getDb, schema, withUser } from "@paycheck/db";
 import { entscheide, type Entscheidung, type Fakt, type Faktquelle } from "./faktenregeln";
 
 /**
- * Ninas Gedächtnis lesen und schreiben.
+ * Mondays Gedächtnis lesen und schreiben.
  *
  * ── Warum jeder Schreibvorgang durch `entscheide` geht ────────
  *
@@ -155,7 +155,7 @@ export async function faktSchreiben(
 }
 
 /**
- * Einen Vorschlag annehmen — die Antwort auf Ninas Nachfrage.
+ * Einen Vorschlag annehmen — die Antwort auf Mondays Nachfrage.
  *
  * Der unbestätigte Fakt wird zum bestätigten, der alte fällt weg. Erst
  * hier, nach einer ausdrücklichen Antwort, ändert sich die Wahrheit

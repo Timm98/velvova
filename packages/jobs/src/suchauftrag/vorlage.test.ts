@@ -34,7 +34,7 @@ function daten(teil: Partial<Vorlagendaten> = {}): Vorlagendaten {
     posten: [posten()],
     einstellungenUrl: "https://velvova.example/app/suchauftraege",
     abmeldeUrl: "https://velvova.example/abmelden?t=abc",
-    absenderName: "Nina von Velvova",
+    absenderName: "Monday von Velvova",
     ...teil,
   };
 }
@@ -109,7 +109,7 @@ describe("Ersatztexte", () => {
     /*
      * Der Betreff steht allein im Postfach. „Passende Stelle" liest
      * sich dort als Aussage über den Menschen — und die können wir
-     * ohne Ninas Gespräch nicht treffen. Die Einleitung sagt es
+     * ohne Mondays Gespräch nicht treffen. Die Einleitung sagt es
      * genau: „die zu deinen Angaben passt".
      */
     const t = ersatztexte(1, "Lager");

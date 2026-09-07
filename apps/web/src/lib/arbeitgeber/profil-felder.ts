@@ -49,7 +49,7 @@ export type Profilstand = {
  * Die Feldliste ist die einzige Stelle, an der ein Feld beschrieben
  * wird.
  *
- * Editor, Vollständigkeitsrechnung, Nina-Hinweise und die öffentliche
+ * Editor, Vollständigkeitsrechnung, Monday-Hinweise und die öffentliche
  * Seite lesen alle hieraus. Vorher hätte jedes dieser vier Stücke eine
  * eigene Liste gehabt — und beim ersten neuen Feld hätten drei davon
  * es nicht gekannt: Es stünde im Editor, zählte aber nicht zur
@@ -191,7 +191,7 @@ export function vollstaendigkeit(profil: Profilstand | null): {
 }
 
 /**
- * Woran Nina Anstoss nimmt.
+ * Woran Monday Anstoss nimmt.
  *
  * Ausschliesslich Regeln über das, was dasteht — keine Bewertung des
  * Unternehmens. „Eure Homeoffice-Regel ist noch nicht eindeutig" ist

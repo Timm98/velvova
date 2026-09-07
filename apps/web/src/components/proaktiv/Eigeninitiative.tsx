@@ -9,14 +9,14 @@ import {
 } from "@/lib/proaktiv/aktionen";
 
 /**
- * Wie viel Nina von sich aus tun darf.
+ * Wie viel Monday von sich aus tun darf.
  *
  * ══════════════════════════════════════════════════════════════
  * Was diese Einstellung NICHT kann
  * ══════════════════════════════════════════════════════════════
  *
  * Sie ändert die Häufigkeit, nicht die Berechtigung. „Proaktiv“ macht
- * Nina gesprächiger, nicht mächtiger — eine Bewerbung schickt sie
+ * Monday gesprächiger, nicht mächtiger — eine Bewerbung schickt sie
  * auch dann nicht.
  *
  * Das steht auch im Text unter den Stufen. Eine Einstellung, bei der
@@ -27,17 +27,17 @@ const STUFEN = [
   {
     wert: "zurueckhaltend",
     name: "Zurückhaltend",
-    text: "Nina meldet sich selten und nur bei etwas Wichtigem.",
+    text: "Monday meldet sich selten und nur bei etwas Wichtigem.",
   },
   {
     wert: "ausgeglichen",
     name: "Ausgeglichen",
-    text: "Nina merkt Stellen vor und sagt gelegentlich Bescheid.",
+    text: "Monday merkt Stellen vor und sagt gelegentlich Bescheid.",
   },
   {
     wert: "proaktiv",
     name: "Proaktiv",
-    text: "Nina denkt laut mit und schlägt öfter etwas vor.",
+    text: "Monday denkt laut mit und schlägt öfter etwas vor.",
   },
 ] as const;
 
@@ -64,9 +64,9 @@ export function Eigeninitiative({ stand }: { stand: Eigeninitiativestand }) {
     <Card>
       <div className="grid gap-5">
         <div className="grid gap-1">
-          <h3 className="text-base font-semibold text-ink">Ninas Eigeninitiative</h3>
+          <h3 className="text-base font-semibold text-ink">Mondays Eigeninitiative</h3>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-            Wie oft Nina sich von selbst meldet. Das ändert nur, wie häufig sie etwas sagt — nicht,
+            Wie oft Monday sich von selbst meldet. Das ändert nur, wie häufig sie etwas sagt — nicht,
             was sie darf. Bewerbungen schickt sie nie ohne deinen ausdrücklichen Auftrag.
           </p>
         </div>
@@ -96,7 +96,7 @@ export function Eigeninitiative({ stand }: { stand: Eigeninitiativestand }) {
         </fieldset>
 
         <div className="grid gap-2">
-          <h4 className="text-sm font-semibold text-ink">Nina darf automatisch</h4>
+          <h4 className="text-sm font-semibold text-ink">Monday darf automatisch</h4>
           <ul className="grid gap-1.5">
             {schalter.map((s) => (
               <li key={s.handlung}>
@@ -117,7 +117,7 @@ export function Eigeninitiative({ stand }: { stand: Eigeninitiativestand }) {
 
         {/*
           Die Grenze steht in der Oberfläche, nicht nur im Code.
-          Wer wissen will, was Nina niemals von selbst tut, soll es
+          Wer wissen will, was Monday niemals von selbst tut, soll es
           lesen können, ohne jemanden zu fragen.
         */}
         <div className="grid gap-1 rounded-lg bg-soft px-3 py-2.5">
@@ -126,7 +126,7 @@ export function Eigeninitiative({ stand }: { stand: Eigeninitiativestand }) {
           </span>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
             Bewerbungen abschicken, Arbeitgeber kontaktieren, deine Daten weitergeben, dein Profil
-            freigeben, etwas kündigen, unterschreiben oder bezahlen. Dafür braucht Nina jedes Mal
+            freigeben, etwas kündigen, unterschreiben oder bezahlen. Dafür braucht Monday jedes Mal
             deinen ausdrücklichen Auftrag.
           </p>
         </div>

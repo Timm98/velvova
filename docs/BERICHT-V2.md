@@ -1,4 +1,4 @@
-# Abschlussbericht — Paycheck / Nina, zweite Ausbaustufe
+# Abschlussbericht — Paycheck / Monday, zweite Ausbaustufe
 
 Branch `feature/paycheck-professional-v2`, Stand 30. August 2026.
 
@@ -50,7 +50,7 @@ klickbare Fläche bekommt den tieferen Kupferton mit 5,3:1.
 
 ### Sprache und Region
 Eigener Bereich unter `/app/settings/language-region` mit **drei
-getrennten Sprachen**: Oberfläche, Gespräch mit Nina,
+getrennten Sprachen**: Oberfläche, Gespräch mit Monday,
 Bewerbungsunterlagen. Dazu Wohnsitzland und Jobmarkt getrennt,
 Wohnort, Suchradius, Pendelzeit, Zeitzone, Währung, Entfernungseinheit,
 Umzugsbereitschaft, Arbeitsmodell, Vertragsarten, Gehaltswunsch.
@@ -78,7 +78,7 @@ Benachrichtigungen, Datenschutz & Daten, Verbundene Dienste.
   wenn genannt), Alter, Quelle — plus Passung, Sicherheit, ein Grund und
   ein Vorbehalt. Initialen statt erfundener Logos.
 - Detailseite: Reality Check links, rechts klebend Bewertung und
-  Handlungen, dazu eine kontextuelle Nina-Leiste mit vorbereiteten
+  Handlungen, dazu eine kontextuelle Monday-Leiste mit vorbereiteten
   Fragen zur Stelle.
 - Ausgeschlossene Stellen stehen in einem eigenen Abschnitt mit dem
   konkreten Grund — vorher wären sie durch die Rangfolge hinter allem
@@ -139,7 +139,7 @@ Produkt, mit den Variablennamen daneben.
 
 ```
 AI_PROVIDER=openai
-OPENAI_API_KEY=            # nötig, damit Nina mit einem echten Modell antwortet
+OPENAI_API_KEY=            # nötig, damit Monday mit einem echten Modell antwortet
 OPENAI_PRIMARY_MODEL=gpt-5.6
 OPENAI_FAST_MODEL=gpt-5.6-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-large
@@ -222,7 +222,7 @@ abrufen*.
 
 ## 8. Bekannte Grenzen
 
-**Nina antwortet noch nicht mit einem echten Modell.** Der Provider ist
+**Monday antwortet noch nicht mit einem echten Modell.** Der Provider ist
 gebaut, geprüft und über eine Variable schaltbar — es fehlt der
 Schlüssel. Ohne ihn läuft der lokale Anbieter, und das steht an jeder
 Stelle, an der es zählt. Das ist der einzige Punkt der Definition of
@@ -279,7 +279,7 @@ apps/web/src/app/page.tsx                    Landing
 apps/web/src/app/app/page.tsx                Dashboard
 apps/web/src/app/app/jobs/page.tsx           Matches
 apps/web/src/app/app/jobs/[id]/page.tsx      Reality Check
-apps/web/src/app/app/nina/**                 Gespräch
+apps/web/src/app/app/monday/**                 Gespräch
 apps/web/src/app/app/profile/**              Karriereprofil
 packages/i18n/src/messages/{de,en}.ts        Landing vollständig übersetzt
 packages/config/src/runtime.ts               Anbieterwahl
@@ -294,5 +294,5 @@ docs/screenshots/nachher-v2/    Stand danach
 ```
 
 Je 1440×1000, 1280×800 und 390×844, jeweils Landing, Produkt,
-So-funktioniert-es, Login, Registrierung, Dashboard, Nina, Matches,
+So-funktioniert-es, Login, Registrierung, Dashboard, Monday, Matches,
 Stellendetail, Profil, Bewerbungen und drei Einstellungsbereiche.

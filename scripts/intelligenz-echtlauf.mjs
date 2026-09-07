@@ -12,7 +12,7 @@ ladeEnvDatei();
  *   synthetisch die Person und ihre Belege
  *
  * Die Belege müssen erfunden sein: Es gibt keinen Menschen, der für
- * einen Test durch Ninas Gespräch geht. Sie sind gekennzeichnet —
+ * einen Test durch Mondays Gespräch geht. Sie sind gekennzeichnet —
  * `@example.invalid`, und jeder trägt seine Quelle.
  *
  * Aufruf: node --experimental-strip-types scripts/intelligenz-echtlauf.mjs [--konto N]

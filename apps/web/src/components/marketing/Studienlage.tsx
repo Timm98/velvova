@@ -24,11 +24,11 @@ import { Rechnet } from "./Rechnet";
  *
  * ── Was hier ausdrücklich NICHT steht ─────────────────────────
  *
- * Eine Erfolgsquote für Nina. Diese Studien belegen Probleme und
- * zeigen, welche Methoden wirken; keine von ihnen hat Nina
+ * Eine Erfolgsquote für Monday. Diese Studien belegen Probleme und
+ * zeigen, welche Methoden wirken; keine von ihnen hat Monday
  * untersucht. Eigene Zahlen kommen nach Pilotkunden und eigener
  * Messung, mit Grundgesamtheit und Zeitraum — bis dahin steht hier
- * nichts über Nina, was nicht auch ohne Nina wahr wäre.
+ * nichts über Monday, was nicht auch ohne Monday wahr wäre.
  */
 export function Studienlage() {
   /* Nur die drei Zahlen. Die vollständige Methodik steht unter
@@ -40,7 +40,7 @@ export function Studienlage() {
             <p className="text-2xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--ed-ink-3)" }}>
               Was belegt ist
             </p>
-            <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-semibold leading-[1.06] tracking-[-0.03em]">
+            <h2 className="font-display text-[clamp(1.7rem,3vw,2.6rem)] font-normal leading-[1.06] tracking-[-0.02em]">
               Mehr Bewerbungen lösen kein Matchingproblem.
             </h2>
             <p className="text-[clamp(1rem,1.3vw,1.1rem)] leading-[1.62]" style={{ color: "var(--ed-ink-2)" }}>
@@ -115,7 +115,7 @@ export function Methodik() {
             <p className="text-2xs font-semibold uppercase tracking-[0.16em]" style={{ color: "var(--ed-ink-3)" }}>
               Studien und Methodik
             </p>
-            <h2 className="font-display text-[clamp(1.6rem,2.8vw,2.2rem)] font-semibold leading-[1.08] tracking-[-0.03em]">
+            <h2 className="font-display text-[clamp(1.6rem,2.8vw,2.2rem)] font-normal leading-[1.08] tracking-[-0.02em]">
               {BELEGZAHL} Befunde, jeder mit Herausgeber, Jahr und Grenze.
             </h2>
             <p className="text-[15px] leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -130,7 +130,7 @@ export function Methodik() {
             {FELDER.map((feld) => (
               <div key={feld.id} className="grid gap-6 border-t border-line pt-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
                 <div className="grid content-start gap-4">
-                  <h3 className="font-display text-[clamp(1.2rem,2vw,1.5rem)] font-semibold leading-snug tracking-[-0.02em]">
+                  <h3 className="font-display text-[clamp(1.2rem,2vw,1.5rem)] font-normal leading-snug tracking-[-0.02em]">
                     {feld.titel}
                   </h3>
                   <p className="text-[15px] leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
@@ -138,7 +138,7 @@ export function Methodik() {
                   </p>
 
                   {/*
-                    „Woran Nina daraufhin gebaut ist" — nicht „was Nina
+                    „Woran Monday daraufhin gebaut ist" — nicht „was Monday
                     bewirkt". Der Unterschied ist der ganze Punkt
                     dieses Abschnitts: Die Studien begründen die
                     Bauweise, nicht das Ergebnis.

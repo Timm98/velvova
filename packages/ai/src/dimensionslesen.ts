@@ -5,7 +5,7 @@ import { ARBEITSDIMENSIONEN, type Arbeitsdimension } from "@paycheck/domain";
  *
  * ── Warum das überhaupt nötig ist ─────────────────────────────
  *
- * Nina stellt längst die richtigen Fragen: „Welche Entscheidungen
+ * Monday stellt längst die richtigen Fragen: „Welche Entscheidungen
  * möchtest du selbst treffen dürfen?", „Bevorzugst du klare Abläufe
  * oder möchtest du lieber etwas Neues aufbauen?" Die Antworten wurden
  * als Fliesstext abgelegt und nie zu etwas, womit sich rechnen liess.
@@ -247,7 +247,7 @@ export function dimensionenAusAntwort(frageKey: string, antwort: string): Gelese
  * gesagt hat, bekommt zuerst die Frage, die am meisten hergibt.
  *
  * Abgeleitet aus dem Leser selbst, nicht daneben gepflegt: Eine zweite
- * Liste liefe irgendwann auseinander, und dann fragte Nina nach etwas,
+ * Liste liefe irgendwann auseinander, und dann fragte Monday nach etwas,
  * das sie gar nicht lesen kann.
  */
 export const ACHSEN_JE_FRAGE: Record<string, Arbeitsdimension[]> = Object.fromEntries(

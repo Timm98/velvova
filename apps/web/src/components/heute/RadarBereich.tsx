@@ -46,7 +46,7 @@ export async function RadarBereich({
 export function RadarPlatzhalter() {
   return (
     <section aria-labelledby="radar-laedt" className="grid gap-4">
-      <h2 id="radar-laedt" className="font-display text-xl font-semibold tracking-[-0.02em]">
+      <h2 id="radar-laedt" className="font-display text-xl font-normal tracking-[-0.02em]">
         Arbeitswelt-Radar
       </h2>
       <ul className="grid gap-2" aria-hidden>

@@ -11,7 +11,7 @@ import type { Freigabe } from "./engine.ts";
  * vorgemerkt, ein Vergleich vorbereitet, offene Fragen gesammelt.
  * Alle vier sind nützlich. Viermal davon zu erzählen ist es nicht.
  *
- * Nina soll im Hintergrund arbeiten und sich selten melden. Vier
+ * Monday soll im Hintergrund arbeiten und sich selten melden. Vier
  * Einblendungen für einen Vorgang machen aus einer Assistentin ein
  * Benachrichtigungszentrum — und das schaltet man ab.
  *
@@ -66,8 +66,8 @@ const FRAGENWORT: Record<string, string> = {
  * Der eine Satz für einen ganzen Durchgang.
  *
  * `null` heisst: Es gibt nichts zu sagen. Das ist ein gültiges und
- * häufiges Ergebnis — Nina hat gearbeitet, und die Person erfährt es,
- * wenn sie in „Von Nina vorbereitet“ nachsieht.
+ * häufiges Ergebnis — Monday hat gearbeitet, und die Person erfährt es,
+ * wenn sie in „Von Monday vorbereitet“ nachsieht.
  */
 export function meldungBuendeln(belege: readonly Handlungsbeleg[]): string | null {
   if (belege.length === 0) return null;
@@ -78,7 +78,7 @@ export function meldungBuendeln(belege: readonly Handlungsbeleg[]): string | nul
 
   /*
    * ══════════════════════════════════════════════════════════════
-   * Wann Nina überhaupt etwas sagt
+   * Wann Monday überhaupt etwas sagt
    * ══════════════════════════════════════════════════════════════
    *
    * Nur wenn sie etwas vorbereitet hat, das die Person auf der Seite
@@ -98,7 +98,7 @@ export function meldungBuendeln(belege: readonly Handlungsbeleg[]): string | nul
    * liest. Das ist keine Auskunft, sondern ein Echo. Er weiss, dass
    * er interessiert ist; deshalb ist er da.
    *
-   * Dass Nina vorgemerkt hat, steht in „Von Nina vorbereitet". Wer
+   * Dass Monday vorgemerkt hat, steht in „Von Monday vorbereitet". Wer
    * es wissen will, findet es. Wer es nicht wissen will, wird nicht
    * unterbrochen.
    *
@@ -230,7 +230,7 @@ const FRAGENRANG: Record<string, number> = {
  * Die eine Frage, die gestellt wird — und welche warten.
  *
  * Die wartenden gehen nicht verloren: Sie werden als Vorschlag
- * abgelegt und stehen in „Von Nina vorbereitet“. Nach einer Antwort
+ * abgelegt und stehen in „Von Monday vorbereitet“. Nach einer Antwort
  * wird neu bewertet, welche davon überhaupt noch gilt.
  */
 export function eineFrage(vorschlaege: readonly Freigabe[]): {

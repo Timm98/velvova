@@ -2,7 +2,7 @@ import { ladeEnvDatei } from "../packages/config/src/env-datei.ts";
 ladeEnvDatei();
 
 /**
- * Ninas Eigeninitiative gegen die echte Datenbank.
+ * Mondays Eigeninitiative gegen die echte Datenbank.
  *
  * ══════════════════════════════════════════════════════════════
  * Was echt ist
@@ -103,7 +103,7 @@ const befund = await j.proaktivLauf(db, nutzer.id, { jetzt, sitzungId: SITZUNG }
 console.log(JSON.stringify(befund, null, 2));
 
 /* ── 5. Was dabei herauskam ───────────────────────────────── */
-trenner("5. Von Nina automatisch");
+trenner("5. Von Monday automatisch");
 const handlungen = await withUser(db, nutzer.id, (tx) =>
   tx.execute(sql`
     select h.handlung, h.klasse, h.zustand, h.begruendung, h.nachricht, h.ergebnis,
@@ -136,8 +136,8 @@ for (const h of handlungen.rows) {
   }
 }
 
-/* ── 6. Was Nina sagt ─────────────────────────────────────── */
-trenner("6. Was Nina von sich aus sagt");
+/* ── 6. Was Monday sagt ─────────────────────────────────────── */
+trenner("6. Was Monday von sich aus sagt");
 const gesagt = await j.naechsteNachricht(db, nutzer.id, jetzt);
 if (gesagt) {
   console.log(`„${gesagt.text}"`);

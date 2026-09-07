@@ -56,7 +56,7 @@ const antwort = await s.evaluate(async () => {
   const r = await fetch("/api/nina/chat", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ message: "Zeig mir passende Stellen.", route: "/app/nina", kind: "career_interview" }),
+    body: JSON.stringify({ message: "Zeig mir passende Stellen.", route: "/app/monday", kind: "career_interview" }),
   });
   return r.status;
 });

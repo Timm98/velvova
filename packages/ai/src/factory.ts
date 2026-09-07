@@ -137,7 +137,7 @@ export function aiUnavailableMessage(
 ): string {
   const istProduktion = cfg.nodeEnv === "production" || cfg.appEnv === "production";
   return istProduktion
-    ? "Nina ist gerade nicht erreichbar. Deine bisherigen Daten sind sicher gespeichert. Versuche es bitte erneut."
+    ? "Monday ist gerade nicht erreichbar. Deine bisherigen Daten sind sicher gespeichert. Versuche es bitte erneut."
     : "Die KI-Verbindung ist noch nicht vollständig konfiguriert.";
 }
 

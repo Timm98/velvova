@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
  * Was hier ankommt, ist nicht das, was passiert ist — es ist das, was
  * jemand geschickt hat. Die Kennung des Nutzers kommt deshalb aus der
  * Sitzung und niemals aus dem Rumpf: Stünde sie im JSON, könnte jeder
- * Ereignisse in fremde Konten schreiben und darüber steuern, was Nina
+ * Ereignisse in fremde Konten schreiben und darüber steuern, was Monday
  * einem anderen Menschen vorschlägt.
  *
  * Die Ereignisart wird gegen eine geschlossene Liste geprüft, der
@@ -91,7 +91,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   /*
    * Der Durchgang läuft nur auf Wunsch.
    *
-   * Bei jedem Klick zu prüfen, ob Nina etwas sagen möchte, wäre eine
+   * Bei jedem Klick zu prüfen, ob Monday etwas sagen möchte, wäre eine
    * Datenbankrunde je Mausbewegung. Der Browser bündelt und bittet
    * am Ende einer Ansicht um die Auswertung.
    */

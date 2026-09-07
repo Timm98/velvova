@@ -1,4 +1,4 @@
--- Vorschläge, die Nina von sich aus macht — und die Einwilligung dazu.
+-- Vorschläge, die Monday von sich aus macht — und die Einwilligung dazu.
 --
 -- ══════════════════════════════════════════════════════════════
 -- 1 · Auffindbarkeit
@@ -101,7 +101,7 @@ create index if not exists stellen_matches_person_idx
 --
 -- ── Warum Stufe 1 die Vorgabe ist ───────────────────────────
 --
--- Stufe 1 heisst „nur Vorschläge": Nina rechnet, ein Mensch
+-- Stufe 1 heisst „nur Vorschläge": Monday rechnet, ein Mensch
 -- entscheidet. Wer mehr will, schaltet es ein und weiss dann, dass er
 -- es eingeschaltet hat. Eine höhere Vorgabe hiesse, dass Nachrichten
 -- an Menschen herausgehen, weil niemand die Einstellung gelesen hat.

@@ -1,6 +1,6 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
@@ -35,6 +35,84 @@ export async function updateDisplayName(formData: FormData): Promise<void> {
    * die nie — wer sein Bild wechselte, sah im Anwendungsbereich das
    * neue und auf der Startseite weiter das alte.
    */
+  revalidatePath("/app", "layout");
+  revalidatePath("/", "layout");
+}
+
+/**
+ * Die Telefonnummer eintragen oder ändern.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum sie unbestätigt gespeichert wird
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Nummer ist bei uns nicht nur eine Kontaktangabe, sondern ein
+ * ANMELDEWEG: Wer sie besitzt, bekommt einen Code und kommt ins
+ * Konto. Eine hier eingetippte Nummer beweist aber nichts — man kann
+ * jede beliebige eintragen.
+ *
+ * Deshalb setzt diese Aktion `phoneVerifiedAt` ausdrücklich auf
+ * `null`. Die Nummer steht dann als Kontaktangabe da; als
+ * Anmeldeweg taugt sie erst, wenn ein Code an sie ging und ankam.
+ *
+ * ── Warum die Nummer eindeutig sein muss ──────────────────────
+ *
+ * Trügen zwei Konten dieselbe Nummer, wäre beim Anmelden per SMS
+ * nicht mehr entscheidbar, welches gemeint ist. Die Prüfung schliesst
+ * gelöschte Konten aus — deren Nummer ist wieder frei.
+ *
+ * ── Was NICHT geprüft wird ────────────────────────────────────
+ *
+ * Ob es die Nummer gibt. Das kann nur ein Code herausfinden, der
+ * ankommt. Eine Formatprüfung, die „gültig" behauptet, wäre eine
+ * Aussage über die Schreibweise, nicht über die Nummer.
+ */
+export async function updatePhone(formData: FormData): Promise<void> {
+  const user = await requireUser();
+  const db = await getDb();
+
+  const roh = String(formData.get("phone") ?? "").trim();
+
+  /*
+   * Vereinheitlichen, bevor verglichen wird.
+   *
+   * „+49 173 3706718", „+491733706718" und „+49-173-3706718" sind
+   * dieselbe Nummer. Ohne diesen Schritt liesse die
+   * Eindeutigkeitsprüfung genau die Dubletten durch, die sie
+   * verhindern soll. Das führende Plus bleibt, alles andere ausser
+   * Ziffern fällt weg.
+   */
+  const ziffern = roh.replace(/[^\d+]/g, "");
+  const phone = ziffern.length >= 6 ? (ziffern.startsWith("+") ? ziffern : ziffern) : null;
+
+  if (phone) {
+    const [belegt] = await db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(
+        and(eq(schema.users.phone, phone), ne(schema.users.id, user.id), isNull(schema.users.deletedAt)),
+      )
+      .limit(1);
+
+    /*
+     * Stillschweigend nicht speichern statt eine Fehlermeldung zu
+     * werfen: Wer eine fremde Nummer einträgt, soll nicht erfahren,
+     * dass sie zu einem Konto gehört. Das wäre eine Auskunft über
+     * einen anderen Menschen.
+     */
+    if (belegt) {
+      revalidatePath("/app/settings");
+      return;
+    }
+  }
+
+  await withUser(db, user.id, (tx) =>
+    tx
+      .update(schema.users)
+      .set({ phone, phoneVerifiedAt: null })
+      .where(eq(schema.users.id, user.id)),
+  );
+
   revalidatePath("/app", "layout");
   revalidatePath("/", "layout");
 }

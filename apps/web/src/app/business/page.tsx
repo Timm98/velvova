@@ -51,12 +51,12 @@ export default async function BusinessStart({
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
           {organisation.name}
         </h1>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
           Stellen ausschreiben und Bewerbungen bearbeiten. Was Bewerberinnen und Bewerber
-          privat mit Nina besprechen, ihre Lebenshaltung und ihr aktuelles Gehalt sind hier
+          privat mit Monday besprechen, ihre Lebenshaltung und ihr aktuelles Gehalt sind hier
           nicht sichtbar — auch nicht in aggregierter Form.
         </p>
       </div>

@@ -6,7 +6,7 @@
  * prüfbarkeit: die schwierigen Stellen eines Sprachgesprächs sind
  * keine Netzwerkfragen, sondern Reihenfolgefragen —
  *
- *   Was passiert, wenn jemand zu reden anfängt, während Nina spricht?
+ *   Was passiert, wenn jemand zu reden anfängt, während Monday spricht?
  *   Was, wenn die Antwort auf einen abgebrochenen Satz eintrifft?
  *   Was, wenn der Ton startet, nachdem längst unterbrochen wurde?
  *
@@ -68,13 +68,13 @@ export type LiveEreignis =
    * Der Browser hat die Wiedergabe verweigert.
    *
    * Ein eigenes Ereignis und nicht `fehler`, weil es kein Fehler ist:
-   * das Gespräch läuft weiter, Ninas Antwort steht geschrieben da, nur
+   * das Gespräch läuft weiter, Mondays Antwort steht geschrieben da, nur
    * gehört hat sie niemand. `fehler` würde die Verbindung schliessen
    * und das Mikrofon abschalten — für ein Problem, das nur den
    * Lautsprecher betrifft.
    *
    * Vorher gab es dieses Ereignis nicht, und die Verweigerung lief als
-   * „ton_endet" durch. Von aussen sah das aus, als hätte Nina
+   * „ton_endet" durch. Von aussen sah das aus, als hätte Monday
    * gesprochen und ausgeredet. Genau deshalb hat monatelang niemand
    * gesehen, dass sie stumm war.
    */
@@ -84,7 +84,7 @@ export type LiveEreignis =
 
 /** Was die Hülle nach einem Übergang tun soll. */
 export interface Wirkung {
-  /** Diesen Text an Nina schicken. */
+  /** Diesen Text an Monday schicken. */
   sende?: string;
   /** Laufende Tonausgabe und Anfragen abbrechen. */
   brichAb?: boolean;
@@ -101,7 +101,7 @@ export function weiter(
       return { stand: { ...START, zustand: "verbindet" }, wirkung: {} };
 
     case "verbunden":
-      // Nach dem Verbinden wird zugehört, nicht gesprochen. Nina
+      // Nach dem Verbinden wird zugehört, nicht gesprochen. Monday
       // begrüsst niemanden von sich aus — wer den Knopf drückt, will
       // reden, nicht angesprochen werden.
       return { stand: { ...stand, zustand: "hört", fehler: null }, wirkung: {} };
@@ -114,7 +114,7 @@ export function weiter(
       /*
        * Hier steht das Unterbrechen (§14.6).
        *
-       * Fängt jemand an zu reden, während Nina spricht oder denkt,
+       * Fängt jemand an zu reden, während Monday spricht oder denkt,
        * gewinnt der Mensch. Sofort: Ton aus, Warteschlange leer,
        * laufende Erzeugung abgebrochen, Anfrage abgebrochen.
        *
@@ -137,7 +137,7 @@ export function weiter(
     case "teiltranskript":
       // Nur anzeigen, solange wirklich zugehört wird. Ein Teilsatz, der
       // nach dem Ende des Redebeitrags eintrifft, würde sonst unter
-      // Ninas Antwort stehen bleiben.
+      // Mondays Antwort stehen bleiben.
       if (stand.zustand !== "hört") return { stand, wirkung: {} };
       return { stand: { ...stand, teiltranskript: e.text }, wirkung: {} };
 
@@ -146,7 +146,7 @@ export function weiter(
       if (stand.zustand !== "hört") return { stand, wirkung: {} };
 
       // Leere Beiträge kommen vor: ein Husten, eine zugeschlagene Tür.
-      // Sie erzeugen keine Anfrage — sonst antwortet Nina auf ein
+      // Sie erzeugen keine Anfrage — sonst antwortet Monday auf ein
       // Geräusch.
       if (text.length === 0) {
         return { stand: { ...stand, teiltranskript: "" }, wirkung: {} };

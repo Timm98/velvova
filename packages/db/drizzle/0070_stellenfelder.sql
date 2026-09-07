@@ -25,7 +25,7 @@ alter table job_postings add column if not exists aufgaben text;
 -- Muss und Kann getrennt — das ist der Kern.
 --
 -- In einer Fliesstextanzeige stehen beide in derselben Aufzählung, und
--- niemand kann sie auseinanderhalten. Getrennt gespeichert kann Nina
+-- niemand kann sie auseinanderhalten. Getrennt gespeichert kann Monday
 -- eine fehlende Kann-Fähigkeit als „entwickelbar" führen statt als
 -- Ausschluss — und genau daran scheitern sonst Menschen, die die
 -- Arbeit könnten.
@@ -50,7 +50,7 @@ alter table job_postings add column if not exists interviewablauf text;
 -- Die Antwortzeit ist eine Zusage, keine Beschreibung.
 --
 -- Sie steht in der Anzeige, sie steht im Dashboard als Frist, und
--- Nina erinnert daran, bevor sie überschritten wird. Ohne diese Spalte
+-- Monday erinnert daran, bevor sie überschritten wird. Ohne diese Spalte
 -- wäre „wir melden uns schnell" ein Satz ohne Folgen.
 alter table job_postings add column if not exists antwortzeit text;
 --> statement-breakpoint

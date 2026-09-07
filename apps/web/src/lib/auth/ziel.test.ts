@@ -12,14 +12,14 @@ describe("zielNachLogin", () => {
   });
 
   it("führt ins Setup, auch wenn ein Ziel mitkommt", () => {
-    expect(zielNachLogin("/nina-einrichten", "/app/jobs/abc")).toBe("/nina-einrichten");
+    expect(zielNachLogin("/monday-einrichten", "/app/jobs/abc")).toBe("/monday-einrichten");
   });
 
   it("nimmt den Einstiegspunkt, wenn kein Ziel mitkommt", () => {
-    expect(zielNachLogin("/app/nina", null)).toBe("/app/nina");
+    expect(zielNachLogin("/app/monday", null)).toBe("/app/monday");
   });
 
   it("lässt das Ziel auch bei offenem Interview gewinnen", () => {
-    expect(zielNachLogin("/app/nina", "/app/jobs/xyz")).toBe("/app/jobs/xyz");
+    expect(zielNachLogin("/app/monday", "/app/jobs/xyz")).toBe("/app/jobs/xyz");
   });
 });

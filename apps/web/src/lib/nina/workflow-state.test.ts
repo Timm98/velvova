@@ -17,16 +17,16 @@ describe("entryRoute", () => {
   };
 
   it("schickt ohne abgeschlossenes Onboarding ins Setup", () => {
-    expect(entryRoute({ ...basis, onboardingComplete: false })).toBe("/nina-einrichten");
+    expect(entryRoute({ ...basis, onboardingComplete: false })).toBe("/monday-einrichten");
   });
 
   it("beginnt das Gespräch, wenn es noch nie lief", () => {
-    expect(entryRoute(basis)).toBe("/app/nina");
+    expect(entryRoute(basis)).toBe("/app/monday");
   });
 
   it("setzt ein unterbrochenes Gespräch fort", () => {
-    expect(entryRoute({ ...basis, careerInterviewStatus: "in_progress" })).toBe("/app/nina");
-    expect(entryRoute({ ...basis, careerInterviewStatus: "paused" })).toBe("/app/nina");
+    expect(entryRoute({ ...basis, careerInterviewStatus: "in_progress" })).toBe("/app/monday");
+    expect(entryRoute({ ...basis, careerInterviewStatus: "paused" })).toBe("/app/monday");
   });
 
   it("führt ein abgeschlossenes Gespräch zur Jobliste, nicht zurück ins Interview", () => {
@@ -51,7 +51,7 @@ describe("entryRoute", () => {
       entryRoute({
         ...basis,
         careerInterviewStatus: "completed",
-        lastActiveRoute: "/app/nina",
+        lastActiveRoute: "/app/monday",
       }),
     ).toBe("/app/jobs");
   });

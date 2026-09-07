@@ -33,7 +33,7 @@ import { SaveJobButton } from "./SaveJobButton";
  *   1. Wovon handelt das hier?   Bild, Titel, Unternehmen
  *   2. Kommt es überhaupt infrage?  Ort, Modell, Vertrag, Gehalt
  *   3. Passt es zu mir?          Passungswert und der eine Satz dazu
- *   4. Was tue ich jetzt?        Wählen, mit Nina durchgehen, Original
+ *   4. Was tue ich jetzt?        Wählen, mit Monday durchgehen, Original
  *
  * Erst danach kommt, was die Entscheidung begründet: die
  * Entscheidungsvorlage, Warnzeichen, die aufgeschlüsselte Passung, die
@@ -119,11 +119,11 @@ export function JobDetailPanel({
    * Wie es dem Beruf geht.
    *
    * Nur gebraucht, wenn keine Passung berechenbar ist — dann sagt
-   * Nina etwas über den Beruf statt über den Stand des Profils.
+   * Monday etwas über den Beruf statt über den Stand des Profils.
    */
   zukunft?: import("@/lib/jobs/zukunft").Zukunftsangabe | null;
   /**
-   * Ninas Lesart — dieselben Zahlen wie im Panel rechts.
+   * Mondays Lesart — dieselben Zahlen wie im Panel rechts.
    *
    * Optional, weil `JobDetailPanel` auch ohne sie funktionieren muss:
    * Ohne berechnete Passung gibt es nichts zu deuten, und dann steht
@@ -210,10 +210,10 @@ export function JobDetailPanel({
         aktionen={
           <>
             {/*
-              Führt zu Nina, statt zu einem Anker weiter unten.
+              Führt zu Monday, statt zu einem Anker weiter unten.
               
               Vorher sprang der Knopf zu einem Block in derselben
-              Spalte. Seit Nina nur noch einen Einstieg hat — die Blase
+              Spalte. Seit Monday nur noch einen Einstieg hat — die Blase
               unten rechts —, ist der Sprung ins Leere gegangen: Der
               Block dort ist keine Eingabe mehr.
               
@@ -242,7 +242,7 @@ export function JobDetailPanel({
       <Separator soft />
 
       {/*
-       * Ninas Analyse statt der Werteaufschlüsselung.
+       * Mondays Analyse statt der Werteaufschlüsselung.
        *
        * Hier stand `Passungsbefund` — vier Teilwerte mit Balken. Der
        * Baustein ist gut und bleibt auf der Einzelseite der Stelle,
@@ -457,7 +457,7 @@ export function JobDetailPanel({
         Trennlinie.
         
         Er enthielt zuletzt nur noch Kommentare: Die Passung steht im
-        Kopf, ihre Erklärung in der Nina-Analyse, die Einzelachsen auf
+        Kopf, ihre Erklärung in der Monday-Analyse, die Einzelachsen auf
         der Einzelseite. Ein leerer Abschnitt nimmt keinen Platz, seine
         Trennlinie schon — und drei Linien kurz hintereinander sahen aus
         wie eine eigene Gestaltung.
@@ -760,7 +760,7 @@ export function JobDetailPanel({
 
       <Separator soft />
 
-      {/* ── Nina ─────────────────────────────────────────── */}
+      {/* ── Monday ─────────────────────────────────────────── */}
       {/* Die Antwort erscheint hier, nicht auf einer anderen Seite.
           Die Stelle bleibt sichtbar (§13.3).
 
@@ -776,7 +776,7 @@ export function JobDetailPanel({
             hatGehalt: job.salary.min !== null || job.salary.max !== null,
             hatAnforderungen: scored.requirements.length > 0,
             /* `shiftWork` ist dreiwertig: true, false oder unbekannt.
-               Unbekannt heisst NICHT Schichtarbeit — sonst fragt Nina
+               Unbekannt heisst NICHT Schichtarbeit — sonst fragt Monday
                nach etwas, das die Anzeige nie erwähnt hat. */
             schichtarbeit: job.shiftWork === true,
             reiseanteil: job.travelPercent,

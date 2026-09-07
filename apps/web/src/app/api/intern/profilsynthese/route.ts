@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 300;
 
 /**
- * Der Zeitplan ruft hier an — für Ninas Profilsynthese.
+ * Der Zeitplan ruft hier an — für Mondays Profilsynthese.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum ein Endpunkt und nicht der Arbeiter

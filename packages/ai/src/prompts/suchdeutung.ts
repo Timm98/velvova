@@ -46,7 +46,7 @@ import { z } from "zod";
 
 export const SUCHDEUTUNG_FASSUNG = "suchdeutung-5";
 
-export const SUCHDEUTUNG_ANWEISUNG = `Du bist Nina und liest, was jemand in der Stellensuche geschrieben hat.
+export const SUCHDEUTUNG_ANWEISUNG = `Du bist Monday und liest, was jemand in der Stellensuche geschrieben hat.
 
 Du bekommst:
   EINGABE      der ganze Satz, so wie er getippt wurde

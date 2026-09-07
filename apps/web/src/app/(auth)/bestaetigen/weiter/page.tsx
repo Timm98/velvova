@@ -43,7 +43,7 @@ export default async function WeiterNachBestaetigung({
   const orgs = await meineOrganisationen(user.id);
 
   /*
-   * Ninas Einrichtung kommt vor allem anderen.
+   * Mondays Einrichtung kommt vor allem anderen.
    *
    * Sie ist der erste Bildschirm nach der Bestätigung — für beide
    * Kontotypen. Danach greift die Reihenfolge unten wieder, ohne dass
@@ -51,12 +51,12 @@ export default async function WeiterNachBestaetigung({
    * falsch, und dann fällt die Weiterleitung hier durch.
    *
    * Wer noch keine Organisation hat, aber eine anlegen will, richtet
-   * Nina trotzdem zuerst ein — er ist bis dahin ein Arbeitnehmerkonto
+   * Monday trotzdem zuerst ein — er ist bis dahin ein Arbeitnehmerkonto
    * und bekommt die passenden Texte. Nach dem Anlegen der Firma zeigt
    * das Privacy Center die Unternehmensfassung.
    */
   const einrichtung = await standLaden(user.id);
-  if (musstZeigen(einrichtung)) redirect("/nina-einrichten");
+  if (musstZeigen(einrichtung)) redirect("/monday-einrichten");
 
   if (orgs.length > 0) redirect("/business");
   if (absicht === "unternehmen") redirect("/firma");

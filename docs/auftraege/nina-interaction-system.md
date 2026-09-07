@@ -1,18 +1,18 @@
-# Nina Interaction System — globale Produkt- und Architekturregel
+# Monday Interaction System — globale Produkt- und Architekturregel
 
 Erteilt am 4.9.2026. **Noch nicht umzusetzen** — der Nutzer hat
 ausdrücklich gesagt: als dauerhafte Projektregel speichern, das System
 aber noch nicht überall implementieren. Die Kurzregel steht in
 `CLAUDE.md` und gilt ab sofort für jede Planung.
 
-Nina ist kein Chatbot, sondern die zentrale Assistenz-, Erklärungs-,
+Monday ist kein Chatbot, sondern die zentrale Assistenz-, Erklärungs-,
 Navigations- und Steuerungsebene. Jede Funktion muss in **zwei**
 Bedienarten arbeiten.
 
 ## 1 Grundregel
 
-Ein globales Nina Interaction System, verfügbar auf allen Seiten:
-Landingpage, Interview/Analyse, Nina Hub, Jobübersicht, Job-Detail,
+Ein globales Monday Interaction System, verfügbar auf allen Seiten:
+Landingpage, Interview/Analyse, Monday Hub, Jobübersicht, Job-Detail,
 gespeicherte Jobs, Bewerbungsbereich, Application Hub,
 Dokumentenerstellung, Coaching, Profil, Einstellungen und alle
 künftigen Seiten. **Nicht pro Seite neu bauen** — ein System oberhalb
@@ -20,7 +20,7 @@ der Anwendung. Der gewählte Modus überlebt jeden Seitenwechsel.
 
 ## 2 Die beiden Modi
 
-**Sprachmodus — Nina führt.** Sprechen, verstehen, Seiten öffnen,
+**Sprachmodus — Monday führt.** Sprechen, verstehen, Seiten öffnen,
 navigieren, scrollen, hervorheben, Jobs öffnen, Filter ändern,
 vergleichen, erklären, Formulare schrittweise füllen, nächsten Schritt
 vorschlagen, nach Zustimmung ausführen. Liegt ein Element ausserhalb
@@ -33,11 +33,11 @@ Textmodus". Sichtbarer Zustand: bereit, hört zu, verarbeitet, spricht,
 pausiert, Mikrofon blockiert, Fehler. Jederzeit erreichbarer Knopf zum
 Pausieren oder Abschalten des Mikrofons.
 
-**Textmodus — Nina erklärt, der Nutzer steuert.** Ruhige
+**Textmodus — Monday erklärt, der Nutzer steuert.** Ruhige
 Nachrichtenleiste am unteren Rand: Erklärungen, Hinweise, Fragen, Quick
 Replies, Empfehlungen. **Kein** selbsttätiges Navigieren, Scrollen,
 Öffnen, Filtern, Ausfüllen, Absenden oder Ändern. Sichtbare Elemente
-darf Nina sanft hervorheben; für Unsichtbares zeigt sie einen Knopf
+darf Monday sanft hervorheben; für Unsichtbares zeigt sie einen Knopf
 („Zum Match-Score", „Job ansehen", „Zu den Bewerbungen", „Filter
 öffnen", „Dokument prüfen"), den der Nutzer selbst klickt.
 
@@ -63,12 +63,12 @@ Ausschlusskriterien, Entwicklungsziele.
 
 ## 5 Übergang zur Jobseite
 
-Kein abruptes Ende. Nina leitet über („Ich glaube, ich habe jetzt ein
+Kein abruptes Ende. Monday leitet über („Ich glaube, ich habe jetzt ein
 gutes Bild von dir …"). Ruhige Transition: kein harter Reload, kein
 weisses oder schwarzes Zwischenbild, keine übertriebene 3D-Animation;
-der Nina-Core darf sich weiterentwickeln, die Joboberfläche baut sich
+der Monday-Core darf sich weiterentwickeln, die Joboberfläche baut sich
 schrittweise auf. `prefers-reduced-motion` respektieren. Die Jobs
-müssen geladen sein, **bevor** Nina erklärt.
+müssen geladen sein, **bevor** Monday erklärt.
 
 ## 6 Erste geführte Job-Erfahrung
 
@@ -81,7 +81,7 @@ bewusstem Überspringen nicht erneut automatisch starten.
 Fünf Schritte im Sprachmodus (Job-Matches → Match-Score → Gehalt,
 Entfernung, persönliche Kriterien nacheinander → empfohlene Karte →
 Knopf), immer **genau ein** hervorgehobenes Element, Untertitel
-gleichzeitig, jederzeit unterbrechbar. Am Ende fragt Nina „Soll ich die
+gleichzeitig, jederzeit unterbrechbar. Am Ende fragt Monday „Soll ich die
 Stelle für dich öffnen?" und öffnet erst nach Zustimmung.
 
 Im Textmodus dieselben Erklärungen als Nachrichten, Hervorhebung nur
@@ -114,7 +114,7 @@ Mobilgeräten nicht über die Navigation ragen, muss Safe Areas achten.
 Auf jeder Seite möglich, klarer aber unaufdringlicher Umschalter. Beim
 Wechsel darf **nichts** verloren gehen: Seite, offener Job,
 Tour-Fortschritt, Gesprächskontext, Eingaben, Filter, Bewerbungsschritt,
-Nachrichten. Nina setzt den Kontext fort und fängt nie bei null an.
+Nachrichten. Monday setzt den Kontext fort und fängt nie bei null an.
 
 ## 10 Modus-Erinnerungen
 
@@ -157,7 +157,7 @@ IDs u. a.: `navigation.openJobs`, `navigation.openApplications`,
 `application.send`, `coaching.startInterview`,
 `settings.switchInteractionMode`.
 
-Bei Unklarheit fragt Nina nach („Meinst du den empfohlenen Job mit 91
+Bei Unklarheit fragt Monday nach („Meinst du den empfohlenen Job mit 91
 Prozent Match oder die zweite Stelle?") und wählt **nie** beliebig.
 
 ## 12 Ablauf einer Sprachaktion
@@ -166,7 +166,7 @@ Eingabe erfassen → Absicht und Parameter bestimmen → Verfügbarkeit
 prüfen → bei Unklarheit nachfragen → bei sensiblen Aktionen bestätigen
 lassen → kurz ankündigen → ggf. Route wechseln → Laden abwarten →
 scrollen → hervorheben → ausführen → Ergebnis verbal und schriftlich
-bestätigen → nächsten Schritt anbieten. Bei Fehlern schweigt Nina
+bestätigen → nächsten Schritt anbieten. Bei Fehlern schweigt Monday
 nicht.
 
 ## 13 Kritische Aktionen
@@ -176,7 +176,7 @@ versenden, Dokument endgültig übermitteln, Daten löschen, Account
 löschen, kostenpflichtige Buchung, Abo abschliessen oder ändern,
 persönliche Daten extern weitergeben, Termin verbindlich bestätigen,
 Bewerbung zurückziehen. Nur eindeutige Antworten zählen; bei „Ja, sieht
-gut aus" fragt Nina konkret nach.
+gut aus" fragt Monday konkret nach.
 
 ## 14 Hervorhebungen
 
@@ -197,7 +197,7 @@ Fehlt ein Ziel auf einer Bildschirmgrösse: Alternativziel oder Schritt
 
 ## 15 Nächster sinnvoller Schritt
 
-Nach jeder wichtigen Aktion berechnet Nina den nächsten Schritt aus dem
+Nach jeder wichtigen Aktion berechnet Monday den nächsten Schritt aus dem
 tatsächlichen Nutzerzustand — keine immer gleiche Standardaktion. Im
 Sprachmodus fragt sie „Soll ich dich dorthin führen?", im Textmodus
 zeigt sie einen Knopf.
@@ -270,7 +270,7 @@ eine Funktion beantworten muss, bevor sie als vollständig gilt.
 
 ## 20 Ausdrücklich unerwünscht
 
-Nina als schwebender Chatbot ohne Seitenkontext; getrennte Nina-Logik
+Monday als schwebender Chatbot ohne Seitenkontext; getrennte Monday-Logik
 je Seite; Sprachmodus, der nur Sprache in Text wandelt; Sprachmodus
 ohne echte Steuerung; Textmodus, der selbsttätig navigiert; volles
 Tutorial bei jedem Login; Mikrofon ohne Einwilligung; mehrere blinkende
@@ -290,7 +290,7 @@ H Unterbrechung mit „Stopp" und späterem „Weiter".
 ## 22 Vorgehen
 
 Erst die vorhandene Struktur analysieren (Router, globaler Zustand,
-Authentifizierung, Sprachdienst, bestehende Nina-Komponenten,
+Authentifizierung, Sprachdienst, bestehende Monday-Komponenten,
 vorhandene Sprach-, Chat-, Tour- und Highlight-Funktionen), Brauchbares
 wiederverwenden. Dann das globale Grundsystem, danach Interview und
 Jobseite, dann Job-Detail und Application Hub, dann der Rest. Echte
@@ -301,11 +301,11 @@ nicht an einem Anbieter hängt. Funktionierende Bereiche nicht unnötig
 
 ## 23 Zielbild
 
-Im Sprachmodus sagt der Nutzer, was er will; Nina versteht die Absicht,
+Im Sprachmodus sagt der Nutzer, was er will; Monday versteht die Absicht,
 führt ihn hin, hebt hervor, erklärt und schlägt den nächsten Schritt
 vor. Im Textmodus schreibt sie ruhig unten, weist hin und schlägt vor —
 gesteuert wird selbst. Der Wechsel kostet keinen Kontext. Neue Nutzer
 werden schrittweise geführt, wiederkehrende nicht belästigt.
 
-> Nicht Nina spricht mit dem Nutzer — die gesamte Velvova-Plattform
-> versteht und reagiert auf Nina.
+> Nicht Monday spricht mit dem Nutzer — die gesamte Velvova-Plattform
+> versteht und reagiert auf Monday.

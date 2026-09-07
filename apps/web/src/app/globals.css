@@ -48,7 +48,7 @@
   --color-brand: var(--primary);
   --color-brand-soft: var(--primary-soft);
 
-  /* ---- Signale: Cyan und Violett. Ninas Farben. ---- */
+  /* ---- Signale: Cyan und Violett. Mondays Farben. ---- */
   --color-cyan: var(--signal-cyan);
   --color-cyan-text: var(--signal-cyan-text);
   --color-cyan-soft: var(--signal-cyan-soft);
@@ -200,7 +200,7 @@
   --text-2xs: 0.875rem; /* 14px — Eyebrow, Label. Die Untergrenze. */
   --text-xs: 0.875rem; /* 14px — Metadaten in dichten Listen */
   --text-sm: 0.9375rem; /* 15px — UI-Standard, Buttons */
-  --text-base: 1rem; /* 16px — Fließtext und Ninas Antworten */
+  --text-base: 1rem; /* 16px — Fließtext und Mondays Antworten */
   --text-lg: 1.125rem; /* 18px — Jobtitel in der Liste */
   --text-xl: 1.375rem; /* 22px — Abschnittsüberschrift */
   --text-2xl: 1.625rem; /* 26px — Abschnittsüberschrift groß */
@@ -378,7 +378,7 @@
 
   /*
    * Glas. Ausschließlich für schwebende Ebenen: Befehlspalette,
-   * Nina-Panel, Overlays. Auf einer normalen Fläche erzeugt es nur
+   * Monday-Panel, Overlays. Auf einer normalen Fläche erzeugt es nur
    * Unschärfe ohne Aussage.
    */
   .glass {
@@ -389,7 +389,7 @@
   }
 
   /*
-   * Der Signalverlauf. Nur an vier Stellen erlaubt: Ninas aktiver
+   * Der Signalverlauf. Nur an vier Stellen erlaubt: Mondays aktiver
    * Zustand, die eine primäre Handlung, der Match-Halo, wenige
    * fokussierte Datenbilder.
    */
@@ -460,7 +460,7 @@
 @keyframes shimmer {
   100% { transform: translateX(100%); }
 }
-/* Ninas Atem: sehr langsam, sehr klein. Nie hektisch. */
+/* Mondays Atem: sehr langsam, sehr klein. Nie hektisch. */
 @keyframes nina-breathe {
   0%, 100% { transform: scale(1); opacity: 0.85; }
   50% { transform: scale(1.06); opacity: 1; }
@@ -491,7 +491,7 @@
 .animate-fade-up { animation: fade-up var(--duration-slow) var(--ease-out) both; }
 .animate-fade-in { animation: fade-in var(--duration-base) var(--ease-out) both; }
 
-/* ══ Nina Core ═══════════════════════════════════════════════
+/* ══ Monday Core ═══════════════════════════════════════════════
  *
  * Die Bewegung des Hero-Bildes. Sie liegt hier und nicht in der
  * Komponente, weil Keyframes global sein müssen — und weil die
@@ -658,7 +658,7 @@
 /* ── Aufmerksamkeit ohne Lärm ─────────────────────────────────
  *
  * Zwei Elemente sollen auffallen, ohne zu blinken: die Suche im Kopf
- * und der Knopf „Sprich weiter mit Nina".
+ * und der Knopf „Sprich weiter mit Monday".
  *
  * Beide atmen — eine langsame Bewegung von acht beziehungsweise
  * dreieinhalb Sekunden. Ein echtes Blinken zieht den Blick weg von
@@ -833,7 +833,7 @@ html {
 
 
 /*
- * Der kurze Ring um die Nina-Blase, wenn ein Knopf dorthin führt.
+ * Der kurze Ring um die Monday-Blase, wenn ein Knopf dorthin führt.
  *
  * Nur Deckkraft und ein Hauch Grösse — kein Springen, kein Farbwechsel.
  * Der Ring soll sagen „hier bin ich", nicht „sieh mich an".
@@ -865,7 +865,7 @@ html {
 /*
  * Die kleine Überschrift über einem Block.
  *
- * „NINA — ANALYSE", „GEHALT", „ANFORDERUNGEN": gesperrte Versalien in
+ * „MONDAY — ANALYSE", „GEHALT", „ANFORDERUNGEN": gesperrte Versalien in
  * kleiner Schrift, die einen Abschnitt benennen.
  *
  * ── Warum nicht mehr Laufschrift ──────────────────────────────
@@ -891,4 +891,30 @@ html {
   line-height: 1.3;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Keine Pfeilchen an Zahlenfeldern
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Der Browser malt an jedes `input[type=number]` zwei winzige Pfeile
+ * an den rechten Rand. Sie gehören ihm, nicht der Seite: eigene
+ * Farbe, eigene Grösse, eigenes Verhalten — und in einem Feld für
+ * einen Suchradius sind sie das Auffälligste, obwohl niemand einen
+ * Radius in Einerschritten hochklickt.
+ *
+ * `type="number"` bleibt trotzdem: Es holt auf dem Telefon die
+ * Zifferntastatur und weist nicht-numerische Eingaben ab. Nur die
+ * Pfeile gehen.
+ */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

@@ -1,5 +1,5 @@
 /**
- * Die Angaben, die Nina aus einem Gespräch gewinnt.
+ * Die Angaben, die Monday aus einem Gespräch gewinnt.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum diese Datei die einzige Quelle ist
@@ -22,7 +22,7 @@
  * Ein Gespräch lässt sich nicht validieren wie ein Formular. Wer nach
  * zwei Sätzen aufhört, hat einen Entwurf — keinen Fehler. `zwingend`
  * sagt deshalb nur: Ohne diese Angabe lässt sich das jeweilige
- * Ergebnis nicht veröffentlichen. Bis dahin fehlt sie, und Nina fragt
+ * Ergebnis nicht veröffentlichen. Bis dahin fehlt sie, und Monday fragt
  * danach.
  */
 
@@ -47,7 +47,7 @@ export type OnboardingFeld = {
   fuer: Ergebnis[];
   /** Ohne sie lässt sich das Ergebnis nicht veröffentlichen. */
   zwingend?: boolean;
-  /** Die Frage, die Nina stellt, wenn die Angabe fehlt. */
+  /** Die Frage, die Monday stellt, wenn die Angabe fehlt. */
   frage?: string;
   /**
    * Die Rückfrage, wenn der Wert dasteht, aber eine Entscheidung
@@ -169,7 +169,7 @@ export const FELDER: OnboardingFeld[] = [
  * Formulierungen, die nichts aussagen.
  *
  * Sie stehen in fast jeder Anzeige und bedeuten in jeder etwas
- * anderes. Nina markiert sie und verlangt die konkrete Angabe
+ * anderes. Monday markiert sie und verlangt die konkrete Angabe
  * dahinter — nicht, weil sie falsch wären, sondern weil sie an der
  * Stelle stehen, an der eine Auskunft stehen müsste.
  */

@@ -11,13 +11,13 @@ einzelnen Aufträgen im Gesprächsverlauf.
 4. Bestehende aktuelle Architektur
 5. Frühere Phasen-Prompts
 
-## Nina Interaction System — verbindlich für jede Funktion
+## Monday Interaction System — verbindlich für jede Funktion
 
-Nina ist kein Chatbot, sondern die zentrale Assistenz-, Erklärungs-,
+Monday ist kein Chatbot, sondern die zentrale Assistenz-, Erklärungs-,
 Navigations- und Steuerungsebene von Velvova.
 
 > **Jede neue oder überarbeitete Velvova-Funktion muss in das globale
-> Nina Interaction System integriert werden. Für jede interaktive
+> Monday Interaction System integriert werden. Für jede interaktive
 > Funktion ist zu prüfen, wie sie im Sprachmodus gesteuert, im
 > Textmodus erklärt, visuell hervorgehoben und als sinnvoller nächster
 > Schritt empfohlen werden kann.**
@@ -26,8 +26,8 @@ Eine Funktion gilt erst als vollständig, wenn diese zwölf Fragen
 beantwortet sind:
 
 1. Wie öffnet oder steuert der Nutzer sie per Sprache?
-2. Welche semantische Nina-Aktion gehört dazu?
-3. Wie erklärt Nina die Funktion im Textmodus?
+2. Welche semantische Monday-Aktion gehört dazu?
+3. Wie erklärt Monday die Funktion im Textmodus?
 4. Welches stabile `data-nina-target` wird verwendet?
 5. Braucht die Aktion eine Bestätigung?
 6. Was passiert bei mehrdeutiger Spracheingabe?
@@ -43,7 +43,7 @@ Sprachmodus, Textmodus, Hervorhebung, nächstem Schritt und
 Moduswechsel verbunden wurde.
 
 **Die beiden Bedienarten sind streng zu trennen:** Im Sprachmodus führt
-und steuert Nina aktiv (Seitenwechsel, Scrollen, Hervorheben, Ausführen
+und steuert Monday aktiv (Seitenwechsel, Scrollen, Hervorheben, Ausführen
 nach Zustimmung). Im Textmodus erklärt und empfiehlt sie, der Nutzer
 steuert selbst — dort keine automatische Navigation, kein automatisches
 Scrollen, kein selbsttätiges Öffnen oder Filtern.
@@ -72,7 +72,7 @@ beim Scrollen.
 Kopf für „nebensächliche" Seiten tauscht mitten in der Arbeit die
 Umgebung aus, und der Nutzer muss zurückfinden.
 
-Dasselbe gilt für Nina: Der Core wird überall gleich dargestellt.
+Dasselbe gilt für Monday: Der Core wird überall gleich dargestellt.
 
 ## Wahrhaftigkeit der Daten
 
@@ -95,7 +95,7 @@ Dasselbe gilt für Nina: Der Core wird überall gleich dargestellt.
   mit `user_id` braucht eine Zeile in `packages/db/src/rls.sql`;
   `rls-coverage.test.ts` erzwingt das.
 - Niemals protokollieren: Passwörter, Token, Schlüssel, vollständige
-  Profile, Lebenslaufinhalte, private Nina-Unterhaltungen.
+  Profile, Lebenslaufinhalte, private Monday-Unterhaltungen.
 
 ## Quellen und Bewerbungen
 

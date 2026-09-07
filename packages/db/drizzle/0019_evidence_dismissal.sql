@@ -2,7 +2,7 @@
 --
 -- Bisher gab es nur „stimmt" und „stimmt nicht". Wer eine Aussage weder
 -- bestätigen noch bestreiten wollte, hatte keinen Weg — die Fläche
--- blieb. Und was abgelehnt war, kam trotzdem zurück: Nina leitet
+-- blieb. Und was abgelehnt war, kam trotzdem zurück: Monday leitet
 -- denselben Satz aus der nächsten Nachricht erneut ab, und weil die
 -- Ablehnung an der ZEILE hing und nicht am INHALT, war die neue Zeile
 -- unbelastet.
@@ -36,5 +36,5 @@ WHERE "content_hash" IS NULL AND "statement" IS NOT NULL;
 
 -- Die Abfrage sucht „alle abgelehnten oder verworfenen Inhalte dieser
 -- Person". Ohne Index wäre das ein Durchlauf über alle Belege bei jedem
--- Seitenaufruf der Nina-Seite.
+-- Seitenaufruf der Monday-Seite.
 CREATE INDEX IF NOT EXISTS "evidence_hash_idx" ON "evidence_items" ("user_id", "content_hash");

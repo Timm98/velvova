@@ -173,7 +173,7 @@ export class TheirStackAdapter implements JobSourceAdapter {
       /*
        * Ohne Beschreibung ist eine Stelle für uns wertlos.
        *
-       * Die gesamte Einschätzung — Aufgaben, Anforderungen, Ninas
+       * Die gesamte Einschätzung — Aufgaben, Anforderungen, Mondays
        * Begründung — hängt am Text. Eine Zeile mit Titel und Firma
        * würde in der Liste stehen und beim Öffnen nichts hergeben.
        */

@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
  *
  * ── Warum das kein Selbstzweck ist ────────────────────────────
  *
- * Die Beispielrechnung auf der Startseite zeigt, was Nina bei jeder
+ * Die Beispielrechnung auf der Startseite zeigt, was Monday bei jeder
  * Stelle tut: Brutto, Steuern, Fixkosten, Fahrweg — und was am Ende
  * übrig bleibt. Als fertige Tabelle liest sich das wie ein Screenshot.
  * Läuft sie beim Heranscrollen einmal durch, sieht man, dass gerechnet

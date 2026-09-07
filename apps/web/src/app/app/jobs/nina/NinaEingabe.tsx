@@ -35,10 +35,10 @@ export function NinaEingabe({ jobId }: { jobId: string }) {
     /*
      * Die Frage geht mit der Stellenkennung ins Gespräch.
      *
-     * Ohne sie beginnt Nina auf der anderen Seite ohne Bezug, und die
+     * Ohne sie beginnt Monday auf der anderen Seite ohne Bezug, und die
      * Person müsste wiederholen, worüber sie gerade liest.
      */
-    router.push(`/app/nina?job=${jobId}&frage=${encodeURIComponent(frage)}`);
+    router.push(`/app/monday?job=${jobId}&frage=${encodeURIComponent(frage)}`);
   };
 
   return (
@@ -60,14 +60,14 @@ export function NinaEingabe({ jobId }: { jobId: string }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") absenden();
         }}
-        placeholder="Frag Nina etwas zu dieser Stelle …"
-        aria-label="Frage an Nina zu dieser Stelle"
+        placeholder="Frag Monday etwas zu dieser Stelle …"
+        aria-label="Frage an Monday zu dieser Stelle"
         className="min-w-0 flex-1 bg-transparent px-2.5 py-1 text-[13px] outline-none placeholder:text-ink-3"
       />
       <button
         type="button"
-        onClick={() => router.push(`/app/nina?job=${jobId}&modus=sprache`)}
-        aria-label="Mit Nina sprechen"
+        onClick={() => router.push(`/app/monday?job=${jobId}&modus=sprache`)}
+        aria-label="Mit Monday sprechen"
         className="grid size-7 shrink-0 place-items-center rounded-full text-ink-3 transition-colors hover:bg-soft hover:text-ink-2"
       >
         <Mic aria-hidden className="size-3.5" strokeWidth={1.9} />

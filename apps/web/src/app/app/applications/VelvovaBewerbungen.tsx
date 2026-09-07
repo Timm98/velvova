@@ -21,7 +21,7 @@ import { Zuruckziehen } from "./Zuruckziehen";
  * ── Was hier NICHT steht ──────────────────────────────────────
  *
  * Die interne Notiz des Unternehmens. Sie gehört dem Unternehmen —
- * die Gegenrichtung derselben Trennlinie, die den Nina-Chat vor dem
+ * die Gegenrichtung derselben Trennlinie, die den Monday-Chat vor dem
  * Unternehmen schützt. Eine interne Notiz, die der Bewerber lesen kann,
  * ist keine interne Notiz, und dann schreibt niemand mehr eine ehrliche.
  */

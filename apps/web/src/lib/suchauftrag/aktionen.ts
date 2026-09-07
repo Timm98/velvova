@@ -26,7 +26,7 @@ import { requireUser } from "@/lib/auth";
  * Warum alle Oberflächen hier durchgehen
  * ══════════════════════════════════════════════════════════════
  *
- * Ein Auftrag lässt sich über die Karte ändern, im Gespräch mit Nina
+ * Ein Auftrag lässt sich über die Karte ändern, im Gespräch mit Monday
  * und per Sprache. Drei Wege, die dasselbe tun sollen — und wenn jeder
  * seinen eigenen Code hat, tun sie nach dem dritten Umbau
  * Verschiedenes.
@@ -47,7 +47,7 @@ import { requireUser } from "@/lib/auth";
 export type Aktionsbefund = { ok: true } | { ok: false; grund: string };
 
 /**
- * „Diese Suche von Nina weiterführen lassen."
+ * „Diese Suche von Monday weiterführen lassen."
  *
  * Legt einen Entwurf an — mehr nicht. Die Bestätigung ist ein zweiter
  * Schritt, weil ein Klick auf einen Filter keine Aussage ist.
@@ -87,7 +87,7 @@ export async function suchauftragAusFiltern(
 /**
  * Der Satz, der zur Bestätigung angezeigt wird.
  *
- * Er zählt auf, was gilt — nicht, was Nina alles kann. Wer zustimmt,
+ * Er zählt auf, was gilt — nicht, was Monday alles kann. Wer zustimmt,
  * soll wissen, wozu.
  */
 function bestaetigungssatz(
@@ -183,7 +183,7 @@ export async function mailsAusschalten(): Promise<Aktionsbefund> {
 /**
  * „Nur noch Teilzeit." — aus dem Gespräch oder per Sprache.
  *
- * Legt einen Entwurf an und gibt den Satz zurück, mit dem Nina
+ * Legt einen Entwurf an und gibt den Satz zurück, mit dem Monday
  * nachfragt. Ändert nichts. Das ist der Unterschied zwischen einer
  * Assistenz und einem System, das mithört und entscheidet.
  *
@@ -240,7 +240,7 @@ export async function auftragAendernVorschlagen(eingabe: {
 /**
  * Der einzige laufende Auftrag — oder nichts.
  *
- * Für die Aktionen, die Nina ohne Kennung auslöst („pausiere die
+ * Für die Aktionen, die Monday ohne Kennung auslöst („pausiere die
  * Suche"). Bei mehreren fragt sie nach, statt einen zu wählen.
  */
 export async function einzigerAuftrag(): Promise<
@@ -260,7 +260,7 @@ export async function einzigerAuftrag(): Promise<
 }
 
 /**
- * „Nina, such für mich weiter nach …"
+ * „Monday, such für mich weiter nach …"
  *
  * Der Einstieg aus Chat und Sprache. Legt einen Entwurf an und gibt
  * zurück, was gälte — mehr nicht. Ein gesprochener Satz ist mehrdeutig,
@@ -446,7 +446,7 @@ export interface Trefferlage {
 }
 
 /**
- * Was Nina gefunden hat — getrennt nach Empfehlung und offener Frage.
+ * Was Monday gefunden hat — getrennt nach Empfehlung und offener Frage.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum zwei Listen und nicht eine sortierte

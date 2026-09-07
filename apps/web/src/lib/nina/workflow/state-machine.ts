@@ -2,7 +2,7 @@ import { plural } from "@paycheck/domain";
 /**
  * Der Zustandsautomat des Vorgangs.
  *
- * Er beantwortet die eine Frage, die Nina bei jedem Login stellen
+ * Er beantwortet die eine Frage, die Monday bei jedem Login stellen
  * können muss: **wo waren wir?**
  *
  * Bewusst reine Logik ohne Datenbankzugriff. Der Zustand kommt herein,
@@ -119,7 +119,7 @@ export function transition(state: WorkflowState, event: WorkflowEvent): Workflow
         "CAREER_INTERVIEW",
         "Konto eingerichtet",
         "Karrieregespräch",
-        "Erzähl Nina von einer konkreten Aufgabe der letzten zwei Jahre",
+        "Erzähl Monday von einer konkreten Aufgabe der letzten zwei Jahre",
       );
 
     case "INTERVIEW_STARTED":
@@ -158,7 +158,7 @@ export function transition(state: WorkflowState, event: WorkflowEvent): Workflow
         "JOB_SEARCH",
         `${event.clusterCount} Richtungen bestätigt`,
         "Stellen suchen",
-        "Nina sucht in den freigegebenen Quellen",
+        "Monday sucht in den freigegebenen Quellen",
       );
 
     case "SEARCH_EXECUTED":
@@ -259,7 +259,7 @@ export function transition(state: WorkflowState, event: WorkflowEvent): Workflow
 }
 
 /**
- * Der Satz, mit dem Nina ein Gespräch wieder aufnimmt.
+ * Der Satz, mit dem Monday ein Gespräch wieder aufnimmt.
  *
  * Er entsteht aus dem gespeicherten Zustand, nicht aus einer Vermutung
  * — und behauptet deshalb nie, etwas sei erledigt, wofür kein Ereignis

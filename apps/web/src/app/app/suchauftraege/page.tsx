@@ -71,9 +71,9 @@ export default async function SuchauftraegePage() {
   return (
     <div className="grid gap-8">
       <PageHeader
-        eyebrow="Nina sucht für dich weiter"
+        eyebrow="Monday sucht für dich weiter"
         title="Suchaufträge"
-        lead="Du musst deine Suche nicht jeden Tag neu beginnen. Nina führt einen bestätigten Suchauftrag weiter und meldet sich mit neuen passenden Stellen."
+        lead="Du musst deine Suche nicht jeden Tag neu beginnen. Monday führt einen bestätigten Suchauftrag weiter und meldet sich mit neuen passenden Stellen."
         actions={
           <Button asChild variant="ghost">
             <Link href="/app/jobs">Zur Stellensuche</Link>
@@ -107,7 +107,7 @@ export default async function SuchauftraegePage() {
             <h2 className="abschnitts-titel">Neu für dich gefunden</h2>
             <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
               Alle Bedingungen erfüllt, die du genannt hast. Der Satz darunter ist der Grund —
-              derselbe, den Nina in einer Mail schreiben würde.
+              derselbe, den Monday in einer Mail schreiben würde.
             </p>
           </div>
           <Trefferliste treffer={treffer.neu} art="empfehlung" />
@@ -137,7 +137,7 @@ export default async function SuchauftraegePage() {
       {/*
         Der Mailkanal steht unter den Treffern, nicht über ihnen.
 
-        Was Nina gefunden hat, ist das Ergebnis; wohin es geschickt
+        Was Monday gefunden hat, ist das Ergebnis; wohin es geschickt
         wird, ist eine Einstellung. Ein Formular ganz oben liesse die
         Seite wie eine Anmeldemaske aussehen — und wer noch nichts
         gefunden bekommen hat, soll nicht als Erstes nach seiner
@@ -161,7 +161,7 @@ export default async function SuchauftraegePage() {
           <EmptyState
             icon={<Search aria-hidden className="size-5" />}
             title="Noch kein Suchauftrag"
-            body="Stelle in der Stellensuche deine Filter ein und lass Nina diese Suche weiterführen. Sie prüft von da an neue Anzeigen dagegen — auch wenn du nicht da bist."
+            body="Stelle in der Stellensuche deine Filter ein und lass Monday diese Suche weiterführen. Sie prüft von da an neue Anzeigen dagegen — auch wenn du nicht da bist."
             action={
               <Button asChild variant="primary">
                 <Link href="/app/jobs">Suche einstellen</Link>

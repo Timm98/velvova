@@ -89,7 +89,7 @@ export interface OffeneAchse {
 }
 
 /**
- * Was Nina gelesen hat und noch niemand bestätigt hat.
+ * Was Monday gelesen hat und noch niemand bestätigt hat.
  *
  * Je Achse nur die neueste: Drei Ableitungen zur Autonomie nacheinander
  * zu bestätigen wäre dieselbe Frage dreimal, und die dritte Antwort

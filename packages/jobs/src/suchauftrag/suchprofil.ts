@@ -23,7 +23,7 @@ import { mitGrenze, type Modellrufer } from "./modell.ts";
  * Systemprompt 1 — aus einem Satz ein Suchauftrag.
  *
  * ══════════════════════════════════════════════════════════════
- * „Nina, such für mich weiter nach Lagerstellen in Karlsruhe"
+ * „Monday, such für mich weiter nach Lagerstellen in Karlsruhe"
  * ══════════════════════════════════════════════════════════════
  *
  * Das ist der Einstieg, für den es ein Modell braucht. Ein Filterklick
@@ -81,7 +81,7 @@ export interface Textbefund {
   ok: boolean;
   auftragId?: string;
   profilId?: string;
-  /** Der Satz, mit dem Nina zur Bestätigung fragt. */
+  /** Der Satz, mit dem Monday zur Bestätigung fragt. */
   bestaetigungstext?: string;
   /** Die Rückfrage, wenn etwas nicht ohne Nachfragen entschieden werden darf. */
   rueckfrage?: string | null;
@@ -695,7 +695,7 @@ function auftragsnameAus(kriterien: Bestandskriterium[]): string {
 }
 
 /**
- * Der Satz, mit dem Nina zur Bestätigung fragt.
+ * Der Satz, mit dem Monday zur Bestätigung fragt.
  *
  * Serverseitig gebaut, nicht vom Modell übernommen. `confirmation_text`
  * steht im Schema, weil der Auftrag es vorsieht — aber was gilt, weiss

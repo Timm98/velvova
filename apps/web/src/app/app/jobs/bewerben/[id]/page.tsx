@@ -54,7 +54,7 @@ export default async function BewerbenPage({ params }: { params: Promise<{ id: s
   return (
     <div className="grid max-w-[var(--measure)] gap-6">
       <div className="grid gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
           Bewerbung auf {posting.title}
         </h1>
         <p className="text-sm leading-relaxed text-ink-2">
@@ -71,7 +71,7 @@ export default async function BewerbenPage({ params }: { params: Promise<{ id: s
         </ul>
         <h2 className="mt-2 text-sm font-semibold">Was NICHT übermittelt wird</h2>
         <ul className="grid gap-1.5 text-sm leading-relaxed text-ink-2">
-          <li>dein Gespräch mit Nina — weder Inhalt noch Zusammenfassung</li>
+          <li>dein Gespräch mit Monday — weder Inhalt noch Zusammenfassung</li>
           <li>deine Lebenshaltung, dein aktuelles Gehalt, deine Steuerangaben</li>
           <li>deine anderen Bewerbungen und gespeicherten Stellen</li>
         </ul>

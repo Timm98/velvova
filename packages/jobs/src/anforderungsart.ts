@@ -29,7 +29,7 @@
  *   zwingend + nicht erlernbar → „das ist die Grenze"      (Approbation)
  *   nicht zwingend + erlernbar → „nice to have"            (ignorierbar)
  *
- * Nur mit beiden Feldern kann Nina den Satz sagen, auf den es ankommt:
+ * Nur mit beiden Feldern kann Monday den Satz sagen, auf den es ankommt:
  * „Dir fehlt eines von sieben Muss-Kriterien, und das ist ein Kurs."
  */
 
@@ -129,7 +129,7 @@ export function anforderungEinstufen(
    * Ein wörtliches „zwingend erforderlich" ist eine Tatsache über den
    * Text (95). Ein Punkt unter „Was wir uns wünschen" ist eine solide
    * Ableitung (70). Eine Zeile ganz ohne Signal ist geraten (40) — und
-   * Nina soll darauf keinen Satz bauen, der wie Gewissheit klingt.
+   * Monday soll darauf keinen Satz bauen, der wie Gewissheit klingt.
    */
   let zwingend: boolean;
   let konfidenz: number;
@@ -153,7 +153,7 @@ export function anforderungEinstufen(
      *
      * Die Alternative wäre, im Zweifel „nicht zwingend" anzunehmen. Das
      * wäre für die Bewerbenden freundlicher und für sie schlechter:
-     * Nina schickt sie zu Stellen, deren Grundbedingung sie nicht
+     * Monday schickt sie zu Stellen, deren Grundbedingung sie nicht
      * erfüllen. Die niedrige Konfidenz ist die ehrliche Hälfte davon.
      */
     zwingend = true;

@@ -28,7 +28,7 @@ export default async function EinladungPage({
   return (
     <div className="grid max-w-[var(--measure)] gap-6">
       <div className="grid gap-2">
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
           Du wurdest eingeladen
         </h1>
         <p className="text-sm leading-relaxed text-ink-2">

@@ -6,7 +6,7 @@ import { ABLEHNUNGSGRUENDE, musterErkennen } from "./musterregeln";
  *
  * Beide lesen `ABLEHNUNGSGRUENDE`. Diese Tests halten fest, dass sie
  * es weiterhin tun — der Fehler, den sie verhindern, ist ein Grund,
- * den jemand anklicken kann und auf den Nina nie reagiert.
+ * den jemand anklicken kann und auf den Monday nie reagiert.
  */
 
 const tag = (n: number) => new Date(2026, 8, n);
@@ -36,7 +36,7 @@ describe("ABLEHNUNGSGRUENDE", () => {
     /*
      * Der eigentliche Punkt dieser Datei. Ein Grund ohne Frage ist ein
      * Knopf, der nichts auslöst — die Person begründet ihre Ablehnung
-     * fünfmal, und Nina schweigt.
+     * fünfmal, und Monday schweigt.
      */
     for (const schluessel of Object.keys(ABLEHNUNGSGRUENDE)) {
       const fuenfmal = [1, 2, 3, 4, 5].map((n) => ({ grund: schluessel, erstelltAm: tag(n) }));

@@ -1,7 +1,7 @@
 "use client";
 
 import { AccountMenu } from "./AccountMenu";
-import { kontoEintraege, type KontoBeschriftungen } from "./kontoeintraege";
+import { kontoGruppen, type KontoBeschriftungen } from "./kontoeintraege";
 
 /**
  * Das Kontomenü, gebaut auf der Client-Seite.
@@ -39,12 +39,15 @@ export function Kontobereich({
   userEmail,
   bildKennung,
   labels,
+  assistent,
   onLogout,
 }: {
   userName: string | null;
   userEmail: string;
   bildKennung: string | null;
   labels: KontoBeschriftungen;
+  /** Der Name der Begleitung — steht in den Beschriftungen und im Hinweis. */
+  assistent: string;
   onLogout: React.ReactNode;
 }) {
   return (
@@ -52,7 +55,8 @@ export function Kontobereich({
       userName={userName}
       userEmail={userEmail}
       bildKennung={bildKennung}
-      items={kontoEintraege(labels)}
+      gruppen={kontoGruppen(labels, assistent)}
+      assistent={assistent}
       onLogout={onLogout}
     />
   );

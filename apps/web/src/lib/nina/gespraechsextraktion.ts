@@ -107,7 +107,7 @@ export async function bedingungenLesen(text: string): Promise<Extraktionsergebni
   try {
     provider = await selectProvider();
   } catch (fehler) {
-    /* Ohne Modell läuft das Gespräch weiter — Nina fragt dann eben
+    /* Ohne Modell läuft das Gespräch weiter — Monday fragt dann eben
        nach, statt zu lesen. Ein harter Fehler bräche ein Gespräch ab,
        das gar nicht auf das Modell angewiesen ist. */
     if (fehler instanceof AiNotConfiguredError) return { ok: false, grund: "kein_modell" };

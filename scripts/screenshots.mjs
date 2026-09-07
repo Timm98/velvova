@@ -29,7 +29,7 @@ const PUBLIC_PAGES = [
 
 const APP_PAGES = [
   ["dashboard", "/app"],
-  ["nina", "/app/nina"],
+  ["nina", "/app/monday"],
   ["jobs", "/app/jobs"],
   ["career", "/app/career"],
   ["documents", "/app/documents"],

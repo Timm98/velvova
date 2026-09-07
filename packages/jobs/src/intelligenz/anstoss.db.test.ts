@@ -171,11 +171,11 @@ describe("Was als Anstoss zählt", () => {
     expect((await anstoesse(db, person, vorher)).map((x) => x.art)).toContain("viel_angesehen");
   });
 
-  it("zählt nicht, was Nina selbst getan hat", async () => {
+  it("zählt nicht, was Monday selbst getan hat", async () => {
     /*
      * Sonst entstünde derselbe Kreis, den `urheber` in den
-     * Verhaltenssignalen verhindert: Nina merkt vor, das gilt als
-     * Aktivität, Nina rechnet neu, merkt wieder vor.
+     * Verhaltenssignalen verhindert: Monday merkt vor, das gilt als
+     * Aktivität, Monday rechnet neu, merkt wieder vor.
      */
     for (let i = 0; i < 5; i++) await ereignis("job_viewed", JETZT, "nina");
     expect(await anstoesse(db, person, vorher)).toHaveLength(0);

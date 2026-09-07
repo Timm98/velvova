@@ -40,7 +40,7 @@ export function Mailkanal({ stand }: { stand: Mailstand }) {
             E-Mail noch nicht eingerichtet
           </h3>
           <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-            Auf diesem Server geht noch keine Mail hinaus. Deine Treffer sammelt Nina trotzdem —
+            Auf diesem Server geht noch keine Mail hinaus. Deine Treffer sammelt Monday trotzdem —
             du findest sie hier, und es geht nichts verloren.
           </p>
         </div>

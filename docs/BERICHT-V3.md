@@ -1,4 +1,4 @@
-# Abschlussbericht — Paycheck / Nina, Future OS V3
+# Abschlussbericht — Paycheck / Monday, Future OS V3
 
 Branch `feature/paycheck-future-os-v3`, Stand 30. August 2026.
 
@@ -23,24 +23,24 @@ verbietet).
 | Zahlen | — | **Geist Mono**, tabellarisch |
 | Radius | 12–22 px, viele Karten | **14 px**, Flächen und Linien |
 
-Der Signalverlauf erscheint an **genau vier** Stellen: Ninas aktiver
+Der Signalverlauf erscheint an **genau vier** Stellen: Mondays aktiver
 Zustand, die eine primäre Handlung, die Faktorbalken, der Hero-Lichthof.
 
-### Nina hat eine eigene Identität
+### Monday hat eine eigene Identität
 `NinaSignal` ersetzt jedes Chatbot-Symbol: ein feiner Außenring, ein
 versetzter Bogen als Bewegungsspur, ein Kern. Vier Zustände — `idle`,
 `active`, `thinking`, `speaking` — ausschließlich über Licht
 unterschieden. Reines SVG und CSS, mit Textalternative für
 Vorlesesoftware.
 
-Kein Gesicht, keine Sprechblase: Nina ist eine Analysefähigkeit, kein
+Kein Gesicht, keine Sprechblase: Monday ist eine Analysefähigkeit, kein
 Gegenüber, und ein menschelndes Symbol würde genau das versprechen, was
 das Produkt nicht einlöst.
 
 ### Navigation reduziert
 - **Rail statt Sidebar**: 76 px, ausklappbar auf 240.
 - **Vier Bereiche**: Home, Entdecken, Bewerbungen, Karriere.
-- **Nina ist eine Handlung**: Knopf in der Topbar, auf schmalen Geräten
+- **Monday ist eine Handlung**: Knopf in der Topbar, auf schmalen Geräten
   zentral über der unteren Navigation.
 - **Nicht in der Topbar**: Sprache, Darstellung, Einstellungen,
   Abmelden. Alles im Kontomenü.
@@ -55,7 +55,7 @@ das Produkt nicht einlöst.
 /app/career                     Karriereprofil (früher /app/profile)
 /app/documents                  Dokumente
 /app/settings/profile           Konto
-/api/nina/stream                Ninas Gespräch als Ereignisstrom
+/api/nina/stream                Mondays Gespräch als Ereignisstrom
 ```
 
 **Weitergeleitet**
@@ -67,7 +67,7 @@ das Produkt nicht einlöst.
 ```
 /                Landing: eigene Komposition je Abschnitt, echte Stellen im Hero
 /app/jobs        geteilte Ansicht, Liste links, Auswahl rechts
-/app/nina        zweispaltig, klebende Signals-Spalte
+/app/monday        zweispaltig, klebende Signals-Spalte
 /app/career      Karriereprofil im neuen System
 ```
 
@@ -138,7 +138,7 @@ OPENAI_EMBEDDING_MODEL=text-embedding-3-large
 
 ### Werkzeuge
 **Zwölf Werkzeuge mit Zod-Schema.** Das ist die vollständige Liste
-dessen, was Nina verändern darf — alles andere kann sie nicht, weil es
+dessen, was Monday verändern darf — alles andere kann sie nicht, weil es
 kein Werkzeug dafür gibt. Ein Prompt ist eine Bitte; ein fehlendes
 Werkzeug ist eine Wand.
 
@@ -297,7 +297,7 @@ supabase start && supabase db reset
 
 ## 10. Bekannte Grenzen
 
-**Nina antwortet noch nicht mit einem echten Modell.** Provider,
+**Monday antwortet noch nicht mit einem echten Modell.** Provider,
 Werkzeuge, Streaming und Protokollierung sind gebaut und getestet — es
 fehlt der Schlüssel. Ohne ihn läuft der lokale Anbieter, der seine
 Antworten selbst als Beispiele kennzeichnet und **keine Werkzeuge

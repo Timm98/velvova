@@ -324,7 +324,7 @@ export function pruefeFelder(e: Anzeigenentwurf): Befund[] {
       key: "aufgaben",
       gewicht: "wichtig",
       titel: "Die Aufgaben stehen nicht getrennt da",
-      text: "Im Fliesstext gehen sie zwischen Anforderungen und Selbstbeschreibung unter. Getrennt erfassen heisst, dass Nina sie mit dem vergleichen kann, was jemand tatsächlich getan hat.",
+      text: "Im Fliesstext gehen sie zwischen Anforderungen und Selbstbeschreibung unter. Getrennt erfassen heisst, dass Monday sie mit dem vergleichen kann, was jemand tatsächlich getan hat.",
     });
   }
 
@@ -333,7 +333,7 @@ export function pruefeFelder(e: Anzeigenentwurf): Befund[] {
       key: "muss_fehlt",
       gewicht: "wichtig",
       titel: "Keine Muss-Anforderungen erfasst",
-      text: "Ohne sie kann Nina nicht unterscheiden, was wirklich unverzichtbar ist und was in der Einarbeitung erreichbar wäre.",
+      text: "Ohne sie kann Monday nicht unterscheiden, was wirklich unverzichtbar ist und was in der Einarbeitung erreichbar wäre.",
     });
   } else if (kann.length === 0) {
     b.push({

@@ -28,7 +28,7 @@ describe("runtime config", () => {
      * "none", nicht "mock".
      *
      * Der simulierte Anbieter ist ersatzlos entfallen. Ohne
-     * eingerichteten Anbieter antwortet Nina nicht — sie erfindet
+     * eingerichteten Anbieter antwortet Monday nicht — sie erfindet
      * nichts. Ein Wert namens "mock" hätte an dieser Stelle weiterhin
      * behauptet, es gäbe etwas, das antwortet.
      */
@@ -44,7 +44,7 @@ describe("runtime config", () => {
 
   it("weist Diktat im Browser nicht als vollwertige Sprachverbindung aus", () => {
     // "browser" ist eine echte, aber begrenzte Fähigkeit: Diktat auf dem
-    // Gerät, keine sprechende Nina. Als "connected" ausgewiesen wäre es
+    // Gerät, keine sprechende Monday. Als "connected" ausgewiesen wäre es
     // genau die Verwechslung, die hier verboten ist.
     const cfg = loadRuntimeConfig({ VOICE_PROVIDER: "browser" } as Env);
     expect(integrationStatus(cfg).voice).toBe("dictation-only");

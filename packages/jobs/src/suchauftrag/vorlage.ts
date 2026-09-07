@@ -195,7 +195,7 @@ export function ersatztexte(anzahl: number, auftragsname: string): {
      * Die Einleitung sagt es genau: „die zu deinen ANGABEN passt“.
      * Der Betreff stand allein im Postfach und sagte „passende
      * Stelle“ — ohne den Zusatz liest sich das als Aussage über die
-     * Person, und die können wir ohne Ninas Gespräch nicht treffen.
+     * Person, und die können wir ohne Mondays Gespräch nicht treffen.
      *
      * Eine Stelle kann die Kriterien erfüllen, ohne dass irgendjemand
      * weiss, ob sie zu diesem Menschen passt.

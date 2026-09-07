@@ -16,7 +16,7 @@
  * Warum ein Fehler hier nichts kaputtmacht
  * ══════════════════════════════════════════════════════════════
  *
- * Weil ein verlorenes Ereignis nur bedeutet, dass Nina etwas nicht
+ * Weil ein verlorenes Ereignis nur bedeutet, dass Monday etwas nicht
  * bemerkt. Das Produkt funktioniert weiter — Suche, Treffer,
  * Bewerbungen hängen an keiner dieser Meldungen. Deshalb wird hier
  * nichts wiederholt und nichts angezeigt: Eine Fehlermeldung über
@@ -49,7 +49,7 @@ let sitzungId: string | null = null;
  *
  * Weil „dieselbe Sitzung" genau das heissen soll, was der Mensch
  * darunter versteht: dieser Besuch, in diesem Tab. Ein Wert im
- * `localStorage` überlebte Wochen, und Ninas Zurückhaltung — höchstens
+ * `localStorage` überlebte Wochen, und Mondays Zurückhaltung — höchstens
  * drei Hinweise je Sitzung — gälte dann für immer.
  */
 function sitzung(): string {
@@ -91,7 +91,7 @@ async function senden(auswerten: boolean): Promise<void> {
 /**
  * Ein Ereignis melden.
  *
- * `auswerten` bittet den Server, danach zu prüfen, ob Nina etwas tun
+ * `auswerten` bittet den Server, danach zu prüfen, ob Monday etwas tun
  * möchte. Es gehört an das Ende einer Ansicht, nicht an jeden Klick.
  */
 export function melde(

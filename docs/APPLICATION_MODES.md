@@ -62,7 +62,7 @@ Person müsste im Vorstellungsgespräch dafür geradestehen, nicht wir.
 
 `applications.stage` bildet den tatsächlichen Verlauf ab: `saved`, `preparing`,
 `sent`, `acknowledged`, `interview`, `offer`, `rejected`, `withdrawn`,
-`accepted`. `rejected` und `withdrawn` sind abgeschlossen — Nina drängt dort
+`accepted`. `rejected` und `withdrawn` sind abgeschlossen — Monday drängt dort
 nicht zum Weitermachen, sondern schlägt weitere Möglichkeiten vor.
 
 ## Was fehlt

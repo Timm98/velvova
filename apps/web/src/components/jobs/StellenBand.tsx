@@ -78,7 +78,7 @@ export async function StellenBand({ anzahl = 12 }: { anzahl?: number } = {}) {
   return (
     <section aria-labelledby="neue-stellen" className="grid gap-4">
       <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-        <h2 id="neue-stellen" className="font-display text-xl font-semibold tracking-[-0.02em]">
+        <h2 id="neue-stellen" className="font-display text-xl font-normal tracking-[-0.02em]">
           Gerade dazugekommen
         </h2>
         <Link

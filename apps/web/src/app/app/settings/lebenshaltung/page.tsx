@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
  * ── Warum sie hier steht und nicht im Karriereprofil ──────────
  *
  * Weil diese Angaben privat sind in einem anderen Sinn als der Rest.
- * Aus dem Karriereprofil fliessen Dinge in Lebensläufe, in Ninas
+ * Aus dem Karriereprofil fliessen Dinge in Lebensläufe, in Mondays
  * Begründungen, in Suchrichtungen. Eine Miete, die versehentlich in
  * einem Anschreiben landet, ist ein Schaden, den keine Korrektur
  * zurückholt — und beim zweiten Mal trägt niemand mehr etwas ein.
@@ -56,7 +56,7 @@ export default async function LebenshaltungPage() {
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Lebenshaltung</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Lebenshaltung</h2>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
           Was im Monat fest weggeht. Damit kann ich sagen, was von einem Gehalt tatsächlich übrig
           bleibt — und was ein Wechsel wirklich bringt.

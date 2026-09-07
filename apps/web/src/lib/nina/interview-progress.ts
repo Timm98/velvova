@@ -5,13 +5,13 @@ import { QUESTIONS, nextStep } from "@paycheck/ai";
 /**
  * Den Interviewfortschritt aus einer freien Antwort fortschreiben.
  *
- * Das Gespräch mit Nina läuft seit dem Umbau über die Chat-Route und
+ * Das Gespräch mit Monday läuft seit dem Umbau über die Chat-Route und
  * nicht mehr über ein Formular mit fester Frage. Damit ist eine
  * Verbindung gerissen, die niemand sieht: die Sperre vor personalisierten
  * Vorschlägen zählt abgeschlossene THEMEN in `interview_sessions`, und
  * die wurden ausschließlich vom alten Formularweg gesetzt.
  *
- * Folge: man konnte beliebig lange mit Nina sprechen, und die Sperre
+ * Folge: man konnte beliebig lange mit Monday sprechen, und die Sperre
  * blieb zu. Nicht weil zu wenig gesagt wurde, sondern weil es an der
  * falschen Stelle ankam.
  *

@@ -3,7 +3,7 @@ import { schema, withUser, type Database } from "@paycheck/db";
 import { HANDLUNGEN } from "@paycheck/matching";
 
 /**
- * Warum hat Nina das gemacht?
+ * Warum hat Monday das gemacht?
  *
  * ══════════════════════════════════════════════════════════════
  * Zwei Antworten auf dieselbe Frage
@@ -155,7 +155,7 @@ function ergebnisWort(handlung: string, ergebnis: unknown): string {
  * Handlungen, die in der Regeltabelle stehen und noch nichts tun.
  *
  * Sie sind bewusst nicht gebaut: Erst müssen die vier Kernhandlungen
- * tragen. Ein Eintrag von ihnen wäre eine Zeile in „Von Nina
+ * tragen. Ein Eintrag von ihnen wäre eine Zeile in „Von Monday
  * vorbereitet", hinter der nichts steht — und genau das soll die
  * Prüfspur zeigen, statt es zu verbergen.
  */

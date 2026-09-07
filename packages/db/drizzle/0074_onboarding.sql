@@ -1,4 +1,4 @@
--- Das Nina-Onboarding: Angaben mit Herkunft.
+-- Das Monday-Onboarding: Angaben mit Herkunft.
 --
 -- ══════════════════════════════════════════════════════════════
 -- Warum jede Angabe eine eigene Zeile bekommt
@@ -11,7 +11,7 @@
 --
 -- In einem Dokument müsste diese Herkunft neben jedem Wert stehen,
 -- als verschachteltes Objekt, das keine Abfrage lesen kann. Die Frage
--- „welche Angaben hat Nina von der Website und sind noch nicht
+-- „welche Angaben hat Monday von der Website und sind noch nicht
 -- bestätigt" wäre dann ein Durchlauf durch JSON statt eine Abfrage —
 -- und genau diese Frage stellt die Oberfläche auf jeder Seite.
 --
@@ -22,7 +22,7 @@
 -- ══════════════════════════════════════════════════════════════
 --
 --   bestaetigt       ein Mensch hat es geprüft und bestätigt
---   gefunden         Nina hat es gefunden — Website, Dokument
+--   gefunden         Monday hat es gefunden — Website, Dokument
 --   abgeleitet       aus dem Gespräch geschlossen, nicht gesagt
 --   unklar           widersprüchlich oder mehrdeutig
 --   nicht_angegeben  ausdrücklich als fehlend vermerkt

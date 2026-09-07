@@ -109,7 +109,7 @@ export function GehaltBlock({
         und an anderer 3.000–7.000 „je nach Qualifikation", gibt keine
         verlässliche Zahl her. Das gehört neben die Zahl — nicht in
         eine Ansicht, die man erst öffnen muss, und schon gar nicht in
-        eine Frage an Nina, die man erst stellen muss.
+        eine Frage an Monday, die man erst stellen muss.
       */}
       {befund && befund.hinweise.length > 0 && (
         <ul className="grid gap-1 rounded-(--radius-md) border border-caution/40 bg-caution-soft px-3 py-2">

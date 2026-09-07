@@ -3,7 +3,7 @@ import { CircleHelp } from "lucide-react";
 import type { Trefferansicht } from "@/lib/suchauftrag/aktionen";
 
 /**
- * Was Nina gefunden hat.
+ * Was Monday gefunden hat.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum der Grund direkt unter dem Titel steht

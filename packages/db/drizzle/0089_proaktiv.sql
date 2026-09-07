@@ -1,9 +1,9 @@
--- Ninas Eigeninitiative: beobachten, vermuten, handeln.
+-- Mondays Eigeninitiative: beobachten, vermuten, handeln.
 --
 -- Drei Tabellen, weil es drei verschiedene Dinge sind:
 --   nutzer_ereignisse    was geschehen ist      -- Tatsache
---   verhaltenssignale    was Nina daraus liest  -- Vermutung
---   nina_handlungen      was Nina getan hat     -- Rechenschaft
+--   verhaltenssignale    was Monday daraus liest  -- Vermutung
+--   nina_handlungen      was Monday getan hat     -- Rechenschaft
 --
 -- Sie zusammenzulegen waere bequemer und wuerde die Grenze
 -- verwischen, auf die es ankommt: Ein Klick ist nachpruefbar, eine
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS "nutzer_ereignisse" (
 )
 --> statement-breakpoint
 -- Zwei offene Tabs senden dasselbe Ereignis zweimal. Ohne diesen
--- Schluessel wuerde daraus ein „mehrfach geoeffnet", und Nina merkte
+-- Schluessel wuerde daraus ein „mehrfach geoeffnet", und Monday merkte
 -- eine Stelle vor, die niemand zweimal angesehen hat.
 CREATE UNIQUE INDEX IF NOT EXISTS "nutzer_ereignisse_unique"
   ON "nutzer_ereignisse" ("user_id", "ereignis_schluessel")
@@ -98,7 +98,7 @@ CREATE INDEX IF NOT EXISTS "nina_handlungen_job_idx"
   ON "nina_handlungen" ("user_id", "job_id")
 --> statement-breakpoint
 
--- Ninas Vermutung -- getrennt von `saved_jobs` (was die Person bewusst
+-- Mondays Vermutung -- getrennt von `saved_jobs` (was die Person bewusst
 -- behalten will) und `match_feedback` (was sie ausdruecklich gesagt hat).
 CREATE TABLE IF NOT EXISTS "nina_vormerkungen" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),

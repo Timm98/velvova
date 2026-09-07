@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Was Nina auf der Seite tun darf.
+ * Was Monday auf der Seite tun darf.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das eine Liste ist und keine Sammlung von Knöpfen
@@ -36,7 +36,7 @@ import { z } from "zod";
  *                   die bestehenden Werkzeuge und deren Prüfungen.
  *
  * Die Trennung steht im Feld `wirkung`, damit die Ausführung sie nicht
- * erraten muss. Eine Oberflächenaktion darf Nina von sich aus
+ * erraten muss. Eine Oberflächenaktion darf Monday von sich aus
  * auslösen; eine Serveraktion nicht ohne ausdrückliche Zustimmung.
  */
 
@@ -93,7 +93,7 @@ export const AKTIONEN = {
   /** Eine Ansicht im rechten Panel zeigen. */
   show_panel: {
     wirkung: "oberflaeche",
-    beschreibung: "Wechselt die Ansicht im Nina-Panel rechts.",
+    beschreibung: "Wechselt die Ansicht im Monday-Panel rechts.",
     schema: z.object({ ansicht: z.enum(ANSICHTEN), jobId: KENNUNG.nullish() }),
   },
   /** Zu einem Abschnitt der Anzeige springen und ihn hervorheben. */
@@ -148,7 +148,7 @@ export const AKTIONEN = {
      nimmt jemandem seine Suche weg, der eine Nacht Ruhe wollte.
 
      `suchauftrag_aendern` legt ausdrücklich nur einen Entwurf an.
-     Eine bestätigte Bedingung ändert Nina nicht im Vorbeigehen — sie
+     Eine bestätigte Bedingung ändert Monday nicht im Vorbeigehen — sie
      zeigt, was gälte, und fragt. Das ist keine Höflichkeit: Ohne den
      Zwischenschritt liesse sich später nicht sagen, wann die Person
      zugestimmt hat. */
@@ -232,7 +232,7 @@ export type Pruefung =
 /**
  * Eine Aktion prüfen, bevor sie ausgeführt wird.
  *
- * Der Rückgabewert nennt einen Grund statt nur `false`. Nina muss der
+ * Der Rückgabewert nennt einen Grund statt nur `false`. Monday muss der
  * Person sagen können, warum etwas nicht ging — „ich kenne die Stelle
  * nicht" ist eine Antwort, ein stilles Nichts ist keine.
  */
@@ -260,7 +260,7 @@ export function aktionPruefen(name: string, args: unknown): Pruefung {
 }
 
 /**
- * Ob Nina die Aktion ohne Rückfrage auslösen darf.
+ * Ob Monday die Aktion ohne Rückfrage auslösen darf.
  *
  * Oberflächenaktionen ja: Eine Ansicht zu öffnen ist umkehrbar und
  * kostet nichts. Serveraktionen nein — auch das Merken nicht. Der

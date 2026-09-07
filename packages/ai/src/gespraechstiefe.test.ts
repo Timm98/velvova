@@ -6,7 +6,7 @@ const stufe = (n: string) => route(gespraechstiefe(n).aufgabe).tier;
 
 describe("H — triviale Fragen bleiben schnell", () => {
   const flach = [
-    "Hallo Nina",
+    "Hallo Monday",
     "Danke!",
     "Wie viele Stellen hast du für mich?",
     "Zeig mir Jobs in Stuttgart",
@@ -64,7 +64,7 @@ describe("Abwägung und Entscheidung zusammen", () => {
   it("stuft eine Frage mit nur einem Merkmal als beratend ein", () => {
     /*
      * „Soll ich wechseln?" allein ist eine Frage, keine Analyse —
-     * Nina fragt zurück, und das kann sie schnell.
+     * Monday fragt zurück, und das kann sie schnell.
      */
     const b = gespraechstiefe("Lohnt es sich, wenn ich mich dort bewerbe? Was meinst du dazu?");
     expect(b.tiefe).toBe("beratend");

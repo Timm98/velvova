@@ -1,4 +1,4 @@
--- Was Nina über einen Menschen weiss, als Ergebnis festgehalten.
+-- Was Monday über einen Menschen weiss, als Ergebnis festgehalten.
 --
 -- ══════════════════════════════════════════════════════════════
 -- Warum das gespeichert wird und nicht bei jedem Aufruf entsteht

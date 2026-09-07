@@ -7,7 +7,7 @@ await p.getByLabel("E-Mail-Adresse").fill(`kar-${Date.now()}@example.invalid`);
 await p.getByLabel("Passwort", { exact: false }).first().fill("ProbeProbe1234!");
 await p.getByRole("button", { name: /Konto anlegen/i }).click();
 await p.waitForURL(/\/(app|setup)/, { timeout: 60000 });
-await p.goto(`${B}/app/nina`, { waitUntil: "networkidle" });
+await p.goto(`${B}/app/monday`, { waitUntil: "networkidle" });
 const feld = p.locator("textarea, input[type=text]").first();
 await feld.waitFor({ timeout: 20000 });
 await feld.fill("Ich arbeite seit drei Jahren im Lager und mache dort die Schichtplanung für zwölf Leute. Das Körperliche macht mich fertig.");

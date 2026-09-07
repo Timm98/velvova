@@ -36,7 +36,7 @@ export default async function AdminBewertungenPage() {
 
   return (
     <main id="inhalt" className="mx-auto w-full max-w-[1100px] px-5 py-12 md:px-8">
-      <h1 className="font-display text-2xl font-semibold tracking-[-0.02em]">
+      <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
         Bewertungen moderieren
       </h1>
       <p className="mt-2 max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">

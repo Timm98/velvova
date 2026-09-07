@@ -85,7 +85,7 @@ export function schnellaktionen(lage: Lage): Schnellaktion[] {
    * Angaben fehlen.
    *
    * Eine leere Liste unter dieser Überschrift liest sich wie ein
-   * Versäumnis — als hätte Nina nicht nachgesehen, statt nichts
+   * Versäumnis — als hätte Monday nicht nachgesehen, statt nichts
    * gefunden zu haben.
    */
   if (lage.anzahlDagegen > 0 || lage.anzahlOffen > 0) {

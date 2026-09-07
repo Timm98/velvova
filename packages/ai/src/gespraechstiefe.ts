@@ -98,7 +98,7 @@ function treffer(text: string, muster: readonly [RegExp, string][]): string[] {
  *
  * ── Warum zwei Merkmale für die höchste Einstufung ────────────
  *
- * „Soll ich wechseln?" allein ist eine Frage, keine Analyse — Nina
+ * „Soll ich wechseln?" allein ist eine Frage, keine Analyse — Monday
  * fragt zurück, und das kann sie schnell. „Soll ich mit vier Jahren
  * Einzelhandel in die IT wechseln?" trägt Abwägung UND
  * Lebensentscheidung; da lohnt das gute Modell.

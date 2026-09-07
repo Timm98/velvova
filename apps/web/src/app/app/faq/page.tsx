@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { getPageContext } from "@/lib/locale";
 import { HILFE, HILFE_BEREICHE, sucheHilfe } from "@/lib/content/hilfe";
 import { HilfeSuche } from "../../(public)/help/HilfeSuche";
@@ -14,7 +15,7 @@ import { SupportChat } from "../../(public)/help/SupportChat";
  * Konto hat, muss die Antworten lesen können.
  *
  * Für Angemeldete war der Weg dorthin aber ein Sprung aus der
- * Anwendung heraus — Kopfzeile weg, Wege weg, Nina weg. Wer beim
+ * Anwendung heraus — Kopfzeile weg, Wege weg, Monday weg. Wer beim
  * Bewerben nicht weiterweiss, verlässt dabei genau den Ort, an dem er
  * gerade arbeitet, und muss danach zurückfinden.
  *
@@ -89,7 +90,7 @@ export default async function AppFaqSeite({
       <div className="grid gap-12">
       <header className="grid gap-4">
         <p className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">Hilfe</p>
-        <h1 className="font-display text-4xl font-semibold tracking-[-0.03em]">
+        <h1 className="font-display text-4xl font-normal tracking-[-0.02em]">
           Wobei können wir helfen?
         </h1>
         <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
@@ -114,16 +115,35 @@ export default async function AppFaqSeite({
           const eintraege = treffer.filter((e) => e.bereich === bereich);
           if (eintraege.length === 0) return null;
           return (
-            <div key={bereich} className="grid gap-4">
-              <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">{bereich}</h2>
-              <ul className="grid gap-2">
+            <div key={bereich} className="grid gap-2">
+              <h2 className="font-display text-xl font-normal tracking-[-0.02em]">{bereich}</h2>
+              {/*
+                Zeilen mit Haarlinie, keine Kästen.
+
+                Vorher trug jede Frage eine eigene gefüllte Fläche und
+                beim Aufklappen eine andere Farbe. Zwanzig Kästen
+                untereinander lesen sich als Liste von Angeboten —
+                man überfliegt sie nicht, man arbeitet sie ab.
+
+                Die Vorlage setzt dieselben Fragen als reine Zeilen:
+                Text links, Pfeil rechts, dazwischen eine Linie. Das
+                Auge läuft die Kante hinunter und hält bei dem an, was
+                es sucht. Die Fläche kommt erst beim Aufklappen, und
+                auch dann nur als leichte Aufhellung.
+              */}
+              <ul className="grid">
                 {eintraege.map((e) => (
-                  <li key={e.id}>
-                    <details className="group rounded-(--radius-lg) bg-soft px-5 py-4 transition-colors hover:bg-soft-hover open:bg-lavender">
-                      <summary className="cursor-pointer list-none text-base font-medium marker:content-none">
+                  <li key={e.id} className="border-b border-line">
+                    <details className="group">
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base transition-colors marker:content-none hover:text-accent-text">
                         {e.frage}
+                        <ChevronDown
+                          aria-hidden
+                          className="size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-180"
+                          strokeWidth={1.8}
+                        />
                       </summary>
-                      <p className="mt-3 max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
+                      <p className="max-w-[var(--measure)] pb-5 text-base leading-relaxed text-ink-2">
                         {e.antwort}
                       </p>
                     </details>
@@ -138,7 +158,7 @@ export default async function AppFaqSeite({
       <SupportChat assistantName={brand.assistantName} angemeldet />
 
       <section className="grid gap-3 rounded-(--radius-lg) bg-ice px-6 py-6">
-        <h2 className="font-display text-xl font-semibold tracking-[-0.02em]">Lieber ein Mensch?</h2>
+        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">Lieber ein Mensch?</h2>
         <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
           Wenn {brand.assistantName} nicht weiterhilft, schreib uns. Wir antworten selbst — es gibt
           keine Warteschleife und kein Ticketsystem, das dich verwaltet.

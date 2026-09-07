@@ -1,5 +1,5 @@
 /**
- * Ninas Einrichtung — Texte und Regeln für beide Kontotypen.
+ * Mondays Einrichtung — Texte und Regeln für beide Kontotypen.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum eine Datei und nicht zwei Seiten
@@ -19,12 +19,12 @@
  * Warum die Verbotsliste hier steht und nicht in der Oberfläche
  * ══════════════════════════════════════════════════════════════
  *
- * „Nina darf nicht" ist keine Beruhigung, sondern eine Zusage. Sie
+ * „Monday darf nicht" ist keine Beruhigung, sondern eine Zusage. Sie
  * gehört an dieselbe Stelle wie die Stufen, damit beim Hinzufügen
  * einer Stufe sichtbar wird, was sie nicht aufhebt.
  *
  * Keine dieser Sperren hängt an der gewählten Stufe. Das ist der
- * ganze Punkt: Wer Stufe 3 wählt, erweitert, was Nina vorbereiten
+ * ganze Punkt: Wer Stufe 3 wählt, erweitert, was Monday vorbereiten
  * darf — nicht, was sie ohne Freigabe abschicken darf.
  */
 
@@ -68,12 +68,12 @@ export const IST_ZEIT = (w: unknown): w is string =>
 /* ── Kopf ─────────────────────────────────────────────────────── */
 
 export const KOPF = {
-  eyebrow: "NINA EINRICHTEN",
-  titel: "Bevor Nina für dich loslegt.",
+  eyebrow: "MONDAY EINRICHTEN",
+  titel: "Bevor Monday für dich loslegt.",
   text:
-    "Lege kurz fest, wie du mit Nina sprechen möchtest und was sie im " +
+    "Lege kurz fest, wie du mit Monday sprechen möchtest und was sie im " +
     "Hintergrund für dich tun darf. Du kannst alles später jederzeit ändern.",
-  fortschritt: "1 von 2 · Nina einrichten",
+  fortschritt: "1 von 2 · Monday einrichten",
 };
 
 /* ── Bereich 1: Sprache oder Text ─────────────────────────────── */
@@ -85,51 +85,51 @@ export const BEDIENUNG: Record<
   arbeitnehmer: {
     titel: "Sprich einfach, wie du denkst.",
     text:
-      "Nina versteht deine Erfahrungen, Wünsche und Ziele am besten, wenn du sie frei " +
+      "Monday versteht deine Erfahrungen, Wünsche und Ziele am besten, wenn du sie frei " +
       "erklärst. Du musst nichts vorbereiten und keine perfekten Antworten formulieren. " +
-      "Nina strukturiert das Gespräch anschliessend für dich.",
+      "Monday strukturiert das Gespräch anschliessend für dich.",
     karten: [
       {
         wert: "sprache",
-        titel: "Mit Nina sprechen",
+        titel: "Mit Monday sprechen",
         badge: "Empfohlen",
-        text: "Erzähl Nina in deinen eigenen Worten, was du kannst und welche Chance du suchst.",
+        text: "Erzähl Monday in deinen eigenen Worten, was du kannst und welche Chance du suchst.",
         zusatz: "Du kannst das Gespräch jederzeit pausieren, korrigieren oder zur Texteingabe wechseln.",
       },
       {
         wert: "text",
-        titel: "Mit Nina schreiben",
-        text: "Schreibe Nina kurz, was du suchst. Sie fragt nur nach, wenn wichtige Informationen fehlen.",
+        titel: "Mit Monday schreiben",
+        text: "Schreibe Monday kurz, was du suchst. Sie fragt nur nach, wenn wichtige Informationen fehlen.",
       },
     ],
   },
   unternehmen: {
     titel: "Sprich einfach, wie du denkst.",
     text:
-      "Nina versteht euer Unternehmen und euren Personalbedarf am besten, wenn ihr frei " +
+      "Monday versteht euer Unternehmen und euren Personalbedarf am besten, wenn ihr frei " +
       "erklärt, wie ihr arbeitet und wen ihr sucht. Ihr müsst keine langen Formulare " +
-      "ausfüllen. Nina strukturiert das Gespräch anschliessend für euch.",
+      "ausfüllen. Monday strukturiert das Gespräch anschliessend für euch.",
     karten: [
       {
         wert: "sprache",
-        titel: "Mit Nina sprechen",
+        titel: "Mit Monday sprechen",
         badge: "Empfohlen",
-        text: "Erkläre Nina in deinen eigenen Worten, was euer Unternehmen macht und welche Menschen ihr sucht.",
+        text: "Erkläre Monday in deinen eigenen Worten, was euer Unternehmen macht und welche Menschen ihr sucht.",
         zusatz: "Du kannst das Gespräch jederzeit pausieren, korrigieren oder zur Texteingabe wechseln.",
       },
       {
         wert: "text",
-        titel: "Mit Nina schreiben",
-        text: "Schreibt Nina kurz, wen ihr sucht und wie ihr arbeitet. Sie fragt nur nach, wenn wichtige Informationen fehlen.",
+        titel: "Mit Monday schreiben",
+        text: "Schreibt Monday kurz, wen ihr sucht und wie ihr arbeitet. Sie fragt nur nach, wenn wichtige Informationen fehlen.",
       },
     ],
   },
 };
 
 export const SPRACHHINWEIS = {
-  titel: "So verwendet Nina deine Sprache",
+  titel: "So verwendet Monday deine Sprache",
   text:
-    "Nina wandelt deine Sprache in Text um, damit sie deine Angaben strukturieren kann. " +
+    "Monday wandelt deine Sprache in Text um, damit sie deine Angaben strukturieren kann. " +
     "Bewertet wird ausschliesslich der Inhalt deiner Antworten — nicht deine Stimme, dein " +
     "Akzent, deine Emotionen oder deine Sprechweise.",
   frage: "Was soll gespeichert werden?",
@@ -146,7 +146,7 @@ export const SPRACHHINWEIS = {
       wert: "transkript" as Sprachspeicherung,
       titel: "Transkript zusätzlich speichern",
       text:
-        "Das vollständige Gespräch bleibt in deinem privaten Nina-Verlauf verfügbar, " +
+        "Das vollständige Gespräch bleibt in deinem privaten Monday-Verlauf verfügbar, " +
         "bis du es löschst.",
     },
   ],
@@ -160,15 +160,15 @@ export const SPRACHHINWEIS = {
 
 export const HINTERGRUND: Record<Kontotyp, { titel: string; text: string }> = {
   arbeitnehmer: {
-    titel: "Soll Nina auch dann nach Chancen suchen, wenn du nicht online bist?",
+    titel: "Soll Monday auch dann nach Chancen suchen, wenn du nicht online bist?",
     text:
-      "Nina kann neue und veränderte Möglichkeiten kontinuierlich prüfen und dir später " +
+      "Monday kann neue und veränderte Möglichkeiten kontinuierlich prüfen und dir später " +
       "nur die relevantesten Ergebnisse zeigen.",
   },
   unternehmen: {
-    titel: "Soll Nina auch dann nach passenden Menschen suchen, wenn ihr nicht online seid?",
+    titel: "Soll Monday auch dann nach passenden Menschen suchen, wenn ihr nicht online seid?",
     text:
-      "Nina kann neue und aktualisierte Profile kontinuierlich prüfen und eurem Team später " +
+      "Monday kann neue und aktualisierte Profile kontinuierlich prüfen und eurem Team später " +
       "nur die relevantesten Ergebnisse zeigen.",
   },
 };
@@ -186,22 +186,22 @@ export const STUFEN: Record<Kontotyp, Stufenbeschreibung[]> = {
   arbeitnehmer: [
     {
       wert: "manual",
-      titel: "Nur suchen, wenn ich Nina öffne",
-      text: "Nina arbeitet nur, während du aktiv mit ihr arbeitest.",
+      titel: "Nur suchen, wenn ich Monday öffne",
+      text: "Monday arbeitet nur, während du aktiv mit ihr arbeitest.",
     },
     {
       wert: "observe_and_save",
       titel: "Im Hintergrund Chancen finden",
       badge: "Empfohlen",
       text:
-        "Nina prüft im Hintergrund neue Jobs, Veränderungen und mögliche Chancen. " +
+        "Monday prüft im Hintergrund neue Jobs, Veränderungen und mögliche Chancen. " +
         "Relevante Ergebnisse werden gespeichert, aber es wird nichts versendet.",
     },
     {
       wert: "prepare_and_connect",
       titel: "Vorbereiten und Verbindungen ermöglichen",
       text:
-        "Nina darf passende Chancen speichern, nächste Schritte vorbereiten und anonymes " +
+        "Monday darf passende Chancen speichern, nächste Schritte vorbereiten und anonymes " +
         "Interesse ermöglichen. Eine Bewerbung oder verbindliche Nachricht wird nur nach " +
         "deiner Freigabe versendet.",
       nachsatz:
@@ -211,22 +211,22 @@ export const STUFEN: Record<Kontotyp, Stufenbeschreibung[]> = {
   unternehmen: [
     {
       wert: "manual",
-      titel: "Nur suchen, wenn wir Nina öffnen",
-      text: "Nina arbeitet nur, während euer Team aktiv mit ihr arbeitet.",
+      titel: "Nur suchen, wenn wir Monday öffnen",
+      text: "Monday arbeitet nur, während euer Team aktiv mit ihr arbeitet.",
     },
     {
       wert: "observe_and_save",
       titel: "Im Hintergrund passende Menschen finden",
       badge: "Empfohlen",
       text:
-        "Nina prüft im Hintergrund neue und aktualisierte Kandidatenprofile. Relevante " +
+        "Monday prüft im Hintergrund neue und aktualisierte Kandidatenprofile. Relevante " +
         "Ergebnisse werden gespeichert, aber niemand wird automatisch kontaktiert.",
     },
     {
       wert: "prepare_and_connect",
       titel: "Kontakte vorbereiten und Verbindungen ermöglichen",
       text:
-        "Nina darf passende Profile speichern, Kontaktentwürfe vorbereiten und anonymes " +
+        "Monday darf passende Profile speichern, Kontaktentwürfe vorbereiten und anonymes " +
         "Interesse ermöglichen. Kandidaten werden nur innerhalb der festgelegten Regeln und " +
         "mit den erforderlichen Freigaben kontaktiert.",
       nachsatz:
@@ -235,7 +235,7 @@ export const STUFEN: Record<Kontotyp, Stufenbeschreibung[]> = {
   ],
 };
 
-/* ── Was Nina darf, je Stufe ──────────────────────────────────── */
+/* ── Was Monday darf, je Stufe ──────────────────────────────────── */
 
 const DARF: Record<Kontotyp, Record<Stufe, string[]>> = {
   arbeitnehmer: {
@@ -271,7 +271,7 @@ const DARF: Record<Kontotyp, Record<Stufe, string[]>> = {
 };
 
 /**
- * Was Nina in keiner Stufe darf.
+ * Was Monday in keiner Stufe darf.
  *
  * Diese Listen hängen ausdrücklich NICHT an der Stufe. Wer das
  * ändert, hebt eine Zusage auf, die auf der Seite steht — und sollte
@@ -310,20 +310,20 @@ export const BRIEFING: Record<
   arbeitnehmer: {
     titel: "Dein persönliches Chancen-Briefing",
     text:
-      "Nina fasst neue Chancen, wichtige Veränderungen und offene Entscheidungen für dich zusammen.",
+      "Monday fasst neue Chancen, wichtige Veränderungen und offene Entscheidungen für dich zusammen.",
     schalter: "Morning Review aktivieren",
     beispiel:
-      "Guten Morgen, Tim. Nina hat 126 neue Stellen geprüft, vier relevante Chancen " +
+      "Guten Morgen, Tim. Monday hat 126 neue Stellen geprüft, vier relevante Chancen " +
       "gespeichert und eine wichtige Veränderung erkannt.",
   },
   unternehmen: {
     titel: "Euer persönliches Recruiting-Briefing",
     text:
-      "Nina fasst neue Talente, mögliche Verbindungen und offene Recruiting-Entscheidungen " +
+      "Monday fasst neue Talente, mögliche Verbindungen und offene Recruiting-Entscheidungen " +
       "für euch zusammen.",
     schalter: "Morning Review aktivieren",
     beispiel:
-      "Guten Morgen. Nina hat 84 neue oder aktualisierte Profile geprüft, fünf passende " +
+      "Guten Morgen. Monday hat 84 neue oder aktualisierte Profile geprüft, fünf passende " +
       "Menschen gespeichert und eine mögliche Verbindung erkannt.",
   },
 };
@@ -344,27 +344,27 @@ export const KANAELE: { wert: Kanal; label: string; hinweis?: string }[] = [
 
 export const VERTRAUEN: Record<Kontotyp, string[]> = {
   arbeitnehmer: [
-    "Nina veröffentlicht nichts ohne deine Freigabe.",
+    "Monday veröffentlicht nichts ohne deine Freigabe.",
     "Du kannst jede gespeicherte Angabe prüfen und löschen.",
     "Alle Berechtigungen lassen sich später ändern.",
-    "Nina erklärt dir, warum eine Chance oder Verbindung vorgeschlagen wird.",
+    "Monday erklärt dir, warum eine Chance oder Verbindung vorgeschlagen wird.",
   ],
   unternehmen: [
-    "Nina veröffentlicht keine Stelle und trifft keine Personalentscheidung ohne menschliche Freigabe.",
+    "Monday veröffentlicht keine Stelle und trifft keine Personalentscheidung ohne menschliche Freigabe.",
     "Du kannst jede gespeicherte Angabe prüfen und löschen.",
     "Alle Berechtigungen lassen sich später ändern.",
-    "Nina erklärt dir, warum eine Chance oder Verbindung vorgeschlagen wird.",
+    "Monday erklärt dir, warum eine Chance oder Verbindung vorgeschlagen wird.",
   ],
 };
 
 export const VERWEISE = [
   { href: "/privacy", label: "Datenschutzerklärung" },
-  { href: "/app/settings/privacy#nina", label: "Wie Nina deine Daten verwendet" },
+  { href: "/app/settings/privacy#nina", label: "Wie Monday deine Daten verwendet" },
   { href: "/app/settings/privacy#berechtigungen", label: "Berechtigungen im Detail" },
 ];
 
 export const KNOEPFE = {
-  primaer: "Nina einrichten und fortfahren",
+  primaer: "Monday einrichten und fortfahren",
   sekundaer: "Ohne Hintergrundsuche fortfahren",
 };
 
@@ -379,7 +379,7 @@ const RHYTHMUSWORT: Record<Rhythmus, string> = {
 /**
  * Der Abschlusstext — aus dem Gewählten gebaut, nicht geschrieben.
  *
- * Ein fester Satz („Nina sucht ab jetzt im Hintergrund") wäre für die
+ * Ein fester Satz („Monday sucht ab jetzt im Hintergrund") wäre für die
  * Hälfte der Nutzer falsch, nämlich für alle, die Stufe 1 gewählt
  * haben. Was hier steht, muss die getroffene Wahl wiedergeben — sonst
  * ist die Bestätigung eine Behauptung.
@@ -395,8 +395,8 @@ export function abschluss(opt: {
   const firma = opt.kontotyp === "unternehmen";
 
   const reden = firma
-    ? opt.bedienart === "sprache" ? "Ihr sprecht mit Nina." : "Ihr schreibt mit Nina."
-    : opt.bedienart === "sprache" ? "Du sprichst mit Nina." : "Du schreibst mit Nina.";
+    ? opt.bedienart === "sprache" ? "Ihr sprecht mit Monday." : "Ihr schreibt mit Monday."
+    : opt.bedienart === "sprache" ? "Du sprichst mit Monday." : "Du schreibst mit Monday.";
 
   const suche =
     opt.stufe === "manual"
@@ -418,10 +418,10 @@ export function abschluss(opt: {
     : " Bewerbungen und persönliche Daten werden niemals ohne deine Freigabe versendet.";
 
   return {
-    titel: firma ? "Nina ist für euer Unternehmen eingerichtet." : "Nina ist eingerichtet.",
+    titel: firma ? "Monday ist für euer Unternehmen eingerichtet." : "Monday ist eingerichtet.",
     text: `${reden} ${suche}${briefing}${grenze}`,
     knoepfe: {
-      primaer: firma ? "Nina unser Unternehmen erklären" : "Nina erzählen, was ich suche",
+      primaer: firma ? "Monday unser Unternehmen erklären" : "Monday erzählen, was ich suche",
       sekundaer: "Später starten",
     },
   };
@@ -429,5 +429,5 @@ export function abschluss(opt: {
 
 /** Wohin es nach der Einrichtung geht. */
 export function weiterZu(kontotyp: Kontotyp): string {
-  return kontotyp === "unternehmen" ? "/business/onboarding" : "/app/nina";
+  return kontotyp === "unternehmen" ? "/business/onboarding" : "/app/monday";
 }

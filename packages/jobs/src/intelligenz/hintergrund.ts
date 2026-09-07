@@ -38,7 +38,7 @@ export const NEUE_BELEGE_AB = 5;
  * ══════════════════════════════════════════════════════════════
  *
  * Ein Lebenslauf-Upload kommt selten allein: hochladen, eine Angabe
- * korrigieren, drei Stellen ansehen, Nina schreiben — alles in zehn
+ * korrigieren, drei Stellen ansehen, Monday schreiben — alles in zehn
  * Minuten. Wer bei jedem Schritt rechnet, bezahlt fünfmal das tiefe
  * Modell für fünf fast gleiche Bilder.
  *

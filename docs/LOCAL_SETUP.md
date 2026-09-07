@@ -56,7 +56,7 @@ Die Antwort nennt auch, was **nicht** abgerufen wurde und warum:
 
 | Bereich | Ohne Schlüssel | Wie es sichtbar ist |
 | --- | --- | --- |
-| Ninas Antworten | lokaler Demo-Anbieter | Badge „Demo-Anbieter“, Hinweiskarte im Gespräch |
+| Mondays Antworten | lokaler Demo-Anbieter | Badge „Demo-Anbieter“, Hinweiskarte im Gespräch |
 | Sprachmodus | nicht verfügbar | Knopf deaktiviert, mit Begründung |
 | Adzuna, Jooble | kein Abruf | im Abrufbericht unter `skipped`, mit dem fehlenden Variablennamen |
 | Bewerbungsversand | kein Versand | „nicht verbunden“, der Vorschautext wird trotzdem erzeugt |

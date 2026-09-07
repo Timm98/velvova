@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
  * Es gibt keine eigene Preisseite mehr.
  *
  * Sie sah aus wie ein Laden — drei Kästen, ein Kaufknopf, und oben ein
- * „Zurück zu Nina", das zugab, dass man das Produkt gerade verlassen
+ * „Zurück zu Monday", das zugab, dass man das Produkt gerade verlassen
  * hatte. Preise sind aber keine Zwischenstation, sondern eine Auskunft
  * über das eigene Konto: was habe ich, was nutze ich, was kostet der
  * nächste Schritt.

@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
  *
  * ── Was hier bewusst NICHT mehr steht ─────────────────────────
  *
- * Ein Untertitel („Danach führt dich Nina durch die Karriereanalyse")
+ * Ein Untertitel („Danach führt dich Monday durch die Karriereanalyse")
  * und die Weiche „Wie möchtest du Velvova nutzen?" mit zwei Kacheln.
  *
  * Der Untertitel machte die Karte höher als die der Anmeldung, und

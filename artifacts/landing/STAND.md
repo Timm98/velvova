@@ -6,16 +6,16 @@ Stand: 2. September 2026
 
 | | vorher | jetzt |
 |---|---|---|
-| Hero-Visual | 3 lose Karten + schwebende Kugel | **eine** Komposition: Signale → Nina → Treffer, auf einer Bahn |
-| Headline | „Finde einen Job, der wirklich zu dir passt." | „Du suchst keinen Job. Nina findet den richtigen für dich." |
+| Hero-Visual | 3 lose Karten + schwebende Kugel | **eine** Komposition: Signale → Monday → Treffer, auf einer Bahn |
+| Headline | „Finde einen Job, der wirklich zu dir passt." | „Du suchst keinen Job. Monday findet den richtigen für dich." |
 | Business | fehlte vollständig | Kopfzeile, Hero-CTA, eigener Abschnitt, eigene Seite, Fusszeilenspalte |
 | Hintergründe | durchgehend hellgrau | Canvas · Weiss · Lavendel · **Dunkel** · Vollbild |
 | Bilder | keine | acht Flächen, ganzflächig und in Split-Sektionen |
 | Abschnitte | 7 | 14 |
 
-## Der Nina Core
+## Der Monday Core
 
-Drei Stationen auf einer durchgehenden Bahn — was jemand sagt, Nina, was
+Drei Stationen auf einer durchgehenden Bahn — was jemand sagt, Monday, was
 dabei herauskommt. Die Bahn ist der Punkt: Sie behauptet einen
 Zusammenhang, und der Zusammenhang ist die Produktidee.
 

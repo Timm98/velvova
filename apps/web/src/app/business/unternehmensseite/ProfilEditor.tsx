@@ -345,7 +345,7 @@ export function ProfilEditor({
           </div>
 
           {/*
-            Ninas Hinweise sind Regeln über den Text, keine Bewertung
+            Mondays Hinweise sind Regeln über den Text, keine Bewertung
             des Arbeitgebers. „Eure Homeoffice-Regel ist noch nicht
             eindeutig" sagt etwas über einen Satz; „euer Angebot ist
             nicht wettbewerbsfähig" sagt etwas über ein Unternehmen —
@@ -353,7 +353,7 @@ export function ProfilEditor({
           */}
           {hinweise.length > 0 && (
             <div className="grid gap-2.5 rounded-(--radius-md) border border-line p-4">
-              <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-ink-3">Nina merkt an</p>
+              <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-ink-3">Monday merkt an</p>
               <ul className="grid gap-2">
                 {hinweise.map((h) => (
                   <li key={h} className="text-sm leading-relaxed text-ink-2">

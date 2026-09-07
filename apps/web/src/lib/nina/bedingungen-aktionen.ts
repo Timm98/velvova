@@ -18,7 +18,7 @@ import {
  *
  * Das ist die Leitung, die gefehlt hat. `user_constraints` wurde bis
  * hierher nur vom Einrichtungsformular und vom Seed beschrieben — was
- * jemand Nina sagte, kam dort nie an. Die Jobseite schrieb deshalb „Du
+ * jemand Monday sagte, kam dort nie an. Die Jobseite schrieb deshalb „Du
  * hast keine Untergrenze festgelegt", nachdem im Gespräch eine genannt
  * worden war.
  *
@@ -98,7 +98,7 @@ async function schreibe(userId: string, c: UserConstraints): Promise<void> {
    */
   revalidatePath("/app/jobs");
   revalidatePath("/app");
-  revalidatePath("/app/nina");
+  revalidatePath("/app/monday");
 }
 
 /** Einen Vorschlag annehmen. Ab jetzt schliesst er Stellen aus. */

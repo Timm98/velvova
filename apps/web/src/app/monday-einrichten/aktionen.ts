@@ -85,7 +85,7 @@ export async function einrichtungAbschliessen(eingabe: {
  * einfach sein wie Zustimmen — deshalb ein Knopf und kein Weg durch
  * drei Auswahlfelder.
  *
- * Die Bedienart wird trotzdem gebraucht: Ohne sie wüsste Nina im
+ * Die Bedienart wird trotzdem gebraucht: Ohne sie wüsste Monday im
  * nächsten Schritt nicht, ob sie sprechen oder schreiben soll. Steht
  * keine da, gilt Text — die Fassung, die niemandem ein Mikrofon
  * abverlangt.

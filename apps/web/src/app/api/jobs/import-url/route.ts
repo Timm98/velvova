@@ -117,7 +117,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         analyse.modus === "canonical_employer_source"
           ? analyse.hinweis
           : "Von dieser Quelle rufen wir nichts ab. Die Adresse ist als privates Lesezeichen " +
-            "gespeichert. Wenn du den Anzeigentext einfügst, analysiert Nina ihn — was du selbst " +
+            "gespeichert. Wenn du den Anzeigentext einfügst, analysiert Monday ihn — was du selbst " +
             "liest und mitbringst, bleibt deine Sache und bleibt privat.",
       url: url.href,
     });

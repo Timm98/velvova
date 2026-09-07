@@ -621,7 +621,7 @@ export default async function JobsPage({
     /*
      * Kurze Etiketten statt gekürzter Sätze.
      *
-     * Hier standen `topReason` und `topReservation` — Ninas ganze
+     * Hier standen `topReason` und `topReservation` — Mondays ganze
      * Sätze, in der Zeile auf `line-clamp-1` gestutzt und damit mitten
      * im Wort abgebrochen. Die vollständigen Sätze stehen weiterhin
      * rechts im Detail, wo Platz für sie ist.
@@ -643,7 +643,7 @@ export default async function JobsPage({
   }));
 
   /*
-   * Ninas Lesart der ausgewählten Stelle.
+   * Mondays Lesart der ausgewählten Stelle.
    *
    * Einmal gerechnet, von Mitte und Panel gemeinsam benutzt. `null`,
    * solange keine Stelle gewählt ist — dann gibt es nichts zu deuten.
@@ -653,7 +653,7 @@ export default async function JobsPage({
    * Die Zukunftseinschätzung der Berufsgruppe.
    *
    * Eine Abfrage je Seitenaufbau, nur für die ausgewählte Stelle.
-   * Sie ist das, was Nina sagen kann, wenn sie über die Person zu
+   * Sie ist das, was Monday sagen kann, wenn sie über die Person zu
    * wenig weiss — dann steht dort etwas über den Beruf statt dreimal
    * „kenne dich noch nicht".
    */
@@ -776,7 +776,7 @@ export default async function JobsPage({
             </span>{" "}
             {gate.reason}{" "}
             <Link
-              href={gate.profileConfirmed ? "/app/nina" : "/app/career"}
+              href={gate.profileConfirmed ? "/app/monday" : "/app/career"}
               className="text-accent-text underline underline-offset-[3px]"
             >
               {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
@@ -789,7 +789,7 @@ export default async function JobsPage({
           Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
           erst in Felder übersetzen müssen. */}
       {/*
-        Die Suchzeile und Ninas Rückfrage gehören zusammen.
+        Die Suchzeile und Mondays Rückfrage gehören zusammen.
 
         Der Provider hält genau einen Zustand: die offene Frage oder
         keine. Er steht hier und nicht weiter oben, weil ausserhalb
@@ -806,7 +806,7 @@ export default async function JobsPage({
         
         `FilterChips` gibt `null` zurück, solange keine Bedingung
         gesetzt ist — auf einer frischen Suchseite steht hier also
-        nichts. Erst wenn jemand Nina etwas gesagt hat („Vertrieb in
+        nichts. Erst wenn jemand Monday etwas gesagt hat („Vertrieb in
         Karlsruhe, höchstens 30 Kilometer"), erscheinen genau die
         Bedingungen, die daraus wurden, und lassen sich einzeln
         zurücknehmen.
@@ -838,7 +838,7 @@ export default async function JobsPage({
 
         Sie sahen aus wie Filter, waren aber keine: Sie kamen aus dem
         Profil und nicht aus dem, was gerade gesucht wird. Unter einem
-        Feld, in das man Nina etwas schreibt, liest sich das als
+        Feld, in das man Monday etwas schreibt, liest sich das als
         Vorauswahl, die man erst wegklicken muss.
 
         Was unter der Eingabe bleibt, entsteht ausschliesslich aus dem
@@ -863,7 +863,7 @@ export default async function JobsPage({
 
         Was bleibt, ist die Reihenfolge, in der es entsteht: erst die
         Eingabe, dann die Bedingungen, die daraus wurden, als Chips
-        (`FilterChips`), dann die Richtungen, die Nina daraus ableitet
+        (`FilterChips`), dann die Richtungen, die Monday daraus ableitet
         (`Suchrichtungen`). Jeder Filter, der erscheint, hat einen
         Anlass in dem, was gerade gesucht wird — statt in einer Liste,
         die für jede Suche gleich aussieht.
@@ -947,7 +947,7 @@ export default async function JobsPage({
                     {(jobs.length + blockedCount).toLocaleString("de-DE")} neuesten passen
                   </span>
                   <span className="text-2xs text-ink-3">
-                    Nina prüft die neuesten Anzeigen, nicht den ganzen Bestand ·{" "}
+                    Monday prüft die neuesten Anzeigen, nicht den ganzen Bestand ·{" "}
                     {abdeckungssatz(abdeckung, realCount)}
                   </span>
                 </span>
@@ -974,9 +974,9 @@ export default async function JobsPage({
       {/*
         Der Provider umschliesst die ganze Spaltenaufteilung.
 
-        Nicht nur Ninas Panel: `open_job` und `filter_jobs` wirken auf
+        Nicht nur Mondays Panel: `open_job` und `filter_jobs` wirken auf
         die Liste links und die Anzeige in der Mitte. Läge der Kontext
-        nur um die rechte Spalte, könnte Nina genau das nicht — und
+        nur um die rechte Spalte, könnte Monday genau das nicht — und
         Abschnitt 6 des Auftrags verlangt es ausdrücklich.
 
         Eine Client-Komponente um serverseitig gerenderte Kinder ist
@@ -984,7 +984,7 @@ export default async function JobsPage({
         durchgereicht, nicht erneut ausgeführt.
       */}
       {/*
-        Ninas Lesart wird EINMAL gerechnet und zweimal gezeigt.
+        Mondays Lesart wird EINMAL gerechnet und zweimal gezeigt.
         
         Die Mitte zeigt die Zusammenfassung, das Panel rechts die
         Aufschlüsselung — aber es sind dieselben Zahlen aus derselben
@@ -998,7 +998,7 @@ export default async function JobsPage({
         selectedId={selected?.jobId ?? null}
         explicitSelection={Boolean(requested)}
         /*
-         * Ninas Spalte, serverseitig gefüllt.
+         * Mondays Spalte, serverseitig gefüllt.
          *
          * Die Zahlen darin — Passung, Faktoren, Gehaltsvergleich —
          * sind dieselben, die die Mitte zeigt. Sie stammen aus
@@ -1007,7 +1007,7 @@ export default async function JobsPage({
          * Zahl ist ein zweiter Stand, der auseinanderlaufen kann.
          */
         /*
-         * Das Nina-Panel wird hier nicht mehr gerendert.
+         * Das Monday-Panel wird hier nicht mehr gerendert.
          *
          * Es lief nach der Rücknahme des Drei-Spalten-Rasters über die
          * volle Breite unter beiden Spalten und war dort ein grosser
@@ -1016,7 +1016,7 @@ export default async function JobsPage({
          *
          * Die Bausteine bleiben: `NinaPanel`, `NinaPanelRahmen`, die
          * Ansichten und die Steuerung stehen bereit, sobald es eine
-         * Spalte gibt, in die sie gehören. Ninas Lesart wird weiterhin
+         * Spalte gibt, in die sie gehören. Mondays Lesart wird weiterhin
          * gerechnet — die Mitte zeigt sie als Analyse unter dem Kopf.
          */
         blaetterung={
@@ -1118,11 +1118,11 @@ export default async function JobsPage({
               
               Jetzt beides: `JobDetailPanel` mit allem, was über die
               Stelle bekannt ist, und darin `NinaAnalyse` als
-              Zusammenfassung oben. Ninas Ansichten bleiben über die
+              Zusammenfassung oben. Mondays Ansichten bleiben über die
               Blase unten rechts erreichbar.
             */}
             <JobDetailPanel
-              /* Dieselbe Lesart wie in Ninas Ansichten — eine
+              /* Dieselbe Lesart wie in Mondays Ansichten — eine
                  Rechnung, zwei Anzeigen. */
               ninaDaten={ninaLesart}
               wunschgehalt={ctx.constraints.minSalaryPerYear}
@@ -1350,7 +1350,7 @@ export default async function JobsPage({
           *
           * Der Grund für die Rückkehr: Wer bis unter die letzte Stelle
           * gescrollt hat, hat die Treffer gesehen. War nichts
-          * Passendes dabei, ist „Nina sucht weiter" die nächste
+          * Passendes dabei, ist „Monday sucht weiter" die nächste
           * sinnvolle Handlung — und die gehört vor einen Abschnitt,
           * der erklärt, wie das Produkt gedacht ist.
           */}

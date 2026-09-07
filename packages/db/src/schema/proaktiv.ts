@@ -15,15 +15,15 @@ import { jobs } from "./jobs.ts";
 import { suchAuftraege } from "./suchauftrag.ts";
 
 /**
- * Was Nina beobachtet, was sie daraus vermutet, und was sie getan hat.
+ * Was Monday beobachtet, was sie daraus vermutet, und was sie getan hat.
  *
  * ══════════════════════════════════════════════════════════════
  * Drei Tabellen, weil es drei verschiedene Dinge sind
  * ══════════════════════════════════════════════════════════════
  *
  *   nutzer_ereignisse    was geschehen ist        — Tatsache
- *   verhaltenssignale    was Nina daraus liest    — Vermutung
- *   nina_handlungen      was Nina getan hat       — Rechenschaft
+ *   verhaltenssignale    was Monday daraus liest    — Vermutung
+ *   nina_handlungen      was Monday getan hat       — Rechenschaft
  *
  * Sie zusammenzulegen wäre bequemer und würde genau die Grenze
  * verwischen, auf die es ankommt: Ein Klick ist nachprüfbar, eine
@@ -70,13 +70,13 @@ export const nutzerEreignisse = pgTable(
      * Der Kreis, den dieses Feld verhindert
      * ══════════════════════════════════════════════════════════
      *
-     * Nina merkt eine Stelle vor, weil sie Interesse vermutet. Würde
+     * Monday merkt eine Stelle vor, weil sie Interesse vermutet. Würde
      * daraus ein Ereignis entstehen, das wie eine Nutzerhandlung
-     * aussieht, bestätigte Nina ihre eigene Vermutung — beim nächsten
+     * aussieht, bestätigte Monday ihre eigene Vermutung — beim nächsten
      * Lauf stärker, beim übernächsten noch stärker.
      *
      * Am Ende stünde ein sehr starkes Signal da, dessen Belege
-     * ausschliesslich Ninas eigene Handlungen sind. Von aussen sähe
+     * ausschliesslich Mondays eigene Handlungen sind. Von aussen sähe
      * das aus wie ein Mensch mit klarem Interesse.
      *
      * Nur `user` verstärkt ein Verhaltenssignal.
@@ -86,7 +86,7 @@ export const nutzerEreignisse = pgTable(
      * Der Schlüssel gegen Doppelmeldungen.
      *
      * Zwei offene Tabs senden dasselbe Ereignis zweimal. Ohne diesen
-     * Schlüssel würde daraus ein „mehrfach geöffnet", und Nina merkte
+     * Schlüssel würde daraus ein „mehrfach geöffnet", und Monday merkte
      * eine Stelle vor, die niemand zweimal angesehen hat.
      */
     ereignisSchluessel: text("ereignis_schluessel").notNull(),
@@ -100,7 +100,7 @@ export const nutzerEreignisse = pgTable(
 );
 
 /* ═══════════════════════════════════════════════════════════════
-   Was Nina daraus liest
+   Was Monday daraus liest
    ═══════════════════════════════════════════════════════════════ */
 
 export const verhaltenssignale = pgTable(
@@ -116,7 +116,7 @@ export const verhaltenssignale = pgTable(
     /**
      * Die Ereignisse, auf die sich das Signal beruft.
      *
-     * Ohne sie könnte Nina nur behaupten. Mit ihnen kann sie sagen
+     * Ohne sie könnte Monday nur behaupten. Mit ihnen kann sie sagen
      * „du hast diese Stelle dreimal geöffnet" — und die Person kann
      * widersprechen, ohne gegen eine unbelegte Behauptung anzureden.
      */
@@ -149,7 +149,7 @@ export const verhaltenssignale = pgTable(
 );
 
 /* ═══════════════════════════════════════════════════════════════
-   Was Nina getan hat
+   Was Monday getan hat
    ═══════════════════════════════════════════════════════════════ */
 
 export const ninaHandlungen = pgTable(
@@ -163,14 +163,14 @@ export const ninaHandlungen = pgTable(
     klasse: text("klasse").notNull(),
     jobId: uuid("job_id").references(() => jobs.id, { onDelete: "cascade" }),
     auftragId: uuid("auftrag_id").references(() => suchAuftraege.id, { onDelete: "set null" }),
-    /** In der Sprache der Person — die Antwort auf „warum hat Nina das gemacht?“ */
+    /** In der Sprache der Person — die Antwort auf „warum hat Monday das gemacht?“ */
     begruendung: text("begruendung").notNull(),
     belegEreignisse: jsonb("beleg_ereignisse").$type<string[]>().notNull().default([]),
     /**
      * Nach welcher Regeltabelle gehandelt wurde.
      *
      * Ohne sie liesse sich später nicht sagen, was damals erlaubt war
-     * — und „warum hat Nina das gemacht" wäre nicht mehr beantwortbar,
+     * — und „warum hat Monday das gemacht" wäre nicht mehr beantwortbar,
      * sobald jemand die Tabelle ändert.
      */
     policyFassung: text("policy_fassung").notNull(),
@@ -193,7 +193,7 @@ export const ninaHandlungen = pgTable(
      */
     ergebnis: jsonb("ergebnis").$type<Record<string, unknown> | null>(),
     /**
-     * Wann Nina die Nachricht tatsächlich gesagt hat.
+     * Wann Monday die Nachricht tatsächlich gesagt hat.
      *
      * `erstelltAm` sagt, wann sie etwas zu sagen hatte; dieses Feld,
      * wann sie es gesagt hat. Zwischen beidem können Stunden liegen —
@@ -232,11 +232,11 @@ export const ninaHandlungen = pgTable(
 );
 
 /* ═══════════════════════════════════════════════════════════════
-   Ninas Vormerkung
+   Mondays Vormerkung
    ═══════════════════════════════════════════════════════════════ */
 
 /**
- * Was Nina vermutet — getrennt von dem, was die Person gesagt hat.
+ * Was Monday vermutet — getrennt von dem, was die Person gesagt hat.
  *
  * ══════════════════════════════════════════════════════════════
  * Warum das nicht in `saved_jobs` gehört
@@ -244,15 +244,15 @@ export const ninaHandlungen = pgTable(
  *
  * „Gespeichert" bedeutet in Velvova: Ich will diese Stelle bewusst
  * behalten. Das ist eine Aussage der Person über sich selbst, und
- * Nina kann sie nicht an ihrer Stelle treffen.
+ * Monday kann sie nicht an ihrer Stelle treffen.
  *
  * Und `match_feedback` hält bereits, was die Person ausdrücklich
- * gesagt hat — interessiert, abgelehnt, später, beworben. Ninas
+ * gesagt hat — interessiert, abgelehnt, später, beworben. Mondays
  * Vermutung dort hineinzuschreiben hiesse, eine Vermutung als Aussage
  * der Person zu führen.
  *
  * Deshalb eine eigene Tabelle mit einem eigenen Wort in der
- * Oberfläche: „Von Nina vorgemerkt", nicht „Gespeichert".
+ * Oberfläche: „Von Monday vorgemerkt", nicht „Gespeichert".
  */
 export const ninaVormerkungen = pgTable(
   "nina_vormerkungen",
@@ -300,7 +300,7 @@ export const ninaEigeninitiative = pgTable("nina_eigeninitiative", {
    * Bestandsnutzer als stillschweigend abgeschaltet zu gelten.
    */
   abgeschaltet: jsonb("abgeschaltet").$type<string[]>().notNull().default([]),
-  /** Wann Nina zuletzt von sich aus etwas gesagt hat. */
+  /** Wann Monday zuletzt von sich aus etwas gesagt hat. */
   letzteNachrichtAm: timestamp("letzte_nachricht_am", { withTimezone: true }),
   /** Wie viele proaktive Hinweise in der laufenden Sitzung schon kamen. */
   inSitzung: integer("in_sitzung").notNull().default(0),

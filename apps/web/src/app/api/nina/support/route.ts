@@ -7,7 +7,7 @@ import { currentUser } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 /**
- * Ninas Supportantwort.
+ * Mondays Supportantwort.
  *
  * Ein eigener Endpunkt, und das ist der Kern (§24.3, §29). Er teilt
  * sich mit dem Karrieregespräch weder Prompt noch Kontext noch
@@ -40,7 +40,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   /*
    * Angemeldet oder nicht — mehr wird nicht verwendet.
    *
-   * Es entscheidet nur darüber, ob Nina auf Kontoeinstellungen
+   * Es entscheidet nur darüber, ob Monday auf Kontoeinstellungen
    * verweisen darf („unter Sprache & Region") oder auf die
    * Registrierung. Der Name der Person steht bewusst nicht im Prompt:
    * er würde die Antwort nicht besser machen und wäre ein Datum mehr

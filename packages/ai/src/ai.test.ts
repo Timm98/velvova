@@ -127,7 +127,7 @@ describe("Datenminimierung vor externer Verarbeitung", () => {
 // ---------------------------------------------------------------------------
 // Systemprompt
 // ---------------------------------------------------------------------------
-describe("Ninas Systemprompt", () => {
+describe("Mondays Systemprompt", () => {
   const base = {
     locale: "de" as const,
     confirmedFacts: ["Zwei Jahre Kundenservice"],

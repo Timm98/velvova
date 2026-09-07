@@ -252,12 +252,12 @@ ${Object.keys(RAEUME).map((n) => `| \`${n}.svg\` | ${{
 }[n]} | ${{
   werkstatt: "Abschnitt „Nicht jeder weiss …“",
   logistik: "Geschichte „Ich arbeite im Lager“",
-  pflege: "Abschnitt „Nina denkt nicht in Schlagwörtern“",
-  labor: "Abschnitt „Was Nina über einen Job wissen will“",
+  pflege: "Abschnitt „Monday denkt nicht in Schlagwörtern“",
+  labor: "Abschnitt „Was Monday über einen Job wissen will“",
   buero: "Abschnitt „Wenn du dich entschieden hast“",
   gastronomie: "Zitatfläche „Vielleicht ist dein nächster Job …“",
   technik: "Abschnitt „Zwei Seiten“",
-  gestaltung: "Abschnitt „Nina bleibt“",
+  gestaltung: "Abschnitt „Monday bleibt“",
 }[n]} |`).join("\n")}
 
 ## Was ein Foto NICHT sein darf

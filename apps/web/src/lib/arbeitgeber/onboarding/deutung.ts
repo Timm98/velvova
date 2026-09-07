@@ -24,7 +24,7 @@ import type { Fund } from "./leser";
  * ══════════════════════════════════════════════════════════════
  *
  * `status: "abgeleitet"` zählt in `bewertung.ts` als halber Punkt und
- * erscheint in der Oberfläche als „Nina hat verstanden — stimmt das?“.
+ * erscheint in der Oberfläche als „Monday hat verstanden — stimmt das?“.
  * Das ist die ehrliche Beschreibung: Ein Mensch hat es nicht gesagt,
  * eine Maschine hat es geschlossen.
  *
@@ -112,7 +112,7 @@ export async function deute(opt: {
   } catch (fehler) {
     /*
      * Ohne Schlüssel läuft das Onboarding weiter — mit dem, was die
-     * Regeln gelesen haben. Nina fragt dann eben nach. Das ist der
+     * Regeln gelesen haben. Monday fragt dann eben nach. Das ist der
      * schlechtere, aber ein vollständig funktionierender Weg; ein
      * harter Fehler an dieser Stelle würde ein Gespräch abbrechen,
      * das gar nicht auf das Modell angewiesen ist.

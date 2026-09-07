@@ -183,7 +183,7 @@ unterschiedlich; ein Hash darüber findet solche Dubletten nie.
 Im Zweifel wird getrennt. Zusammenwerfen verschluckt eine echte Möglichkeit und
 ist unsichtbar; trennen macht die Liste länger und ist sichtbar.
 
-## Ninas Gedächtnis
+## Mondays Gedächtnis
 
 Der Vorgangszustand liegt in der Datenbank, nicht im Kontextfenster eines
 Modells. Deshalb überlebt er einen Neustart, einen Gerätewechsel und drei Tage

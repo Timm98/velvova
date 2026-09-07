@@ -18,27 +18,27 @@ import { useBestand } from "@/components/marketing/BestandProvider";
  * Fünf Bereiche mit Namen, mittig. Aktiv ist eine weiche Kapsel, keine
  * Unterstreichung und kein Rechteck.
  *
- * Der Nina-Knopf steht rechts als Pille. Er öffnet den Drawer, ohne die
+ * Der Monday-Knopf steht rechts als Pille. Er öffnet den Drawer, ohne die
  * Seite neu zu laden — der Zustand liegt im Provider, der über der
  * Route sitzt.
  *
- * Hier steht bewusst KEINE Nina.
+ * Hier steht bewusst KEINE Monday.
  *
  * Vorher trug der Header an drei Stellen den Signalring: als Marke, im
- * Bereich „Nina" und auf der Pille. Daneben stand auf der Gesprächs-
- * seite die echte Nina aus nina.glb — und damit sahen Menschen zwei
- * verschiedene Ninas gleichzeitig. Genau das verbietet die Vorgabe.
+ * Bereich „Monday" und auf der Pille. Daneben stand auf der Gesprächs-
+ * seite die echte Monday aus nina.glb — und damit sahen Menschen zwei
+ * verschiedene Mondays gleichzeitig. Genau das verbietet die Vorgabe.
  *
  * Der naheliegende Ausweg wäre gewesen, auch in den Header das Modell
  * zu setzen. Er ist falsch, und zwar aus derselben Vorgabe: „Das Modell
  * darf nicht als unlesbare kleine Kugel erscheinen." Bei 28 Pixeln wäre
  * es genau das — dazu ein zweiter WebGL-Kontext und 12 MB auf jeder
- * Seite, auf der niemand Nina sehen will.
+ * Seite, auf der niemand Monday sehen will.
  *
- * Also die Trennung: die GLB-Nina zeigt Nina als Gegenüber. Der Header
+ * Also die Trennung: die GLB-Monday zeigt Monday als Gegenüber. Der Header
  * zeigt WEGE — und ein Weg zu einem Gespräch wird durch ein
  * Gesprächssymbol beschrieben, nicht durch ein Gesicht. Links steht die
- * Marke Velvova, nicht Nina.
+ * Marke Velvova, nicht Monday.
  */
 
 const BEREICHE: {
@@ -56,7 +56,7 @@ const BEREICHE: {
    * angemeldet kommt eine Begrüssung dazu. Ein Weg dorthin steht
    * ohnehin schon links im Schriftzug.
    */
-  { href: "/app/nina", label: "Nina", icon: MessagesSquare },
+  { href: "/app/monday", label: "Monday", icon: MessagesSquare },
   { href: "/app/jobs", label: "Jobs", icon: Briefcase },
   { href: "/app/applications", label: "Bewerbungen", icon: FileText },
   /*
@@ -217,7 +217,20 @@ export function TopNav({
              daneben. Ab der mittleren Breite ist Platz übrig, und
              ein Schriftzug, der nicht an der Kante klebt, sitzt
              ruhiger. */
-          className="flex min-h-11 min-w-11 shrink-0 items-center gap-2.5 rounded-(--radius-pill) px-1 md:ml-6 lg:ml-12"
+          /*
+             Kein Einzug mehr nach rechts.
+             
+             Hier stand `md:ml-6 lg:ml-12` — 48 Pixel zusätzlich, damit
+             der Schriftzug „nicht an der Kante klebt". Gemessen im
+             Vergleich mit der Vorlage war das der Grund, warum der
+             Kopf breiter wirkt als der Inhalt darunter:
+             
+               Vorlage   Logo bei 269, Inhalt bei 269   bündig
+               wir       Logo bei 344, Inhalt bei 264   75 daneben
+             
+             Der Schriftzug klebt auch ohne Einzug nicht: Der Behälter
+             hat `px-5`, ab `md` `px-8`. */
+          className="flex min-h-11 min-w-11 shrink-0 items-center gap-2.5 rounded-(--radius-pill) px-1"
           aria-label={brandName}
         >
           {/*
@@ -304,17 +317,22 @@ export function TopNav({
          * grossen Abständen 57 Pixel über die Seite hinaus.
          */
         /*
-         * Linksbündig, auf einer Kante mit dem Schriftzug darüber.
+         * Mittig, symmetrisch zur Zeile darüber.
          *
-         * Vorher stand die Zeile mittig. Die Vorlage setzt sie
-         * bündig unter das Logo — gemessen beginnt der erste Weg bei
-         * x=648, das Logo bei x=646. Der Blick läuft dadurch eine
-         * Kante hinunter statt von der Mitte zur Seite und zurück.
+         * Ich hatte die Zeile linksbündig gesetzt, weil die Vorlage
+         * das so macht — gemessen beginnt dort der erste Weg bei
+         * x=648, das Logo bei x=646.
          *
-         * `lg:justify-center` fällt damit weg; die Rollbarkeit auf
-         * schmalen Geräten bleibt.
+         * Auf Ansage wieder mittig. Der Unterschied zur Vorlage ist
+         * gewollt: Dort steht rechts nur Glocke und Bild, hier steht
+         * darüber ein Suchfeld, das die Zeile ohnehin mittig teilt.
+         * Eine linksbündige Zeile darunter setzt eine zweite Kante
+         * gegen eine Mitte, die schon da ist.
+         *
+         * `justify-center` greift nur, solange Platz ist; darunter
+         * rollt die Zeile weiter seitlich.
          */
-        className="laufband mx-auto hidden w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:flex md:px-8"
+        className="laufband mx-auto hidden w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:flex md:px-8 lg:justify-center"
       >
         {/* Mehr Luft zwischen den Wegen: Ohne Symbole stehen jetzt nur
               noch Wörter da, und die brauchen Abstand, um als einzelne
@@ -421,7 +439,7 @@ export function TopNav({
  *
  * ── Warum die Zahl in der Beschriftung steht ──────────────────
  *
- * „Suchen" sagt nichts. „Finde 2.360.000 Jobs mit Hilfe von Nina"
+ * „Suchen" sagt nichts. „Finde 2.360.000 Jobs mit Hilfe von Monday"
  * sagt, wie gross der Bestand ist und wer dabei hilft — und die Zahl
  * ist echt, sie kommt aus `bestandskennzahlen`.
  */
@@ -450,8 +468,8 @@ function Kopfsuche({
 
   const zahl = lebend !== null ? lebend.toLocaleString("de-DE") : stellenzahl;
   const beschriftung = zahl
-    ? `Finde ${zahl} Jobs mit Hilfe von Nina`
-    : "Finde Jobs mit Hilfe von Nina";
+    ? `Finde ${zahl} Jobs mit Hilfe von Monday`
+    : "Finde Jobs mit Hilfe von Monday";
 
   return (
     <form
@@ -477,14 +495,14 @@ function Kopfsuche({
         className="h-[52px] w-full rounded-(--radius-pill) border border-line bg-surface pl-12 pr-14 text-[15px] text-ink placeholder:text-ink-3 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent"
       />
       {/*
-        Das Mikrofon führt zu Nina, statt hier selbst aufzunehmen.
+        Das Mikrofon führt zu Monday, statt hier selbst aufzunehmen.
         Sprechen kann man dort bereits; ein zweites Mikrofon im Kopf
         wäre eine Attrappe, solange die Spracherkennung nicht global
         angebunden ist. Der Weg stimmt, die Zusage auch.
       */}
       <Link
-        href="/app/nina"
-        aria-label="Stattdessen mit Nina sprechen"
+        href="/app/monday"
+        aria-label="Stattdessen mit Monday sprechen"
         className="absolute right-2 top-1/2 grid size-10 -translate-y-1/2 place-items-center rounded-(--radius-pill) text-ink-3 transition-colors hover:bg-soft hover:text-ink"
       >
         <Mic className="size-[19px]" strokeWidth={1.7} />

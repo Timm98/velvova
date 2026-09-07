@@ -8,7 +8,7 @@
  *
  *   **Free** beantwortet Fragen, wenn man sie stellt.
  *   **Premium** beantwortet sie gründlicher und öfter.
- *   **Max** stellt sie von selbst — Nina beobachtet, vergleicht,
+ *   **Max** stellt sie von selbst — Monday beobachtet, vergleicht,
  *   erinnert und begleitet, auch wenn niemand hinsieht.
  *
  * Das ist der einzige Unterschied, der eine dritte Spalte rechtfertigt.
@@ -29,7 +29,7 @@
  * Ein Produkt, das seine Kernaussage hinter Bezahlung stellt, kann sie
  * nicht mehr beweisen.
  *
- * Und eine Grenze, die keine Preisfrage ist: **Nina antwortet nie
+ * Und eine Grenze, die keine Preisfrage ist: **Monday antwortet nie
  * absichtlich schlechter, weil jemand Free benutzt.** Der Unterschied
  * entsteht durch Funktionen, laufende Beobachtung und zusätzliche
  * Analysen — nicht durch künstlich verschlechterte Antworten.
@@ -68,7 +68,7 @@ export const PLAENE: Record<PlanKey, Plan> = {
     claim: "Für deinen Einstieg.",
     preisMonatCent: 0,
     hauptvorteile: [
-      "Karrieregespräch mit Nina",
+      "Karrieregespräch mit Monday",
       "Persönliches Karriereprofil",
       "Jobempfehlungen mit begründeter Passung",
       "Bewerbung vorbereiten",
@@ -78,10 +78,10 @@ export const PLAENE: Record<PlanKey, Plan> = {
       {
         titel: "Gespräch und Profil",
         punkte: [
-          "Karrieregespräch mit Nina",
+          "Karrieregespräch mit Monday",
           "Persönliches Karriereprofil",
           "Bestätigte Stärken statt Selbstauskunft",
-          "Begrenzte Nutzung von Nina",
+          "Begrenzte Nutzung von Monday",
         ],
       },
       {
@@ -109,7 +109,7 @@ export const PLAENE: Record<PlanKey, Plan> = {
       "Unbegrenzte Jobvorschläge",
       "Tiefe Analyse jeder Stelle",
       "Vollständige Bewerbungsunterlagen",
-      "Live-Gespräch mit Nina",
+      "Live-Gespräch mit Monday",
       "Fristen und Nachfassen im Blick",
     ],
     gruppen: [
@@ -143,12 +143,12 @@ export const PLAENE: Record<PlanKey, Plan> = {
         ],
       },
       {
-        titel: "Mit Nina arbeiten",
+        titel: "Mit Monday arbeiten",
         punkte: [
-          "Live-Gespräch mit Nina",
-          "Nina in allen unterstützten Sprachen",
+          "Live-Gespräch mit Monday",
+          "Monday in allen unterstützten Sprachen",
           "Ausführlichere Arbeitsmarktanalysen",
-          "Persönliche Hinweise von Nina",
+          "Persönliche Hinweise von Monday",
         ],
       },
     ],
@@ -158,20 +158,20 @@ export const PLAENE: Record<PlanKey, Plan> = {
     key: "max",
     name: "Max",
     label: "Vollständige Begleitung",
-    claim: "Nina als persönlicher Career Agent.",
+    claim: "Monday als persönlicher Career Agent.",
     preisMonatCent: 1900,
     hauptvorteile: [
-      "Nina beobachtet laufend neue passende Stellen",
+      "Monday beobachtet laufend neue passende Stellen",
       "Mehrere Stellen im direkten Vergleich",
       "Karrierepfad, Skill-Lücken und Sackgassen",
       "Bewerbungsstrategie je Stelle",
-      "Interviewübung mit Nina",
+      "Interviewübung mit Monday",
     ],
     gruppen: [
       {
         titel: "Career Agent",
         punkte: [
-          "Nina beobachtet kontinuierlich passende neue Stellen",
+          "Monday beobachtet kontinuierlich passende neue Stellen",
           "Neue Chancen werden automatisch priorisiert",
           "Besonders passende Stellen werden hervorgehoben",
           "Hinweis bei relevanten Veränderungen",
@@ -210,7 +210,7 @@ export const PLAENE: Record<PlanKey, Plan> = {
       {
         titel: "Interview Coach",
         punkte: [
-          "Realistische Übungsgespräche mit Nina",
+          "Realistische Übungsgespräche mit Monday",
           "Auch als Sprachgespräch",
           "Fragen passend zur tatsächlichen Stelle",
           "Antworten gemeinsam verbessern",
@@ -220,7 +220,7 @@ export const PLAENE: Record<PlanKey, Plan> = {
       {
         titel: "Career Memory",
         punkte: [
-          "Nina behält Ziele, No-Gos und Gehaltsvorstellungen",
+          "Monday behält Ziele, No-Gos und Gehaltsvorstellungen",
           "Bestätigte Stärken und bisherige Stationen",
           "Rückmeldungen zu Vorschlägen fliessen ein",
           "Veränderte Vorlieben werden berücksichtigt",
@@ -290,7 +290,7 @@ export interface Grenzen {
   tiefenanalysenProMonat: number | null;
   /** Erzeugte Bewerbungsunterlagen je Monat. */
   dokumenteProMonat: number | null;
-  /** Nachrichten an Nina je Tag. */
+  /** Nachrichten an Monday je Tag. */
   ninaNachrichtenProTag: number | null;
   /** Wie viele Stellen gleichzeitig verglichen werden dürfen. */
   jobsImVergleich: number;
@@ -329,14 +329,14 @@ export const GRENZEN: Record<PlanKey, Grenzen> = {
 export const FREE_JOB_LIMIT = GRENZEN.free.jobsSichtbar ?? FREE_JOBS_SICHTBAR;
 
 /**
- * Worauf Nina im Produkt hinweisen darf.
+ * Worauf Monday im Produkt hinweisen darf.
  *
  * Jeder Eintrag gehört zu einem Moment, in dem eine Fähigkeit
  * tatsächlich gebraucht würde — kein Werbeplatz. Der Text sagt, was
- * Nina zusätzlich tun könnte, nicht dass jemand etwas kaufen soll.
+ * Monday zusätzlich tun könnte, nicht dass jemand etwas kaufen soll.
  *
  * Was hier nicht steht und nirgends stehen wird: künstliche Knappheit,
- * ablaufende Angebote, Erfolgsversprechen. Nina sagt nie, dass jemand
+ * ablaufende Angebote, Erfolgsversprechen. Monday sagt nie, dass jemand
  * mit einem Plan einen Job findet.
  */
 export const HINWEIS_TEXT: Record<Berechtigung, { titel: string; angebot: string }> = {

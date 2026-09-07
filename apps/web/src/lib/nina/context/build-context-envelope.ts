@@ -133,7 +133,7 @@ export async function loadWorkflowState(userId: string): Promise<WorkflowState> 
       offer: { stage: "OFFER_REVIEW", lastCompletedAction: "Angebot erhalten" },
       accepted: { stage: "HIRED", lastCompletedAction: "Angebot angenommen" },
       // Abgelehnt und zurückgezogen sind abgeschlossen, nicht offen:
-      // Nina soll hier nicht zum Weitermachen drängen.
+      // Monday soll hier nicht zum Weitermachen drängen.
       rejected: { stage: "JOB_SEARCH", lastCompletedAction: "Absage erhalten" },
       withdrawn: { stage: "JOB_SEARCH", lastCompletedAction: "Bewerbung zurückgezogen" },
     };

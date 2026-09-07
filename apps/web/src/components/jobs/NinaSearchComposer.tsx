@@ -13,20 +13,20 @@ import { deuteSuchintention } from "@/lib/jobs/suchintention";
  *
  * Vorher standen hier zwei, direkt untereinander:
  *
- *   „Beschreibe Nina, wonach du suchst …"
+ *   „Beschreibe Monday, wonach du suchst …"
  *   „Beschreib in eigenen Worten, was du suchst …"
  *
  * Zwei Felder, die dasselbe versprechen, sind nicht doppelt so
  * hilfreich — sie sind eine Frage, die man nicht beantworten kann: in
  * welches tippe ich? Die Antwort war unterschiedlich (das eine sprach
- * mit Nina, das andere setzte einen Filter), und genau das war von
+ * mit Monday, das andere setzte einen Filter), und genau das war von
  * außen nicht zu sehen.
  *
  * Jetzt eine Eingabe, die beides tut:
  *
  *   1. Der Text geht als Filter in die URL — die Liste aktualisiert
  *      sich sofort, ohne auf ein Modell zu warten.
- *   2. Derselbe Text geht an Nina, die ihn deutet und erklärt, wonach
+ *   2. Derselbe Text geht an Monday, die ihn deutet und erklärt, wonach
  *      jetzt gesucht wird.
  *
  * Die schnelle Hälfte darf nicht auf die langsame warten. Wer „Berlin"
@@ -43,7 +43,7 @@ import { deuteSuchintention } from "@/lib/jobs/suchintention";
  * ein Knopf, der nicht funktioniert hat.
  *
  * `schluessel: null` heisst „lässt sich nicht erledigen" — eine offene
- * Frage an Nina bleibt immer sinnvoll.
+ * Frage an Monday bleibt immer sinnvoll.
  */
 const BEISPIELE: { text: string; schluessel: string | null }[] = [
   { text: "Nur Stellen ab 45.000 €, wenn das Gehalt angegeben ist.", schluessel: "gehaltAb" },
@@ -143,7 +143,7 @@ export function NinaSearchComposer({
   /*
    * Der Satz wird zu einer Adresse.
    *
-   * Die von Nina gesetzten Bedingungen sind Filter, keine Suchwörter —
+   * Die von Monday gesetzten Bedingungen sind Filter, keine Suchwörter —
    * sie stehen einzeln in der URL und damit sichtbar in den Filtern
    * (§16.3). Was keine Regel erkennt, bleibt Volltext.
    *
@@ -218,7 +218,7 @@ export function NinaSearchComposer({
    *
    * ── Was hier vorher passierte ─────────────────────────────
    *
-   * „Nur Stellen ab 45.000 €" öffnete den vollen Nina-Drawer, schickte
+   * „Nur Stellen ab 45.000 €" öffnete den vollen Monday-Drawer, schickte
    * den Satz an das Modell und liess einen Gesprächsverlauf entstehen.
    * Für eine Einstellung, die in zwei Wörtern verstanden ist.
    *
@@ -230,11 +230,11 @@ export function NinaSearchComposer({
    *   verstanden  → Filter setzen, Feld leeren, kurze Bestätigung
    *   unklar      → kleine Rückfrage an derselben Stelle
    *
-   * Der Drawer öffnet nur noch auf ausdrückliche Handlung — „Mit Nina
+   * Der Drawer öffnet nur noch auf ausdrückliche Handlung — „Mit Monday
    * besprechen" oder das Gesprächssymbol.
    */
   /**
-   * Absenden heisst: Nina legt die Zeile aus — mit Zusammenhang.
+   * Absenden heisst: Monday legt die Zeile aus — mit Zusammenhang.
    *
    * ══════════════════════════════════════════════════════════════
    * Was sich gegenüber dem reinen Regelabgleich ändert
@@ -379,7 +379,7 @@ export function NinaSearchComposer({
        * Die Rückfrage geht ins Fenster unten rechts — nicht hierher.
        *
        * Zwei Dinge an derselben Stelle wären eine Unterhaltung im
-       * Suchfeld. Unten rechts ist der Ort für Ninas Fragen, und dort
+       * Suchfeld. Unten rechts ist der Ort für Mondays Fragen, und dort
        * gilt: eine Frage, eine Antwort, dann zu.
        */
       if (d.rueckfrage) dialog.stelle(d.rueckfrage);
@@ -426,7 +426,7 @@ export function NinaSearchComposer({
    * Die Plättchen unter dem Feld sind entfernt (siehe unten). Die
    * Liste und diese Auswahl bleiben stehen: Sie kosten nichts, und
    * falls die Vorschläge an anderer Stelle wieder auftauchen sollen
-   * — etwa erst nach einer Rückfrage von Nina —, ist es eine Zeile.
+   * — etwa erst nach einer Rückfrage von Monday —, ist es eine Zeile.
    */
   const offeneBeispiele = BEISPIELE.filter(
     (b) => b.schluessel === null || !params.get(b.schluessel),
@@ -444,7 +444,7 @@ export function NinaSearchComposer({
           "focus-within:shadow-[0_0_0_2px_var(--primary),0_10px_32px_rgba(101,93,255,0.16)]",
         )}
       >
-        {/* Ein Gesprächssymbol, keine zweite Nina. Die echte Nina hat
+        {/* Ein Gesprächssymbol, keine zweite Monday. Die echte Monday hat
             ein Modell; ein Ring davor wäre eine konkurrierende
             Darstellung derselben Figur. */}
         <MessagesSquare className="size-[18px] shrink-0 text-accent" strokeWidth={1.9} aria-hidden />
@@ -536,7 +536,7 @@ export function NinaSearchComposer({
            *
            * Ein Kasten ist ein Ding auf der Seite; er hat Kanten,
            * Abstände und einen Platz, den er belegt, auch wenn er
-           * nichts sagt. Eine Zeile ist eine Bemerkung. Was Nina
+           * nichts sagt. Eine Zeile ist eine Bemerkung. Was Monday
            * gerade tut, ist eine Bemerkung.
            *
            * ── Und warum sie blau ist und nicht grau ───────────────
@@ -600,7 +600,7 @@ export function NinaSearchComposer({
         Karlsruhe", „mindestens 60.000 Euro" und ähnliche, anklickbar
         als Starthilfe.
 
-        Sie sind weg. Unter einem Feld, in das man Nina in eigenen
+        Sie sind weg. Unter einem Feld, in das man Monday in eigenen
         Worten schreibt, sind vorformulierte Sätze eine Vorauswahl:
         Man liest sie, statt zu überlegen, was man selbst sucht — und
         antwortet dann in der Form, die dort steht. Genau das soll

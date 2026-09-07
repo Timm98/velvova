@@ -27,7 +27,7 @@ import { zustandLaden, nachrichtVermerken } from "./einstellungen.ts";
 import { analyselageLaden, klaerungsstaendeLaden, stellenlageLaden } from "./erkenntnislage.ts";
 
 /**
- * Ein Durchgang von Ninas Eigeninitiative.
+ * Ein Durchgang von Mondays Eigeninitiative.
  *
  * ══════════════════════════════════════════════════════════════
  * Ohne Modellaufruf
@@ -64,7 +64,7 @@ export interface Proaktivbefund {
   signale: number;
   gelegenheiten: number;
   ausgefuehrt: number;
-  /** Davon ohne Nachricht — Nina hat gearbeitet, aber nichts gesagt. */
+  /** Davon ohne Nachricht — Monday hat gearbeitet, aber nichts gesagt. */
   still: number;
   vorgeschlagen: number;
   /** Wie viele Meldungen daraus entstanden. Höchstens eine je Art. */
@@ -97,7 +97,7 @@ const LEER: Proaktivbefund = {
  * Beides sind Antworten der Person. Sie durch einen neuen Lauf auf
  * `inferred` zurückzusetzen hiesse, ihr Wort gegen frische
  * Beobachtungen einzutauschen — und zwar lautlos, denn nach aussen
- * sähe es aus, als hätte Nina einfach neu nachgedacht.
+ * sähe es aus, als hätte Monday einfach neu nachgedacht.
  */
 async function signalSchreiben(
   db: Database,
@@ -158,7 +158,7 @@ async function signalSchreiben(
  * Ob dieselbe Handlung schon offen oder erledigt dasteht.
  *
  * Ohne diese Frage entstünde bei jedem Lauf eine neue Zeile für
- * dieselbe Beobachtung — und in „Von Nina automatisch" stünde
+ * dieselbe Beobachtung — und in „Von Monday automatisch" stünde
  * fünfmal dasselbe.
  */
 async function schonDa(
@@ -244,7 +244,7 @@ async function handlungSchreiben(
  * Weil die anderen acht automatischen Handlungen noch keine Wirkung
  * haben — Vergleiche, Gruppierungen, offene Fragen kommen später.
  * Eine Handlung ohne Wirkung zu schreiben wäre ein Eintrag in „Von
- * Nina automatisch", hinter dem nichts steht.
+ * Monday automatisch", hinter dem nichts steht.
  *
  * Deshalb: Was hier keinen Zweig hat, wird gar nicht erst zur
  * Gelegenheit. Die Prüfung dafür steht in `gelegenheitenAusSignalen`.
@@ -288,7 +288,7 @@ async function wirkungAusfuehren(
    * an sie gedacht wurde.
    *
    * Bei `treffer_melden` IST die Nachricht die ganze Wirkung: Die
-   * Stellen stehen ohnehin in der Liste, Nina sagt nur, dass
+   * Stellen stehen ohnehin in der Liste, Monday sagt nur, dass
    * ungewöhnlich gute dabei sind. Sie zusätzlich zu verschieben oder
    * zu markieren wäre eine Änderung an der Reihenfolge, die niemand
    * verlangt hat.
@@ -304,7 +304,7 @@ async function wirkungAusfuehren(
  *
  * ── Warum vorher und nicht nachher ────────────────────────────
  *
- * Weil eine Handlung ohne Ergebnis ein Eintrag in „Von Nina
+ * Weil eine Handlung ohne Ergebnis ein Eintrag in „Von Monday
  * automatisch" wäre, hinter dem nichts steht. Gibt es nichts zu
  * zeigen — keine offene Frage, kein Unterschied zwischen den Stellen
  * —, entsteht die Handlung gar nicht erst.
@@ -439,7 +439,7 @@ export async function proaktivLauf(
    * ══════════════════════════════════════════════════════════════
    *
    * Bis eben brach der Lauf ab, wenn es keine Ereignisse gab: keine
-   * Klicks, nichts zu tun. Das galt, solange Nina nur Klicks kannte.
+   * Klicks, nichts zu tun. Das galt, solange Monday nur Klicks kannte.
    *
    * Seit der Intelligenzschicht ist es falsch. Ein Widerspruch
    * zwischen einer Aussage und dem bisherigen Verhalten entsteht aus
@@ -534,7 +534,7 @@ export async function proaktivLauf(
    *
    * Die erste Fassung entschied je Gelegenheit einzeln, ob geredet
    * wird. Bei zwei Vormerkungen, einem Vergleich und zwei
-   * Fragenlisten hätte Nina in einem Durchgang bis zu fünfmal etwas
+   * Fragenlisten hätte Monday in einem Durchgang bis zu fünfmal etwas
    * gesagt — für einen Vorgang.
    *
    * Jetzt läuft es in zwei Runden. Erst werden alle Handlungen
@@ -555,7 +555,7 @@ export async function proaktivLauf(
     }
 
     /*
-     * Nur was Nina selbst tun darf, geht stumm in die Prüfung.
+     * Nur was Monday selbst tun darf, geht stumm in die Prüfung.
      *
      * Für diese Handlungen entsteht die Nachricht erst am Ende, aus
      * allen zusammen — die Sprechpausen gelten dann ihr, nicht der
@@ -646,7 +646,7 @@ export async function proaktivLauf(
     const istDieFrage = gefragt !== null && v.freigabe.handlung === gefragt.handlung;
     /*
      * Die wartenden Fragen gehen nicht verloren. Sie stehen als
-     * Vorschlag ohne Nachricht in „Von Nina vorbereitet“ — und nach
+     * Vorschlag ohne Nachricht in „Von Monday vorbereitet“ — und nach
      * einer Antwort wird neu bewertet, welche davon noch gilt.
      */
     const id = await handlungSchreiben(

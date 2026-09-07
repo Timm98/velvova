@@ -7,10 +7,10 @@ import {
   berechtigungen, BRIEFING, KANAELE, RHYTHMEN, STUFEN,
   type Bedienart, type Kanal, type Kontotyp, type Rhythmus, type Sprachspeicherung, type Stufe,
 } from "@/lib/nina/einrichtung/texte";
-import { einstellungAendern, hintergrundAbschalten } from "@/app/nina-einrichten/aktionen";
+import { einstellungAendern, hintergrundAbschalten } from "@/app/monday-einrichten/aktionen";
 
 /**
- * Nina im Privacy Center.
+ * Monday im Privacy Center.
  *
  * ── Warum dieselben Texte wie bei der Einrichtung ─────────────
  *
@@ -88,23 +88,23 @@ export function NinaBereich({ start }: { start: Stand }) {
   return (
     <section id="nina" className="grid gap-5 scroll-mt-24">
       <div className="grid gap-1.5">
-        <h2 className="text-lg font-semibold text-ink">Nina</h2>
+        <h2 className="text-lg font-semibold text-ink">Monday</h2>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-          Wie du mit Nina arbeitest und was sie im Hintergrund tun darf. Änderungen
+          Wie du mit Monday arbeitest und was sie im Hintergrund tun darf. Änderungen
           gelten ab sofort, nicht erst beim nächsten Anmelden.
         </p>
       </div>
 
       {stand.widerrufenAm && (
         <p className="rounded-(--radius-md) bg-caution-soft px-3 py-2 text-sm text-caution-text">
-          Du hast die Hintergrundsuche widerrufen. Nina arbeitet nur noch, wenn du sie öffnest.
+          Du hast die Hintergrundsuche widerrufen. Monday arbeitet nur noch, wenn du sie öffnest.
         </p>
       )}
 
       {/* ── Sprache oder Text ─────────────────────────────── */}
       <fieldset className="grid gap-2">
         <legend className="pb-1 text-2xs font-medium uppercase tracking-wider text-ink-3">
-          So arbeitest du mit Nina
+          So arbeitest du mit Monday
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {(["sprache", "text"] as Bedienart[]).map((b) => (
@@ -120,7 +120,7 @@ export function NinaBereich({ start }: { start: Stand }) {
                 onChange={() => speichern({ bedienart: b })} disabled={laeuft}
                 className="h-4 w-4 accent-[var(--accent)]"
               />
-              {b === "sprache" ? "Mit Nina sprechen" : "Mit Nina schreiben"}
+              {b === "sprache" ? "Mit Monday sprechen" : "Mit Monday schreiben"}
             </label>
           ))}
         </div>
@@ -189,7 +189,7 @@ export function NinaBereich({ start }: { start: Stand }) {
       {rechte && (
         <div className="grid gap-3 rounded-(--radius-md) border border-line-3 p-4 sm:grid-cols-2">
           <div className="grid content-start gap-1.5">
-            <h3 className="text-2xs font-medium uppercase tracking-wider text-ink-3">Nina darf</h3>
+            <h3 className="text-2xs font-medium uppercase tracking-wider text-ink-3">Monday darf</h3>
             <ul className="grid gap-1">
               {rechte.darf.map((d) => (
                 <li key={d} className="flex gap-2 text-2xs text-ink">
@@ -199,7 +199,7 @@ export function NinaBereich({ start }: { start: Stand }) {
             </ul>
           </div>
           <div id="berechtigungen" className="grid content-start gap-1.5 scroll-mt-24">
-            <h3 className="text-2xs font-medium uppercase tracking-wider text-ink-3">Nina darf nicht</h3>
+            <h3 className="text-2xs font-medium uppercase tracking-wider text-ink-3">Monday darf nicht</h3>
             <ul className="grid gap-1">
               {rechte.niemals.map((n) => (
                 <li key={n} className="flex gap-2 text-2xs text-ink">
@@ -289,7 +289,7 @@ export function NinaBereich({ start }: { start: Stand }) {
         <div className="grid gap-2 rounded-(--radius-md) border border-line-3 p-4">
           <p className="text-sm text-ink">Hintergrundsuche beenden</p>
           <p className="max-w-[var(--measure)] text-2xs text-ink-2">
-            Nina startet dann keine neuen Läufe mehr und erstellt keine Briefings.
+            Monday startet dann keine neuen Läufe mehr und erstellt keine Briefings.
             Bereits gespeicherte Ergebnisse bleiben erhalten — du entscheidest getrennt,
             ob du sie behalten oder löschen willst.
           </p>
