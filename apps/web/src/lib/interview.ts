@@ -76,18 +76,46 @@ export async function loadInterview(): Promise<InterviewView> {
   const db = await getDb();
   const cfg = loadRuntimeConfig();
 
-  const sessionRow = await ensureSession(user.id, user.locale);
-
-  const [turns, evidence] = await withUser(db, user.id, async (tx) => [
-    await tx
-      .select()
-      .from(schema.interviewTurns)
-      .where(eq(schema.interviewTurns.sessionId, sessionRow.id))
-      .orderBy(asc(schema.interviewTurns.index)),
-    await tx
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die Belege warten nicht auf die Sitzung
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier lief alles hintereinander: erst `ensureSession`, dann eine
+   * zweite Transaktion mit zwei `await` — Gesprächszüge, danach
+   * Belege. Vier Abfragen in zwei Transaktionen, alle nacheinander.
+   *
+   * Nur EINE dieser Abhängigkeiten ist echt: Die Gesprächszüge
+   * brauchen die Sitzungskennung. Die Belege hängen an der
+   * Nutzerkennung und hätten die ganze Zeit schon unterwegs sein
+   * können.
+   *
+   * Gemessen war `loadInterview` mit 750 Millisekunden der längste
+   * Einzelposten der Gesprächsseite — nicht wegen Rechenarbeit,
+   * sondern weil jede Transaktion vier Netzrunden gegen Supabase
+   * kostet und keine davon überlappte.
+   *
+   * Jetzt laufen Belege und Sitzung nebeneinander; nur die
+   * Gesprächszüge warten, weil sie müssen.
+   */
+  const belegeUnterwegs = withUser(db, user.id, (tx) =>
+    tx
       .select()
       .from(schema.evidenceItems)
       .where(and(eq(schema.evidenceItems.userId, user.id), isNull(schema.evidenceItems.deletedAt))),
+  );
+
+  const sessionRow = await ensureSession(user.id, user.locale);
+
+  const [turns, evidence] = await Promise.all([
+    withUser(db, user.id, (tx) =>
+      tx
+        .select()
+        .from(schema.interviewTurns)
+        .where(eq(schema.interviewTurns.sessionId, sessionRow.id))
+        .orderBy(asc(schema.interviewTurns.index)),
+    ),
+    belegeUnterwegs,
   ]);
 
   const session = toInterviewSession(sessionRow)!;

@@ -212,40 +212,52 @@ async function Stellenliste({
     ladeSitzungsbedingungen(),
   ]);
 
-  const [gate, ctx, [saved, abgelegt, wohnzeile, gehaltsangaben, lebenshaltung, gemerkt]] =
+  const [gate, ctx, [saved, wohnzeile, gemerkt], [abgelegt, gehaltsangaben, lebenshaltung]] =
     await Promise.all([
-    withUser(db, user.id, (tx) => gateAusTx(tx, user.id)),
-    withUser(db, user.id, (tx) => profilkontextAusTx(tx, user.id, sitzung)),
-    withUser(db, user.id, (tx) =>
-      Promise.all([
-        tx
-          .select({ jobId: schema.savedJobs.jobId })
-          .from(schema.savedJobs)
-          .where(eq(schema.savedJobs.userId, user.id)),
-        /*
-         * Die abgelegten Stellen hier mitlesen, statt sie
-         * `listJobsForUser` selbst holen zu lassen.
-         *
-         * Gemessen war genau diese eine Abfrage der GESAMTE Aufwand
-         * jener Funktion: die Bewertung von sechshundert Stellen 0 ms
-         * (Zwischenspeicher), die Abfrage nach abgelegten Stellen
-         * 179 ms — weil sie eine eigene Transaktion aufmacht und das
-         * vier Netzrunden sind. In dieser Transaktion kostet sie eine.
-         */
-        abgelegteStellenAusTx(tx, user.id),
-        tx
-          .select({ baseLocation: schema.userSettings.baseLocation })
-          .from(schema.userSettings)
-          .where(eq(schema.userSettings.userId, user.id))
-          .limit(1),
-        gehaltsangabenAusTx(tx, user.id),
-        lebenshaltungAusTx(tx, user.id),
-        Object.keys(eigene).length > 0 || adresse.leer === "1"
-          ? Promise.resolve({} as Record<string, string>)
-          : filterAusTx(tx, user.id).catch(() => ({}) as Record<string, string>),
-      ]),
-    ),
-  ]);
+      withUser(db, user.id, (tx) => gateAusTx(tx, user.id)),
+      withUser(db, user.id, (tx) => profilkontextAusTx(tx, user.id, sitzung)),
+      /*
+       * Zwei Gruppen statt einer.
+       *
+       * Sechs Abfragen in EINER Transaktion sind sechs Netzrunden
+       * hintereinander — eine Verbindung arbeitet nacheinander, daran
+       * ändert `Promise.all` nichts. Gemessen wuchs die Sammelrunde
+       * dadurch von 357 auf 432 Millisekunden, als die abgelegten
+       * Stellen dazukamen.
+       *
+       * Zwei Transaktionen mit je drei Abfragen laufen nebeneinander:
+       * dieselbe Zahl an Runden, aber die Hälfte der Wartezeit. Mehr
+       * Gruppen lohnen nicht — jede kostet BEGIN, Rolle und COMMIT
+       * zusätzlich.
+       */
+      withUser(db, user.id, (tx) =>
+        Promise.all([
+          tx
+            .select({ jobId: schema.savedJobs.jobId })
+            .from(schema.savedJobs)
+            .where(eq(schema.savedJobs.userId, user.id)),
+          tx
+            .select({ baseLocation: schema.userSettings.baseLocation })
+            .from(schema.userSettings)
+            .where(eq(schema.userSettings.userId, user.id))
+            .limit(1),
+          Object.keys(eigene).length > 0 || adresse.leer === "1"
+            ? Promise.resolve({} as Record<string, string>)
+            : filterAusTx(tx, user.id).catch(() => ({}) as Record<string, string>),
+        ]),
+      ),
+      withUser(db, user.id, (tx) =>
+        Promise.all([
+          /* Mitgelesen statt von `listJobsForUser` selbst geholt: dort
+             wäre es eine eigene Transaktion, also vier Netzrunden.
+             Gemessen war genau diese Abfrage 179 von 181 Millisekunden
+             jener Funktion. */
+          abgelegteStellenAusTx(tx, user.id),
+          gehaltsangabenAusTx(tx, user.id),
+          lebenshaltungAusTx(tx, user.id),
+        ]),
+      ),
+    ]);
   const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
 
   /*

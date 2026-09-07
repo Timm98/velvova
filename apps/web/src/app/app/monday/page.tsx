@@ -53,14 +53,44 @@ export default async function NinaPage() {
   const { t, brand } = await getPageContext();
   const user = await requireUser();
 
-  const [view, bestand] = await Promise.all([loadInterview(), bestandAufnehmen(user.id)]);
-
-  const gespräch = await ensureConversation(user.id, {
-    kind: "career_interview",
-    locale: user.locale,
-    route: "/app/monday",
-  });
-  const nachrichten = await loadMessages(user.id, gespräch.id);
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Das Gespräch läuft neben dem Interview, nicht dahinter
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier standen `ensureConversation` und `loadMessages` UNTER der
+   * Sammelrunde — nacheinander, obwohl sie mit `view` und `bestand`
+   * nichts zu tun haben. Sie brauchen nur die Nutzerkennung.
+   *
+   * Gemessen, Zeitpunkte ab Anfang der Anfrage:
+   *
+   *     bestandAufnehmen      355 ms
+   *     loadInterview         616
+   *     ensureConversation    789   ← wartete auf beide
+   *     loadMessages          969   ← wartete auf ensureConversation
+   *
+   * Dreihundertfünfzig Millisekunden, in denen nichts gerechnet
+   * wurde: Jede dieser Funktionen macht eine eigene Transaktion auf,
+   * und das sind vier Netzrunden gegen Supabase.
+   *
+   * `loadMessages` bleibt an `ensureConversation` gebunden — es
+   * braucht die Gesprächskennung. Diese Kette läuft jetzt aber NEBEN
+   * `loadInterview` statt danach, und sie ist kürzer als die: 353
+   * gegen 566 Millisekunden. Sie kostet damit gar nichts mehr.
+   */
+  const [view, bestand, { gespräch, nachrichten }] = await Promise.all([
+    loadInterview(),
+    bestandAufnehmen(user.id),
+    (async () => {
+      const g = await ensureConversation(user.id, {
+        kind: "career_interview",
+        locale: user.locale,
+        route: "/app/monday",
+      });
+      const n = await loadMessages(user.id, g.id);
+      return { gespräch: g, nachrichten: n };
+    })(),
+  ]);
 
   const fertigeGruppen = new Set(completedGroups(bestand));
 
