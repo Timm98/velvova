@@ -1015,6 +1015,14 @@ function bewerten(
 
 export interface JobListOptions {
   sort?: SortKey;
+  /**
+   * Die abgelegten Stellen, falls der Aufrufer sie schon hat.
+   *
+   * Ohne sie holt diese Funktion sie selbst — in einer eigenen
+   * Transaktion, die vier Netzrunden kostet. Wer ohnehin eine offene
+   * Transaktion hat, liest sie dort mit.
+   */
+  abgelegt?: Set<string>;
   includeBlocked?: boolean;
   limit?: number;
   /**
@@ -1191,13 +1199,26 @@ export async function listJobsForUser(
   blockedCount: number;
   staleCount: number;
 }> {
+  /*
+   * `abgelegt` kann von aussen kommen — und auf der Stellenseite tut
+   * es das.
+   *
+   * Gemessen war diese eine Abfrage der GESAMTE Aufwand dieser
+   * Funktion: die Bewertung von sechshundert Stellen 0 ms (sie liegt
+   * im Zwischenspeicher), die Abfrage nach abgelegten Stellen 179 ms.
+   * Nicht weil sie schwer wäre — sie macht eine eigene Transaktion
+   * auf, und das sind vier Netzrunden gegen Supabase.
+   *
+   * Die Stellenseite hat ohnehin eine Transaktion offen. Sie liest die
+   * Menge dort mit und reicht sie herein.
+   */
   const [bewertet, abgelegt] = await Promise.all([
     scoreAllJobs(userId, ctx, {
       suche: options.suche,
       ort: options.ort,
       bedarf: options.sichtbar ? kandidatenBedarf(options.sichtbar) : KANDIDATEN_HOECHSTENS,
     }),
-    abgelegteStellen(userId),
+    options.abgelegt ?? abgelegteStellen(userId),
   ]);
 
   /*

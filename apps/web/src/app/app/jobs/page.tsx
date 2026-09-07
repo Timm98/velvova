@@ -10,8 +10,8 @@ import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { listJobsForUser, profilkontextAusTx, type ScoredJob } from "@/lib/matching";
 import { buildDecisionBrief } from "@/lib/applications/decision-brief";
-import { gateAusTx } from "@/lib/gate";
-import { Badge, Button, SkeletonText } from "@/components/ui";
+import { gateAusTx, loadGate } from "@/lib/gate";
+import { Badge, Button, Skeleton, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 import type { JobRowData } from "@/components/jobs/JobRow";
 import { Jobalarm } from "@/components/jobs/Jobalarm";
@@ -34,6 +34,7 @@ import { gehaltszeileFuer, referenzFinden, zeilenAusStellen } from "@/lib/jobs/z
 import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
 import { entfernungKm } from "@paycheck/matching";
 import { ortNachschlagen } from "@paycheck/jobs";
+import { abgelegteStellenAusTx } from "@/lib/nina/rueckmeldung";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { filterAusTx, nurFilter } from "@/lib/jobs/listenfilter";
 import { ladeSitzungsbedingungen } from "@/lib/nina/sitzungsbedingungen";
@@ -99,7 +100,7 @@ const SORT_KEYS: SortKey[] = [
  * Wunsch sichtbar — mit konkretem Grund. Etwas stillschweigend
  * wegzufiltern wäre schlechter, als es zu begründen.
  */
-export default async function JobsPage({
+async function Stellenliste({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -211,7 +212,8 @@ export default async function JobsPage({
     ladeSitzungsbedingungen(),
   ]);
 
-  const [gate, ctx, [saved, wohnzeile, gehaltsangaben, lebenshaltung, gemerkt]] = await Promise.all([
+  const [gate, ctx, [saved, abgelegt, wohnzeile, gehaltsangaben, lebenshaltung, gemerkt]] =
+    await Promise.all([
     withUser(db, user.id, (tx) => gateAusTx(tx, user.id)),
     withUser(db, user.id, (tx) => profilkontextAusTx(tx, user.id, sitzung)),
     withUser(db, user.id, (tx) =>
@@ -220,6 +222,17 @@ export default async function JobsPage({
           .select({ jobId: schema.savedJobs.jobId })
           .from(schema.savedJobs)
           .where(eq(schema.savedJobs.userId, user.id)),
+        /*
+         * Die abgelegten Stellen hier mitlesen, statt sie
+         * `listJobsForUser` selbst holen zu lassen.
+         *
+         * Gemessen war genau diese eine Abfrage der GESAMTE Aufwand
+         * jener Funktion: die Bewertung von sechshundert Stellen 0 ms
+         * (Zwischenspeicher), die Abfrage nach abgelegten Stellen
+         * 179 ms — weil sie eine eigene Transaktion aufmacht und das
+         * vier Netzrunden sind. In dieser Transaktion kostet sie eine.
+         */
+        abgelegteStellenAusTx(tx, user.id),
         tx
           .select({ baseLocation: schema.userSettings.baseLocation })
           .from(schema.userSettings)
@@ -309,6 +322,8 @@ export default async function JobsPage({
   const { jobs, klaerung, blockedCount, staleCount } = await listJobsForUser(user.id, ctxSuche, {
     sort,
     includeBlocked,
+    /* Schon gelesen — siehe die Sammelrunde oben. */
+    abgelegt,
     /*
      * Wie tief gesucht wird, hängt daran, wie viel gezeigt wird.
      *
@@ -627,117 +642,6 @@ export default async function JobsPage({
        genügen, und die gesparten Pixel sind zusammen eine halbe
        Stellenzeile. */
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
-      <PageHeader
-        /*
-         * Kein Eyebrow mehr.
-         *
-         * „Entdecken" stand über „Deine besten Möglichkeiten" und sagte
-         * dasselbe wie der aktive Punkt in der Navigation zwei Zeilen
-         * darüber. Zwei Angaben desselben Ortes untereinander kosten
-         * hier vierundzwanzig Pixel — und Pixel über der Liste sind auf
-         * dieser Seite das knappste Gut.
-         */
-        className="uebergang-stellen-titel"
-        title="Deine besten Möglichkeiten"
-        /*
-         * Kein Vorspann mehr — auf keiner Breite.
-         *
-         * Er war schon auf dem Telefon ausgeblendet, mit einer
-         * Begründung, die auf dem Rechner genauso gilt: Dieselbe
-         * Auskunft steht drei Zeilen weiter unten genauer, direkt über
-         * der Liste — „X passende Stellen von Y geprüften". Der
-         * Vorspann sagte dasselbe in Prosa und kostete dabei rund
-         * siebzig Pixel, also eine Stellenzeile.
-         *
-         * Auf einer Seite namens „Jobs" gewinnt ein Job gegen einen
-         * Satz über Jobs.
-         */
-        actions={
-          // Wer die Stelle woanders gefunden hat, soll sie hier
-          // trotzdem prüfen lassen können. Ohne diesen Weg endet jede
-          // Empfehlung an der Grenze unserer Quellen.
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-            {/*
-              Hier standen „Wie viele davon sind echte Chancen?" und
-              „Job-Link analysieren".
-
-              Beide Wege gibt es weiterhin — `/app/opportunities` und
-              `/app/jobs/import` sind unverändert erreichbar. Was weg
-              ist, sind zwei Verweise über der Liste, die eine Frage
-              beantworteten, die an dieser Stelle niemand stellt: Wer
-              gerade Stellen durchsieht, will die nächste sehen und
-              nicht erklärt bekommen, wie viele davon nichts taugen.
-            */}
-            {/* Nur mit gemerkten Stellen — ein Vergleich ohne etwas zu
-                vergleichen führt auf eine leere Seite. */}
-            {savedIds.size >= 2 && (
-              <Link
-                href={`/app/jobs/vergleich?ids=${[...savedIds].slice(0, 3).join(",")}`}
-                className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-              >
-                <Columns3 aria-hidden className="size-3.5" strokeWidth={1.9} />
-                Gemerkte vergleichen
-              </Link>
-            )}
-          </div>
-        }
-      />
-
-      {/*
-       * Die Sperre sperrt die PERSONALISIERUNG, nicht die Seite.
-       *
-       * Vorher ersetzte sie die ganze Jobliste durch einen Hinweis: wer
-       * sein Gespräch noch nicht weit genug geführt hatte, sah gar keine
-       * Stellen. Das war zu viel. Die Anzeigen sind echt und öffentlich
-       * — sie zurückzuhalten schützt niemanden. Was ohne belegtes Profil
-       * nicht geht, ist die Reihenfolge zu begründen, und genau das
-       * steht hier.
-       */}
-      {!gate.unlocked && (
-        <div className="uebergang-stellen-hinweis rounded-(--radius-surface) bg-accent-soft px-5 py-4">
-          <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-            <span className="font-medium text-ink">
-              Diese Reihenfolge ist noch nicht auf dich zugeschnitten.
-            </span>{" "}
-            {gate.reason}{" "}
-            <Link
-              href={gate.profileConfirmed ? "/app/monday" : "/app/career"}
-              className="text-accent-text underline underline-offset-[3px]"
-            >
-              {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
-            </Link>
-          </p>
-        </div>
-      )}
-
-      {/* Zuerst der Weg in Worten, danach die Filter. Wer eine
-          Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
-          erst in Felder übersetzen müssen. */}
-      {/*
-        Die Suchzeile und Mondays Rückfrage gehören zusammen.
-
-        Der Provider hält genau einen Zustand: die offene Frage oder
-        keine. Er steht hier und nicht weiter oben, weil ausserhalb
-        der Stellenseite niemand danach fragt — und ein Kontext, der
-        überall liegt, wird irgendwann überall benutzt.
-      */}
-      {/*
-        Der Rückweg ins Gespräch — dieselbe Geste, andere Richtung.
-
-        Er steht ÜBER dem Suchfeld, nicht darunter: Nach oben zu
-        scrollen führt nach oben aus der Seite heraus, und der Hinweis
-        gehört an die Kante, an der man ankommt.
-      */}
-      <ScrollUebergang
-        ziel="/app/monday"
-        richtung="hoch"
-        hinweis={`Nach oben scrollen, um mit ${brand.assistantName} zu sprechen`}
-      />
-
-      <SuchdialogProvider>
-        <NinaSearchComposer assistantName={brand.assistantName} />
-        <Suchrueckfrage assistantName={brand.assistantName} />
-      </SuchdialogProvider>
 
       {/*
         Filter erst aus dem Gespräch.
@@ -1739,4 +1643,230 @@ function ohneBedingung(params: Record<string, string | undefined>, key: string):
     next.set(k, v);
   }
   return next.toString();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Der Seitenkopf — er wartet auf nichts
+   ═══════════════════════════════════════════════════════════════
+
+   Bis hierher war die ganze Seite EINE Serverkomponente. Nichts davon
+   erreichte den Browser, bevor die letzte Abfrage zurück war —
+   gemessen 705 Millisekunden, davon zwei Drittel Netzrunden zur
+   Datenbank.
+
+   Beim ersten Klick nach dem Laden fiel das besonders auf: Der
+   Zwischenspeicher des Routers ist dann leer, der Übergang friert das
+   Bild ein, bis die Adresse steht, und bis dahin verging fast eine
+   Sekunde.
+
+   Jetzt gibt dieser Kopf sofort zurück, was an keiner Abfrage hängt:
+   Überschrift, Rückweg ins Gespräch, Suchfeld. Alles darunter kommt
+   in eigenen Strömen nach. Die Adresse steht damit, sobald der Server
+   den ersten Teil geschrieben hat — nicht erst, wenn alles fertig
+   gerechnet ist.
+
+   Was gestreamt wird, braucht ein Gerüst mit der RICHTIGEN Höhe:
+   Sonst springt beim Eintreffen der Daten alles darunter, und das
+   Suchfeld — das der Übergang gerade an seinen Platz gefahren hat —
+   springt mit.
+   ═══════════════════════════════════════════════════════════════ */
+export default async function JobsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  /* Nur diese beiden. `getPageContext` liest Sprache und Marke,
+     `requireUser` die Sitzung — zusammen gemessen 58 ms, keine
+     Stellenabfrage. */
+  const { brand } = await getPageContext();
+
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+      <PageHeader
+        /*
+         * Kein Eyebrow mehr.
+         *
+         * „Entdecken" stand über „Deine besten Möglichkeiten" und sagte
+         * dasselbe wie der aktive Punkt in der Navigation zwei Zeilen
+         * darüber. Zwei Angaben desselben Ortes untereinander kosten
+         * hier vierundzwanzig Pixel — und Pixel über der Liste sind auf
+         * dieser Seite das knappste Gut.
+         */
+        className="uebergang-stellen-titel"
+        title="Deine besten Möglichkeiten"
+        /*
+         * Kein Vorspann mehr — auf keiner Breite.
+         *
+         * Er war schon auf dem Telefon ausgeblendet, mit einer
+         * Begründung, die auf dem Rechner genauso gilt: Dieselbe
+         * Auskunft steht drei Zeilen weiter unten genauer, direkt über
+         * der Liste — „X passende Stellen von Y geprüften". Der
+         * Vorspann sagte dasselbe in Prosa und kostete dabei rund
+         * siebzig Pixel, also eine Stellenzeile.
+         *
+         * Auf einer Seite namens „Jobs" gewinnt ein Job gegen einen
+         * Satz über Jobs.
+         */
+        actions={
+          // Wer die Stelle woanders gefunden hat, soll sie hier
+          // trotzdem prüfen lassen können. Ohne diesen Weg endet jede
+          // Empfehlung an der Grenze unserer Quellen.
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+            {/*
+              Hier standen „Wie viele davon sind echte Chancen?" und
+              „Job-Link analysieren".
+
+              Beide Wege gibt es weiterhin — `/app/opportunities` und
+              `/app/jobs/import` sind unverändert erreichbar. Was weg
+              ist, sind zwei Verweise über der Liste, die eine Frage
+              beantworteten, die an dieser Stelle niemand stellt: Wer
+              gerade Stellen durchsieht, will die nächste sehen und
+              nicht erklärt bekommen, wie viele davon nichts taugen.
+            */}
+            {/* Nur mit gemerkten Stellen — ein Vergleich ohne etwas zu
+                vergleichen führt auf eine leere Seite. */}
+            {/* Eigener Strom: Der Link hängt an einer Abfrage, die
+                Überschrift nicht. Ohne die Trennung wartet der ganze
+                Seitenkopf auf die gemerkten Stellen. */}
+            <Suspense fallback={null}>
+              <Vergleichslink />
+            </Suspense>
+          </div>
+        }
+      />
+
+      {/* Der Hinweiskasten hängt am Riegel, also an einer Abfrage.
+          Sein Platz wird reserviert, damit das Suchfeld darunter nicht
+          springt, wenn er eintrifft. */}
+      {/*
+        Die Höhe ist gemessen, nicht geschätzt: 81 Pixel ab `sm`, 130
+        auf dem Telefon, wo der Satz auf vier Zeilen umbricht. Stimmt
+        sie nicht, springt beim Eintreffen alles darunter — und das
+        Suchfeld, das der Übergang gerade an seinen Platz gefahren hat,
+        springt mit.
+      */}
+      <Suspense fallback={<div className="h-[130px] sm:h-[81px]" aria-hidden />}>
+        <Hinweisstreifen />
+      </Suspense>
+
+      {/* Zuerst der Weg in Worten, danach die Filter. Wer eine
+          Bedingung nennen kann, die kein Feld abbildet, soll sie nicht
+          erst in Felder übersetzen müssen. */}
+      {/*
+        Die Suchzeile und Mondays Rückfrage gehören zusammen.
+
+        Der Provider hält genau einen Zustand: die offene Frage oder
+        keine. Er steht hier und nicht weiter oben, weil ausserhalb
+        der Stellenseite niemand danach fragt — und ein Kontext, der
+        überall liegt, wird irgendwann überall benutzt.
+      */}
+      {/*
+        Der Rückweg ins Gespräch — dieselbe Geste, andere Richtung.
+
+        Er steht ÜBER dem Suchfeld, nicht darunter: Nach oben zu
+        scrollen führt nach oben aus der Seite heraus, und der Hinweis
+        gehört an die Kante, an der man ankommt.
+      */}
+      <ScrollUebergang
+        ziel="/app/monday"
+        richtung="hoch"
+        hinweis={`Nach oben scrollen, um mit ${brand.assistantName} zu sprechen`}
+      />
+
+      <SuchdialogProvider>
+        <NinaSearchComposer assistantName={brand.assistantName} />
+        <Suchrueckfrage assistantName={brand.assistantName} />
+      </SuchdialogProvider>
+
+      <Suspense fallback={<Listengeruest />}>
+        <Stellenliste searchParams={searchParams} />
+      </Suspense>
+    </div>
+  );
+}
+
+/**
+ * Der Hinweis, dass die Reihenfolge noch nicht zugeschnitten ist.
+ *
+ * Eigener Strom, weil er den Riegel braucht — eine Abfrage, auf die
+ * die Überschrift darüber nicht warten muss.
+ */
+async function Hinweisstreifen() {
+  const [{ t }, user] = await Promise.all([getPageContext(), requireUser()]);
+  const gate = await loadGate(user.id);
+  {/*
+   * Die Sperre sperrt die PERSONALISIERUNG, nicht die Seite.
+   *
+   * Vorher ersetzte sie die ganze Jobliste durch einen Hinweis: wer
+   * sein Gespräch noch nicht weit genug geführt hatte, sah gar keine
+   * Stellen. Das war zu viel. Die Anzeigen sind echt und öffentlich
+   * — sie zurückzuhalten schützt niemanden. Was ohne belegtes Profil
+   * nicht geht, ist die Reihenfolge zu begründen, und genau das
+   * steht hier.
+   */}
+  return gate.unlocked ? null : (
+    <div className="uebergang-stellen-hinweis rounded-(--radius-surface) bg-accent-soft px-5 py-4">
+      <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+        <span className="font-medium text-ink">
+          Diese Reihenfolge ist noch nicht auf dich zugeschnitten.
+        </span>{" "}
+        {gate.reason}{" "}
+        <Link
+          href={gate.profileConfirmed ? "/app/monday" : "/app/career"}
+          className="text-accent-text underline underline-offset-[3px]"
+        >
+          {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
+        </Link>
+      </p>
+    </div>
+  );
+}
+
+/**
+ * „Gemerkte vergleichen" — nur ab zwei gemerkten Stellen.
+ *
+ * Ein Vergleich ohne etwas zu vergleichen führt auf eine leere Seite.
+ */
+async function Vergleichslink() {
+  const user = await requireUser();
+  const db = await getDb();
+  const zeilen = await withUser(db, user.id, (tx) =>
+    tx
+      .select({ jobId: schema.savedJobs.jobId })
+      .from(schema.savedJobs)
+      .where(eq(schema.savedJobs.userId, user.id)),
+  ).catch(() => []);
+  if (zeilen.length < 2) return null;
+  return (
+    <Link
+      href={`/app/jobs/vergleich?ids=${zeilen.slice(0, 3).map((z) => z.jobId).join(",")}`}
+      className="inline-flex min-h-6 items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
+    >
+      <Columns3 aria-hidden className="size-3.5" strokeWidth={1.9} />
+      Gemerkte vergleichen
+    </Link>
+  );
+}
+
+/**
+ * Was an der Stelle der Liste steht, solange sie gerechnet wird.
+ *
+ * Vier Zeilen — genug, damit die Seite als Liste lesbar ist, und kein
+ * Versprechen über die Zahl der Treffer, das wir hier nicht geben
+ * können. Dieselbe Form wie in `loading.tsx`, damit der Wechsel vom
+ * einen Gerüst zum anderen nicht auffällt.
+ */
+function Listengeruest() {
+  return (
+    <div className="uebergang-stellen-liste grid gap-2" aria-busy="true" aria-live="polite">
+      <span className="sr-only">Stellen werden geladen</span>
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="grid gap-2.5 rounded-(--radius-surface) border border-line p-4">
+          <Skeleton className="h-4 w-2/5" />
+          <Skeleton className="h-3.5 w-1/4" />
+          <Skeleton className="h-3.5 w-3/5" />
+        </div>
+      ))}
+    </div>
+  );
 }

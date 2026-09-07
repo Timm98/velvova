@@ -1,7 +1,7 @@
 import "server-only";
 
 import { and, desc, eq, isNotNull} from "drizzle-orm";
-import { getDb, schema, withUser } from "@paycheck/db";
+import { getDb, schema, withUser , type Database } from "@paycheck/db";
 import { ereignisSchreiben } from "./ereignisse";
 import { musterErkennen } from "./musterregeln";
 
@@ -141,17 +141,41 @@ export async function rueckmeldungSchreiben(
  */
 export async function abgelegteStellen(userId: string): Promise<Set<string>> {
   const db = await getDb();
-  const zeilen = await withUser(db, userId, (tx) =>
-    tx
-      .selectDistinct({ jobId: schema.matchFeedback.jobId })
-      .from(schema.matchFeedback)
-      .where(
-        and(
-          eq(schema.matchFeedback.userId, userId),
-          eq(schema.matchFeedback.art, "abgelehnt"),
-          isNotNull(schema.matchFeedback.jobId),
-        ),
+  return withUser(db, userId, (tx) => abgelegteStellenAusTx(tx, userId));
+}
+
+/**
+ * Dieselbe Menge, aber in einer bereits offenen Transaktion.
+ *
+ * ── Warum das messbar war ────────────────────────────────────
+ *
+ * Diese eine Abfrage war der gesamte Aufwand von `listJobsForUser`.
+ * Gemessen auf der Stellenseite, warmer Server:
+ *
+ *     scoreAllJobs (600 bewertet)     0 ms   (Zwischenspeicher)
+ *     abgelegteStellen              179 ms
+ *     fertig                        181 ms
+ *
+ * Null gegen 179. Die Bewertung von sechshundert Stellen kostet
+ * nichts, weil sie zwischengespeichert ist — die eine Abfrage nach
+ * abgelegten Stellen kostet vier Netzrunden gegen Supabase, weil sie
+ * eine eigene Transaktion aufmacht.
+ *
+ * Wer schon eine offene hat, ruft diese Fassung auf.
+ */
+export async function abgelegteStellenAusTx(
+  tx: Database,
+  userId: string,
+): Promise<Set<string>> {
+  const zeilen = await tx
+    .selectDistinct({ jobId: schema.matchFeedback.jobId })
+    .from(schema.matchFeedback)
+    .where(
+      and(
+        eq(schema.matchFeedback.userId, userId),
+        eq(schema.matchFeedback.art, "abgelehnt"),
+        isNotNull(schema.matchFeedback.jobId),
       ),
-  );
+    );
   return new Set(zeilen.map((z) => z.jobId).filter((id): id is string => id !== null));
 }
