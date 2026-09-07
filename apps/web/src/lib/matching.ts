@@ -7,7 +7,7 @@ import {
   kandidatenBedingung,
   type Vorauswahl,
 } from "./kandidaten.ts";
-import { getDb, schema, withUser } from "@paycheck/db";
+import { getDb, schema, withUser, type Database } from "@paycheck/db";
 import {
   UserConstraintsSchema,
   type EvidenceItem,
@@ -187,7 +187,32 @@ export const loadProfileContext = cache(async function loadProfileContext(
    */
   const sitzung = await ladeSitzungsbedingungen();
 
-  return withUser(db, userId, async (tx) => {
+  return withUser(db, userId, (tx) => profilkontextAusTx(tx, userId, sitzung));
+});
+
+/**
+ * Derselbe Profilkontext, aber in einer bereits offenen Transaktion.
+ *
+ * Der Grund ist derselbe wie bei `gateAusTx`: Eine eigene
+ * `withUser`-Transaktion kostet vier Netzrunden, von denen drei nur
+ * Verwaltung sind. Die Stellenseite liest sechs Dinge und zahlt sie
+ * jetzt einmal.
+ *
+ * Die Sitzungsbedingungen kommen als Argument herein und werden hier
+ * NICHT gelesen — aus demselben Grund wie oben: Sie stammen aus einem
+ * Keks, und eine offene Datenbankverbindung soll nicht darauf warten.
+ *
+ * Kein `cache()` auf dieser Fassung. React' `cache` schlüsselt über
+ * die Argumente, und eine Transaktion ist bei jedem Aufruf ein
+ * anderes Objekt — der Zwischenspeicher träfe nie und wüchse nur.
+ * Wer zwischenspeichern will, nimmt `loadProfileContext`.
+ */
+export async function profilkontextAusTx(
+  tx: Database,
+  userId: string,
+  sitzung: Awaited<ReturnType<typeof ladeSitzungsbedingungen>>,
+): Promise<UserProfileContext> {
+  return (async () => {
     /*
      * Drei unabhängige Abfragen gleichzeitig.
      *
@@ -260,8 +285,8 @@ export const loadProfileContext = cache(async function loadProfileContext(
       profileConfirmed: profileRow?.confirmedByUser ?? false,
       coverage: profileRow?.coverage ?? 0,
     };
-  });
-});
+  })();
+}
 
 // --- Bewerten ------------------------------------------------------------
 

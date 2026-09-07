@@ -8,9 +8,9 @@ import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { listJobsForUser, loadProfileContext, type ScoredJob } from "@/lib/matching";
+import { listJobsForUser, profilkontextAusTx, type ScoredJob } from "@/lib/matching";
 import { buildDecisionBrief } from "@/lib/applications/decision-brief";
-import { loadGate } from "@/lib/gate";
+import { gateAusTx } from "@/lib/gate";
 import { Badge, Button, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 import type { JobRowData } from "@/components/jobs/JobRow";
@@ -24,8 +24,8 @@ import { workspaceDaten } from "./nina/daten";
 import { zukunftLaden } from "@/lib/jobs/zukunft";
 import { NinaSteuerungProvider } from "./NinaSteuerung";
 import { JobDetailPanel } from "./JobDetailPanel";
-import { ladeGehaltsangaben } from "@/lib/payroll/einstellungen";
-import { ladeLebenshaltung } from "@/lib/lebenswert/speicher";
+import { gehaltsangabenAusTx } from "@/lib/payroll/lesen";
+import { lebenshaltungAusTx } from "@/lib/lebenswert/lesen";
 import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
 import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
@@ -35,7 +35,8 @@ import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
 import { entfernungKm } from "@paycheck/matching";
 import { ortNachschlagen } from "@paycheck/jobs";
 import { besucherHerkunft } from "@/lib/herkunft";
-import { filterLaden, nurFilter } from "@/lib/jobs/listenfilter";
+import { filterAusTx, nurFilter } from "@/lib/jobs/listenfilter";
+import { ladeSitzungsbedingungen } from "@/lib/nina/sitzungsbedingungen";
 import { Suchrichtungen } from "@/components/jobs/Suchrichtungen";
 import { suchrichtungen } from "@paycheck/matching";
 import { abdeckungssatz, ladeQuellenabdeckung } from "@/lib/jobs/coverage";
@@ -131,22 +132,7 @@ export default async function JobsPage({
    * losgeworden ist. `?leer=1` sagt: Ich will wirklich nichts.
    */
   const eigene = nurFilter(adresse);
-  /*
-   * Nicht abwarten — mitlaufen lassen.
-   *
-   * `filterLaden` stand hier mit `await` und lief allein, bevor die
-   * Sammelrunde darunter überhaupt begann. Gemessen kostete das 179
-   * Millisekunden, in denen sonst nichts geschah: eine `withUser`-
-   * Transaktion sind vier Netzrunden gegen Supabase.
-   *
-   * Als Zusage weitergereicht läuft sie in derselben Runde wie der
-   * Rest. Gebraucht wird ihr Ergebnis erst für `params`, und das
-   * steht unter der Sammelrunde.
-   */
-  const gemerktZusage =
-    Object.keys(eigene).length > 0 || adresse.leer === "1"
-      ? Promise.resolve({} as Record<string, string | undefined>)
-      : filterLaden(user.id);
+
   /*
    * Alles gleichzeitig, was nicht voneinander abhängt.
    *
@@ -179,40 +165,74 @@ export default async function JobsPage({
    * Runde wie der Rest — nacheinander wären es drei weitere Umläufe
    * gegen Supabase, und die kosten je rund 170 Millisekunden.
    */
-  const [gate, abdeckung, ctx, [saved, wohnzeile], gehaltsangaben, lebenshaltung, gemerkt] =
-    await Promise.all([
-      loadGate(user.id),
-      ladeQuellenabdeckung(),
-      loadProfileContext(user.id),
-      /*
-       * Zwei Abfragen, eine Transaktion.
-       *
-       * Sie standen als zwei `withUser`-Aufrufe nebeneinander. Jeder
-       * davon ist BEGIN, Rolle setzen, Abfrage, COMMIT — vier Runden
-       * à 44 ms. Die zweite Transaktion kostete also drei Runden für
-       * nichts, denn die Abfrage darin ist eine Zeile mit einer
-       * Spalte.
-       *
-       * In einer Transaktion laufen beide Abfragen nebeneinander und
-       * teilen sich Rolle und COMMIT.
-       */
-      withUser(db, user.id, (tx) =>
-        Promise.all([
-          tx
-            .select({ jobId: schema.savedJobs.jobId })
-            .from(schema.savedJobs)
-            .where(eq(schema.savedJobs.userId, user.id)),
-          tx
-            .select({ baseLocation: schema.userSettings.baseLocation })
-            .from(schema.userSettings)
-            .where(eq(schema.userSettings.userId, user.id))
-            .limit(1),
-        ]),
-      ),
-      ladeGehaltsangaben(),
-      ladeLebenshaltung(),
-      gemerktZusage,
-    ]);
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Drei Transaktionen, nicht sieben und nicht eine
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Diese Seite bezahlt keine Rechenzeit, sondern Netzrunden. Eine
+   * `withUser`-Transaktion sind vier davon gegen Supabase — BEGIN,
+   * Rolle setzen, Abfrage, COMMIT, je rund 44 Millisekunden.
+   *
+   * Erst stand hier jeder Lesevorgang in einer eigenen Transaktion:
+   * Riegel, Profil, gemerkte Stellen, Wohnort, Steuerangaben,
+   * Lebenshaltung, gespeicherte Filter. Sieben Stück, davon achtzehn
+   * Runden reine Verwaltung.
+   *
+   * Der naheliegende Schluss war, alles in EINE zu legen. Gemessen
+   * wurde es dadurch langsamer:
+   *
+   *     sieben Transaktionen, nebeneinander    422 ms
+   *     eine Transaktion, alles darin          575 ms
+   *     drei Transaktionen, nebeneinander      357 ms
+   *
+   * Der Grund: Eine Transaktion läuft auf EINER Verbindung, und eine
+   * Verbindung arbeitet ihre Abfragen nacheinander ab. `Promise.all`
+   * darin sieht nach Gleichzeitigkeit aus und ist keine — sechs
+   * Abfragen sind dort sechs Runden hintereinander. Nebeneinander
+   * laufende Transaktionen überlappen ihre Wartezeit dagegen
+   * wirklich.
+   *
+   * Die Mitte gewinnt. Die fünf kleinen Lesevorgänge — je eine Zeile
+   * — teilen sich eine Transaktion, weil ihre Verwaltung mehr kostet
+   * als ihre Abfragen. Riegel und Profil bekommen eigene, weil sie
+   * selbst mehrere Abfragen haben und sonst hinter den kleinen
+   * anstehen müssten.
+   *
+   * ── Was NICHT hineingehört ──────────────────────────────────
+   *
+   * `ladeQuellenabdeckung` ist zwischengespeichert und braucht meist
+   * gar keine Datenbank. Die Sitzungsbedingungen kommen aus einem
+   * Keks. Beides wird vorher gelesen — eine offene Verbindung soll
+   * nicht auf etwas warten, das nicht aus der Datenbank kommt.
+   */
+  const [abdeckung, sitzung] = await Promise.all([
+    ladeQuellenabdeckung(),
+    ladeSitzungsbedingungen(),
+  ]);
+
+  const [gate, ctx, [saved, wohnzeile, gehaltsangaben, lebenshaltung, gemerkt]] = await Promise.all([
+    withUser(db, user.id, (tx) => gateAusTx(tx, user.id)),
+    withUser(db, user.id, (tx) => profilkontextAusTx(tx, user.id, sitzung)),
+    withUser(db, user.id, (tx) =>
+      Promise.all([
+        tx
+          .select({ jobId: schema.savedJobs.jobId })
+          .from(schema.savedJobs)
+          .where(eq(schema.savedJobs.userId, user.id)),
+        tx
+          .select({ baseLocation: schema.userSettings.baseLocation })
+          .from(schema.userSettings)
+          .where(eq(schema.userSettings.userId, user.id))
+          .limit(1),
+        gehaltsangabenAusTx(tx, user.id),
+        lebenshaltungAusTx(tx, user.id),
+        Object.keys(eigene).length > 0 || adresse.leer === "1"
+          ? Promise.resolve({} as Record<string, string>)
+          : filterAusTx(tx, user.id).catch(() => ({}) as Record<string, string>),
+      ]),
+    ),
+  ]);
   const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
 
   /*

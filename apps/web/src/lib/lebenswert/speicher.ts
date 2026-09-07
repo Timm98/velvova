@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
-import type { Fixkosten } from "./rechnung.ts";
+import { LEER, lebenshaltungAusTx, type Lebenshaltung } from "./lesen.ts";
 
 /**
  * Lesen und Schreiben der privaten Lebenshaltungsangaben.
@@ -25,7 +25,7 @@ import type { Fixkosten } from "./rechnung.ts";
  * jemand erinnern müsste, wäre die schwächste der drei.
  */
 
-export interface Lebenshaltung extends Fixkosten {}
+export type { Lebenshaltung };
 
 export interface AktuelleStelle {
   jobTitle: string | null;
@@ -41,50 +41,27 @@ export interface AktuelleStelle {
   commuteCostMonth: number | null;
 }
 
-const LEER: Lebenshaltung = {};
 
-/** Was gespeichert ist. Leer, wenn nichts eingetragen wurde. */
+/**
+ * Was gespeichert ist. Leer, wenn nichts eingetragen wurde.
+ *
+ * Die Abfrage steht in `lesen.ts` — ohne `"use server"`, damit sie
+ * eine bereits offene Transaktion annehmen kann.
+ *
+ * Ein Lesefehler darf nicht als „nichts eingetragen" durchgehen: Das
+ * stille `.catch(() => [])`, das hier einmal stand, sah nach
+ * Robustheit aus und war eine Falle. Die Seite meldete daraufhin „für
+ * eine Nettorechnung fehlt das Bruttogehalt" — obwohl der Betrag in
+ * der Datenbank stand. Deshalb wird der Fehler gemeldet und nicht
+ * verschluckt.
+ */
 export async function ladeLebenshaltung(): Promise<Lebenshaltung> {
   const user = await requireUser();
   const db = await getDb();
-  const [zeile] = await withUser(db, user.id, (tx) =>
-    tx.select().from(schema.livingCosts).where(eq(schema.livingCosts.userId, user.id)).limit(1),
-  ).catch((e) => {
-    /*
-     * Ein Lesefehler darf nicht als „nichts eingetragen" durchgehen.
-     *
-     * Das stille `.catch(() => [])` sah nach Robustheit aus und war
-     * eine Falle: Die Seite meldete daraufhin „für eine Nettorechnung
-     * fehlt das Bruttogehalt" — obwohl der Betrag in der Datenbank
-     * stand. Ein verschluckter Fehler wird zu einer falschen Auskunft,
-     * und die ist schlimmer als eine Fehlermeldung.
-     */
+  return withUser(db, user.id, (tx) => lebenshaltungAusTx(tx, user.id)).catch((e) => {
     console.error("[lebenshaltung] Kosten nicht lesbar:", e);
-    return [];
+    return LEER;
   });
-
-  if (!zeile) return LEER;
-  /*
-   * `null` bleibt `null`.
-   *
-   * Es heisst „nicht angegeben" und ist etwas anderes als die Null.
-   * Wer beides zu `0` zusammenzieht, kann anschliessend nicht mehr
-   * sagen, wie vollständig die Rechnung ist — und genau das ist die
-   * Auskunft, die sie ehrlich hält.
-   */
-  return {
-    wohnen: zeile.wohnen,
-    energie: zeile.energie,
-    versicherungen: zeile.versicherungen,
-    mobilitaet: zeile.mobilitaet,
-    lebensmittel: zeile.lebensmittel,
-    kredite: zeile.kredite,
-    abos: zeile.abos,
-    kinder: zeile.kinder,
-    freizeit: zeile.freizeit,
-    sparen: zeile.sparen,
-    sonstiges: zeile.sonstiges,
-  };
 }
 
 export async function speichereLebenshaltung(

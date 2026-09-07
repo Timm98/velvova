@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { getDb, schema, withUser } from "@paycheck/db";
+import { getDb, schema, withUser, type Database } from "@paycheck/db";
 
 /**
  * Die Filter der Stellenliste — laden und behalten.
@@ -60,14 +60,7 @@ export function nurFilter(params: Record<string, string | undefined>): Record<st
 export async function filterLaden(userId: string): Promise<Record<string, string>> {
   try {
     const db = await getDb();
-    const [zeile] = await withUser(db, userId, (tx) =>
-      tx
-        .select({ filter: schema.listenfilter.filter })
-        .from(schema.listenfilter)
-        .where(eq(schema.listenfilter.userId, userId))
-        .limit(1),
-    );
-    return nurFilter(zeile?.filter ?? {});
+    return await withUser(db, userId, (tx) => filterAusTx(tx, userId));
   } catch {
     /*
      * Eine Stellenliste ohne gespeicherte Filter ist eine
@@ -76,6 +69,25 @@ export async function filterLaden(userId: string): Promise<Record<string, string
      */
     return {};
   }
+}
+
+/**
+ * Dieselben Filter, aber in einer bereits offenen Transaktion.
+ *
+ * Der Grund steht ausführlich in `gateAusTx`: Eine eigene
+ * `withUser`-Transaktion kostet vier Netzrunden, drei davon
+ * Verwaltung. Auf der Stellenseite laufen alle Lesevorgänge in einer.
+ */
+export async function filterAusTx(
+  tx: Database,
+  userId: string,
+): Promise<Record<string, string>> {
+  const [zeile] = await tx
+    .select({ filter: schema.listenfilter.filter })
+    .from(schema.listenfilter)
+    .where(eq(schema.listenfilter.userId, userId))
+    .limit(1);
+  return nurFilter(zeile?.filter ?? {});
 }
 
 /**

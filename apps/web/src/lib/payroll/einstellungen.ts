@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { STANDARD, type Gehaltsangaben } from "./angaben.ts";
+import { gehaltsangabenAusTx } from "./lesen.ts";
 import type { Bundesland, Steuerklasse } from "./core/types.ts";
 
 /**
@@ -23,38 +24,18 @@ import type { Bundesland, Steuerklasse } from "./core/types.ts";
 
 export type { Gehaltsangaben };
 
+/**
+ * Die eigenen Steuerangaben lesen.
+ *
+ * Die Abfrage selbst steht in `lesen.ts` — ohne `"use server"`, damit
+ * sie eine bereits offene Transaktion annehmen kann. Diese Funktion
+ * öffnet eine, wer eine hat, ruft direkt `gehaltsangabenAusTx` auf.
+ */
 export async function ladeGehaltsangaben(): Promise<Gehaltsangaben> {
   const user = await requireUser();
   const db = await getDb();
 
-  const [zeile] = await withUser(db, user.id, (tx) =>
-    tx
-      .select()
-      .from(schema.salaryCalculationProfiles)
-      .where(
-        and(
-          eq(schema.salaryCalculationProfiles.userId, user.id),
-          eq(schema.salaryCalculationProfiles.taxYear, STANDARD.steuerjahr),
-        ),
-      )
-      .limit(1),
-  ).catch(() => []);
-
-  if (!zeile || !zeile.savePreferences) return STANDARD;
-
-  return {
-    steuerjahr: zeile.taxYear,
-    steuerklasse: (zeile.taxClass ?? 1) as Steuerklasse,
-    bundesland: (zeile.federalState ?? "NW") as Bundesland,
-    kirchensteuer: zeile.churchTax,
-    krankenversicherung: zeile.healthInsuranceType === "privat" ? "privat" : "gesetzlich",
-    krankenkasse: zeile.healthInsurerName,
-    zusatzbeitrag: zeile.healthAdditionalRate ?? STANDARD.zusatzbeitrag,
-    hatKinder: (zeile.childrenCount ?? 0) > 0,
-    kinderzahl: zeile.childrenCount ?? 0,
-    zahlungen: (zeile.paymentFrequency as 12 | 13 | 14) ?? 12,
-    gespeichert: true,
-  };
+  return withUser(db, user.id, (tx) => gehaltsangabenAusTx(tx, user.id)).catch(() => STANDARD);
 }
 
 export async function speichereGehaltsangaben(form: FormData): Promise<{ ok: boolean; text: string }> {
