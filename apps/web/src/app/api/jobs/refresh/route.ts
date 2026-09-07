@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { sql } from "drizzle-orm";
+import { getDb, schema } from "@paycheck/db";
 import { loadRuntimeConfig } from "@paycheck/config";
 import { activeAdapters, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
 import { suchbegriffeAusProfilen } from "@/lib/jobs/suchbegriffe";
@@ -234,6 +236,74 @@ export async function POST(request: Request) {
   const BUDGET_MS = 240_000;
   const beginn = Date.now();
   const takt = Math.floor(beginn / (3 * 60 * 60 * 1000));
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die ergiebigen Länder zuerst
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die Reihenfolge innerhalb einer Familie war bisher die des
+   * Verzeichnisses, rotiert nach Uhrzeit. Jedes Land kam gleich oft
+   * dran — auch die, aus denen kaum noch etwas Neues kommt.
+   *
+   * Gemessen am 7. September, Ausbeute je Quelle über alle Läufe
+   * (neue Stellen ÷ geholte Anzeigen):
+   *
+   *     adzuna_mx   86,1 %      adzuna_be    9,6 %
+   *     adzuna_us   84,8 %      adzuna_it   20,3 %
+   *     adzuna_in   84,6 %      adzuna_ca   17,1 %
+   *     adzuna_de   36,0 %      usajobs      3,2 %
+   *
+   * Aus Mexiko ist fast jede geholte Anzeige neu, aus den USA
+   * ebenso; `usajobs` ist praktisch leergeräumt. Bei gleichem Aufwand
+   * bringt die obere Hälfte ein Vielfaches der unteren.
+   *
+   * Deshalb entscheidet jetzt die Ausbeute über die Reihenfolge, und
+   * das Zeitbudget schneidet unten ab. Die Zahlen kommen aus
+   * `job_ingestion_runs` — aus dem, was wirklich passiert ist, nicht
+   * aus einer gepflegten Liste, die veraltet.
+   *
+   * ── Warum trotzdem rotiert wird ─────────────────────────────
+   *
+   * Ohne Rotation liefe immer dieselbe obere Hälfte, und die untere
+   * käme nie dran — ihre Ausbeute bliebe hoch, weil sie ungenutzt
+   * ist, und niemand merkte es. Der Versatz nach Uhrzeit bleibt
+   * deshalb bestehen; er verschiebt nur eine bereits sortierte Liste.
+   */
+  const ausbeute = new Map<string, number>();
+  try {
+    const datenbank = await getDb();
+    const zeilen = await datenbank
+      .select({
+        quelle: schema.jobIngestionRuns.sourceKey,
+        neu: sql<number>`coalesce(sum(${schema.jobIngestionRuns.created}), 0)::int`,
+        geholt: sql<number>`coalesce(sum(${schema.jobIngestionRuns.fetched}), 0)::int`,
+      })
+      .from(schema.jobIngestionRuns)
+      .groupBy(schema.jobIngestionRuns.sourceKey);
+    for (const z of zeilen) {
+      /* Ohne Abrufe keine Aussage — solche Quellen kommen ans Ende
+         der bekannten, aber vor die gar nicht gemessenen. */
+      if (z.geholt > 0) ausbeute.set(z.quelle, z.neu / z.geholt);
+    }
+  } catch {
+    /* Ohne Zahlen bleibt die Reihenfolge des Verzeichnisses. Ein
+       Abruf ohne Sortierung ist besser als keiner. */
+  }
+
+  /*
+   * Unbekannte Quellen bekommen 0,5 statt 0.
+   *
+   * Eine neue Quelle hat noch keine Läufe und damit keine Ausbeute.
+   * Mit 0 stünde sie ganz hinten und käme wegen des Zeitbudgets nie
+   * dran — sie könnte ihre Zahlen also nie beweisen. Mit 0,5 startet
+   * sie im oberen Mittelfeld und sortiert sich nach dem ersten Lauf
+   * selbst ein.
+   */
+  const rang = (schluessel: string) => ausbeute.get(schluessel) ?? 0.5;
+  for (const gruppe of familien.values()) {
+    if (gruppe.length > 1) gruppe.sort((a, b) => rang(b.key) - rang(a.key));
+  }
 
   const results: IngestResult[] = (
     await Promise.all(
