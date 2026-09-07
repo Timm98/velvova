@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import { rangbegruendung, type Werte, type Zukunftsdaten } from "@/lib/jobs/rangbegruendung";
 import type { WorkspaceDaten } from "@/app/app/jobs/nina/daten";
 
@@ -34,13 +33,19 @@ import type { WorkspaceDaten } from "@/app/app/jobs/nina/daten";
 export function NinaAnalyse({
   daten,
   assistantName,
-  vollstaendigHref,
   werte,
   zukunft,
 }: {
   daten: WorkspaceDaten;
   assistantName: string;
   /** Wohin die ausführliche Analyse führt. */
+  /**
+   * Wohin die ausführliche Analyse führt.
+   *
+   * Wird zurzeit nicht angezeigt (siehe unten) und deshalb auch nicht
+   * ausgelesen. Die Eigenschaft bleibt, damit die Aufrufer sie nicht
+   * entfernen und beim Wiedereinschalten neu suchen müssen.
+   */
   vollstaendigHref?: string;
   /** Die drei Zahlen der Leisten darüber — sie werden hier erklärt. */
   /* Die vier Grössen, die die Analyse erklärt. Der Typ kommt aus
@@ -200,22 +205,15 @@ export function NinaAnalyse({
       </p>
 
       {/*
-        Der Weg in die Tiefe, am Ende der Kurzfassung.
+        Der Verweis auf die ausführliche Analyse steht vorerst nicht
+        mehr hier.
         
-        Was hier steht, erklärt die drei Leisten darüber in wenigen
-        Sätzen. Wer wissen will, wie die Anforderungen im Einzelnen
-        gegen das Profil stehen, welche Angaben der Anzeige fehlen und
-        wie es dem Beruf geht, findet das eine Ebene tiefer.
+        Die Kurzfassung darüber trägt, was man an dieser Stelle
+        braucht. Die Tiefenseite bleibt im Code und unter ihrer
+        Adresse erreichbar — nur nicht mehr verlinkt, bis sie so weit
+        ist. `vollstaendigHref` bleibt als Eigenschaft bestehen: Sie
+        wieder anzuzeigen ist dann eine Zeile, kein Umbau.
       */}
-      {vollstaendigHref && (
-        <a
-          href={vollstaendigHref}
-          className="inline-flex min-h-6 w-fit items-center gap-1.5 text-sm text-accent-text underline underline-offset-[3px]"
-        >
-          Ausführliche Analyse
-          <ArrowRight aria-hidden className="size-3.5" strokeWidth={1.9} />
-        </a>
-      )}
     </section>
   );
 }
