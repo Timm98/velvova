@@ -635,7 +635,9 @@ async function Stellenliste({
        Liste waren viermal Luft, bevor die erste Stelle kam. Sechzehn
        genügen, und die gesparten Pixel sind zusammen eine halbe
        Stellenzeile. */
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
+    /* `bloecke-auftritt`: Was hier nachkommt, erscheint einzeln
+       nacheinander statt auf einen Schlag — siehe globals.css. */
+    <div className="bloecke-auftritt grid grid-cols-[minmax(0,1fr)] gap-4">
 
       {/*
         Filter erst aus dem Gespräch.

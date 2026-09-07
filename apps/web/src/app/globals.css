@@ -974,15 +974,23 @@ input[type="number"] {
  * noch am Ende.
  *
  * Vierte Fassung: 1050 ms, alle Zeiten um ein Fünftel gestreckt.
- * Immer noch hektisch — und das lag nicht an der Dauer.
+ * Immer noch hektisch — und das lag nicht an der Dauer, sondern
+ * daran, dass sich drei Dinge gleichzeitig und teils gegeneinander
+ * bewegten.
  *
- * Jetzt: 1200 ms, und vor allem eine Bewegung weniger. Das Alte fährt
- * nicht mehr davon, es geht nur noch; die Strecke tragen allein die
- * ankommenden Flächen, und die ist kürzer. Was hektisch wirkte, waren
- * drei gleichzeitige, teils gegenläufige Wege — nicht das Tempo.
+ * Fünfte Fassung: 1490 ms, eine Bewegung weniger. Ruhig, aber zu
+ * lang: Ein Seitenwechsel, der anderthalb Sekunden dauert, wartet auf
+ * einen, statt einen mitzunehmen.
+ *
+ * Jetzt: 700 ms. Der Wechsel selbst ist kurz und weich — 24 Pixel
+ * Weg, eine reine Ausklingkurve, das Alte geht nur, das Neue kommt
+ * gestaffelt. Der EINDRUCK von Bewegung entsteht danach, wenn die
+ * Blöcke der Stellenseite einzeln einblenden (siehe
+ * `.bloecke-auftritt` weiter unten). Das ist die Aufteilung, die
+ * trägt: der Weg schnell, die Ankunft ruhig.
  */
 :root {
-  --uebergang-feld: 1100ms;
+  --uebergang-feld: 700ms;
   /*
    * Das Alte geht schneller, als das Neue kommt.
    *
@@ -1004,10 +1012,19 @@ input[type="number"] {
    * dem Bildschirm steht, zu wenig, um zwei Seiten gleichzeitig zu
    * lesen.
    */
-  --uebergang-panel-weg: 420ms;
-  --uebergang-panel-her: 760ms;
-  --uebergang-grund: 340ms;
-  --uebergang-kurve: cubic-bezier(0.32, 0.72, 0, 1);
+  --uebergang-panel-weg: 260ms;
+  --uebergang-panel-her: 420ms;
+  --uebergang-grund: 260ms;
+  /*
+   * Weichere Kurve.
+   *
+   * `0.32, 0.72, 0, 1` zieht in der ersten Hälfte kräftig an und
+   * bremst spät — das liest sich als Schwung, nicht als Ruhe.
+   * `0.22, 0.61, 0.36, 1` ist eine reine Ausklingkurve ohne
+   * Anfangsstoss: Sie setzt sanft an, beschleunigt nie stark und
+   * kommt weich zum Stehen.
+   */
+  --uebergang-kurve: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 /*
@@ -1041,11 +1058,11 @@ input[type="number"] {
  * Wechsel des Inhalts ist kurz.
  */
 ::view-transition-old(sucheingabe) {
-  animation: uebergang-aus 200ms var(--uebergang-kurve) both;
+  animation: uebergang-aus 170ms var(--uebergang-kurve) both;
 }
 
 ::view-transition-new(sucheingabe) {
-  animation: uebergang-ein 260ms 140ms var(--uebergang-kurve) both;
+  animation: uebergang-ein 220ms 110ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1113,7 +1130,7 @@ input[type="number"] {
 
 @keyframes panel-von-unten {
   from {
-    transform: translateY(40px);
+    transform: translateY(24px);
     opacity: 0;
   }
 }
@@ -1127,7 +1144,7 @@ input[type="number"] {
 
 @keyframes panel-von-oben {
   from {
-    transform: translateY(-40px);
+    transform: translateY(-24px);
     opacity: 0;
   }
 }
@@ -1143,12 +1160,11 @@ input[type="number"] {
  * Hinweg — Gespräch → Stellen:
  *
  *     0 ms   das Gespräch blendet aus — als Ganzes, ohne Versatz
- *   260      Überschrift der Stellenseite kommt von unten
- *   350      Hinweiskasten
- *   440      Liste
- *   420      das Gespräch ist weg
- *  1100      das Feld ist angekommen
- *  1200      Ende
+ *   100      Überschrift der Stellenseite kommt von unten
+ *   160      Hinweiskasten
+ *   220      Liste
+ *   260      das Gespräch ist weg
+ *   700      das Feld ist angekommen — und damit Schluss
  *
  * Das Alte hat keinen Versatz mehr. Zwei Flächen, die nacheinander
  * verschwinden, sind zwei Ereignisse; eine Seite, die als Ganzes
@@ -1173,15 +1189,15 @@ input[type="number"] {
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 100ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
-  animation: panel-von-unten var(--uebergang-panel-her) 350ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 160ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel-her) 440ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) 220ms var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
@@ -1199,11 +1215,11 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel-her) 260ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 100ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel-her) 350ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) 160ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1228,7 +1244,7 @@ input[type="number"] {
 }
 
 ::view-transition-new(root) {
-  animation: uebergang-ein var(--uebergang-grund) 190ms var(--uebergang-kurve) both;
+  animation: uebergang-ein var(--uebergang-grund) 120ms var(--uebergang-kurve) both;
   z-index: 1;
 }
 
@@ -1298,10 +1314,44 @@ input[type="number"] {
 
 /* Sie liegt über allem, was fährt — sonst schiebt sich eine
    auffahrende Fläche kurz vor sie. */
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Das Gerüst rührt sich nicht — auch nicht ein bisschen
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Ein eigener `view-transition-name` nimmt ein Element aus dem
+ * Wurzelbild heraus. Er macht es aber nicht unbeweglich: Der Browser
+ * legt für jede Gruppe von sich aus eine Überblendung an — altes Bild
+ * aus, neues ein, 250 ms. Bei gleichem Inhalt sollte man davon nichts
+ * sehen; bei einem Band, dessen Text sich zwischen zwei Seiten um ein
+ * Zeichen unterscheidet, sieht man ein Flackern. Genau das war das
+ * „kommt und geht wieder".
+ *
+ * Hier wird die Überblendung ausdrücklich abgeschaltet: Das alte Bild
+ * verschwindet ohne Blende, das neue steht ohne Blende da. Für
+ * Elemente, die vorher und nachher an derselben Stelle dasselbe
+ * zeigen, ist das die einzige ehrliche Darstellung — sie sind nicht
+ * Teil der Bewegung.
+ */
 ::view-transition-group(kopfzeile),
 ::view-transition-group(hinweisband),
 ::view-transition-group(dock) {
   z-index: 4;
+  animation: none;
+}
+
+::view-transition-old(kopfzeile),
+::view-transition-old(hinweisband),
+::view-transition-old(dock) {
+  animation: none;
+  opacity: 0;
+}
+
+::view-transition-new(kopfzeile),
+::view-transition-new(hinweisband),
+::view-transition-new(dock) {
+  animation: none;
+  opacity: 1;
 }
 
 /*
@@ -1373,6 +1423,63 @@ input[type="number"] {
  */
 @media (prefers-reduced-motion: reduce) {
   .zeile-auftritt {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die Blöcke der Stellenseite blenden einzeln ein
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Der Seitenwechsel dauert 700 Millisekunden und soll kurz bleiben —
+ * ein Weg, den man geht, nicht einer, auf den man wartet. Die Ruhe
+ * entsteht danach: Was unter dem Suchfeld nachkommt — Bedingungen,
+ * Zahlenzeile, Liste, Vertrauensbereich — erscheint nicht auf einen
+ * Schlag, sondern eines nach dem anderen.
+ *
+ * Sechzig Millisekunden Abstand, 360 Millisekunden je Block. Der
+ * letzte von acht steht damit nach gut 780 Millisekunden — lang
+ * genug, dass man die Reihenfolge sieht, kurz genug, dass niemand auf
+ * den unteren Rand wartet.
+ *
+ * `nth-child` statt einer Variablen je Block: Die Blöcke sind
+ * Geschwister in einem Raster und wechseln je nach Zustand — mal
+ * steht eine Filterzeile da, mal nicht. Eine Zahl, die jemand beim
+ * Einfügen eines Blocks mitzählen müsste, wäre beim ersten Mal
+ * falsch.
+ */
+@keyframes block-auftritt {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.bloecke-auftritt > * {
+  animation: block-auftritt 360ms var(--uebergang-kurve) both;
+}
+
+.bloecke-auftritt > *:nth-child(1) { animation-delay: 0ms; }
+.bloecke-auftritt > *:nth-child(2) { animation-delay: 60ms; }
+.bloecke-auftritt > *:nth-child(3) { animation-delay: 120ms; }
+.bloecke-auftritt > *:nth-child(4) { animation-delay: 180ms; }
+.bloecke-auftritt > *:nth-child(5) { animation-delay: 240ms; }
+.bloecke-auftritt > *:nth-child(6) { animation-delay: 300ms; }
+.bloecke-auftritt > *:nth-child(7) { animation-delay: 360ms; }
+.bloecke-auftritt > *:nth-child(n + 8) { animation-delay: 420ms; }
+
+/*
+ * Wer Bewegung abbestellt hat, bekommt alles sofort und ganz.
+ *
+ * `animation: none` allein genügt nicht: Ohne die beiden Zeilen
+ * darunter bliebe der Anfangszustand stehen — durchsichtig und
+ * verschoben.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .bloecke-auftritt > * {
     animation: none;
     opacity: 1;
     transform: none;
