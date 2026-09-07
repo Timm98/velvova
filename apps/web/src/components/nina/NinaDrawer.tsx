@@ -245,13 +245,11 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
               </ul>
             )}
             <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink">
+              {/* Kein Schreibbalken — dieselbe Begründung wie im
+                  Gespräch: Dass Monday schreibt, sieht man daran, dass
+                  Wörter dazukommen. Ein Strich daneben liest sich als
+                  vergessene Textmarke. */}
               {letzteVonNina.content}
-              {letzteVonNina.streaming && (
-                <span
-                  aria-hidden
-                  className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-accent motion-safe:animate-pulse"
-                />
-              )}
             </p>
             {!letzteVonNina.streaming && (
               <SpeakButton messageId={letzteVonNina.id} className="-ml-3 mt-0.5 self-start" />

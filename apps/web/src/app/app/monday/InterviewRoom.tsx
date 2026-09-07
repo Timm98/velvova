@@ -840,13 +840,24 @@ export function InterviewRoom({
                         istLetzte ? "text-ink" : "text-ink-2",
                       )}
                     >
+                      {/*
+                        Kein Schreibbalken.
+                        ══════════════════════════════════════════
+
+                        Hier blinkte ein zwei Pixel breiter Strich am
+                        Ende des laufenden Satzes. Gedacht als „sie
+                        schreibt noch", gelesen als Fehler: ein Balken
+                        neben Text sieht aus wie eine Textmarke, die
+                        jemand vergessen hat.
+
+                        Er wird auch nicht gebraucht. Dass Monday
+                        schreibt, sieht man daran, dass Wörter
+                        dazukommen — und solange noch keines da ist,
+                        steht die Zeile darunter („Denkt nach"). Zwei
+                        Zeichen für dieselbe Sache waren eines zu
+                        viel; jetzt ist es keines zu wenig.
+                      */}
                       {m.content}
-                      {m.streaming && (
-                        <span
-                          aria-hidden
-                          className="ml-1 inline-block h-5 w-[2px] translate-y-0.5 rounded-full bg-accent motion-safe:animate-pulse"
-                        />
-                      )}
                     </p>
                   )}
                   {m.role === "assistant" && !m.streaming && (
@@ -870,6 +881,16 @@ export function InterviewRoom({
             Sie verschwindet, sobald das erste Wort da ist. Ab dann ist
             der Text selbst der bessere Beweis, dass etwas passiert.
 
+            Sie steht STILL. Die erste Fassung liess sie leise atmen —
+            in der Vorlage tut sie das nicht, und sie hat recht: Eine
+            Zeile, die sich bewegt, zieht das Auge auf sich und macht
+            das Warten länger. Grau und ruhig sagt dasselbe und
+            drängelt nicht.
+
+            `mt-8` ist der Abstand aus der Vorlage: gemessen rund
+            vierunddreissig Pixel zwischen der eigenen Bubble und der
+            Zeile.
+
             Welche Zeile wann erscheint, entscheidet `taetigkeit` —
             und jede hat eine technische Ursache im gemeldeten Zustand.
             Erfundene Tätigkeiten stehen hier nicht.
@@ -885,7 +906,7 @@ export function InterviewRoom({
                 (nina.messages.at(-1)?.content ?? "").trim().length > 0,
             });
             return wort ? (
-              <p className="taetigkeit-puls text-base text-ink-3" aria-live="polite">
+              <p className="mt-8 text-base text-ink-3" aria-live="polite">
                 {wort}
               </p>
             ) : null;

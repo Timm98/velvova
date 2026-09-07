@@ -1519,25 +1519,10 @@ input[type="number"] {
 }
 
 /*
- * Die Tätigkeitszeile atmet leise.
+ * Hier stand ein leiser Puls für die Tätigkeitszeile.
  *
- * Ein Kringel dreht sich gleichmässig und sagt nichts; eine Zeile,
- * die kaum merklich heller und dunkler wird, sagt „läuft noch", ohne
- * sich in den Vordergrund zu drängen. Zwei Sekunden je Atemzug —
- * langsamer als jedes Ladezeichen, und genau deshalb ruhig.
+ * Er ist weg. In der Vorlage — ChatGPT, „Wird verarbeitet" — steht
+ * die Zeile vollkommen still, und das ist die bessere Wahl: Eine
+ * Zeile, die sich bewegt, zieht das Auge auf sich und macht das
+ * Warten länger. Grau und ruhig sagt dasselbe und drängelt nicht.
  */
-@keyframes taetigkeit-puls {
-  50% {
-    opacity: 0.45;
-  }
-}
-
-.taetigkeit-puls {
-  animation: taetigkeit-puls 2s ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .taetigkeit-puls {
-    animation: none;
-  }
-}
