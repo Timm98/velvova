@@ -946,20 +946,22 @@ input[type="number"] {
  * Die Zeiten
  * ══════════════════════════════════════════════════════════════
  *
- * Vorher lief alles in 420 ms. Das war ein Schnitt mit Bewegung:
- * technisch eine Animation, zum Lesen zu kurz — man sah, DASS sich
- * etwas geändert hat, nicht WAS.
+ * Erste Fassung: 420 ms, alles zugleich. Ein Schnitt mit Bewegung —
+ * technisch eine Animation, zum Lesen zu kurz.
  *
- * Jetzt trägt das Feld 760 ms, die Flächen 620 ms, und sie setzen
- * nacheinander ein. Die ganze Bewegung dauert damit gut neun Zehntel
- * Sekunden. Das ist die Grenze: darüber wartet man, darunter
- * verschwimmt die Abfolge zu einem Ereignis.
+ * Zweite Fassung: 890 ms, gestaffelt. Lesbar, aber hart: Die Kurve
+ * `cubic-bezier(0.22, 1, 0.36, 1)` schiesst los und bremst spät, und
+ * bei 80 Pixeln Weg wirkte das geworfen statt geführt.
+ *
+ * Jetzt: 1010 ms, weichere Kurve, kürzerer Weg. `0.32, 0.72, 0, 1`
+ * setzt sanft an, hält die Mitte gleichmässig und läuft ruhig aus —
+ * die Bewegung hat keinen Ruck, weder am Anfang noch am Ende.
  */
 :root {
-  --uebergang-feld: 760ms;
-  --uebergang-panel: 620ms;
-  --uebergang-grund: 320ms;
-  --uebergang-kurve: cubic-bezier(0.22, 1, 0.36, 1);
+  --uebergang-feld: 900ms;
+  --uebergang-panel: 720ms;
+  --uebergang-grund: 420ms;
+  --uebergang-kurve: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /*
@@ -1015,41 +1017,40 @@ input[type="number"] {
 }
 
 /*
- * 80 Pixel Weg.
+ * 72 Pixel Weg.
  *
- * Erst standen hier 56. Auf Einzelbildern war davon fast nichts zu
- * sehen: Die Flächen blendeten eher, als dass sie fuhren — und
- * gefragt war ausdrücklich das Fahren.
+ * Erst 56 — davon war auf Einzelbildern fast nichts zu sehen, die
+ * Flächen blendeten eher, als dass sie fuhren. Dann 80, was mit der
+ * harten Kurve geworfen wirkte.
  *
- * 80 ist etwa zwei Textzeilen. Genug, dass die Richtung eindeutig
- * ist, wenig genug, dass die Fläche nicht erst durch den halben
- * Bildschirm reisen muss, bevor sie verschwindet. Der Weg macht die
- * Bewegung lesbar; die Deckkraft macht sie fertig.
+ * 72 mit der weichen Kurve ist der Punkt dazwischen: etwa zwei
+ * Textzeilen, deutlich als Weg zu erkennen und trotzdem ruhig. Der
+ * Weg macht die Bewegung lesbar; die Deckkraft macht sie fertig.
  */
 @keyframes panel-hoch-weg {
   to {
-    transform: translateY(-80px);
+    transform: translateY(-72px);
     opacity: 0;
   }
 }
 
 @keyframes panel-von-unten {
   from {
-    transform: translateY(80px);
+    transform: translateY(72px);
     opacity: 0;
   }
 }
 
 @keyframes panel-runter-weg {
   to {
-    transform: translateY(80px);
+    transform: translateY(72px);
     opacity: 0;
   }
 }
 
 @keyframes panel-von-oben {
   from {
-    transform: translateY(-80px);
+    transform: translateY(-72px);
     opacity: 0;
   }
 }
@@ -1062,12 +1063,20 @@ input[type="number"] {
  * Erst geht das Alte, dann kommt das Neue — mit Überschneidung, sonst
  * steht zwischendrin ein leerer Bildschirm.
  *
- *   0 ms   Gesprächskopf fährt hoch
- *   70     Nachrichtenstrom folgt
- *  150     Überschrift der Stellenseite kommt von unten
- *  210     Hinweiskasten
- *  270     Liste
- *  760     das Feld ist angekommen
+ * Hinweg — Gespräch → Stellen:
+ *
+ *     0 ms   Gesprächskopf fährt hoch
+ *    80      Nachrichtenstrom folgt
+ *   170      Überschrift der Stellenseite kommt von unten
+ *   230      Hinweiskasten
+ *   290      Liste
+ *   900      das Feld ist angekommen
+ *  1010      Ende
+ *
+ * Rückweg — Stellen → Gespräch, dieselbe Ordnung umgekehrt: Zuerst
+ * geht die Liste, zuletzt kommt der Nachrichtenstrom. Wer zurückgeht,
+ * soll nicht dieselbe Bewegung sehen wie beim Hingehen; das liest
+ * sich als Fehler, auch wenn man nicht benennen kann, welcher.
  *
  * Die Staffelung ist der Unterschied zwischen „die Seite hat
  * gewechselt" und „ich bin woanders hingegangen". Gleichzeitig
@@ -1078,19 +1087,19 @@ input[type="number"] {
 }
 
 :root[data-uebergang="runter"]::view-transition-old(gespraech-strom) {
-  animation: panel-hoch-weg var(--uebergang-panel) 70ms var(--uebergang-kurve) both;
+  animation: panel-hoch-weg var(--uebergang-panel) 80ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel) 150ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel) 170ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
-  animation: panel-von-unten var(--uebergang-panel) 210ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel) 230ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel) 270ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel) 290ms var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
@@ -1100,7 +1109,7 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-hinweis) {
-  animation: panel-runter-weg var(--uebergang-panel) 70ms var(--uebergang-kurve) both;
+  animation: panel-runter-weg var(--uebergang-panel) 80ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-old(stellen-liste) {
@@ -1108,11 +1117,11 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel) 150ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel) 170ms var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel) 210ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel) 230ms var(--uebergang-kurve) both;
 }
 
 /*
@@ -1137,7 +1146,7 @@ input[type="number"] {
 }
 
 ::view-transition-new(root) {
-  animation: uebergang-ein var(--uebergang-grund) 120ms var(--uebergang-kurve) both;
+  animation: uebergang-ein var(--uebergang-grund) var(--uebergang-kurve) both;
   z-index: 1;
 }
 

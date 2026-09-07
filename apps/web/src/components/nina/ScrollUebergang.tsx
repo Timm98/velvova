@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -68,6 +68,21 @@ export function ScrollUebergang({
   const gesammelt = useRef(0);
   const zuletzt = useRef(0);
   const unterwegs = useRef(false);
+
+  /*
+   * Der Wechsel, einmal — für die Geste und für den Klick.
+   *
+   * Er stand vorher nur in der Wirkung und war von aussen nicht
+   * erreichbar. Der Knopf hatte deshalb seinen eigenen, schlichteren
+   * Weg (`router.push`) und damit ein anderes Verhalten als die
+   * Geste, die er ankündigt.
+   */
+  const hinueber = useCallback((): void => {
+    if (unterwegs.current) return;
+    unterwegs.current = true;
+    gesammelt.current = 0;
+    seitenwechsel(router, ziel, richtung);
+  }, [richtung, router, ziel]);
 
   useEffect(() => {
     const runter = richtung === "runter";
@@ -157,13 +172,6 @@ export function ScrollUebergang({
      * eingefrorener Bildschirm ist schlimmer als ein Wechsel ohne
      * Bewegung.
      */
-    function hinueber(): void {
-      if (unterwegs.current) return;
-      unterwegs.current = true;
-      gesammelt.current = 0;
-      seitenwechsel(router, ziel, richtung);
-    }
-
     let zeigerX = window.innerWidth / 2;
     let zeigerY = window.innerHeight / 2;
     function beiBewegung(e: PointerEvent): void {
@@ -238,14 +246,22 @@ export function ScrollUebergang({
       window.removeEventListener("touchstart", beiStart);
       window.removeEventListener("touchmove", beiZug);
     };
-  }, [richtung, router, ziel]);
+  }, [hinueber, richtung, router, ziel]);
 
   const Zeichen = richtung === "runter" ? ArrowDown : ArrowUp;
 
   return (
     <button
       type="button"
-      onClick={() => router.push(ziel)}
+      /*
+       * Derselbe Weg wie die Geste — nicht `router.push`.
+       *
+       * Hier stand ein nackter `push`. Wer also klickte statt zu
+       * scrollen, bekam gar keinen Übergang: Die Seite wechselte hart,
+       * das Feld sprang. Die Geste animierte, der Knopf daneben nicht
+       * — derselbe Weg, zwei verschiedene Antworten.
+       */
+      onClick={hinueber}
       className={cn(
         "mx-auto flex items-center gap-2 rounded-(--radius-pill) px-4 py-1.5",
         "text-2xs text-ink-3 transition-opacity duration-(--duration-base)",
@@ -256,7 +272,19 @@ export function ScrollUebergang({
          * darunter; eines, das nur die Deckkraft wechselt, bleibt an
          * seinem Platz.
          */
-        bereit ? "opacity-100" : "pointer-events-none opacity-0",
+        /*
+         * Immer sichtbar.
+         *
+         * Vorher erschien die Zeile erst, wenn man ganz am Rand stand
+         * — sie war also genau dann unsichtbar, wenn man sie gebraucht
+         * hätte: beim Suchen nach dem Weg. Die Gegenrichtung im
+         * Gespräch steht auch dauerhaft da; zwei Wege, die sich
+         * unterschiedlich verhalten, sind zwei Wege zu viel.
+         *
+         * Am Rand wird sie kräftiger — das bleibt die Rückmeldung,
+         * dass die Geste jetzt greifen würde.
+         */
+        bereit ? "opacity-100" : "opacity-70",
       )}
     >
       <Zeichen aria-hidden className="size-3.5" strokeWidth={2} />
