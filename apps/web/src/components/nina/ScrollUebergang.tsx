@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { seitenwechsel } from "@/lib/nina/uebergang";
 
 /**
  * Der Weg zwischen Gespräch und Stellensuche — durch Weiterscrollen.
@@ -160,45 +161,7 @@ export function ScrollUebergang({
       if (unterwegs.current) return;
       unterwegs.current = true;
       gesammelt.current = 0;
-
-      const start = document.startViewTransition?.bind(document);
-      const ruhig = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-      if (!start || ruhig) {
-        router.push(ziel);
-        return;
-      }
-
-      /*
-       * Die Richtung steht am Dokument, bevor der Übergang beginnt.
-       * Das Stylesheet liest sie: Nach unten fährt die alte Seite
-       * hoch und die neue kommt von unten, nach oben umgekehrt. Ein
-       * Rückweg, der aussieht wie der Hinweg, fühlt sich falsch an.
-       */
-      document.documentElement.dataset.uebergang = richtung;
-
-      start(
-        () =>
-          new Promise<void>((fertig) => {
-            const t0 = performance.now();
-            router.push(ziel);
-
-            const schauen = (): void => {
-              if (window.location.pathname === ziel) {
-                requestAnimationFrame(() => fertig());
-                return;
-              }
-              if (performance.now() - t0 > GEDULD_UEBERGANG_MS) {
-                fertig();
-                return;
-              }
-              requestAnimationFrame(schauen);
-            };
-            requestAnimationFrame(schauen);
-          }),
-      ).finished.finally(() => {
-        delete document.documentElement.dataset.uebergang;
-      });
+      seitenwechsel(router, ziel, richtung);
     }
 
     let zeigerX = window.innerWidth / 2;

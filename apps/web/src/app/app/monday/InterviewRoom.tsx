@@ -9,7 +9,7 @@ import { Composer } from "@/components/nina/Composer";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
-import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
+import { seitenwechsel } from "@/lib/nina/uebergang";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
 import { useNina } from "@/components/nina/NinaProvider";
@@ -108,6 +108,52 @@ export function InterviewRoom({
   const [pending, startTransition] = useTransition();
   const [erledigt, setErledigt] = useState<Set<string>>(new Set());
   const [fortschrittOffen, setFortschrittOffen] = useState(false);
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Sobald Monday Treffer hat, geht es weiter
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Nicht auf eine Geste warten, nicht auf einen Knopf: Wenn das
+   * Gespräch sein Ziel erreicht hat, führt es dorthin, wo das
+   * Ergebnis steht. Der Chat fährt nach oben aus dem Bild, das
+   * Eingabefeld wandert an seinen Platz auf der Stellenseite, und die
+   * Liste kommt von unten nach — eine Bewegung.
+   *
+   * ── Vier Riegel, damit es kein Übergriff wird ────────────────
+   *
+   *   1. Nur beim ERSTEN Mal. Wer zurückkommt, wird nicht wieder
+   *      weggeschoben.
+   *   2. Nicht, solange Monday noch schreibt. Mitten im Satz
+   *      wegzufahren nimmt einem das Ende der Antwort.
+   *   3. Nicht, solange ein angefangener Text im Feld steht. Er
+   *      würde mit der Seite verschwinden.
+   *   4. Erst nach 1,6 Sekunden. Man soll den Satz lesen können, mit
+   *      dem Monday die Treffer ankündigt — sonst wirkt es, als
+   *      hätte die Seite einen Fehler.
+   *
+   * Bricht eine Bedingung, wird nichts nachgeholt: Der Zeitgeber
+   * läuft ab, und beim nächsten Anlass wird neu entschieden.
+   */
+  const gefuehrt = useRef(false);
+  useEffect(() => {
+    if (gefuehrt.current) return;
+    if (nina.jobs.length === 0) return;
+    if (nina.busy) return;
+
+    const uhr = window.setTimeout(() => {
+      const feld = document.activeElement;
+      const angefangen =
+        (feld instanceof HTMLTextAreaElement || feld instanceof HTMLInputElement) &&
+        feld.value.trim().length > 0;
+      if (angefangen || gefuehrt.current) return;
+
+      gefuehrt.current = true;
+      seitenwechsel(router, "/app/jobs", "runter");
+    }, 1600);
+
+    return () => window.clearTimeout(uhr);
+  }, [nina.busy, nina.jobs.length, router]);
   const ende = useRef<HTMLDivElement>(null);
   const strom = useRef<HTMLDivElement>(null);
   const [neueAntwort, setNeueAntwort] = useState(false);
@@ -859,18 +905,15 @@ export function InterviewRoom({
           />
 
           {/*
-            Der Weg zur Stellensuche.
+            Hier stand eine Geste: am Ende weiterscrollen führte zur
+            Stellensuche.
 
-            Er steht UNTER dem Eingabefeld, nicht darüber: Das Feld
-            ist das, womit man hier arbeitet; der Übergang ist das,
-            was danach kommt. Und er erscheint erst, wenn man unten
-            angekommen ist — vorher liest man noch.
+            Sie ist weg, weil der Weg jetzt von selbst kommt — sobald
+            Monday Treffer hat (siehe `gefuehrt` weiter oben). Zwei
+            Wege zum selben Ziel, einer davon versteckt, sind einer zu
+            viel: Wer die Geste nicht kennt, scrollt ins Leere; wer sie
+            kennt, kommt der Führung zuvor.
           */}
-          <ScrollUebergang
-            ziel="/app/jobs"
-            richtung="runter"
-            hinweis="Weiterscrollen für passende Stellen"
-          />
 
           {/*
             Hier standen die Antwortimpulse — Plättchen unter dem
