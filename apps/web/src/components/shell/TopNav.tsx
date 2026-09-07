@@ -195,7 +195,30 @@ export function TopNav({
        * Trefferliste liest. Er steht auf jeder Seite, aber er darf
        * hochscrollen.
        */
-      className="relative z-40 border-b border-line bg-page"
+      /*
+         `uebergang-kopf`: Beim Seitenwechsel bleibt die Kopfzeile
+         stehen.
+
+         Ohne eigenen Namen gehört sie zur Wurzel und fährt mit ihr
+         nach oben aus dem Bild — dann wandert alles, und man verliert
+         den Halt. Mit eigenem Namen ist sie eine eigene Gruppe: Sie
+         steht auf beiden Seiten an derselben Stelle, also bewegt der
+         Browser sie nicht.
+
+         Der Sinn ist nicht Ruhe um ihrer selbst willen. Die Kopfzeile
+         sagt, dass man noch in derselben Anwendung ist — genau die
+         Auskunft, die man braucht, während der Rest in Bewegung ist.
+
+         `sticky top-0` gehört dazu: Eine Kopfzeile, die beim Scrollen
+         nach oben verschwindet, steht beim Seitenwechsel an einer
+         anderen Stelle als auf der Zielseite — und dann bewegt der
+         Browser sie doch. Gemessen: -34 gegen +37 Pixel, je nach
+         Rollstand. Oben festgehalten sind es beide Male 0.
+
+         Und es ist auch ohne Übergang das Richtige: Suche und Wege
+         gehören zu den Dingen, die man mitten im Lesen braucht.
+      */
+      className="uebergang-kopf sticky top-0 z-40 border-b border-line bg-page"
     >
       {/* ── Reihe 1: Marke · Suche · Konto ─────────────────── */}
       {/*

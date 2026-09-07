@@ -160,7 +160,27 @@ export function AppShell({
   const breiteArbeitsflaeche = false;
 
   return (
-    <div className={cn("flex min-h-dvh flex-col bg-page", fülltFenster && "overflow-hidden")}>
+    <div
+      className={cn(
+        "flex flex-col bg-page",
+        /*
+         * `h-dvh` statt `min-h-dvh`, wenn die Seite das Fenster füllt.
+         *
+         * `min-h` erlaubt, dass der Inhalt höher wird — und genau das
+         * passierte: Die Gesprächsseite war 108 Pixel höher als das
+         * Fenster, das Dokument scrollte um 71, und die Kopfzeile
+         * wanderte 34 Pixel nach oben aus dem Bild.
+         *
+         * `sticky` half nicht: Ein Vorfahr mit `overflow-y: hidden`
+         * macht die Kopfzeile an IHM klebend, nicht am Fenster. Sie
+         * klebte also an einem Kasten, der selbst wegrutschte.
+         *
+         * Mit fester Höhe gibt es kein Dokumentrollen mehr — und die
+         * Kopfzeile steht, weil nichts sie verschieben kann.
+         */
+        fülltFenster ? "h-dvh overflow-hidden" : "min-h-dvh",
+      )}
+    >
       <a href="#inhalt" className="skip-link">
         {labels.skipToContent}
       </a>

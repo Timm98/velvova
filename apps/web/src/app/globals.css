@@ -1054,3 +1054,19 @@ input[type="number"] {
     animation: none !important;
   }
 }
+
+/*
+ * Die Kopfzeile bleibt beim Seitenwechsel stehen.
+ *
+ * Ein eigener `view-transition-name` macht sie zu einer eigenen
+ * Gruppe. Sie steht auf beiden Seiten an derselben Stelle — also
+ * rechnet der Browser keine Bewegung für sie aus, während der Rest
+ * fährt.
+ *
+ * Ohne das gehört sie zur Wurzel und fährt mit nach oben aus dem
+ * Bild. Dann wandert alles gleichzeitig, und es gibt nichts mehr, an
+ * dem das Auge sich festhält.
+ */
+.uebergang-kopf {
+  view-transition-name: kopfzeile;
+}
