@@ -1,3 +1,19 @@
+/*
+ * ══════════════════════════════════════════════════════════════
+ * NICHT MEHR BENUTZT (Stand 7. September 2026)
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Das Kennzahlenband über der Stellenliste ist entfernt worden —
+ * „Was tatsächlich im Bestand steht" sollte weg. Diese Datei ist
+ * seitdem von nirgends importiert; geprüft mit einer Suche über
+ * `apps/web/src` und `packages`.
+ *
+ * Sie liegt hier und wird nicht gelöscht: Die Rechnungen darin sind
+ * geprüft und wären beim nächsten Anlauf wieder die richtigen. Wer
+ * das Band nicht zurückbringen will, kann die Datei gefahrlos
+ * entfernen — sie hängt an nichts.
+ */
+
 import { desc, gte, ne, sql } from "drizzle-orm";
 import { getDb, schema } from "@paycheck/db";
 

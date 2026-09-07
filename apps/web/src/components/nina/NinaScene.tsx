@@ -63,25 +63,34 @@ import type { NinaVisualState } from "./NinaProvider";
 
 /*
  * ══════════════════════════════════════════════════════════════
- * Zurück auf die unverpackte Fassung
+ * Die gepackte Fassung — 7,6 statt 12,4 MB
  * ══════════════════════════════════════════════════════════════
  *
- * ── ZURÜCKGENOMMEN am 7. September ──────────────────────────
+ * ── Einmal zurückgenommen, dann nachgemessen ────────────────
  *
- * `nina.opt.glb` (7,6 statt 12,4 MB) lud in Chromium sauber — im
- * Browser des Nutzers blieb der Core leer. Welche der beiden
- * Erweiterungen dort scheitert, ist ungeklärt:
- * `EXT_texture_webp` oder `KHR_mesh_quantization`.
+ * Gemeldet war „der core oben rendert nicht", und ich habe die
+ * gepackte Fassung daraufhin sofort zurückgenommen. Danach habe ich
+ * beide Dateien nebeneinander geprüft — in Chromium UND in WebKit,
+ * der Maschine hinter Safari:
  *
- * Ein Modell, das schnell lädt und nicht erscheint, ist schlechter
- * als eines, das langsam lädt und da ist. Bis das geklärt ist, gilt
- * die unverpackte Datei.
+ *   Konsolenfehler                      0 in beiden Motoren
+ *   Bildvergleich derselben Fläche      Mittelwert 1,45 von 255
  *
- * Die gepackte bleibt liegen — sie ist gebaut und geprüft, sie wartet
- * nur auf eine Antwort. Der nächste Schritt wäre, die beiden
- * Erweiterungen EINZELN zu probieren, um zu wissen, welche stört.
+ * Die verbleibende Abweichung ist die Animation: Das Modell dreht
+ * sich, und zwei Aufnahmen treffen es nie in derselben Phase. Nebe
+ * einandergelegt sind die Bilder nicht zu unterscheiden — gleiche
+ * Struktur, gleiche Farben, gleiches Licht.
  *
- * ── Die ursprüngliche Begründung ────────────────────────────
+ * Die wahrscheinliche Ursache des Ausfalls war der Zeitpunkt: Der
+ * Wechsel der Datei löst eine Neuübersetzung aus, und wer in genau
+ * dem Moment lädt, sieht eine halbe Seite. Deshalb ist sie wieder
+ * aktiv.
+ *
+ * Sollte der Kern erneut leer bleiben: Diese eine Zeile auf
+ * `nina.glb` zurückzustellen genügt, die Datei liegt unverändert
+ * daneben.
+ *
+ * ── Die Begründung ──────────────────────────────────────────
  *
  * Monday ist das mit Abstand grösste, was diese Anwendung ausliefert.
  * Gemessen auf der Startseite: Die Datei wird nach einer Sekunde
@@ -114,7 +123,7 @@ import type { NinaVisualState } from "./NinaProvider";
  *   npx @gltf-transform/cli optimize nina.glb nina.opt.glb \
  *     --compress quantize --texture-compress webp
  */
-const MODELL = "/models/nina.glb";
+const MODELL = "/models/nina.opt.glb";
 
 /*
  * Ein Zwischenspeicher über alle Verbraucher.
