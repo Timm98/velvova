@@ -920,15 +920,48 @@ export function InterviewRoom({
           />
 
           {/*
-            Hier stand eine Geste: am Ende weiterscrollen führte zur
-            Stellensuche.
+            Der Weg zu den Stellen — sichtbar, nicht als Geste.
 
-            Sie ist weg, weil der Weg jetzt von selbst kommt — sobald
-            Monday Treffer hat (siehe `gefuehrt` weiter oben). Zwei
-            Wege zum selben Ziel, einer davon versteckt, sind einer zu
-            viel: Wer die Geste nicht kennt, scrollt ins Leere; wer sie
-            kennt, kommt der Führung zuvor.
+            ── Warum er überhaupt dasteht ──────────────────────
+
+            Vorher stand hier eine Geste: am Ende weiterscrollen führte
+            zur Stellensuche. Sie ist weg, weil der Weg von selbst
+            kommt, sobald Monday Treffer hat (siehe `gefuehrt` weiter
+            oben).
+
+            Damit gab es aber gar keinen Weg mehr, den man selbst
+            gehen konnte. Von der Stellenseite führte eine sichtbare
+            Zeile zurück ins Gespräch — in die andere Richtung stand
+            nichts. Wer die Stellen sehen wollte, bevor Monday so weit
+            ist, hatte hier keinen Anhalt.
+
+            ── Warum als Knopf und nicht als Geste ─────────────
+
+            Weil diese Seite nicht mehr rollt: Sie füllt das Fenster
+            genau aus (`h-dvh`, siehe `AppShell`). Ein Hinweis
+            „weiterscrollen" würde auf etwas zeigen, das es hier nicht
+            gibt. Was man tun kann, ist klicken — also steht das da.
+
+            ── Warum unter dem Feld ────────────────────────────
+
+            Weil das Feld der Ort ist, an dem man beschreibt, was man
+            sucht. Der Verweis auf das Ergebnis gehört direkt darunter
+            und nicht in die Navigation, wo er neben sechs anderen
+            Zielen steht.
           */}
+          <button
+            type="button"
+            onClick={() => seitenwechsel(router, "/app/jobs", "runter")}
+            className={cn(
+              "mx-auto mt-1 flex items-center gap-2 rounded-(--radius-pill) px-4 py-1.5",
+              "text-2xs text-ink-3 transition-colors duration-(--duration-base)",
+              "hover:bg-soft hover:text-ink-2",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+            )}
+          >
+            <ArrowDown aria-hidden className="size-3.5" strokeWidth={2} />
+            Weiter zu deinen Stellen
+          </button>
 
           {/*
             Hier standen die Antwortimpulse — Plättchen unter dem

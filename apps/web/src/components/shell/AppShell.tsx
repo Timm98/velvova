@@ -269,24 +269,37 @@ export function AppShell({
                */
               [
                 /*
-                 * `grow-0 shrink-0` ist der Teil, ohne den die Höhe
-                 * wirkungslos bleibt.
+                 * Der Rest wird gemessen, nicht gerechnet.
                  *
-                 * `main` liegt in einer Flex-Spalte. Ein Flex-Kind mit
-                 * `flex-1` darf über seine `height` hinauswachsen —
-                 * `flex-grow` schlägt die Höhe, und `min-height: auto`
-                 * verhindert zusätzlich das Schrumpfen unter den
-                 * Inhalt. Die feste Höhe stand also da und galt nicht:
-                 * gemessen 687 Pixel, wo 484 stehen sollten.
+                 * Hier stand eine feste Höhe:
                  *
-                 * Die Unterstriche in der Rechnung sind übrigens nur
-                 * Lesbarkeit, keine Notwendigkeit: Tailwind setzt die
-                 * Leerzeichen um `+` und `-` in `calc()` von sich aus.
-                 * Geprüft am erzeugten Stylesheet.
+                 *   h-[calc(100dvh - var(--app-header-height)
+                 *                  - var(--nav-bottom-h))]
+                 *
+                 * Sie stimmte, solange die Kopfzeile 76 Pixel hoch war.
+                 * Inzwischen hat sie zwei Reihen und misst 147, und
+                 * darüber liegt ein Hinweisband von 37. Über `main`
+                 * standen also 184 Pixel, während die Rechnung mit 76
+                 * kalkulierte — 108 Pixel zu viel Inhalt, die unter
+                 * `overflow-hidden` einfach abgeschnitten wurden.
+                 *
+                 * Sichtbar wurde das erst, als unter dem Eingabefeld
+                 * eine Zeile dazukam: Sie stand bei 862 in einem 800
+                 * Pixel hohen Fenster und war schlicht nicht da.
+                 *
+                 * `flex-1 min-h-0` nimmt stattdessen genau das, was
+                 * die Geschwister übrig lassen — egal wie hoch die
+                 * werden. `min-h-0` ist dabei der entscheidende Teil:
+                 * Ohne ihn steht `min-height: auto`, und ein Flex-Kind
+                 * weigert sich, unter seinen Inhalt zu schrumpfen.
+                 *
+                 * Der untere Rand ersetzt den zweiten Summanden: Die
+                 * Leiste unten ist `fixed` und nimmt keinen Platz weg,
+                 * also muss ihn jemand reservieren. Ab `md` gibt es
+                 * sie nicht mehr.
                  */
-                "min-h-0 shrink-0 grow-0 overflow-hidden",
-                "h-[calc(100dvh_-_var(--app-header-height)_-_var(--nav-bottom-h))]",
-                "md:h-[calc(100dvh_-_var(--app-header-height))]",
+                "min-h-0 flex-1 overflow-hidden",
+                "mb-(--nav-bottom-h) md:mb-0",
               ]
             : /* Unten Platz für die feste Leiste — aber nur dort, wo es
                  sie gibt. Ab `md` verschwindet sie, und der Freiraum
