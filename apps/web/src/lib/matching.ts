@@ -212,80 +212,103 @@ export async function profilkontextAusTx(
   userId: string,
   sitzung: Awaited<ReturnType<typeof ladeSitzungsbedingungen>>,
 ): Promise<UserProfileContext> {
-  return (async () => {
-    /*
-     * Drei unabhängige Abfragen gleichzeitig.
-     *
-     * Bedingungen, Belege und Profil hängen nicht voneinander ab — sie
-     * standen nur untereinander. Jedes `await` ist gegen Supabase ein
-     * eigener Netzweg von 44 Millisekunden; drei davon sind 132, für
-     * Daten, die alle gleichzeitig hätten unterwegs sein können.
-     */
-    const [constraintRows, evidenceRows, profileRows] = await Promise.all([
-      tx
-        .select()
-        .from(schema.userConstraints)
-        .where(eq(schema.userConstraints.userId, userId))
-        .limit(1),
-      tx
-        .select()
-        .from(schema.evidenceItems)
-        .where(and(eq(schema.evidenceItems.userId, userId), isNull(schema.evidenceItems.deletedAt))),
-      tx
-        .select()
-        .from(schema.careerProfiles)
-        .where(eq(schema.careerProfiles.userId, userId))
-        .limit(1),
-    ]);
-    const constraintRow = constraintRows[0];
-    const profileRow = profileRows[0];
+  /*
+   * Drei unabhängige Abfragen, zusammen abgeschickt.
+   *
+   * ── Was hier vorher stand, und warum es falsch war ──────────
+   *
+   * „Drei unabhängige Abfragen gleichzeitig. Jedes `await` ist gegen
+   * Supabase ein eigener Netzweg von 44 Millisekunden; drei davon
+   * sind 132, für Daten, die alle gleichzeitig hätten unterwegs sein
+   * können."
+   *
+   * Die Rechnung stimmt für drei `await` hintereinander. Der Schluss
+   * daraus stimmt nicht: `Promise.all` macht daraus keine
+   * Gleichzeitigkeit, solange alle drei auf DERSELBEN Verbindung
+   * laufen — und genau das tun sie, denn sie stehen in einer
+   * Transaktion. Eine Verbindung arbeitet ihre Abfragen nacheinander
+   * ab.
+   *
+   * Gemessen an der Stellenseite, sechs Lesevorgänge:
+   *
+   *     in einer Transaktion                 575 ms
+   *     in drei Transaktionen nebeneinander  357 ms
+   *
+   * ── Was `Promise.all` hier trotzdem bringt ──────────────────
+   *
+   * Der Treiber schickt die zweite und dritte Abfrage los, ohne auf
+   * die Antwort der ersten zu warten. Das spart die Wartezeit
+   * zwischen den Runden, nicht die Runden selbst — besser als drei
+   * `await`, aber eben kein Drittel der Zeit.
+   *
+   * Wer hier wirklich Zeit sparen will, teilt nicht die Abfragen auf,
+   * sondern die Transaktionen. Wie das aussieht, steht in
+   * `app/app/jobs/page.tsx` über der Sammelrunde.
+   */
+  const [constraintRows, evidenceRows, profileRows] = await Promise.all([
+    tx
+      .select()
+      .from(schema.userConstraints)
+      .where(eq(schema.userConstraints.userId, userId))
+      .limit(1),
+    tx
+      .select()
+      .from(schema.evidenceItems)
+      .where(and(eq(schema.evidenceItems.userId, userId), isNull(schema.evidenceItems.deletedAt))),
+    tx
+      .select()
+      .from(schema.careerProfiles)
+      .where(eq(schema.careerProfiles.userId, userId))
+      .limit(1),
+  ]);
+  const constraintRow = constraintRows[0];
+  const profileRow = profileRows[0];
 
-    const evidence = evidenceRows.map(rowToEvidence);
-    const alive = evidence.filter((e) => !e.userRejected);
+  const evidence = evidenceRows.map(rowToEvidence);
+  const alive = evidence.filter((e) => !e.userRejected);
 
-    // Aus der Evidenz ableiten, was der Fit an Präferenzen braucht.
-    const byRef = (needle: string) =>
-      alive.filter((e) => e.sourceRef?.includes(needle)).map((e) => e.statement);
+  // Aus der Evidenz ableiten, was der Fit an Präferenzen braucht.
+  const byRef = (needle: string) =>
+    alive.filter((e) => e.sourceRef?.includes(needle)).map((e) => e.statement);
 
-    const energising = alive
-      .filter((e) => e.type === "preference" && /energie gibt|geben energie|leicht/i.test(e.statement))
-      .map((e) => e.statement);
-    const draining = alive
-      .filter((e) => e.type === "preference" && /kostet|laugt|vermeide|falsch an/i.test(e.statement))
-      .map((e) => e.statement);
+  const energising = alive
+    .filter((e) => e.type === "preference" && /energie gibt|geben energie|leicht/i.test(e.statement))
+    .map((e) => e.statement);
+  const draining = alive
+    .filter((e) => e.type === "preference" && /kostet|laugt|vermeide|falsch an/i.test(e.statement))
+    .map((e) => e.statement);
 
-    let constraints = EMPTY_CONSTRAINTS;
-    if (constraintRow?.data) {
-      const parsed = UserConstraintsSchema.safeParse(constraintRow.data);
-      // Ein ungültiger Datensatz darf nicht dazu führen, dass Bedingungen
-      // stillschweigend wegfallen. Lieber die leere, sichere Fassung.
-      if (parsed.success) constraints = parsed.data;
-    }
+  let constraints = EMPTY_CONSTRAINTS;
+  if (constraintRow?.data) {
+    const parsed = UserConstraintsSchema.safeParse(constraintRow.data);
+    // Ein ungültiger Datensatz darf nicht dazu führen, dass Bedingungen
+    // stillschweigend wegfallen. Lieber die leere, sichere Fassung.
+    if (parsed.success) constraints = parsed.data;
+  }
 
-    /*
-     * „Nur für diese Suche" liegt oben auf.
-     *
-     * Die Richtung ist nicht umkehrbar: Was für diese Suche gilt,
-     * überschreibt für diese Suche — und nur hier, im Lesen. In
-     * `user_constraints` wird nichts davon geschrieben.
-     *
-     * Ohne diese Zeile wäre der dritte Knopf an der Bedingungskarte
-     * eine Attrappe: Er setzte den Keks, und die Jobliste läse ihn nie.
-     */
-    const constraintsMitSitzung = ueberlagern(constraints, sitzung);
+  /*
+   * „Nur für diese Suche" liegt oben auf.
+   *
+   * Die Richtung ist nicht umkehrbar: Was für diese Suche gilt,
+   * überschreibt für diese Suche — und nur hier, im Lesen. In
+   * `user_constraints` wird nichts davon geschrieben.
+   *
+   * Ohne diese Zeile wäre der dritte Knopf an der Bedingungskarte
+   * eine Attrappe: Er setzte den Keks, und die Jobliste läse ihn nie.
+   */
+  const constraintsMitSitzung = ueberlagern(constraints, sitzung);
 
-    return {
-      constraints: constraintsMitSitzung,
-      evidence,
-      energisingTasks: energising.length > 0 ? energising : byRef("tasks_and_energy"),
-      drainingTasks: draining,
-      workStylePreferences: byRef("work_style_and_environment"),
-      rankedValues: byRef("values_and_motives"),
-      statedInterests: byRef("learning_goals"),
-      profileConfirmed: profileRow?.confirmedByUser ?? false,
-      coverage: profileRow?.coverage ?? 0,
-    };
-  })();
+  return {
+    constraints: constraintsMitSitzung,
+    evidence,
+    energisingTasks: energising.length > 0 ? energising : byRef("tasks_and_energy"),
+    drainingTasks: draining,
+    workStylePreferences: byRef("work_style_and_environment"),
+    rankedValues: byRef("values_and_motives"),
+    statedInterests: byRef("learning_goals"),
+    profileConfirmed: profileRow?.confirmedByUser ?? false,
+    coverage: profileRow?.coverage ?? 0,
+  };
 }
 
 // --- Bewerten ------------------------------------------------------------
