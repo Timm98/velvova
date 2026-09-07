@@ -1244,3 +1244,78 @@ input[type="number"] {
 ::view-transition-group(dock) {
   z-index: 4;
 }
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die Stellen kommen einzeln herein
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Vorher stand die ganze Liste auf einmal da — sechzig Karten in
+ * einem Bild. Das liest sich als Sprung, nicht als Ankunft, und man
+ * sieht dabei keine einzige Stelle: Das Auge bekommt eine Fläche
+ * gezeigt, keine Reihe.
+ *
+ * Jede Zeile blendet jetzt für sich ein und steigt dabei zwölf Pixel
+ * auf. Fünfundvierzig Millisekunden liegen zwischen zwei — kurz
+ * genug, dass es eine Bewegung bleibt und nicht in Einzelereignisse
+ * zerfällt, lang genug, dass man die Reihenfolge sieht.
+ *
+ * `--rang` kommt aus `JobSplitView` und ist bei elf gekappt: Was
+ * ohnehin unter dem Bildrand liegt, muss nicht warten. Die zwölfte
+ * Zeile und alles darunter erscheint gemeinsam nach knapp einer
+ * halben Sekunde.
+ *
+ * ── Warum das auch während des Seitenwechsels zu sehen ist ──
+ *
+ * Weil `::view-transition-new(root)` in Chromium kein eingefrorenes
+ * Bild ist, sondern den lebenden Inhalt zeigt. Die Liste trifft rund
+ * 400 ms nach dem Klick ein, der Übergang läuft bis 880 — die
+ * Staffelung läuft also mitten hinein und ist sichtbar. Wäre die
+ * neue Seite ein Standbild, käme die Bewegung erst danach und man
+ * hätte sie verpasst.
+ */
+@keyframes zeile-auftritt {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.zeile-auftritt {
+  animation: zeile-auftritt 380ms var(--uebergang-kurve) both;
+  animation-delay: calc(var(--rang, 0) * 45ms);
+}
+
+/*
+ * Zeilen, die unter dem Bildrand stehen, warten.
+ *
+ * Das Attribut steht schon im HTML — es erst im Browser zu setzen war
+ * zu spät: Ein Effekt läuft nach dem ersten Bild, und bis dahin war
+ * die Einblendung gelaufen. Gemessen stand jede Zeile auf voller
+ * Deckkraft, bevor die Sperre griff.
+ *
+ * `JobSplitView` nimmt es weg, sobald die Zeile ins Bild kommt. Dann
+ * läuft ihr Auftritt ohne Verzögerung — das Scrollen IST die
+ * Staffelung.
+ */
+.zeile-auftritt[data-wartet] {
+  animation: none;
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+/*
+ * Wer Bewegung abbestellt hat, bekommt die Liste sofort und ganz.
+ *
+ * `animation: none` allein genügt hier nicht: Ohne die Regel bliebe
+ * der Anfangszustand des Keyframes stehen — `opacity: 0` — und die
+ * Liste wäre unsichtbar. Ein abgeschalteter Effekt darf nie den
+ * Inhalt mitnehmen.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .zeile-auftritt {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

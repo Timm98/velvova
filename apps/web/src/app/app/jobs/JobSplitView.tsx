@@ -1,10 +1,18 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { JobRow, type JobRowData } from "@/components/jobs/JobRow";
+
+/**
+ * Wie viele Zeilen ohne Warten erscheinen.
+ *
+ * Die ersten sechs blenden beim Laden gestaffelt ein; alles darunter
+ * wartet, bis es ins Bild gescrollt wird.
+ */
+const SOFORT = 6;
 
 /**
  * Die geteilte Ansicht.
@@ -88,6 +96,131 @@ export function JobSplitView({
    * Nachführung hörte still auf zu arbeiten. Ein Fehler, den man
    * nicht sieht: Es passiert einfach nichts mehr.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Jede Stelle erscheint, wenn sie ins Bild kommt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die Staffelung beim Laden allein reicht nicht: Eine Zeile ist 230
+   * Pixel hoch, in einem 900 Pixel hohen Fenster stehen genau ZWEI.
+   * Von einer Bewegung über zwölf Zeilen sieht man also zwei — der
+   * Rest läuft unter dem Bildrand ab und ist vorbei, bevor man
+   * hinscrollt.
+   *
+   * Deshalb wartet, was unten steht. Der Beobachter nimmt die Sperre
+   * weg, sobald eine Zeile ins Bild kommt, und dann läuft ihr
+   * Auftritt — eine nach der anderen, im Takt des Scrollens.
+   *
+   * ── Warum die Sperre aus JavaScript kommt und nicht aus CSS ──
+   *
+   * Weil eine Liste, die ohne JavaScript unsichtbar bleibt, keine
+   * Liste ist. Stünde `opacity: 0` im Stylesheet, wäre jede Stelle
+   * weg, sobald der Beobachter nicht läuft — bei einem Skriptfehler,
+   * in einem alten Browser, bei abgeschaltetem JavaScript. So herum
+   * ist der schlechteste Fall eine Liste ohne Animation.
+   *
+   * `rootMargin: -40px` löst kurz BEVOR die Zeile den Rand berührt
+   * aus, nicht danach: Sonst sieht man den ersten Moment der
+   * Einblendung nicht mehr, weil er noch ausserhalb liegt.
+   */
+  useEffect(() => {
+    const liste = listRef.current;
+    if (!liste) return;
+
+    const zeilen = () => liste.querySelectorAll<HTMLElement>(".zeile-auftritt[data-wartet]");
+    const frei = (el: Element) => el.removeAttribute("data-wartet");
+
+    /*
+     * Ohne Beobachter oder ohne Bewegungswunsch: alles sofort zeigen.
+     *
+     * Eine Liste, die auf eine Animation wartet, die nie kommt, ist
+     * keine Liste. Der schlechteste Fall muss „ohne Animation" sein,
+     * nicht „ohne Stellen".
+     */
+    if (
+      typeof IntersectionObserver === "undefined" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      for (const z of zeilen()) frei(z);
+      return;
+    }
+
+    /*
+     * Der Beobachter muss auf den RICHTIGEN Rahmen schauen.
+     *
+     * Die Liste rollt nicht mit der Seite, sondern in einem eigenen
+     * Kasten: `div.ohne-rollbalken` mit `overflow-y: auto`, gemessen
+     * 892 Pixel hoch bei 5460 Pixeln Inhalt. Ein Beobachter ohne
+     * `root` vergleicht mit dem Fenster — und für ihn kam keine der
+     * neunzehn gesperrten Zeilen je ins Bild, egal wie weit man
+     * scrollte. Gemessen: null Meldungen, und erst der Notausgang
+     * nach vier Sekunden zeigte alle auf einmal.
+     */
+    let rahmen: Element | null = liste;
+    while (rahmen) {
+      const stil = getComputedStyle(rahmen);
+      if (/(auto|scroll)/.test(stil.overflowY) && rahmen.scrollHeight > rahmen.clientHeight + 1) break;
+      rahmen = rahmen.parentElement;
+    }
+
+    let notausgang = 0;
+    const beobachter = new IntersectionObserver(
+      (eintraege) => {
+        /*
+         * Der erste Aufruf beweist, dass der Beobachter arbeitet.
+         *
+         * Ein `IntersectionObserver` meldet sich für jedes beobachtete
+         * Element einmal sofort — auch wenn es nicht im Bild ist.
+         * Kommt diese Meldung, ist der Notausgang unnötig, und er
+         * MUSS weg: Sonst deckt er nach vier Sekunden alles auf, was
+         * bis dahin nicht gescrollt wurde, und der Auftritt beim
+         * Scrollen findet nie statt.
+         */
+        window.clearTimeout(notausgang);
+        for (const e of eintraege) {
+          if (!e.isIntersecting) continue;
+          frei(e.target);
+          beobachter.unobserve(e.target);
+        }
+      },
+      /*
+       * `-40px` löst kurz BEVOR die Zeile den Rand berührt aus, nicht
+       * danach: Sonst beginnt die Einblendung noch ausserhalb und der
+       * erste Moment ist nicht zu sehen.
+       */
+      { root: rahmen, rootMargin: "-40px 0px -40px 0px" },
+    );
+
+    for (const z of zeilen()) beobachter.observe(z);
+
+    /*
+     * Ein Riegel gegen den stillen Ausfall.
+     *
+     * Wenn der Beobachter aus irgendeinem Grund nicht auslöst — ein
+     * Fehler, ein Sonderfall im Browser —, sind die Stellen nach vier
+     * Sekunden trotzdem da. Lieber eine Liste ohne Auftritt als eine
+     * leere Seite.
+     */
+    notausgang = window.setTimeout(() => {
+      for (const z of zeilen()) frei(z);
+    }, 4000);
+
+    return () => {
+      beobachter.disconnect();
+      window.clearTimeout(notausgang);
+    };
+    /*
+     * Abhängig von der ANZAHL, nicht von der Liste selbst.
+     *
+     * `rows` ist bei jeder Neuzeichnung ein neues Feld. Mit ihm als
+     * Abhängigkeit baute dieser Effekt den Beobachter ständig neu ab
+     * und auf — und ein Beobachter, der abgebaut wird, bevor er zum
+     * ersten Mal gemeldet hat, meldet nie. Gemessen wurde dann keine
+     * einzige Zeile aufgedeckt; erst der Notausgang nach vier
+     * Sekunden zeigte alle auf einmal.
+     */
+  }, [rows.length]);
+
   useEffect(() => {
     if (!selectedId || !listRef.current) return;
     const el = listRef.current.querySelector(`[data-job-id="${selectedId}"]`);
@@ -240,8 +373,37 @@ export function JobSplitView({
             Zeilen einer Tabelle. Zehn Pixel trennen sie, ohne die
             Liste auseinanderzuziehen. */}
         <ul className="grid min-w-0 gap-2.5">
-          {rows.map((row) => (
-            <li key={row.id} data-job-id={row.id} className="min-w-0">
+          {rows.map((row, rang) => (
+            <li
+              key={row.id}
+              data-job-id={row.id}
+              className="zeile-auftritt min-w-0"
+              /*
+               * Der Rang steuert die Verzögerung — siehe
+               * `.zeile-auftritt` in globals.css.
+               *
+               * Er wird bei elf gekappt: Bei fünfundvierzig
+               * Millisekunden je Zeile wäre die sechzigste sonst erst
+               * nach zweieinhalb Sekunden da. Was ohnehin unter dem
+               * Bildrand liegt, muss nicht warten — gestaffelt
+               * erscheint, was man sieht.
+               */
+              /*
+               * Was weiter unten steht, wartet — und die Sperre steht
+               * schon im HTML.
+               *
+               * Sie erst im Browser zu setzen war der Fehler: Ein
+               * Effekt läuft NACH dem ersten Bild, und bis dahin war
+               * die Einblendung längst gelaufen. Gemessen stand jede
+               * Zeile auf voller Deckkraft, bevor die Sperre griff.
+               *
+               * Sechs, weil bei 230 Pixeln Zeilenhöhe selbst auf einem
+               * hohen Bildschirm nicht mehr ins Bild passt. Alles
+               * darüber hinaus bekommt seinen Auftritt beim Scrollen.
+               */
+              {...(rang >= SOFORT ? { "data-wartet": "" } : {})}
+              style={{ "--rang": Math.min(rang, SOFORT - 1) } as CSSProperties}
+            >
               <JobRow job={row} selected={row.id === selectedId} href={hrefFor(row.id)} />
             </li>
           ))}
