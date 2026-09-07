@@ -918,3 +918,60 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Der Übergang vom Gespräch zur Stellensuche
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Auf beiden Seiten gibt es genau ein Eingabefeld: unten im Gespräch
+ * mit Monday, oben auf der Stellenseite. Es ist dieselbe Sache — man
+ * schreibt hinein, wonach man sucht.
+ *
+ * Beide tragen denselben `view-transition-name`. Der Browser erkennt
+ * sie dadurch als DASSELBE Element und bewegt es beim Seitenwechsel
+ * von unten nach oben, statt es hier verschwinden und dort neu
+ * erscheinen zu lassen.
+ *
+ * Der Name muss je Dokument einmalig sein — er steht deshalb an genau
+ * einer Stelle je Seite und nicht an einer Klasse, die man versehentlich
+ * zweimal vergibt.
+ */
+.uebergang-sucheingabe {
+  view-transition-name: sucheingabe;
+}
+
+/*
+ * Die Bewegung: gemächlich genug, dass man sie als Weg liest, und kurz
+ * genug, dass niemand wartet. 420 ms sind der Punkt, an dem beides
+ * gerade noch zusammengeht.
+ */
+::view-transition-group(sucheingabe) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+/*
+ * Der Rest der Seite blendet, statt zu schieben. Zwei Bewegungen
+ * gleichzeitig — das Feld wandert, die Seite fliegt — lesen sich als
+ * Unruhe, nicht als Weg.
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 260ms;
+}
+
+/*
+ * Wer Bewegung abbestellt hat, bekommt keine.
+ *
+ * Das ist kein Zusatz, sondern der Grund, warum diese Menschen die
+ * Einstellung setzen: Ein Feld, das über den Bildschirm fährt, ist
+ * genau die Art Bewegung, die Übelkeit auslöst.
+ */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

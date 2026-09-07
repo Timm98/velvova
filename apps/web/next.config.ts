@@ -90,6 +90,7 @@ const config: NextConfig = {
   ],
   serverExternalPackages: ["@electric-sql/pglite", "pg"],
 
+
   /**
    * Next blockiert im Entwicklungsmodus Ressourcen, die von einem anderen
    * Host als dem Bindungshost angefragt werden. Der Server bindet an

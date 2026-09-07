@@ -439,6 +439,10 @@ export function NinaSearchComposer({
     <div className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <div
         className={cn(
+          /* Derselbe Name wie im Gespräch: Der Browser bewegt das
+             Feld beim Seitenwechsel von unten hierher, statt es
+             zweimal zu zeichnen. */
+          "uebergang-sucheingabe",
           "flex items-center gap-2 rounded-(--radius-pill) bg-raised py-2 pl-5 pr-2 shadow-sm",
           "transition-shadow duration-(--duration-fast)",
           "focus-within:shadow-[0_0_0_2px_var(--primary),0_10px_32px_rgba(101,93,255,0.16)]",

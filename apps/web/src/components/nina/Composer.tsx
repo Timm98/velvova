@@ -236,6 +236,10 @@ export function Composer({
          * bleiben — ihn mit abzuschwächen wäre keine Zurückhaltung,
          * sondern ein Zugänglichkeitsfehler.
          */
+        /* Der Name für den Übergang zur Stellensuche — siehe
+           `.uebergang-sucheingabe` in globals.css. Dasselbe Feld
+           trägt ihn dort oben. */
+        "uebergang-sucheingabe",
         "rounded-(--radius-pill) bg-raised p-2.5 shadow-md transition-[box-shadow] duration-(--duration-base)",
         "focus-within:shadow-[0_0_0_2px_var(--primary),0_8px_26px_rgba(98,92,255,0.08)]",
         className,
