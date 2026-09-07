@@ -11,6 +11,7 @@ import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
 import { seitenwechsel } from "@/lib/nina/uebergang";
 import { darfFuehren, FUEHRUNG_WARTEN_MS } from "@/lib/nina/fuehrung";
+import { taetigkeit } from "@/lib/nina/taetigkeit";
 import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
@@ -838,6 +839,40 @@ export function InterviewRoom({
               );
             })}
           </ol>
+
+          {/*
+            ══════════════════════════════════════════════════════
+            Was Monday gerade tut
+            ══════════════════════════════════════════════════════
+
+            Eine graue Zeile an der Stelle, an der gleich die Antwort
+            steht — wie bei ChatGPT „Wird verarbeitet". Kein Kringel,
+            kein Kasten: Ein Kringel sagt „warte", ein Satz sagt
+            „woran".
+
+            Sie verschwindet, sobald das erste Wort da ist. Ab dann ist
+            der Text selbst der bessere Beweis, dass etwas passiert.
+
+            Welche Zeile wann erscheint, entscheidet `taetigkeit` —
+            und jede hat eine technische Ursache im gemeldeten Zustand.
+            Erfundene Tätigkeiten stehen hier nicht.
+          */}
+          {(() => {
+            const wort = taetigkeit({
+              busy: nina.busy,
+              hoert: nina.isListening,
+              spricht: nina.isSpeaking,
+              sucht: nina.offeringJobs,
+              schreibtSchon:
+                nina.messages.at(-1)?.role === "assistant" &&
+                (nina.messages.at(-1)?.content ?? "").trim().length > 0,
+            });
+            return wort ? (
+              <p className="taetigkeit-puls text-base text-ink-3" aria-live="polite">
+                {wort}
+              </p>
+            ) : null;
+          })()}
 
           {/* ── Zustimmung, Stellen zu sehen ──────────────────── */}
           {/*
