@@ -9,7 +9,7 @@ import { Composer } from "@/components/nina/Composer";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
-import { WeiterZuStellen } from "@/components/nina/WeiterZuStellen";
+import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { JobSuggestions } from "@/components/nina/JobSuggestions";
 import { Bedingungen } from "@/components/nina/Bedingungen";
 import { useNina } from "@/components/nina/NinaProvider";
@@ -866,7 +866,11 @@ export function InterviewRoom({
             was danach kommt. Und er erscheint erst, wenn man unten
             angekommen ist — vorher liest man noch.
           */}
-          <WeiterZuStellen strom={strom} />
+          <ScrollUebergang
+            ziel="/app/jobs"
+            richtung="runter"
+            hinweis="Weiterscrollen für passende Stellen"
+          />
 
           {/*
             Hier standen die Antwortimpulse — Plättchen unter dem

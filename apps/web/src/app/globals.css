@@ -985,13 +985,48 @@ input[type="number"] {
   }
 }
 
-::view-transition-old(root) {
+@keyframes seite-faehrt-runter {
+  to {
+    transform: translateY(14%);
+    opacity: 0;
+  }
+}
+
+@keyframes seite-kommt-von-oben {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+/*
+ * Die Richtung steht am Dokument, gesetzt kurz bevor der Übergang
+ * beginnt (siehe `ScrollUebergang`).
+ *
+ * Ohne sie sähe der Rückweg aus wie der Hinweg: Man scrollt nach
+ * oben, und die Seite fährt trotzdem nach oben davon. Das liest sich
+ * als Fehler, auch wenn man nicht benennen kann, welcher.
+ */
+:root[data-uebergang="runter"]::view-transition-old(root) {
   animation: seite-faehrt-hoch 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
 
-::view-transition-new(root) {
+:root[data-uebergang="runter"]::view-transition-new(root) {
   animation: seite-kommt-von-unten 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
 }
+
+:root[data-uebergang="hoch"]::view-transition-old(root) {
+  animation: seite-faehrt-runter 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+:root[data-uebergang="hoch"]::view-transition-new(root) {
+  animation: seite-kommt-von-oben 420ms var(--ease-out, cubic-bezier(0.16, 1, 0.3, 1)) both;
+}
+
+/*
+ * Ohne gesetzte Richtung bleibt es beim Überblenden des Browsers.
+ * Jede andere Navigation — ein Klick im Menü, der Zurück-Knopf —
+ * soll nicht plötzlich fahren.
+ */
 
 /*
  * Die neue Seite liegt oben. Ohne das schiebt sie sich UNTER die

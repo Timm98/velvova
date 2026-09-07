@@ -27,6 +27,7 @@ import { JobDetailPanel } from "./JobDetailPanel";
 import { ladeGehaltsangaben } from "@/lib/payroll/einstellungen";
 import { ladeLebenshaltung } from "@/lib/lebenswert/speicher";
 import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
+import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
 import { titelOhneEmoji } from "@/lib/jobs/titel";
 import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
@@ -796,6 +797,19 @@ export default async function JobsPage({
         der Stellenseite niemand danach fragt — und ein Kontext, der
         überall liegt, wird irgendwann überall benutzt.
       */}
+      {/*
+        Der Rückweg ins Gespräch — dieselbe Geste, andere Richtung.
+
+        Er steht ÜBER dem Suchfeld, nicht darunter: Nach oben zu
+        scrollen führt nach oben aus der Seite heraus, und der Hinweis
+        gehört an die Kante, an der man ankommt.
+      */}
+      <ScrollUebergang
+        ziel="/app/monday"
+        richtung="hoch"
+        hinweis={`Nach oben scrollen, um mit ${brand.assistantName} zu sprechen`}
+      />
+
       <SuchdialogProvider>
         <NinaSearchComposer assistantName={brand.assistantName} />
         <Suchrueckfrage assistantName={brand.assistantName} />
