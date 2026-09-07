@@ -26,7 +26,6 @@ import { StimmenAbschnitt } from "@/components/reviews/StimmenAbschnitt";
 import { Landeshinweis, Laenderschalter } from "@/components/marketing/Landeshinweis";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { bestandszahl, type Bestandszahl } from "@/lib/jobs/bestandszahl";
-import { kennzahlenband, type Kennzahlenband } from "@/lib/jobs/kennzahlenband";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { landesname, lageFuer, type Landeslage } from "@/lib/landeslage";
 
@@ -112,7 +111,7 @@ export default async function LandingPage() {
    * Sie kommt deshalb aus dem Bestand, nicht aus dem Entwurf, und
    * wächst mit dem Bestand mit — der Pflegelauf zählt stündlich nach.
    */
-  const [bestand, laender, sitzung, zahlen] = await Promise.all([
+  const [bestand, laender, sitzung] = await Promise.all([
     bestandszahl(),
     laenderbestand(),
     /*
@@ -123,8 +122,6 @@ export default async function LandingPage() {
      * ist, soll dieselbe Seite sehen, nur mit seinem Namen darüber.
      */
     kopfsitzung(),
-    /* Vier Zahlen, alle aus der Datenbank — siehe `Zahlenband`. */
-    kennzahlenband(),
   ]);
 
   return (
@@ -187,10 +184,6 @@ export default async function LandingPage() {
         <Bewerbung />
         <NachDerBewerbung />
         <ZweiSeiten />
-        {/* Die Zahlen stehen spät: Wer bis hierher gelesen hat, will
-            wissen, ob das Versprochene eine Grundlage hat. Am Anfang
-            wären sie eine Behauptung ohne Zusammenhang. */}
-        <Zahlenband zahlen={zahlen} />
         <FuerUnternehmen />
           <StimmenAbschnitt />
         <Abschluss />
@@ -475,86 +468,6 @@ function Fusszeile({ lage }: { lage: Landeslage }) {
  * der Stellenseite noch einmal gebraucht wird. Zwei Fassungen
  * desselben Versprechens liefen irgendwann auseinander.
  */
-/**
- * Das Zahlenband — die Form aus der Vorlage, unsere Zahlen.
- *
- * ══════════════════════════════════════════════════════════════
- * Warum vier und nicht sechs
- * ══════════════════════════════════════════════════════════════
- *
- * Die Vorlage stellt hier sechs Zahlen nebeneinander: Besucher im
- * Monat, zufriedene App-Nutzer, Jahre am Markt. Die Form ist gut —
- * grosse Zahl, kleine Erklärung darunter, viel Luft, keine Kästen.
- *
- * Die Zahlen sind es nicht, jedenfalls für uns: Wir messen keine
- * Besucher, es gibt keine App, und das Produkt ist nicht zwanzig
- * Jahre alt. Hier stehen deshalb nur Zahlen aus der Datenbank, und
- * jede einzelne lässt sich nachrechnen — die Stellen über die Suche,
- * die Länder über `?land=XX`, die Quellen über die Herkunftsangabe an
- * jeder Anzeige.
- *
- * Steht keine davon zur Verfügung, entfällt der Abschnitt ganz. Ein
- * Band mit einer Zahl ist kein Band.
- */
-function Zahlenband({ zahlen }: { zahlen: Kennzahlenband }) {
-  if (zahlen.length < 3) return null;
-
-  return (
-    <Abschnitt grund="weiss">
-      <Ueberschrift>Was tatsächlich im Bestand steht</Ueberschrift>
-
-      {/*
-        Kein Kasten je Zahl.
-
-        Die Vorlage setzt sie frei auf die Fläche, in ein Raster mit
-        viel Luft. Ein Rahmen um jede Zahl würde sie zu Karten machen
-        — und Karten liest man einzeln, ein Band liest man als eine
-        Aussage.
-      */}
-      {/*
-        Die Spaltenzahl folgt der Anzahl, nicht umgekehrt.
-
-        Fest vier Spalten hiessen bei drei Zahlen: drei links, rechts
-        eine leere Spur. Das liest sich als fehlende vierte Zahl —
-        also als Lücke, wo keine ist. Die vierte („neu in 24 Stunden")
-        erscheint erst, wenn der Verlauf so weit zurückreicht.
-
-        Zwei feste Klassen statt einer gebauten: Tailwind erzeugt nur,
-        was wörtlich im Quelltext steht.
-      */}
-      <dl
-        className={`mt-12 grid gap-x-8 gap-y-12 sm:grid-cols-2 ${
-          zahlen.length >= 4 ? "lg:grid-cols-4" : "lg:grid-cols-3"
-        }`}
-      >
-        {zahlen.map((z) => (
-          <div key={z.bedeutung} className="grid justify-items-center gap-2 text-center">
-            <dt className="sr-only">{z.bedeutung}</dt>
-            {/*
-              Die Zahlenschrift mit fester Ziffernbreite: Vier Zahlen
-              nebeneinander, die alle verschieden breit springen,
-              lesen sich als vier verschiedene Dinge.
-            */}
-            <dd
-              className="font-mono text-[clamp(2rem,4vw,2.75rem)] font-normal tabular-nums"
-              style={{ color: "var(--ed-ink)" }}
-            >
-              {z.text}
-            </dd>
-            <p className="max-w-[24ch] text-sm leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
-              {z.bedeutung}
-            </p>
-          </div>
-        ))}
-      </dl>
-
-      <p className="mt-10 text-center text-2xs" style={{ color: "var(--ed-ink-3)" }}>
-        Stündlich nachgezählt. Jede Zahl lässt sich über die Suche überprüfen.
-      </p>
-    </Abschnitt>
-  );
-}
-
 function NachtsAbschnitt() {
   return (
     /*
