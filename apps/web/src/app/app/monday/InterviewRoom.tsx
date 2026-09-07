@@ -149,6 +149,33 @@ export function InterviewRoom({
    */
   useEffect(() => {
     router.prefetch("/app/jobs");
+
+    /*
+     * Die Stellenseite im Hintergrund vorbereiten.
+     *
+     * `router.prefetch` holt den Bauplan der Seite, nicht ihre Daten
+     * — die entstehen erst beim Aufruf, und das sind gemessen 366
+     * Millisekunden Netzrunden gegen Supabase. Genau die sah man beim
+     * Wechsel als Wartezeit.
+     *
+     * Dieser Aufruf lässt den Server sie vorher holen. Er gibt nichts
+     * zurück (204) und nimmt nichts entgegen: Gewärmt wird immer der
+     * Stand der angemeldeten Person.
+     *
+     * Alle fünfzehn Sekunden neu, weil der Vorrat zwanzig Sekunden
+     * hält — ein Gespräch dauert länger als das, und ein kalter
+     * Vorrat wäre kein Vorrat.
+     *
+     * Fehler werden geschluckt: Das Vorwärmen ist ein Angebot. Ohne
+     * es holt die Stellenseite ihre Daten wie bisher selbst, und ein
+     * Fehler hier darf niemandem das Gespräch stören.
+     */
+    const waermen = (): void => {
+      void fetch("/api/jobs/vorwaermen", { method: "POST", keepalive: true }).catch(() => {});
+    };
+    waermen();
+    const takt = window.setInterval(waermen, 15_000);
+    return () => window.clearInterval(takt);
   }, [router]);
 
   useEffect(() => {

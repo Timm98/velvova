@@ -45,7 +45,24 @@ export interface InterviewView {
   voiceAvailable: boolean;
 }
 
-async function ensureSession(userId: string, locale: "de" | "en") {
+/**
+ * Die laufende Sitzung und ihre Gesprächszüge — in einer Transaktion.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum beides zusammen
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Züge brauchen die Sitzungskennung, sie MÜSSEN also warten. Was
+ * sie nicht mussten, war auf eine zweite Transaktion warten: Vorher
+ * öffnete `ensureSession` eine, gab die Sitzung zurück, und die
+ * Abfrage nach den Zügen öffnete die nächste. Zwei Transaktionen sind
+ * acht Netzrunden gegen Supabase, von denen sechs nur Verwaltung
+ * sind — BEGIN, Rolle setzen, COMMIT, zweimal.
+ *
+ * In einer Transaktion bleibt die echte Abhängigkeit bestehen und die
+ * doppelte Verwaltung fällt weg.
+ */
+async function sitzungUndZuege(userId: string, locale: "de" | "en") {
   const db = await getDb();
 
   return withUser(db, userId, async (tx) => {
@@ -61,13 +78,22 @@ async function ensureSession(userId: string, locale: "de" | "en") {
       .orderBy(desc(schema.interviewSessions.updatedAt))
       .limit(1);
 
-    if (existing) return existing;
+    const sitzung =
+      existing ??
+      (
+        await tx
+          .insert(schema.interviewSessions)
+          .values({ userId, locale, mode: "text", stage: "consent_and_goal", status: "active" })
+          .returning()
+      )[0]!;
 
-    const [created] = await tx
-      .insert(schema.interviewSessions)
-      .values({ userId, locale, mode: "text", stage: "consent_and_goal", status: "active" })
-      .returning();
-    return created!;
+    const zuege = await tx
+      .select()
+      .from(schema.interviewTurns)
+      .where(eq(schema.interviewTurns.sessionId, sitzung.id))
+      .orderBy(asc(schema.interviewTurns.index));
+
+    return { sitzung, zuege };
   });
 }
 
@@ -105,16 +131,8 @@ export async function loadInterview(): Promise<InterviewView> {
       .where(and(eq(schema.evidenceItems.userId, user.id), isNull(schema.evidenceItems.deletedAt))),
   );
 
-  const sessionRow = await ensureSession(user.id, user.locale);
-
-  const [turns, evidence] = await Promise.all([
-    withUser(db, user.id, (tx) =>
-      tx
-        .select()
-        .from(schema.interviewTurns)
-        .where(eq(schema.interviewTurns.sessionId, sessionRow.id))
-        .orderBy(asc(schema.interviewTurns.index)),
-    ),
+  const [{ sitzung: sessionRow, zuege: turns }, evidence] = await Promise.all([
+    sitzungUndZuege(user.id, user.locale),
     belegeUnterwegs,
   ]);
 
@@ -215,7 +233,7 @@ export async function submitAnswer(
   if (trimmed.length > 5000) return { ok: false, error: "Die Antwort ist zu lang (max. 5000 Zeichen)." };
 
   const db = await getDb();
-  const sessionRow = await ensureSession(user.id, user.locale);
+  const { sitzung: sessionRow } = await sitzungUndZuege(user.id, user.locale);
 
   await withUser(db, user.id, async (tx) => {
     const [{ count } = { count: 0 }] = await tx

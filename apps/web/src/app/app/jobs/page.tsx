@@ -8,9 +8,9 @@ import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
-import { listJobsForUser, profilkontextAusTx, type ScoredJob } from "@/lib/matching";
+import { listJobsForUser, type ScoredJob } from "@/lib/matching";
 import { buildDecisionBrief } from "@/lib/applications/decision-brief";
-import { gateAusTx, loadGate } from "@/lib/gate";
+import { loadGate } from "@/lib/gate";
 import { Badge, Button, Skeleton, SkeletonText } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 import type { JobRowData } from "@/components/jobs/JobRow";
@@ -24,8 +24,6 @@ import { workspaceDaten } from "./nina/daten";
 import { zukunftLaden } from "@/lib/jobs/zukunft";
 import { NinaSteuerungProvider } from "./NinaSteuerung";
 import { JobDetailPanel } from "./JobDetailPanel";
-import { gehaltsangabenAusTx } from "@/lib/payroll/lesen";
-import { lebenshaltungAusTx } from "@/lib/lebenswert/lesen";
 import { NinaSearchComposer } from "@/components/jobs/NinaSearchComposer";
 import { ScrollUebergang } from "@/components/nina/ScrollUebergang";
 import { SuchdialogProvider, Suchrueckfrage } from "@/components/jobs/Suchrueckfrage";
@@ -33,14 +31,12 @@ import { titelOhneEmoji } from "@/lib/jobs/titel";
 import { gehaltszeileFuer, referenzFinden, zeilenAusStellen } from "@/lib/jobs/zeilen";
 import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
 import { entfernungKm } from "@paycheck/matching";
-import { ortNachschlagen } from "@paycheck/jobs";
-import { abgelegteStellenAusTx } from "@/lib/nina/rueckmeldung";
 import { besucherHerkunft } from "@/lib/herkunft";
-import { filterAusTx, nurFilter } from "@/lib/jobs/listenfilter";
-import { ladeSitzungsbedingungen } from "@/lib/nina/sitzungsbedingungen";
+import { nurFilter } from "@/lib/jobs/listenfilter";
 import { Suchrichtungen } from "@/components/jobs/Suchrichtungen";
 import { suchrichtungen } from "@paycheck/matching";
 import { abdeckungssatz, ladeQuellenabdeckung } from "@/lib/jobs/coverage";
+import { stellenseitendaten } from "@/lib/jobs/seitendaten";
 import { listensignale } from "@/lib/jobs/listensignale";
 import { gehaltsanzeige } from "@/lib/jobs/gehaltsanzeige";
 import { referenzenFuerKldb, referenzenFuerTitel } from "@/lib/jobs/berufsreferenz";
@@ -207,57 +203,61 @@ async function Stellenliste({
    * Keks. Beides wird vorher gelesen — eine offene Verbindung soll
    * nicht auf etwas warten, das nicht aus der Datenbank kommt.
    */
-  const [abdeckung, sitzung] = await Promise.all([
-    ladeQuellenabdeckung(),
-    ladeSitzungsbedingungen(),
-  ]);
+  /* Zwischengespeichert, braucht meist gar keine Datenbank. */
+  const abdeckung = await ladeQuellenabdeckung();
 
-  const [gate, ctx, [saved, wohnzeile, gemerkt], [abgelegt, gehaltsangaben, lebenshaltung]] =
-    await Promise.all([
-      withUser(db, user.id, (tx) => gateAusTx(tx, user.id)),
-      withUser(db, user.id, (tx) => profilkontextAusTx(tx, user.id, sitzung)),
-      /*
-       * Zwei Gruppen statt einer.
-       *
-       * Sechs Abfragen in EINER Transaktion sind sechs Netzrunden
-       * hintereinander — eine Verbindung arbeitet nacheinander, daran
-       * ändert `Promise.all` nichts. Gemessen wuchs die Sammelrunde
-       * dadurch von 357 auf 432 Millisekunden, als die abgelegten
-       * Stellen dazukamen.
-       *
-       * Zwei Transaktionen mit je drei Abfragen laufen nebeneinander:
-       * dieselbe Zahl an Runden, aber die Hälfte der Wartezeit. Mehr
-       * Gruppen lohnen nicht — jede kostet BEGIN, Rolle und COMMIT
-       * zusätzlich.
-       */
-      withUser(db, user.id, (tx) =>
-        Promise.all([
-          tx
-            .select({ jobId: schema.savedJobs.jobId })
-            .from(schema.savedJobs)
-            .where(eq(schema.savedJobs.userId, user.id)),
-          tx
-            .select({ baseLocation: schema.userSettings.baseLocation })
-            .from(schema.userSettings)
-            .where(eq(schema.userSettings.userId, user.id))
-            .limit(1),
-          Object.keys(eigene).length > 0 || adresse.leer === "1"
-            ? Promise.resolve({} as Record<string, string>)
-            : filterAusTx(tx, user.id).catch(() => ({}) as Record<string, string>),
-        ]),
-      ),
-      withUser(db, user.id, (tx) =>
-        Promise.all([
-          /* Mitgelesen statt von `listJobsForUser` selbst geholt: dort
-             wäre es eine eigene Transaktion, also vier Netzrunden.
-             Gemessen war genau diese Abfrage 179 von 181 Millisekunden
-             jener Funktion. */
-          abgelegteStellenAusTx(tx, user.id),
-          gehaltsangabenAusTx(tx, user.id),
-          lebenshaltungAusTx(tx, user.id),
-        ]),
-      ),
-    ]);
+  /*
+   * Der Wohnort wird nachgeschlagen, sobald er bekannt ist — nicht
+   * danach.
+   *
+   * `ortNachschlagen` stand unter der Sammelrunde und lief allein,
+   * obwohl es nur die eine Zeile aus `user_settings` braucht. Das war
+   * eine weitere Netzrunde in Reihe, während nebenan noch drei
+   * Gruppen unterwegs waren.
+   *
+   * Jetzt hängt es direkt an der Gruppe, die diese Zeile liest, und
+   * verschwindet in deren Schatten: Die anderen Gruppen brauchen
+   * ohnehin länger.
+   */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Alles über die Person auf einmal — und womöglich schon fertig
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Riegel, Profil, gemerkte Stellen, abgelegte Stellen, Wohnort,
+   * Steuerangaben, Lebenshaltung, gespeicherte Filter: gemessen 366
+   * Millisekunden, fast ausschliesslich Netzrunden gegen Supabase.
+   *
+   * Sie stehen jetzt in `lib/jobs/seitendaten.ts` und werden dort
+   * zwanzig Sekunden lang vorgehalten. Während jemand mit Monday
+   * spricht, holt `POST /api/jobs/vorwaermen` sie im Hintergrund —
+   * kommt der Wechsel, sind sie da und dieser Aufruf kostet nichts.
+   *
+   * Ist nichts vorgewärmt, holt diese Zeile sie wie bisher selbst.
+   * Das Vorwärmen ist ein Angebot, keine Voraussetzung.
+   */
+  const {
+    gate,
+    ctx,
+    saved,
+    gemerkteFilter,
+    abgelegt,
+    gehaltsangaben,
+    lebenshaltung,
+    wohnpunkt,
+    wohnort,
+  } = await stellenseitendaten(user.id);
+
+  /*
+   * Wer gerade selbst gefiltert hat, behält seinen Stand.
+   *
+   * Den gespeicherten darüberzulegen hiesse, eine eben getroffene
+   * Entscheidung durch eine ältere zu ersetzen. `?leer=1` sagt
+   * ausdrücklich: Ich will wirklich nichts.
+   */
+  const gemerkt =
+    Object.keys(eigene).length > 0 || adresse.leer === "1" ? {} : gemerkteFilter;
+
   const params: Record<string, string | undefined> = { ...gemerkt, ...adresse };
 
   /*
@@ -398,24 +398,6 @@ async function Stellenliste({
    * filterte. Jetzt trägt jede Zeile, wie weit es ist — dafür muss
    * er immer da sein, sobald ein Wohnort im Profil steht.
    */
-  const wohnpunkt = wohnzeile[0]?.baseLocation
-    ? await ortNachschlagen(db, wohnzeile[0].baseLocation)
-        .then((a) =>
-          /*
-           * Genau oder auf Stadtebene — beides genügt.
-           *
-           * `ambiguous` ausdrücklich nicht: Ein falscher Mittelpunkt
-           * verschiebt nicht eine Anzeige, sondern die ganze Suche.
-           */
-          (a.status === "resolved_exact" || a.status === "resolved_city") &&
-          a.latitude !== null &&
-          a.longitude !== null
-            ? { latitude: a.latitude, longitude: a.longitude }
-            : null,
-        )
-        .catch(() => null)
-    : null;
-
   const { jobs: filtered, ohneAngabe } = applyFilters(
     jobs,
     params,
@@ -983,7 +965,7 @@ async function Stellenliste({
               maxPendelzeit={ctx.constraints.maxCommuteMinutes}
               zukunft={zukunftAngabe}
               scored={selected}
-              wohnort={wohnzeile[0]?.baseLocation ?? null}
+              wohnort={wohnort}
               /* Dieselben Zahlen wie an der Zeile links — eine
                  Rechnung, zwei Anzeigen. */
               fahrzeitMin={
