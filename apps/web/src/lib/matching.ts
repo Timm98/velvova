@@ -736,18 +736,11 @@ export function kandidatenBedarf(sichtbar: number): number {
   return Math.min(noetig, KANDIDATEN_HOECHSTENS);
 }
 
-const __log = (w: string, t0: number) => {
-  void import("node:fs").then((fs) =>
-    fs.appendFileSync("/tmp/velvova-score.log", `${w}\t${Math.round(performance.now() - t0)}\n`),
-  );
-};
-
 async function scoreAllJobsUncached(
   userId: string,
   ctx: UserProfileContext,
   vorauswahl?: Vorauswahl,
 ): Promise<ScoredJob[]> {
-  const __t0 = performance.now();
   /*
    * Aus dem gemeinsamen Zwischenspeicher — siehe `bestand()`.
    *
@@ -772,19 +765,12 @@ async function scoreAllJobsUncached(
    * oder acht Millionen Stellen in der Datenbank stehen, bewertet
    * werden zweitausend.
    */
-  const daten0 = performance.now();
   const daten = await kandidatenLaden(
     ctx,
     vorauswahl?.bedarf ?? KANDIDATEN_HOECHSTENS,
     vorauswahl,
   );
-  __log("kandidatenLaden", __t0);
-  const wm = brauchtWortmengen(ctx) ? await wortmengen(daten) : null;
-  __log("wortmengen", __t0);
-  const erg = bewerten(daten, ctx, wm);
-  __log(`bewerten (${erg.length})`, __t0);
-  void daten0;
-  return erg;
+  return bewerten(daten, ctx, brauchtWortmengen(ctx) ? await wortmengen(daten) : null);
 }
 
 /**
