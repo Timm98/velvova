@@ -881,11 +881,11 @@ export function InterviewRoom({
             Sie verschwindet, sobald das erste Wort da ist. Ab dann ist
             der Text selbst der bessere Beweis, dass etwas passiert.
 
-            Sie steht STILL. Die erste Fassung liess sie leise atmen —
-            in der Vorlage tut sie das nicht, und sie hat recht: Eine
-            Zeile, die sich bewegt, zieht das Auge auf sich und macht
-            das Warten länger. Grau und ruhig sagt dasselbe und
-            drängelt nicht.
+            Sie schimmert: eine helle Welle läuft von links nach
+            rechts durch die Schrift, wie bei ChatGPT. Zwei
+            Zwischenschritte lagen davor — ein Pulsieren der ganzen
+            Zeile (zu unruhig) und gar nichts (zu tot). Wie es gemacht
+            ist, steht bei `.schimmert` in globals.css.
 
             `mt-8` ist der Abstand aus der Vorlage: gemessen rund
             vierunddreissig Pixel zwischen der eigenen Bubble und der
@@ -906,7 +906,7 @@ export function InterviewRoom({
                 (nina.messages.at(-1)?.content ?? "").trim().length > 0,
             });
             return wort ? (
-              <p className="mt-8 text-base text-ink-3" aria-live="polite">
+              <p className="schimmert mt-8 text-base" aria-live="polite">
                 {wort}
               </p>
             ) : null;

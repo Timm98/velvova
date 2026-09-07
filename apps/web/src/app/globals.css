@@ -1519,10 +1519,69 @@ input[type="number"] {
 }
 
 /*
- * Hier stand ein leiser Puls für die Tätigkeitszeile.
+ * ══════════════════════════════════════════════════════════════
+ * Die Tätigkeitszeile schimmert
+ * ══════════════════════════════════════════════════════════════
  *
- * Er ist weg. In der Vorlage — ChatGPT, „Wird verarbeitet" — steht
- * die Zeile vollkommen still, und das ist die bessere Wahl: Eine
- * Zeile, die sich bewegt, zieht das Auge auf sich und macht das
- * Warten länger. Grau und ruhig sagt dasselbe und drängelt nicht.
+ * Eine helle Welle läuft von links nach rechts durch die Schrift —
+ * dasselbe, was ChatGPT unter „Wird verarbeitet" macht. Zwei
+ * Zwischenschritte lagen davor: erst ein Pulsieren der ganzen Zeile
+ * (zu unruhig), dann gar nichts (zu tot).
+ *
+ * ── Wie es gemacht ist ──────────────────────────────────────
+ *
+ * Kein Element bewegt sich. Der Farbverlauf liegt IN der Schrift:
+ * `background-clip: text` schneidet ihn auf die Buchstabenformen zu,
+ * `color: transparent` lässt ihn durch. Verschoben wird nur die
+ * Position des Verlaufs — das kostet keinen Layoutdurchlauf und
+ * flimmert nicht.
+ *
+ * ── Warum die Richtung stimmt ───────────────────────────────
+ *
+ * Der Verlauf ist doppelt so breit wie die Zeile, die helle Stelle
+ * sitzt in seiner Mitte. Bei `background-position: 100%` steht diese
+ * Mitte am LINKEN Rand, bei `0%` am rechten. Die Bewegung von 100
+ * nach 0 schiebt die Helligkeit also nach rechts.
+ *
+ * 2,2 Sekunden je Durchlauf: langsam genug, dass es nicht hektisch
+ * wird, schnell genug, dass man es als „läuft" liest.
  */
+@keyframes schimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+
+.schimmert {
+  background-image: linear-gradient(
+    90deg,
+    var(--text-tertiary) 0%,
+    var(--text-tertiary) 35%,
+    var(--text-primary) 50%,
+    var(--text-tertiary) 65%,
+    var(--text-tertiary) 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: schimmer 2.2s linear infinite;
+}
+
+/*
+ * Ohne Bewegung bleibt die Schrift lesbar.
+ *
+ * `animation: none` allein genügt hier NICHT: Ohne die Farbe zurück
+ * wäre der Text durchsichtig — ein abgeschalteter Effekt darf nie den
+ * Inhalt mitnehmen.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .schimmert {
+    animation: none;
+    background-image: none;
+    color: var(--text-tertiary);
+  }
+}

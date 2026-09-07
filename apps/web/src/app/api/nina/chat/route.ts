@@ -39,6 +39,7 @@ import {
   zustimmungVermerken,
 } from "@/lib/nina/engine";
 import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
+import { listJobsForUser, loadProfileContext } from "@/lib/matching";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
 import { buildPageContext } from "@/lib/nina/page-context";
 import {
@@ -770,9 +771,31 @@ export async function POST(request: Request) {
                * Modell Stellen, die es nicht zeigen darf, oder der
                * Server drängt sie mitten in eine andere Frage.
                */
+              /*
+               * Wer ausdrücklich nach Stellen fragt, bekommt sie.
+               *
+               * Vorher mussten ZWEI Bedingungen gelten: das Modell
+               * musste `show_jobs` empfehlen UND die Reife durfte
+               * nicht `not_ready` sein. Das war richtig gedacht — der
+               * Server soll niemandem Stellen mitten in eine andere
+               * Frage drängen — und falsch für den einen Fall, um den
+               * es geht: „zeig mir Jobs". Dann stand da eine
+               * Empfehlung, aber keine Stelle.
+               *
+               * `jobAnfrage` ist die dritte Tür: Hat die Person selbst
+               * danach gefragt, wird gezeigt. Die Reifeprüfung bleibt
+               * für den Fall, dass MONDAY es vorschlägt — dort ist
+               * Zurückhaltung richtig.
+               *
+               * Ehrlich bleibt es, weil jede Karte ihre Passung und
+               * ihre Sicherheit mitbringt. Wer wenig über sich gesagt
+               * hat, sieht eine niedrige Sicherheit — nicht eine
+               * geschönte Auswahl.
+               */
               if (
-                turn.recommended_action === "show_jobs" &&
-                angewendet.readiness.state !== "not_ready"
+                jobAnfrage ||
+                (turn.recommended_action === "show_jobs" &&
+                  angewendet.readiness.state !== "not_ready")
               ) {
                 const vorschläge = await ninaJobSuggestions(user.id, 3).catch(() => []);
                 if (vorschläge.length > 0) send({ type: "jobs", jobs: vorschläge });
@@ -966,30 +989,86 @@ async function runTool(
       }
 
       case "search_jobs": {
+        /*
+         * ══════════════════════════════════════════════════════════
+         * Dieselbe Suche wie auf der Stellenseite — nicht eine zweite
+         * ══════════════════════════════════════════════════════════
+         *
+         * Hier stand eine eigene Abfrage:
+         *
+         *   WHERE is_demo = false
+         *     AND (title ILIKE '%…%' OR company.name ILIKE '%…%')
+         *   LIMIT n
+         *
+         * Zwei Fehler in vier Zeilen.
+         *
+         * Der erste ist die Geschwindigkeit. Ein `ILIKE` mit führendem
+         * Prozentzeichen kann keinen Index benutzen — bei 3,37
+         * Millionen Zeilen mit Verbund auf `companies` ist das ein
+         * vollständiger Durchlauf. Im Protokoll standen dafür
+         * Antwortzeiten von 2,3 und 4,1 MINUTEN. So lange stand im
+         * Gespräch „Denkt nach".
+         *
+         * Der zweite ist die Güte. Die Abfrage nahm die ersten
+         * Treffer, die der Datenbank einfielen: keine Reihenfolge,
+         * kein Profil, keine Bedingungen, kein Ort, kein Gehalt. Wer
+         * „zeig mir Jobs" sagt, bekam irgendwelche Stellen, deren
+         * Titel den Suchbegriff enthielt.
+         *
+         * `listJobsForUser` ist der Weg, den die Stellenseite geht:
+         * Vorauswahl über den Volltextindex, dann Bewertung gegen das
+         * Profil, dann Aussortieren dessen, was die Bedingungen
+         * verletzt. Dieselbe Rechnung, dieselben Zahlen — und wenn
+         * Monday drei Stellen nennt, sind es dieselben drei, die auf
+         * der Seite oben stehen.
+         */
         const data = input as z.infer<(typeof ToolSchemas)["search_jobs"]>;
-        const muster = data.query ? `%${data.query.replace(/[%_]/g, (m) => `\\${m}`)}%` : null;
+        const ctx = await loadProfileContext(user.id);
+        const { jobs } = await listJobsForUser(user.id, ctx, {
+          suche: data.query ?? null,
+          /*
+           * Zwölf Kandidaten je gezeigter Stelle — dieselbe Regel wie
+           * auf der Seite. Wer drei sehen will, braucht genug
+           * bewertete, damit die drei besten auch wirklich die besten
+           * sind.
+           */
+          sichtbar: data.limit,
+          limit: data.limit * 3,
+        });
 
-        const rows = await db
-          .select({
-            id: schema.jobs.id,
-            title: schema.jobs.title,
-            companyName: schema.companies.name,
-            location: schema.jobs.location,
-          })
-          .from(schema.jobs)
-          .innerJoin(schema.companies, eq(schema.companies.id, schema.jobs.companyId))
-          .where(
-            and(
-              eq(schema.jobs.isDemo, false),
-              data.remoteType ? eq(schema.jobs.workModel, data.remoteType) : undefined,
-              muster
-                ? or(ilike(schema.jobs.title, muster), ilike(schema.companies.name, muster))
-                : undefined,
-            ),
-          )
-          .limit(data.limit);
+        /*
+         * Die Arbeitsform filtert erst danach.
+         *
+         * Sie ist eine harte Bedingung, kein Rangkriterium — und
+         * `listJobsForUser` kennt sie nicht. Nachträglich zu filtern
+         * ist hier richtig: Es entfernt, was nicht passt, ohne die
+         * Reihenfolge des Restes zu verändern.
+         */
+        const passend = data.remoteType
+          ? jobs.filter((j) => j.job.workModel === data.remoteType)
+          : jobs;
 
-        return { ok: true, output: { count: rows.length, jobs: rows } };
+        return {
+          ok: true,
+          output: {
+            count: Math.min(passend.length, data.limit),
+            jobs: passend.slice(0, data.limit).map((j) => ({
+              id: j.jobId,
+              title: j.job.title,
+              companyName: j.job.companyName,
+              location: j.job.location,
+              workModel: j.job.workModel,
+              /*
+               * Passung und Sicherheit gehören dazu, sonst nennt
+               * Monday drei Stellen, ohne sagen zu können, warum
+               * gerade diese.
+               */
+              fit: j.fit.band,
+              reason: j.fit.topReason,
+              caveat: j.fit.topReservation || null,
+            })),
+          },
+        };
       }
 
       case "save_job": {
