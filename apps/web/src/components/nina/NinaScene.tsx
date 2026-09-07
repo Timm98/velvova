@@ -61,12 +61,48 @@ import type { NinaVisualState } from "./NinaProvider";
  *      rückt.
  */
 
-const MODELL = "/models/nina.glb";
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die gepackte Fassung — 7,6 statt 12,4 MB
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Monday ist das mit Abstand grösste, was diese Anwendung ausliefert.
+ * Gemessen auf der Startseite: Die Datei wird nach einer Sekunde
+ * angefordert; über eine Leitung mit 20 Mbit/s dauert allein ihr
+ * Herunterladen fünf Sekunden. So lange sitzt man vor einem leeren
+ * Kreis.
+ *
+ * `nina.opt.glb` ist dieselbe Szene, anders verpackt:
+ *
+ *   Netzdaten   KHR_mesh_quantization
+ *   Texturen    PNG → WebP, Auflösung unverändert
+ *
+ * Beides braucht KEINEN Dekoder: Quantisierung liest three.js selbst,
+ * WebP der Browser. Zwölf Netze, drei Animationen, dieselben Namen —
+ * geprüft in `nina-modell.test.ts`.
+ *
+ * ── Warum nicht stärker gepackt ─────────────────────────────
+ *
+ * Mit `meshopt` wären es 3,9 MB statt 7,6 — ein Drittel. Der
+ * Entpacker dafür bringt WebAssembly mit, und unsere CSP erlaubt kein
+ * `unsafe-eval`. Genau daran ist eine Vorgängerfassung schon einmal
+ * gescheitert: Verstoss in der Konsole, leere Fläche auf dem
+ * Bildschirm. Die 3,7 MB sind zu haben — aber nur gegen eine
+ * schwächere CSP, und das ist keine Entscheidung, die man beiläufig
+ * trifft.
+ *
+ * `nina.glb` bleibt liegen. Sie ist die Quelle, aus der die gepackte
+ * Fassung entsteht:
+ *
+ *   npx @gltf-transform/cli optimize nina.glb nina.opt.glb \
+ *     --compress quantize --texture-compress webp
+ */
+const MODELL = "/models/nina.opt.glb";
 
 /*
  * Ein Zwischenspeicher über alle Verbraucher.
  *
- * Die Datei ist 12,4 MB. Gesprächsseite und Drawer zeigen Monday
+ * Die Datei ist 7,6 MB. Gesprächsseite und Drawer zeigen Monday
  * gleichzeitig — ohne diese Zeile lüde jede Stelle sie erneut. Das
  * Versprechen ist die Zusage, nicht das Ergebnis: wer zuerst fragt,
  * löst den Ladevorgang aus, alle weiteren hängen sich an.

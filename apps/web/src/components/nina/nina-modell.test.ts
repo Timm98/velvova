@@ -27,7 +27,17 @@ import { CLIP_FÜR_ZUSTAND } from "./useNinaAnimation";
  * Umweg über three.js bräuchte ein DOM, das es im Test nicht gibt.
  */
 
-const DATEI = path.join(__dirname, "..", "..", "..", "public", "models", "nina.glb");
+/*
+ * Geprüft wird die Datei, die NinaScene WIRKLICH lädt.
+ *
+ * Sie hiess `nina.glb`; seit der Verpackung ist es `nina.opt.glb`.
+ * Der Name steht hier bewusst doppelt — einmal in `NinaScene`, einmal
+ * hier — und nicht als geteilte Konstante: Diese Prüfung soll
+ * anschlagen, wenn jemand dort eine andere Datei einträgt. Eine
+ * gemeinsame Konstante würde brav mitwandern und nichts mehr
+ * bewachen.
+ */
+const DATEI = path.join(__dirname, "..", "..", "..", "public", "models", "nina.opt.glb");
 
 const MAGIC = 0x46546c67; // "glTF"
 const JSON_CHUNK = 0x4e4f534a; // "JSON"
