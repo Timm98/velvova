@@ -758,7 +758,24 @@ export function InterviewRoom({
           )}
 
           <ol className="grid gap-8">
-            {nina.messages.map((m, i) => {
+            {nina.messages
+              /*
+               * Eine leere Antwort ist keine Antwort.
+               *
+               * Beim Streamen legt der Provider die Nachricht an,
+               * bevor das erste Zeichen da ist. Gezeichnet wurde
+               * dadurch ein leerer Absatz mit blinkendem Strich — und
+               * darunter stand seit heute zusätzlich „Denkt nach".
+               * Zwei Zeichen für dieselbe Sache, eines davon ein
+               * einzelner Balken ohne Text daneben.
+               *
+               * Die Vorlage macht es anders: ChatGPT zeigt in dieser
+               * Zeit NUR die graue Zeile. Der Balken kommt zurück,
+               * sobald das erste Wort da ist — dann steht er, wo er
+               * hingehört: am Ende eines Satzes.
+               */
+              .filter((m) => !(m.role === "assistant" && m.streaming && m.content.length === 0))
+              .map((m, i, sichtbare) => {
               /*
                * Die letzte Nachricht groß — aber nur, wenn sie kurz ist.
                *
@@ -768,7 +785,7 @@ export function InterviewRoom({
                * nach vier bis sechs Antworten zusammen.
                */
               const istLetzte =
-                i === nina.messages.length - 1 && m.role === "assistant" && m.content.length < 260;
+                i === sichtbare.length - 1 && m.role === "assistant" && m.content.length < 260;
               return (
                 <li key={m.id} className={cn("grid", m.role === "user" && "justify-items-end")}>
                   {m.role === "user" ? (

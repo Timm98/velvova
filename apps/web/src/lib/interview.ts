@@ -324,7 +324,7 @@ export async function submitAnswer(
 export async function skipQuestion(questionKey: string, stage: InterviewStage): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
-  const sessionRow = await ensureSession(user.id, user.locale);
+  const { sitzung: sessionRow } = await sitzungUndZuege(user.id, user.locale);
 
   await withUser(db, user.id, async (tx) => {
     const [last] = await tx
@@ -349,7 +349,7 @@ export async function skipQuestion(questionKey: string, stage: InterviewStage): 
 export async function skipStage(stage: InterviewStage): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
-  const sessionRow = await ensureSession(user.id, user.locale);
+  const { sitzung: sessionRow } = await sitzungUndZuege(user.id, user.locale);
 
   await withUser(db, user.id, async (tx) => {
     const skipped = new Set(sessionRow.skippedStages as string[]);
@@ -364,7 +364,7 @@ export async function skipStage(stage: InterviewStage): Promise<void> {
 export async function pauseSession(): Promise<void> {
   const user = await requireUser();
   const db = await getDb();
-  const sessionRow = await ensureSession(user.id, user.locale);
+  const { sitzung: sessionRow } = await sitzungUndZuege(user.id, user.locale);
   await withUser(db, user.id, (tx) =>
     tx
       .update(schema.interviewSessions)
