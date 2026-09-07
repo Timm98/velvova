@@ -990,7 +990,20 @@ input[type="number"] {
  * trägt: der Weg schnell, die Ankunft ruhig.
  */
 :root {
-  --uebergang-feld: 820ms;
+  --uebergang-feld: 900ms;
+  /*
+   * Ein Schritt für alles.
+   *
+   * Vorher liefen drei Wellen mit drei Takten: die Flächen des
+   * Übergangs im 70er-Schritt, die Blöcke darunter im 60er, die
+   * Stellenzeilen im 45er. Jede für sich war ruhig; übereinander
+   * ergaben sie ein Flimmern ohne erkennbaren Puls — DAS ist, was als
+   * hektisch ankommt.
+   *
+   * Neunzig Millisekunden, überall. Man kann die Reihenfolge zählen,
+   * ohne sie zu bemerken.
+   */
+  --uebergang-schritt: 90ms;
   /*
    * Das Alte geht schneller, als das Neue kommt.
    *
@@ -1012,8 +1025,8 @@ input[type="number"] {
    * dem Bildschirm steht, zu wenig, um zwei Seiten gleichzeitig zu
    * lesen.
    */
-  --uebergang-panel-weg: 320ms;
-  --uebergang-panel-her: 520ms;
+  --uebergang-panel-weg: 340ms;
+  --uebergang-panel-her: 560ms;
   --uebergang-grund: 300ms;
   /*
    * Weichere Kurve.
@@ -1205,15 +1218,15 @@ input[type="number"] {
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-titel) {
-  animation: panel-von-unten var(--uebergang-panel-her) 110ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) calc(1 * var(--uebergang-schritt)) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-hinweis) {
-  animation: panel-von-unten var(--uebergang-panel-her) 180ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) calc(2 * var(--uebergang-schritt)) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="runter"]::view-transition-new(stellen-liste) {
-  animation: panel-von-unten var(--uebergang-panel-her) 250ms var(--uebergang-kurve) both;
+  animation: panel-von-unten var(--uebergang-panel-her) calc(3 * var(--uebergang-schritt)) var(--uebergang-kurve) both;
 }
 
 /* Der Rückweg — dieselbe Abfolge, umgekehrt. Ein Rückweg, der
@@ -1231,11 +1244,11 @@ input[type="number"] {
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-kopf) {
-  animation: panel-von-oben var(--uebergang-panel-her) 110ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) calc(1 * var(--uebergang-schritt)) var(--uebergang-kurve) both;
 }
 
 :root[data-uebergang="hoch"]::view-transition-new(gespraech-strom) {
-  animation: panel-von-oben var(--uebergang-panel-her) 180ms var(--uebergang-kurve) both;
+  animation: panel-von-oben var(--uebergang-panel-her) calc(2 * var(--uebergang-schritt)) var(--uebergang-kurve) both;
 }
 
 /*
@@ -1408,8 +1421,8 @@ input[type="number"] {
 }
 
 .zeile-auftritt {
-  animation: zeile-auftritt 380ms var(--uebergang-kurve) both;
-  animation-delay: calc(var(--rang, 0) * 45ms);
+  animation: zeile-auftritt 480ms var(--uebergang-kurve) both;
+  animation-delay: calc(var(--rang, 0) * var(--uebergang-schritt));
 }
 
 /*
@@ -1479,17 +1492,15 @@ input[type="number"] {
 }
 
 .bloecke-auftritt > * {
-  animation: block-auftritt 360ms var(--uebergang-kurve) both;
+  animation: block-auftritt 480ms var(--uebergang-kurve) both;
 }
 
-.bloecke-auftritt > *:nth-child(1) { animation-delay: 0ms; }
-.bloecke-auftritt > *:nth-child(2) { animation-delay: 60ms; }
-.bloecke-auftritt > *:nth-child(3) { animation-delay: 120ms; }
-.bloecke-auftritt > *:nth-child(4) { animation-delay: 180ms; }
-.bloecke-auftritt > *:nth-child(5) { animation-delay: 240ms; }
-.bloecke-auftritt > *:nth-child(6) { animation-delay: 300ms; }
-.bloecke-auftritt > *:nth-child(7) { animation-delay: 360ms; }
-.bloecke-auftritt > *:nth-child(n + 8) { animation-delay: 420ms; }
+.bloecke-auftritt > *:nth-child(1) { animation-delay: calc(0 * var(--uebergang-schritt)); }
+.bloecke-auftritt > *:nth-child(2) { animation-delay: calc(1 * var(--uebergang-schritt)); }
+.bloecke-auftritt > *:nth-child(3) { animation-delay: calc(2 * var(--uebergang-schritt)); }
+.bloecke-auftritt > *:nth-child(4) { animation-delay: calc(3 * var(--uebergang-schritt)); }
+.bloecke-auftritt > *:nth-child(5) { animation-delay: calc(4 * var(--uebergang-schritt)); }
+.bloecke-auftritt > *:nth-child(n + 6) { animation-delay: calc(5 * var(--uebergang-schritt)); }
 
 /*
  * Wer Bewegung abbestellt hat, bekommt alles sofort und ganz.

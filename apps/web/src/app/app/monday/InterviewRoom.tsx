@@ -992,7 +992,24 @@ export function InterviewRoom({
             </button>
           )}
           <Composer
-            onSend={(text, options) => void nina.send(text, options)}
+            onSend={(text, options) => {
+              /*
+               * Wer selbst schreibt, will seine Zeile sehen.
+               *
+               * Der Effekt weiter oben scrollt nur mit, wenn man
+               * ohnehin unten steht — richtig für Mondays Antworten,
+               * falsch für die eigene Nachricht. Wer eine alte Stelle
+               * im Verlauf nachliest und dann tippt, hat sich für das
+               * Neue entschieden.
+               *
+               * `sofort` statt sanft: Man springt nicht hinterher, man
+               * ist da. Und zwei Bilder später noch einmal, weil die
+               * eigene Zeile erst nach dem Zeichnen ihre Höhe hat.
+               */
+              void nina.send(text, options);
+              nachUnten(true);
+              requestAnimationFrame(() => requestAnimationFrame(() => nachUnten(true)));
+            }}
             busy={nina.busy}
             onListeningChange={nina.setListening}
             placeholder={labels.yourAnswer}
