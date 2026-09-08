@@ -47,15 +47,43 @@ import Image from "next/image";
  */
 type Marke = {
   name: string;
+  /** Die helle Fassung: Zeichen auf weissem Grund. */
   datei: string;
+  /** Die dunkle Fassung, wenn es eine gibt. */
+  dateiDunkel?: string;
+  /**
+   * Kein dunkles Bild, aber ein einfarbiges Zeichen auf durchsichtigem
+   * Grund — das lässt sich umkehren.
+   */
+  umkehren?: boolean;
+  /**
+   * Bleibt auch im Dunkeln hell.
+   *
+   * Für Marken, von denen weder eine dunkle Datei noch ein umkehrbares
+   * Zeichen vorliegt. Eine helle Kachel in einer dunklen Reihe fällt
+   * auf; eine falsche Markenfarbe fällt mehr auf.
+   */
+  hellBleibt?: boolean;
 };
 
 const MARKEN: Marke[] = [
-  { name: "LinkedIn", datei: "/marken/linkedin-badge.png" },
-  { name: "Indeed", datei: "/marken/indeed-badge.png" },
-  { name: "StepStone", datei: "/marken/stepstone-badge.png" },
-  { name: "OpenAI", datei: "/marken/openai-badge.png" },
-  { name: "Claude", datei: "/marken/claude-badge.png" },
+  { name: "LinkedIn", datei: "/marken/linkedin-badge.png", hellBleibt: true },
+  {
+    name: "Indeed",
+    datei: "/marken/indeed-badge.png",
+    dateiDunkel: "/marken/indeed-badge-dunkel.png",
+  },
+  {
+    name: "StepStone",
+    datei: "/marken/stepstone-badge.png",
+    dateiDunkel: "/marken/stepstone-badge-dunkel.png",
+  },
+  { name: "OpenAI", datei: "/marken/openai-badge.png", umkehren: true },
+  {
+    name: "Claude",
+    datei: "/marken/claude-badge.png",
+    dateiDunkel: "/marken/claude-badge-dunkel.png",
+  },
 ];
 
 /*
@@ -89,19 +117,38 @@ export function Partnerleiste({
           <li
             key={m.name}
             title={m.name}
-            className="overflow-hidden rounded-(--radius-md) border border-line opacity-90 transition-opacity hover:opacity-100"
-            /* Weiss unter der Kachel: Vier Dateien bringen ihren weissen
-               Grund mit, die von OpenAI ist transparent und stünde
-               sonst als einzige dunkel zwischen vier hellen. */
-            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH, background: "#ffffff" }}
+            className={[
+              "markenbadge overflow-hidden rounded-(--radius-md) opacity-90 transition-opacity hover:opacity-100",
+              m.umkehren ? "markenbadge--umkehren" : "",
+              m.hellBleibt ? "markenbadge--hell-bleibt" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH }}
           >
+            {/*
+              Beide Fassungen stehen im Markup, umgeschaltet wird über
+              CSS. Ein Wechsel per JavaScript käme erst nach der
+              Hydratation und zeigte beim Laden für einen Moment die
+              falsche — genauso läuft es bei den Zahlungsarten.
+            */}
             <Image
               src={m.datei}
               alt={m.name}
               width={KACHEL_BREIT}
               height={KACHEL_HOCH}
-              className="h-full w-full object-cover"
+              className={m.dateiDunkel ? "fuer-hell h-full w-full object-cover" : "h-full w-full object-cover"}
             />
+            {m.dateiDunkel ? (
+              <Image
+                src={m.dateiDunkel}
+                alt=""
+                aria-hidden
+                width={KACHEL_BREIT}
+                height={KACHEL_HOCH}
+                className="fuer-dunkel h-full w-full object-cover"
+              />
+            ) : null}
           </li>
         ))}
       </ul>

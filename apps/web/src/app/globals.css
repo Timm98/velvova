@@ -670,6 +670,60 @@
 :root[data-theme="dark"] .zahlungsbadge .fuer-dunkel { display: block; }
 :root[data-theme="dark"] .zahlungsbadge .fuer-hell { display: none; }
 
+/*
+ * ── Markenkacheln: hell weiss, dunkel fast schwarz ───────────
+ *
+ * Dieselbe Frage wie bei den Zahlungsarten, deshalb dieselbe Antwort.
+ * Ein weisser Kasten sitzt im dunklen Modus als Leuchtfläche in einer
+ * ruhigen Seite; die Zeichen brauchen dort einen dunklen Grund.
+ *
+ * Und dieselbe Dreizustandslogik: Vorgabe hell, Systemwunsch dunkel
+ * sofern nicht ausdrücklich hell gewählt, ausdrückliche Wahl gewinnt
+ * in beide Richtungen. Eine Regel nur in der Medienabfrage griffe beim
+ * Umschalten über den Schalter nicht.
+ *
+ * `:root` und kein beliebiger Vorfahr mit `data-theme`: Die Kachel
+ * steht in einer Karte, die ihr Thema selbst setzen könnte, und würde
+ * dann auch im hellen Modus schwarz.
+ */
+.markenbadge {
+  background: #ffffff;
+  border: 1px solid rgb(11 14 22 / 0.12);
+}
+.markenbadge .fuer-dunkel { display: none; }
+.markenbadge .fuer-hell { display: block; }
+
+/*
+ * Zwei Marken ohne dunkle Datei.
+ *
+ * OpenAI liegt als einfarbiges Zeichen auf durchsichtigem Grund vor —
+ * umgekehrt wird daraus genau das weisse Zeichen, das die Marke im
+ * Dunkeln selbst verwendet. Das ist keine Umfärbung, sondern dieselbe
+ * Form in der Gegenhelligkeit.
+ *
+ * Für LinkedIn geht das nicht: Blau auf Weiss umgekehrt ergibt Orange
+ * auf Schwarz. Diese Kachel bleibt deshalb hell, bis die dunkle Datei
+ * vorliegt — eine falsche Markenfarbe wäre schlimmer als eine helle
+ * Kachel in einer dunklen Reihe.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .markenbadge:not(.markenbadge--hell-bleibt) {
+    background: #0b0d12;
+    border-color: rgb(255 255 255 / 0.14);
+  }
+  :root:not([data-theme="light"]) .markenbadge .fuer-dunkel { display: block; }
+  :root:not([data-theme="light"]) .markenbadge .fuer-hell { display: none; }
+  :root:not([data-theme="light"]) .markenbadge--umkehren img { filter: invert(1); }
+}
+
+:root[data-theme="dark"] .markenbadge:not(.markenbadge--hell-bleibt) {
+  background: #0b0d12;
+  border-color: rgb(255 255 255 / 0.14);
+}
+:root[data-theme="dark"] .markenbadge .fuer-dunkel { display: block; }
+:root[data-theme="dark"] .markenbadge .fuer-hell { display: none; }
+:root[data-theme="dark"] .markenbadge--umkehren img { filter: invert(1); }
+
 /* ── Aufmerksamkeit ohne Lärm ─────────────────────────────────
  *
  * Zwei Elemente sollen auffallen, ohne zu blinken: die Suche im Kopf
