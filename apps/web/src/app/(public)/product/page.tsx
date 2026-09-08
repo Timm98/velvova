@@ -40,6 +40,31 @@ export default async function ProductPage() {
       title: "Application Studio",
       body: "Unterlagen entstehen aus deinen belegten Erfahrungen. Jeder Satz über Erfahrung oder Ergebnis braucht einen Beleg — ohne Beleg wird abgeschwächt oder nachgefragt, nie erfunden.",
     },
+    /*
+      Diese drei standen bis zum 8. September 2026 auf der Landingpage
+      und sonst nirgends.
+
+      Als die Startseite von vierzehn Abschnitten auf zwei reduziert
+      wurde, deckte /product fast alles ab, was dort gestanden hatte —
+      Rollen, Stellen, Reality Check, Unterlagen. Diese drei Themen
+      aber nicht. Sie wären beim Aufräumen verschwunden, ohne dass
+      es jemand gemerkt hätte.
+    */
+    {
+      title: "Arbeitsweg in Zeit, nicht in Kilometern",
+      body:
+        "Zu jeder Stelle steht, wie lange der Weg dauert — mit Auto, Rad, Roller oder zu Fuß, berechnet über OpenStreetMap. Dreißig Kilometer Autobahn und dreißig Kilometer Landstrasse sind nicht dieselbe Entfernung, und im Monat macht das Stunden aus.",
+    },
+    {
+      title: "Was vom Gehalt übrig bleibt",
+      body:
+        "Ein Bruttobetrag sagt wenig, solange Steuern, Sozialabgaben und die Lebenshaltung am Ort nicht dabeistehen. Wo die Angaben reichen, rechnet Velvova das aus. Wo sie nicht reichen, steht keine Zahl, sondern der Grund.",
+    },
+    {
+      title: "Suchaufträge laufen weiter, auch wenn du nicht da bist",
+      body:
+        "Ein Suchauftrag prüft neue Anzeigen stündlich gegen deine Bedingungen. Du entscheidest bei der Einrichtung, ob und wie du benachrichtigt werden willst — ein Konto allein aktiviert nichts.",
+    },
     {
       title: "Nach der Einstellung",
       body: `${brand.assistantName} hört nicht bei der Zusage auf: Check-ins nach 30, 60 und 90 Tagen, neue Aufgaben als Evidenz, ein Lebenslauf, der von selbst aktuell bleibt.`,
