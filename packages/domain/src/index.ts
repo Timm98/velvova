@@ -33,3 +33,4 @@ export * from "./arbeitgeberidentitaet.ts";
 export * from "./pruefstand.ts";
 export * from "./dimensionsvergleich.ts";
 export * from "./klaerungsrang.ts";
+export * from "./checkzugriff.ts";
