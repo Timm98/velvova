@@ -75,7 +75,7 @@ export function HaeufigeFragen({ assistentName }: { assistentName: string }) {
   return (
     <section className="mx-auto w-full max-w-[720px] px-5 py-20 md:px-8 md:py-28">
       <h2 className="font-display text-[clamp(1.6rem,3vw,2.2rem)] font-normal leading-tight tracking-[-0.02em]">
-        Häufige Fragen
+        FAQ
       </h2>
 
       <div className="mt-8 border-t border-line">
