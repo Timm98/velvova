@@ -804,18 +804,31 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              Für Text ist dieser Abstand richtig, für eine Fläche mit
              eigenem Rahmen sieht er aus wie ein vergessener Rand.
 
-             `-mr-8` nimmt genau den Innenabstand zurück, den die Seite
-             gesetzt hat — kein gegriffener Wert. Auf sehr breiten
-             Schirmen kommen 32 weitere Pixel dazu; bis zur
-             Fensterkante bleibt dort immer noch Platz, die Seite läuft
-             also nirgends über.
+             Wie weit sie greifen darf, hängt vom Fenster ab und lässt
+             sich deshalb nicht als Stufe schreiben. Der Inhaltsbereich
+             hört bei 1240 Pixeln auf zu wachsen; alles darüber wird zu
+             Rand links und rechts. Genau dieser Rand ist der Platz,
+             den die Karte zusätzlich nehmen kann:
+
+                 (100vw − 1240px) / 2 + 2rem
+
+             Die 2rem sind der Innenabstand, der immer da ist. `max`
+             hält den Wert bei schmalen Fenstern bei genau diesen 2rem,
+             `min` deckelt ihn bei 7rem — sonst stiege der Überhang auf
+             einem sehr breiten Schirm ins Absurde.
+
+             Eine Stufe wie `xl:-mr-24` wäre einfacher gewesen und
+             falsch: Bei 1280 Pixeln stehen nur 52 Pixel Rand zur
+             Verfügung, 96 hätten die Seite um 44 Pixel überlaufen
+             lassen. Die Rechnung kann das nicht, weil sie genau den
+             vorhandenen Platz nimmt.
 
              Erst ab 768: Darunter steht die Karte unter dem Text statt
              daneben. Ein Überhang nur auf einer Seite sähe dort nicht
              nach Absicht aus, sondern nach einem Element, das aus der
              Spalte gerutscht ist.
           */
-          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-8 md:p-6 xl:-mr-16"
+          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mr-[calc(-1*min(7rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6"
           style={{ background: "var(--ed-surface)" }}
         >
           <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />
