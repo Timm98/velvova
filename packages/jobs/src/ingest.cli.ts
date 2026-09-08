@@ -15,7 +15,8 @@ import { ladeEnvDatei } from "@paycheck/config/node";
 const env = ladeEnvDatei();
 
 import { loadRuntimeConfig } from "@paycheck/config";
-import { activeAdapters, sourceStatuses } from "./registry.ts";
+import { activeAdapters, sourceStatuses, ATS_BOARDS, setBoardRegistrations } from "./registry.ts";
+import { loadRegistrations } from "./sources/ats/registrations.ts";
 import { berufsabfragen } from "./berufsabfragen.ts";
 import { ingestFromAdapter } from "./ingest.ts";
 
@@ -79,6 +80,23 @@ const berufe = await berufsabfragen().catch(() => []);
 if (berufe.length > 0) {
   console.log(`Suchwortschatz: ${berufe.length} amtliche Berufsbezeichnungen.`);
 }
+/*
+ * Die Arbeitgeberboards zuerst laden.
+ *
+ * Ohne diese Zeilen fragt der ATS-Adapter niemanden: Seine
+ * Registrierungen stehen in einer Map, die der Aufrufer füllt, und
+ * die CLI füllte sie nie. Die vier ATS-Quellen meldeten deshalb
+ * „Zugangsdaten fehlen" — auch dann, wenn in `employer_boards`
+ * verifizierte Arbeitgeber standen.
+ *
+ * Der Endpunkt `api/jobs/refresh` machte es richtig; die CLI hatte
+ * es nie mitbekommen. Zwei Wege in dieselbe Ernte, und einer davon
+ * liess vier Quellen aus.
+ */
+for (const board of ATS_BOARDS) {
+  setBoardRegistrations(board, await loadRegistrations(board));
+}
+
 const adapters = activeAdapters(cfg, { berufe });
 
 /*

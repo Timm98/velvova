@@ -1,9 +1,10 @@
 import { anzeigenklartext } from "@paycheck/domain";
+import { fortschreiben, standAusFundstellen, type Verfuegbarkeitsstand } from "@paycheck/domain";
 import { randomUUID } from "node:crypto";
 import { kennungAusRohdaten } from "./berufskennung.ts";
 import { analyseEinreihen } from "./analyse-warteschlange.ts";
-import { desc, eq, sql } from "drizzle-orm";
-import { getDb, schema } from "@paycheck/db";
+import { desc, eq, sql, inArray } from "drizzle-orm";
+import { getDb, schema, type Database } from "@paycheck/db";
 import { DEFAULT_CAPABILITIES, normalise, type JobSourceAdapter, type NormalisedListing } from "./adapter.ts";
 import { aehnlicherText } from "./zusammenfuehren.ts";
 import { decideForProvider } from "@paycheck/sources";
@@ -38,6 +39,14 @@ export interface IngestResult {
    *  in der Liste zu landen. */
   merged: number;
   failed: number;
+  /**
+   * Ob dieser Lauf den GANZEN Bestand der Quelle gesehen hat.
+   *
+   * Nur dann bedeutet eine fehlende Stelle etwas. Bei einem
+   * abgeschnittenen Lauf — Stückzahlgrenze, Zeitbudget, Fehler — folgt
+   * aus einem Fehlen nichts, und es darf nichts geschlossen werden.
+   */
+  feedVollstaendig: boolean;
   errors: string[];
   startedAt: Date;
   finishedAt: Date;
@@ -449,6 +458,18 @@ async function writeListings(
     url: string;
     canonicalKey: string | null;
     lastSeenAt: Date;
+    /**
+     * Die Bewerbungsfrist laut DIESER Quelle.
+     *
+     * Getrennt von `jobs.expires_at` gehalten, weil zwei Quellen zur
+     * selben Stelle verschiedene Fristen nennen können — und dann ist
+     * die der näheren Quelle die richtige.
+     *
+     * `null`, wo die Quelle keine nennt. Greenhouse hat das Feld
+     * (`application_deadline`), füllt es aber selten; Lever, Ashby
+     * und SmartRecruiters haben gar keines.
+     */
+    validThrough: Date | null;
   }[] = [];
   /*
    * Der Typ kommt vom Adapter, statt hier wiederholt zu werden.
@@ -536,6 +557,7 @@ async function writeListings(
           url: j.originalUrl ?? "",
           canonicalKey: k,
           lastSeenAt: j.fetchedAt,
+          validThrough: j.expiresAt ?? null,
         });
         ergebnisse[i] = "merged";
         continue;
@@ -551,6 +573,7 @@ async function writeListings(
           url: j.originalUrl ?? "",
           canonicalKey: k,
           lastSeenAt: j.fetchedAt,
+          validThrough: j.expiresAt ?? null,
         });
         ergebnisse[i] = "merged";
         continue;
@@ -573,6 +596,7 @@ async function writeListings(
           url: j.originalUrl ?? "",
           canonicalKey: k,
           lastSeenAt: j.fetchedAt,
+          validThrough: j.expiresAt ?? null,
         });
         ergebnisse[i] = "unchanged";
         continue;
@@ -586,6 +610,7 @@ async function writeListings(
         url: j.originalUrl ?? "",
         canonicalKey: k,
         lastSeenAt: j.fetchedAt,
+        validThrough: j.expiresAt ?? null,
       });
       for (const r of n.requirements) anforderungen.push({ ...r, jobId: bekannt.id });
       momentaufnahmen.push({ jobId: bekannt.id, rawPayload: n.raw, contentHash: j.contentHash });
@@ -614,6 +639,7 @@ async function writeListings(
       url: j.originalUrl ?? "",
       canonicalKey: k,
       lastSeenAt: j.fetchedAt,
+      validThrough: j.expiresAt ?? null,
     });
     for (const r of n.requirements) anforderungen.push({ ...r, jobId: kennung });
     momentaufnahmen.push({ jobId: kennung, rawPayload: n.raw, contentHash: j.contentHash });
@@ -677,6 +703,7 @@ async function writeListings(
           url: sql`excluded.url`,
           canonicalKey: sql`excluded.canonical_key`,
           lastSeenAt: sql`excluded.last_seen_at`,
+          validThrough: sql`excluded.valid_through`,
         },
       });
   }
@@ -967,6 +994,9 @@ export async function ingestFromAdapter(
         unchanged: 0,
         merged: 0,
         failed: 0,
+        /* Vorgabe: nicht vollständig. Ein Lauf, der scheitert oder gar
+           nicht stattfindet, hat den Bestand nicht gesehen. */
+        feedVollstaendig: false,
         errors: [`Abruf nicht freigegeben (${decision}): ${reason}`],
         startedAt,
         finishedAt: new Date(),
@@ -988,6 +1018,8 @@ export async function ingestFromAdapter(
     return {
       sourceKey: adapter.key,
       fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0,
+      /* Ein ausgesetzter Abruf hat gar nichts gesehen. */
+      feedVollstaendig: false,
       errors: [
         `Abruf ausgesetzt: die letzten Versuche sind fehlgeschlagen. ` +
           `Nächster Versuch in ${sekunden} Sekunden.`,
@@ -1008,10 +1040,36 @@ export async function ingestFromAdapter(
     unchanged: 0,
     merged: 0,
     failed: 0,
+    /* Vorgabe: nicht vollständig. Ein Lauf, der scheitert oder gar
+       nicht stattfindet, hat den Bestand nicht gesehen. */
+    feedVollstaendig: false,
     errors: [],
     startedAt,
     finishedAt: startedAt,
   };
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Woran ein Lauf merkt, dass er den Bestand ganz gesehen hat
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Daran, dass er WENIGER geliefert hat, als er durfte. Wer die
+   * Grenze ausschöpft, wurde abgeschnitten und hat den Rest nicht
+   * gesehen; wer darunter bleibt, ist der Quelle ausgegangen.
+   *
+   * ── Warum diese Regel und keine Angabe je Adapter ───────────
+   *
+   * Weil sie für alle gilt, ohne einen einzigen anzufassen. Ein Feld,
+   * das jeder Adapter selbst setzen müsste, wäre bei der Hälfte
+   * falsch — und falsch heisst hier: Der Bestand wird geschlossen.
+   *
+   * ── Und wenn eine Quelle zufällig genau `grenze` Stellen hat ──
+   *
+   * Dann gilt der Lauf als unvollständig, obwohl er es nicht war. Das
+   * ist die harmlose Richtung: Es wird nichts geschlossen, was noch
+   * offen ist. Der umgekehrte Irrtum kostet den Bestand.
+   */
+  const grenze = options.limit ?? 100;
 
   let listings;
   try {
@@ -1036,7 +1094,7 @@ export async function ingestFromAdapter(
     const seit = options.since ?? (kannSeit ? await letzterErfolgreicherLauf(db, adapter.key) : null);
 
     listings = await adapter.fetchListings({
-      limit: options.limit ?? 100,
+      limit: grenze,
       since: seit ?? undefined,
     });
   } catch (error) {
@@ -1057,6 +1115,13 @@ export async function ingestFromAdapter(
 
   breaker.recordSuccess();
   result.fetched = listings.length;
+
+  /*
+   * Der Lauf hat den Bestand ganz gesehen, wenn er die Grenze nicht
+   * ausgeschöpft hat. Nur dann darf ein Fehlen etwas bedeuten.
+   */
+  const feedVollstaendig = listings.length < grenze;
+  result.feedVollstaendig = feedVollstaendig;
   const fetchedAt = new Date();
 
   /*
@@ -1167,12 +1232,188 @@ export async function ingestFromAdapter(
       lastRunAt: result.finishedAt,
       lastRunOk: result.failed === 0,
       lastRunError: result.errors[0] ?? null,
+      /* Nur ein vollständiger Lauf schreibt diesen Zeitpunkt. */
+      ...(feedVollstaendig && result.failed === 0
+        ? { lastFullSyncAt: result.finishedAt }
+        : {}),
     })
     .where(eq(schema.jobSources.id, sourceId));
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Was der Lauf NICHT mehr gesehen hat
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Erst hier, ganz am Ende, und nur nach einem vollständigen und
+   * fehlerfreien Lauf. Vorher wäre jede Störung ein Massenschliessen.
+   */
+  if (feedVollstaendig && result.failed === 0) {
+    await verfuegbarkeitFortschreiben(
+      db,
+      sourceId,
+      new Set(listings.map((l) => l.externalId)),
+      result.finishedAt,
+    );
+  }
 
   await protokolliereLauf(db, adapter.key, result);
 
   return result;
+}
+
+/**
+ * Den Verfügbarkeitsstand aller Fundstellen einer Quelle fortschreiben.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum das nur nach einem vollständigen Lauf aufgerufen wird
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Weil ein fehlender Job sonst nichts bedeutet. Wer diese Funktion
+ * nach einem abgeschnittenen Lauf aufruft, zählt jede Stelle jenseits
+ * der Grenze als vermisst — und nach zwei solchen Läufen ist der
+ * halbe Bestand geschlossen.
+ *
+ * Der Aufrufer prüft das; hier steht es zur Erinnerung, weil die
+ * Funktion es von aussen nicht erkennen kann.
+ *
+ * ── Warum in einem Rutsch und nicht Zeile für Zeile ─────────
+ *
+ * Bei einer Quelle mit zehntausend Fundstellen wären das zehntausend
+ * Aktualisierungen. Gelesen wird einmal, gerechnet wird im Speicher,
+ * und geschrieben wird nur, was sich geändert hat — bei einem
+ * gewöhnlichen Lauf ist das eine Handvoll.
+ */
+async function verfuegbarkeitFortschreiben(
+  db: Database,
+  sourceId: string,
+  gesehene: Set<string>,
+  jetzt: Date,
+): Promise<void> {
+  const beruehrt = new Set<string>();
+
+  const zeilen = await db
+    .select({
+      id: schema.jobSourceLinks.id,
+      jobId: schema.jobSourceLinks.jobId,
+      externalId: schema.jobSourceLinks.externalId,
+      zustand: schema.jobSourceLinks.availabilityState,
+      grund: schema.jobSourceLinks.availabilityReason,
+      fehlt: schema.jobSourceLinks.missingSuccessfulSyncCount,
+      geprueft: schema.jobSourceLinks.availabilityCheckedAt,
+      gesehen: schema.jobSourceLinks.lastSeenAt,
+      frist: schema.jobSourceLinks.validThrough,
+    })
+    .from(schema.jobSourceLinks)
+    .where(eq(schema.jobSourceLinks.sourceId, sourceId));
+
+  for (const z of zeilen) {
+    const vorher: Verfuegbarkeitsstand = {
+      zustand: z.zustand as Verfuegbarkeitsstand["zustand"],
+      grund: z.grund,
+      fehltSeitLaeufen: z.fehlt,
+      geprueftAm: z.geprueft,
+      zuletztGesehenAm: z.gesehen,
+    };
+
+    const nachher = fortschreiben(vorher, {
+      gesehen: gesehene.has(z.externalId),
+      feedVollstaendig: true,
+      fristBis: z.frist,
+      jetzt,
+    });
+
+    /*
+     * Nur schreiben, was sich geändert hat.
+     *
+     * Bei einem gewöhnlichen Lauf ist fast alles unverändert — und
+     * eine Aktualisierung, die nichts ändert, kostet trotzdem eine
+     * Zeile im Schreibprotokoll und eine Runde gegen die Datenbank.
+     */
+    if (
+      nachher.zustand === vorher.zustand &&
+      nachher.fehltSeitLaeufen === vorher.fehltSeitLaeufen
+    ) {
+      continue;
+    }
+
+    await db
+      .update(schema.jobSourceLinks)
+      .set({
+        availabilityState: nachher.zustand,
+        availabilityReason: nachher.grund,
+        availabilityCheckedAt: nachher.geprueftAm,
+        missingSuccessfulSyncCount: nachher.fehltSeitLaeufen,
+      })
+      .where(eq(schema.jobSourceLinks.id, z.id));
+
+    beruehrt.add(z.jobId);
+  }
+
+  if (beruehrt.size > 0) await stellenstandBilden(db, [...beruehrt]);
+}
+
+/**
+ * Aus den Fundstellen einer Stelle ihren Zustand bilden.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum das nicht die Aufgabe der einzelnen Quelle ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Eine Quelle weiss nur, was sie selbst sieht. Verschwindet eine
+ * Stelle bei einem Aggregator, während das ATS des Arbeitgebers sie
+ * weiter führt, ist sie aktiv — der Aggregator hat womöglich nur
+ * seinen Feed geändert. Umgekehrt ist eine alte Kopie beim
+ * Aggregator kein Beleg dafür, dass eine beim ATS verschwundene
+ * Stelle noch offen ist.
+ *
+ * Deshalb wird der Zustand über ALLE Fundstellen gebildet, und
+ * `rank` entscheidet, welche zählt. Die Regel steht in
+ * `standAusFundstellen` und ist dort einzeln geprüft.
+ *
+ * Nur für die berührten Stellen: Bei einem gewöhnlichen Lauf sind das
+ * eine Handvoll, nicht der Bestand.
+ */
+async function stellenstandBilden(db: Database, jobIds: string[]): Promise<void> {
+  const zeilen = await db
+    .select({
+      jobId: schema.jobSourceLinks.jobId,
+      rank: schema.jobSourceLinks.rank,
+      zustand: schema.jobSourceLinks.availabilityState,
+      grund: schema.jobSourceLinks.availabilityReason,
+      fehlt: schema.jobSourceLinks.missingSuccessfulSyncCount,
+      geprueft: schema.jobSourceLinks.availabilityCheckedAt,
+      gesehen: schema.jobSourceLinks.lastSeenAt,
+    })
+    .from(schema.jobSourceLinks)
+    .where(inArray(schema.jobSourceLinks.jobId, jobIds));
+
+  const nachStelle = new Map<string, { naehe: number; stand: Verfuegbarkeitsstand }[]>();
+  for (const z of zeilen) {
+    const liste = nachStelle.get(z.jobId) ?? [];
+    liste.push({
+      naehe: z.rank,
+      stand: {
+        zustand: z.zustand as Verfuegbarkeitsstand["zustand"],
+        grund: z.grund,
+        fehltSeitLaeufen: z.fehlt,
+        geprueftAm: z.geprueft,
+        zuletztGesehenAm: z.gesehen,
+      },
+    });
+    nachStelle.set(z.jobId, liste);
+  }
+
+  for (const [jobId, fundstellen] of nachStelle) {
+    const stand = standAusFundstellen(fundstellen);
+    await db
+      .update(schema.jobs)
+      .set({
+        availabilityState: stand.zustand,
+        availabilityReason: stand.grund,
+        availabilityCheckedAt: stand.geprueftAm,
+      })
+      .where(eq(schema.jobs.id, jobId));
+  }
 }
 
 /**
