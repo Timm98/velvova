@@ -44,14 +44,30 @@ on:
     # um neun erscheint, stand bei uns neunzehn Stunden später drin;
     # bis dahin hat sie jemand anders besetzt.
     #
-    # Achtmal am Tag statt einmal. Das Kontingent der Anbieter bleibt
-    # gewahrt: Die Grenze je Quelle und Lauf steht unten, und der
-    # Endpunkt fragt jeden Anbieter weiterhin nur mit EINER Anfrage
-    # gleichzeitig.
+    # Stündlich statt alle drei Stunden.
+    #
+    # Gerechnet am 8. September 2026: Acht Läufe zu vier Minuten sind
+    # zweiunddreissig Minuten Ernte am Tag. Bei den gemessenen 56 bis
+    # 59 Schreibvorgängen je Sekunde ergibt das rund 110.000 Stellen
+    # täglich — und davon ist je nach Quelle nur ein Teil neu.
+    #
+    # Der Bestand lag bei 3,45 Mio., die Decke der Quellen bei sieben
+    # bis acht. Mit acht Läufen wären das Monate; mit vierundzwanzig
+    # sind es Wochen.
+    #
+    # ── Warum nicht das Zeitbudget erhöhen ──────────────────────
+    #
+    # Weil der Endpunkt bei 300 Sekunden endet (`maxDuration` in
+    # `route.ts`). Die vier Minuten lassen genau eine Minute Luft für
+    # die letzte Quelle, die schon läuft, wenn das Budget fällt. Wer
+    # sie streicht, bekommt abgebrochene Antworten statt mehr Stellen.
+    #
+    # Häufiger laufen ist der ungefährliche Hebel: Jeder Lauf hat sein
+    # eigenes Budget, und die Grenze je Quelle bleibt unverändert.
     #
     # Die krumme Minute bleibt mit Absicht: zur vollen Stunde starten
     # sehr viele Zeitpläne gleichzeitig, und die Anbieter merken das.
-    - cron: "15 */3 * * *"
+    - cron: "15 * * * *"
   workflow_dispatch:
     inputs:
       limit:
@@ -87,7 +103,11 @@ jobs:
           # Drei-Stunden-Takt ist das der vierundzwanzigfache
           # Durchsatz gegenüber vorher — bei achtundzwanzig Quellen
           # rund 8.400 Anzeigen je Lauf statt 2.800 am Tag.
-          LIMIT: ${{ github.event.inputs.limit || '300' }}
+          # 500 statt 300 — die Obergrenze, die `route.ts` zulässt.
+          # Das Zeitbudget schneidet ohnehin ab; die Grenze bestimmt
+          # nur, wie tief eine Quelle blättern DARF, bevor die nächste
+          # an die Reihe kommt.
+          LIMIT: ${{ github.event.inputs.limit || '500' }}
         run: |
           set -euo pipefail
 

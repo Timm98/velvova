@@ -235,7 +235,32 @@ export async function POST(request: Request) {
    */
   const BUDGET_MS = 240_000;
   const beginn = Date.now();
-  const takt = Math.floor(beginn / (3 * 60 * 60 * 1000));
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Der Zeiger muss so schnell wandern wie der Zeitplan ruft
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `3 * 60 * 60 * 1000` — drei Stunden, passend zum
+   * damaligen Zeitplan `15 * / 3 * * *` mit acht Läufen am Tag.
+   *
+   * Der Zeitplan wurde auf `15 * * * *` umgestellt, also stündlich.
+   * Diese Konstante blieb stehen — und damit bekamen die Läufe um
+   * 00:15, 01:15 und 02:15 DENSELBEN Zeiger, dieselbe Reihenfolge und
+   * damit dieselben Quellen. Vierundzwanzig Läufe am Tag ergaben acht
+   * verschiedene Reihenfolgen; zwei von drei Läufen holten, was der
+   * vorige schon geholt hatte, und die hinteren Länder einer Familie
+   * kamen trotz des dichteren Takts nicht öfter dran als vorher.
+   *
+   * Der Fehler war unsichtbar, weil nichts fehlschlug: Jeder Lauf
+   * meldete Erfolg, nur eben über denselben Ausschnitt.
+   *
+   * Deshalb steht die Schrittweite jetzt neben dem Zeitplan, aus dem
+   * sie folgt. Wer den Zeitplan ändert, ändert sie mit — und wer es
+   * vergisst, liest hier, warum das nicht folgenlos bleibt.
+   */
+  const ZEITPLAN_ABSTAND_MS = 60 * 60 * 1000; // .github/workflows/stellen-abruf.yml: "15 * * * *"
+  const takt = Math.floor(beginn / ZEITPLAN_ABSTAND_MS);
 
   /*
    * ══════════════════════════════════════════════════════════════

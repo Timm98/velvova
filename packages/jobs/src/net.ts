@@ -185,3 +185,44 @@ export function envWert(name: string): string | undefined {
   while (w.startsWith(`${name}=`)) w = w.slice(name.length + 1).trim();
   return w.length > 0 ? w : undefined;
 }
+
+/**
+ * Eine Zeitgrenze um einen Abruf legen — auch wenn der Aufrufer keine hat.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum es diese Funktion gibt
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Acht Abrufstellen in sieben Quellen standen als
+ * `fetch(url, { signal: options.signal })` da. Sieht nach Sorgfalt
+ * aus — nur gibt kaum ein Aufrufer ein Signal mit, und dann hat der
+ * Abruf gar keine Grenze.
+ *
+ * Was das anrichtet, wurde am 8. September 2026 sichtbar: Vier
+ * Adzuna-Läufe standen sechseinhalb Stunden still. Schlafend, je eine
+ * offene Verbindung, null Prozent Last. Der Anbieter hatte die
+ * Verbindung angenommen und dann geschwiegen, und `fetch` wartet
+ * darauf unbegrenzt.
+ *
+ * ── Warum ein hängender Lauf schlimmer ist als ein fehlgeschlagener
+ *
+ * Ein Fehlschlag wird bemerkt, protokolliert und wiederholt. Ein
+ * hängender Lauf sieht aus wie Arbeit: Der Prozess lebt, der Bericht
+ * meldet nichts, und niemand sucht — bis jemand die Stellenzahl
+ * anschaut und sich wundert.
+ *
+ * ── Warum nicht `holJson`
+ *
+ * `holJson` bringt Wiederholungen, Ratenbegrenzung und eigene
+ * Fehlertypen mit. Die sieben Stellen haben ihre eigene Behandlung von
+ * 401, 429 und Teilergebnissen, teils mit Messwerten begründet. Sie
+ * darauf umzubauen wäre eine grosse Änderung an gut geprüftem Code,
+ * um ein kleines Loch zu stopfen. Diese Funktion stopft nur das Loch.
+ */
+export function mitFrist(signal: AbortSignal | undefined, ms = 45_000): AbortSignal {
+  const frist = AbortSignal.timeout(ms);
+  /* Beide Gründe zählen: Wer den Lauf abbricht, soll nicht noch
+     fünfundvierzig Sekunden auf eine Antwort warten, die niemand mehr
+     will. */
+  return signal ? AbortSignal.any([signal, frist]) : frist;
+}
