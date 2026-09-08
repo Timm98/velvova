@@ -28,16 +28,19 @@ import Image from "next/image";
  * ist die einzige verlässliche Art, diesen Speicher zu umgehen.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum OpenAI zwei Dateien hat und die anderen nicht
+ * Warum zwei Marken zwei Dateien haben und drei nicht
  * ══════════════════════════════════════════════════════════════
  *
- * Das OpenAI-Zeichen ist einfarbig. Schwarz verschwindet auf dunklem
- * Grund, Weiss auf hellem — es braucht deshalb je Seite seine Fassung,
- * so wie AMEX und die Überweisung bei den Zahlungsarten.
+ * Das OpenAI-Zeichen ist einfarbig: Schwarz verschwindet auf dunklem
+ * Grund, Weiss auf hellem. Bei Claude gilt dasselbe für die Hälfte —
+ * der Stern ist orange und überall sichtbar, der Schriftzug daneben
+ * schwarz und auf dunklem Grund kaum zu lesen. Beide bekommen deshalb
+ * je Seite ihre Fassung, so wie AMEX und die Überweisung bei den
+ * Zahlungsarten.
  *
- * Die vier anderen tragen ihre Markenfarbe: LinkedIn und Indeed Blau,
- * StepStone Blau mit Farbverlauf, Claude Orange und Schwarz. Die sind
- * auf beiden Seiten sichtbar und bleiben eine Datei.
+ * Die drei anderen tragen durchgehend ihre Markenfarbe: LinkedIn und
+ * Indeed Blau, StepStone Blau mit Farbverlauf. Die sind auf beiden
+ * Seiten sichtbar und bleiben eine Datei.
  *
  * ══════════════════════════════════════════════════════════════
  * Was die Zeile behauptet
@@ -65,7 +68,11 @@ const MARKEN: Marke[] = [
   { name: "Indeed", datei: "/marken/indeed-frei.png" },
   { name: "StepStone", datei: "/marken/stepstone-frei.png" },
   { name: "OpenAI", datei: "/marken/openai-hell-frei.png", dateiDunkel: "/marken/openai-dunkel-frei.png" },
-  { name: "Claude", datei: "/marken/claude-frei.png" },
+  {
+    name: "Claude",
+    datei: "/marken/claude-frei.png",
+    dateiDunkel: "/marken/claude-dunkel-frei.png",
+  },
 ];
 
 /*
@@ -90,7 +97,26 @@ export function Partnerleiste({
   titel?: string;
 }) {
   return (
-    <section aria-label={titel}>
+    <section
+      aria-label={titel}
+      /*
+       * Ein eigenes Feld am Fuss der Karte.
+       *
+       * Bis eben standen die Zeichen direkt auf der Kartenfläche und
+       * gehörten dadurch optisch zum Core — als wären sie Teil der
+       * Darstellung statt eine Angabe darunter.
+       *
+       * Ein Rahmen allein hätte das nicht getrennt: Die Karte hat
+       * selbst einen, und zwei gleiche Linien ineinander lesen sich
+       * als Versehen. Deshalb zusätzlich ein Ton Unterschied —
+       * `--ed-canvas` ist die Fläche der Seite, auf der die Karte
+       * liegt. Sie ist in beiden Darstellungen eine Spur dunkler als
+       * `--ed-surface`, und mehr braucht es nicht: Das Feld soll sich
+       * abheben, nicht hervortreten.
+       */
+      className="rounded-(--radius-md) border border-line px-4 py-5"
+      style={{ background: "var(--ed-canvas)" }}
+    >
       <p className="text-center text-sm leading-relaxed text-ink-2">{titel}</p>
 
       {/*
@@ -101,7 +127,7 @@ export function Partnerleiste({
         auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
         keine Bewegung.
       */}
-      <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
+      <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
         {MARKEN.map((m) => (
           <li
             key={m.name}

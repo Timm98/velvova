@@ -805,9 +805,19 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              Fläche, die weiter aussen sitzt als alles darüber und
              darunter, sieht nicht grosszügig aus, sondern verrutscht.
 
-             ── Nach rechts breiter, ohne den Core zu bewegen ───
-             Drei Zahlen, die zusammengehören: `max-w` von 680 auf 712,
-             `-mr` von 24 auf 56, `pr` von 24 auf 56.
+             ── Nach rechts, aber nur so weit wie Platz ist ─────
+             `-mr-14` waren 56 Pixel, und das war ein Fehler: Zur
+             Verfügung stehen unterhalb von 1240 Pixeln Fensterbreite
+             nur die 32 Pixel Innenabstand der Seite. Gemessen lief die
+             Seite dadurch bei 800, 900, 1024 und 1200 Pixeln seitlich
+             über — sichtbar als waagerechter Rollbalken, nicht als
+             falsch sitzende Karte, und deshalb leicht zu übersehen.
+
+             Die Rechnung nimmt genau den vorhandenen Platz: den Rand,
+             der entsteht, sobald das Fenster breiter ist als der
+             Inhaltsbereich, plus die 32 Pixel, die ohnehin da sind.
+             `max` hält sie bei schmalen Fenstern bei diesen 32,
+             `min` deckelt sie bei 56.
 
              Die ersten beiden verschieben die rechte Kante um 32
              Pixel nach aussen und lassen die linke, wo sie war — die
@@ -824,7 +834,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              Core steht mittig; seine Grösse hält der Deckel in
              `NinaVisual`, nicht der Innenabstand.
           */
-          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-14 md:p-6"
+          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mr-[calc(-1*min(3.5rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6"
           style={{ background: "var(--ed-surface)" }}
         >
           {/*
