@@ -3,7 +3,19 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { getPageContext } from "@/lib/locale";
 
-export const metadata: Metadata = { title: "Produkt" };
+/*
+ * Der Titel heisst wie der Weg dorthin.
+ *
+ * Oben in der Kopfzeile steht „Lösungen", die Seite hiess „Produkt".
+ * Wer klickt, landet auf einer Seite mit einem anderen Namen und muss
+ * kurz prüfen, ob er richtig ist — jedes Mal.
+ *
+ * Der Pfad bleibt `/product`: Eine Umbenennung der Adresse bräche
+ * jeden bestehenden Verweis, und darum geht es hier nicht. Nur der
+ * sichtbare Name folgt der Beschriftung, unter der die Seite
+ * angeboten wird.
+ */
+export const metadata: Metadata = { title: "Lösungen" };
 
 /**
  * Produktüberblick.
@@ -74,7 +86,7 @@ export default async function ProductPage() {
   return (
     <div className="grid gap-12">
       <header className="grid gap-4">
-        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-accent-text">Produkt</p>
+        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-accent-text">Lösungen</p>
         <h1 className="font-display text-[2.5rem] font-medium leading-[1.08] tracking-[-0.02em]">
           Von der ersten Frage bis zum dritten Monat.
         </h1>

@@ -166,24 +166,28 @@ export const viewport: Viewport = {
  *
  *   "dark"    → data-theme="dark"          immer dunkel
  *   "light"   → data-theme="light"         immer hell
- *   sonst     → data-theme-mode="system"   folgt dem Gerät
+ *   "system"  → data-theme-mode="system"   folgt dem Gerät
+ *   nichts    → data-theme="dark"          der Standard
  *
- * ── Warum „nie gewählt" jetzt dem Gerät folgt ────────────────
+ * ── Warum „nie gewählt" jetzt Dunkel ist ─────────────────────
  *
- * Hier stand HELL, mit einer Begründung, die stimmte: Wer sein
- * Betriebssystem dunkel eingestellt hat, hat damit noch nichts über
- * DIESE Seite gesagt, und beim allerersten Besuch in einer dunklen
- * Oberfläche zu landen, kann überraschen.
+ * Hier stand zuerst HELL, dann SYSTEM. Beides waren Versuche, nicht
+ * zu entscheiden — und beide entschieden trotzdem: das eine auf Hell,
+ * das andere auf das, was auf dem Gerät eingestellt ist.
  *
- * Nur ist die Gegenseite stärker. Ein Gerät auf Dunkel zu stellen IST
- * eine Aussage über Bildschirme — die einzige, die uns beim ersten
- * Besuch vorliegt. Sie zu übergehen und stattdessen Hell zu setzen,
- * heisst nicht „wir legen niemanden fest", sondern „wir legen ihn auf
- * Hell fest".
+ * Velvova ist dunkel gestaltet. Der Core, die Kontraste und die
+ * Flächen sind dafür gebaut; die helle Fassung ist die Alternative,
+ * nicht der Ausgangspunkt. Wer die Seite zum ersten Mal öffnet, soll
+ * sie so sehen, wie sie gemeint ist.
  *
- * „System" bleibt trotzdem ein eigener Zustand: Wer ihn ausdrücklich
- * wählt, bekommt denselben Keks wie vorher. Der Unterschied ist nur,
- * dass er jetzt auch ohne Keks gilt.
+ * ── Was dabei erhalten bleiben muss ───────────────────────
+ *
+ * „System" ist weiterhin ein eigener, ausdrücklich wählbarer Zustand
+ * und nicht dasselbe wie „nie gewählt". Deshalb wird auf den Keks-Wert
+ * `"system"` geprüft, statt alles Unbekannte in einen Topf zu werfen:
+ * Sonst bekäme jemand, der ausdrücklich „System" gewählt hat, ab
+ * sofort Dunkel — eine stillschweigend überstimmte Entscheidung, und
+ * die ist schlimmer als eine getroffene.
  */
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
@@ -221,8 +225,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang={locale}
-      data-theme={theme === "light" || theme === "dark" ? theme : undefined}
-      data-theme-mode={theme === "light" || theme === "dark" ? undefined : "system"}
+      data-theme={
+        theme === "light" || theme === "dark" ? theme : theme === "system" ? undefined : "dark"
+      }
+      data-theme-mode={theme === "system" ? "system" : undefined}
       className={`${GeistSans.variable} ${zahlenschrift.variable} ${hausschrift.variable} ${titelschrift.variable}`}
       suppressHydrationWarning
     >

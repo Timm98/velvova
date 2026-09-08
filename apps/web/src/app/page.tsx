@@ -192,29 +192,6 @@ export default async function LandingPage() {
       */}
       <main id="inhalt">
         <Einstiegshero angemeldet={sitzung.angemeldet} anrede={sitzung.anrede} />
-        {/*
-          Die Partnerleiste ist gebaut, aber nicht eingehängt.
-
-          Nicht wegen der Komponente — die stimmt. Sondern wegen der
-          Dateien: Alle fünf sind Vorschaubilder, keine Logo-Assets.
-          1200×630 ist das Open-Graph-Maß für soziale Netzwerke,
-          3840×2160 ist 16:9 mit dem Logo klein in der Mitte auf
-          farbigem Grund. Nur `indeed.png` hat überhaupt einen
-          Alphakanal.
-
-          Auf 22 Pixel Höhe skaliert wird daraus eine 39 Pixel breite
-          Kachel mit unlesbarem Inhalt — im Bild blaue Blöcke für
-          LinkedIn und Indeed, weisse Kästchen für StepStone und
-          Claude.
-
-          Eine Logozeile, die aussieht wie ein Versehen, kostet mehr
-          Glaubwürdigkeit, als sie bringt. Sobald eng beschnittene
-          SVG- oder PNG-Dateien mit Transparenz vorliegen — die gibt
-          es auf den Presseseiten der Marken —, genügt hier eine
-          Zeile:
-
-              <Partnerleiste />
-        */}
         <HaeufigeFragen assistentName={brand.assistantName} />
       </main>
 
@@ -695,7 +672,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Bei 768 passt beides: 45 Prozent von 1240 sind 558 Pixel für die
         Karte, und darunter greift ohnehin die schmale Fassung.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.45fr_0.55fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-16">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.4fr_0.6fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-14">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
@@ -729,18 +706,33 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
       </div>
 
       {/*
-        Der Core in einer ruhigen Karte.
+        Der Core in einer ruhigen Karte — und darunter die Marken.
 
-        `aspect-square` statt einer festen Höhe: Die Karte behält ihr
-        Verhältnis über alle Breiten, und beim Laden springt nichts.
-        Eine feste Höhe hätte auf schmalen Geräten entweder Luft
-        verschenkt oder den Core angeschnitten.
+        ── Warum kein Quadrat mehr ─────────────────────────────
+        Die Karte stand auf `aspect-square` bei höchstens 560 Pixeln.
+        Das war eine sichere Wahl und eine zu kleine: Neben einer
+        Anmeldekarte von rund 470 Pixeln Höhe wirkte der Core wie eine
+        Abbildung daneben statt wie die Hauptsache.
+
+        Jetzt 4:5 und bis 680 Pixel breit. Das Verhältnis bleibt fest,
+        damit beim Laden nichts springt — eine feste Höhe hätte auf
+        schmalen Geräten entweder Luft verschenkt oder den Core
+        angeschnitten.
+
+        ── Warum die Leiste in derselben Spalte steht ──────────
+        Sie gehört unter den Core, nicht unter die ganze Seite. In
+        einer eigenen Zeile unterhalb beider Spalten stünde sie
+        mittig unter Anmeldekarte und Core und damit unter nichts.
       */}
-      <div
-        className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center rounded-(--radius-lg) border border-line"
-        style={{ background: "var(--ed-surface)" }}
-      >
-        <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
+      <div className="grid gap-8">
+        <div
+          className="relative mx-auto flex aspect-[4/5] w-full max-w-[680px] items-center justify-center rounded-(--radius-lg) border border-line"
+          style={{ background: "var(--ed-surface)" }}
+        >
+          <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
+        </div>
+
+        <Partnerleiste />
       </div>
     </section>
   );

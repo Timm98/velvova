@@ -4,60 +4,79 @@ import Image from "next/image";
  * Die Markenzeile unter dem Core.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum jedes Logo eine eigene Höhe bekommt
+ * Warum Kacheln und keine frei stehenden Logos
  * ══════════════════════════════════════════════════════════════
  *
- * Gleiche Pixelhöhe heisst nicht gleiche Wirkung. Die fünf Dateien
- * haben Seitenverhältnisse von 1,00 bis 2,42:
+ * Die fünf Dateien sind keine Logo-Assets, sondern Vorschaubilder:
  *
- *     claude      600 × 600    1,00   quadratisch
- *     OpenAI     3840 × 2160   1,78
- *     indeed     1200 × 630    1,90
- *     stepstone   800 × 330    2,42   breite Wortmarke
+ *     OpenAI      3840 × 2160   Alpha
+ *     linkedin    1024 × 1024   ohne Alpha
+ *     indeed      1200 × 630    Alpha
+ *     stepstone    800 × 330    ohne Alpha
+ *     claude       600 × 600    ohne Alpha
  *
- * Auf dieselbe Höhe gesetzt wirkt das quadratische Zeichen doppelt
- * so schwer wie die breite Wortmarke — es füllt seine Fläche ganz
- * aus, sie nur einen Streifen davon. Deshalb steht bei jedem Eintrag
- * eine eigene Höhe: nicht Willkür, sondern der Ausgleich für das,
- * was das Auge tatsächlich sieht.
+ * Drei von fünf haben keinen Alphakanal, tragen also ihren eigenen
+ * farbigen Grund mit. Frei nebeneinandergestellt sieht das aus wie ein
+ * Versehen: zwei Logos schweben, drei sitzen in einem Kasten.
  *
- * `object-contain` sorgt dafür, dass nichts verzerrt oder
- * abgeschnitten wird. Die Breite ergibt sich aus dem Verhältnis.
+ * Eine Kachel dreht das um. Wenn jedes Zeichen in derselben runden
+ * Fläche sitzt, ist der mitgebrachte Grund kein Fehler mehr, sondern
+ * der Inhalt der Kachel — und die Zeile wirkt gewollt statt schlampig.
+ * Das ist auch der Grund für `object-cover` mit quadratischem
+ * Zuschnitt: Bei einem 16:9-Vorschaubild mit kleinem Zeichen in der
+ * Mitte schneidet es die leeren Ränder weg, statt das Zeichen auf
+ * Briefmarkengrösse zu schrumpfen.
+ *
+ * Sobald eng beschnittene Dateien mit Transparenz vorliegen — die
+ * gibt es auf den Presseseiten der Marken —, kann `KACHEL` entfallen
+ * und die Zeile auf frei stehende Zeichen umgestellt werden.
  *
  * ══════════════════════════════════════════════════════════════
- * Was diese Zeile behauptet — und was nicht
+ * Was die Überschrift behauptet
  * ══════════════════════════════════════════════════════════════
  *
- * Die Überschrift steht als Eigenschaft im Aufruf, nicht fest im
- * Bauteil. Der Grund: Was diese Marken für Velvova sind, entscheidet
- * ein Vertrag, nicht eine Komponente.
+ * Sie steht als Eigenschaft im Aufruf, nicht fest im Bauteil. Der
+ * Grund ist keine Bequemlichkeit: Was diese Marken für Velvova sind,
+ * entscheidet ein Vertrag, nicht eine Komponente.
  *
  * Das Quellenregister führt LinkedIn, Indeed und StepStone unter
- * „Nicht freigegebene Plattformen" — das betrifft die Datennutzung.
- * Über eine Geschäftsbeziehung sagt es nichts. Wer die Überschrift
- * setzt, muss wissen, was zutrifft.
+ * „Nicht freigegebene Plattformen". Das betrifft die Datennutzung und
+ * sagt über eine Geschäftsbeziehung nichts — aber wer hier „Partner"
+ * setzt, behauptet eine solche Beziehung öffentlich. Wer die
+ * Überschrift setzt, muss wissen, was zutrifft.
  */
 type Marke = {
   name: string;
   datei: string;
-  /** Sichtbare Höhe in Pixeln — je Marke ausgeglichen, siehe oben. */
-  hoehe: number;
-  breite: number;
 };
 
 const MARKEN: Marke[] = [
-  { name: "LinkedIn", datei: "/marken/linkedin.webp", hoehe: 22, breite: 88 },
-  { name: "Indeed", datei: "/marken/indeed.png", hoehe: 22, breite: 42 },
-  { name: "StepStone", datei: "/marken/stepstone.png", hoehe: 20, breite: 48 },
-  /* Quadratisch, deshalb kleiner: Bei 22 Pixeln stünde es als Klotz
-     zwischen den Wortmarken. */
-  { name: "Claude", datei: "/marken/claude.png", hoehe: 18, breite: 18 },
-  { name: "OpenAI", datei: "/marken/OpenAI.png", hoehe: 20, breite: 36 },
+  { name: "LinkedIn", datei: "/marken/linkedin.webp" },
+  { name: "Indeed", datei: "/marken/indeed.png" },
+  { name: "StepStone", datei: "/marken/stepstone.png" },
+  { name: "OpenAI", datei: "/marken/OpenAI.png" },
+  { name: "Claude", datei: "/marken/claude.png" },
 ];
+
+/*
+ * Querformat, nicht quadratisch.
+ *
+ * Der erste Versuch waren quadratische Kacheln mit `object-cover`.
+ * Das schnitt genau die Wortmarken an, um die es geht: Aus StepStone
+ * wurde „psto", aus OpenAI „Open". Ein angeschnittener Markenname
+ * sieht kaputt aus, egal wie sauber die Kachel ist.
+ *
+ * `object-contain` in einem Querformat zeigt jedes Bild ganz. Vier
+ * der fünf Vorlagen sind breiter als hoch; das quadratische
+ * Claude-Zeichen bekommt links und rechts Luft und wirkt dadurch
+ * nicht schwerer als die Wortmarken.
+ */
+const KACHEL_BREIT = 84;
+const KACHEL_HOCH = 44;
 
 export function Partnerleiste({ titel = "Partner" }: { titel?: string }) {
   return (
-    <section className="mx-auto w-full max-w-[1240px] px-5 pb-16 md:px-8 md:pb-24">
+    <section aria-label={titel}>
       <p className="text-center text-2xs font-medium uppercase tracking-[0.16em] text-ink-3">
         {titel}
       </p>
@@ -66,20 +85,24 @@ export function Partnerleiste({ titel = "Partner" }: { titel?: string }) {
         Umbruch statt Laufband.
 
         Eine automatisch scrollende Logoschlange zieht den Blick vom
-        Einstieg weg und lässt sich nicht anhalten. Fünf Marken passen
+        Einstieg weg und lässt sich nicht anhalten. Fünf Kacheln passen
         auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
         keine Bewegung.
       */}
-      <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 md:gap-x-14">
+      <ul className="mt-4 flex flex-wrap items-center justify-center gap-3 md:gap-4">
         {MARKEN.map((m) => (
-          <li key={m.name} className="flex items-center">
+          <li
+            key={m.name}
+            title={m.name}
+            className="overflow-hidden rounded-(--radius-md) border border-line opacity-80 transition-opacity hover:opacity-100"
+            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH }}
+          >
             <Image
               src={m.datei}
               alt={m.name}
-              width={m.breite}
-              height={m.hoehe}
-              style={{ height: `${m.hoehe}px`, width: "auto" }}
-              className="object-contain opacity-70 transition-opacity hover:opacity-100"
+              width={KACHEL_BREIT}
+              height={KACHEL_HOCH}
+              className="h-full w-full object-contain"
             />
           </li>
         ))}

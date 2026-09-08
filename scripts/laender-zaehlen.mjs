@@ -37,15 +37,38 @@ await db.execute(sql`set statement_timeout = '1800s'`);
  */
 const { MAERKTE } = await import("../packages/config/src/maerkte.ts");
 const bekannt = (await db.execute(sql`select land from laenderbestand`)).rows.map((r) => r.land);
-const laender = [...new Set([...bekannt, ...MAERKTE.map((m) => m.countryCode)])].sort();
+/*
+ * Auch die Länder, die tatsächlich im Bestand stehen.
+ *
+ * Vorher kam die Liste nur aus der bisherigen Tabelle vereinigt mit
+ * den konfigurierten Märkten. Ein Land, das über eine Quelle
+ * hereinkommt, ohne als Markt eingetragen zu sein, tauchte damit nie
+ * auf — gemessen am 8. September 2026 waren das JP mit 3.788, SE mit
+ * 2 und IE mit einer Stelle. Sie fehlten nicht, weil sie leer waren,
+ * sondern weil niemand nach ihnen gefragt hat.
+ *
+ * `distinct country` ist über den Index billig und braucht keine
+ * Zählung.
+ */
+const imBestand = (await db.execute(sql`
+  select distinct country from jobs where country is not null`)).rows.map((r) => r.country);
+const laender = [...new Set([...bekannt, ...MAERKTE.map((m) => m.countryCode), ...imBestand])].sort();
 
 const t0 = Date.now();
 const zeilen = [];
 for (const land of laender) {
   try {
+    /*
+     * Abgelaufene Stellen zählen nicht mit.
+     *
+     * Der Fuss führt zu einer Trefferliste. Eine Zahl, die abgelaufene
+     * Anzeigen einschliesst, verspricht mehr, als die Liste zeigt —
+     * und das fällt genau der Person auf, die daraufklickt.
+     */
     const [c] = (await db.execute(sql`
       select count(*)::bigint n from jobs
-      where is_demo = false and country = ${land}`)).rows;
+      where is_demo = false and country = ${land}
+        and (expires_at is null or expires_at > now())`)).rows;
     const n = Number(c.n);
     if (n > 0) zeilen.push({ country: land, n });
   } catch (e) {
@@ -55,4 +78,42 @@ for (const land of laender) {
 
 const summe = zeilen.reduce((a, z) => a + Number(z.n), 0);
 console.log(`${zeilen.length} Länder, ${summe.toLocaleString("de")} Stellen, ${((Date.now()-t0)/1000).toFixed(1)} s`);
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Und jetzt das Ergebnis auch hinschreiben
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Hier stand `process.exit(0)`. Das Skript zählte neunzehn Länder,
+ * gab eine zufriedenstellende Zeile aus und warf das Ergebnis weg.
+ *
+ * Sichtbar wurde es erst am Bild: Der Fuss zeigte am 8. September 2026
+ * 2.498.075 Stellen, während der Bestand bei 3.486.049 lag — jedes
+ * Land zu niedrig, drei Länder gar nicht vorhanden. Die Zahlen waren
+ * nicht falsch gerechnet, sie waren nie geschrieben worden.
+ *
+ * Ein Lauf ohne Zeilen schreibt nichts. Wären alle Zählungen
+ * fehlgeschlagen, würde ein `delete` sonst den Fuss leeren und das
+ * als Ergebnis ausgeben.
+ */
+if (zeilen.length === 0) {
+  console.error("Keine Zählung gelungen — Tabelle bleibt unverändert.");
+  process.exit(1);
+}
+
+const werte = sql.join(
+  zeilen.map((z) => sql`(${z.country}, ${z.n}, now())`),
+  sql`, `,
+);
+await db.execute(sql`
+  insert into laenderbestand (land, stellen, berechnet_am)
+  values ${werte}
+  on conflict (land) do update
+    set stellen = excluded.stellen, berechnet_am = excluded.berechnet_am`);
+
+/* Länder ohne Stellen verschwinden, statt auf null zu stehen — siehe
+   oben: ein Fähnchen mit „0 Stellen" lädt zu einem Klick ins Leere. */
+const behalten = sql.join(zeilen.map((z) => sql`${z.country}`), sql`, `);
+const weg = await db.execute(sql`delete from laenderbestand where land not in (${behalten})`);
+console.log(`geschrieben: ${zeilen.length} Länder, entfernt: ${weg.rowCount ?? 0}`);
 process.exit(0);
