@@ -112,15 +112,15 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
           Knopf gelesen wird: Der Kreis gibt ihm einen Anfang.
 
             Breite    184 CSS      Höhe      60
-            Füllung   #181c25      Kante     #545f78
+            Füllung   #2c2c33      Kante     #5e5e68
             Kreis     ~44, etwas heller als die Fläche
-            Schrift   #e1e4ea
+            Schrift   #e9e6e1
 
           Nicht blau: Blau ist die Farbe des Hauptwegs, und der ist
           auf jeder Seite etwas anderes als „Hilfe". Zwei blaue Knöpfe
           streiten um dieselbe Bedeutung.
         */
-        style={{ background: "#181c25" }}
+        style={{ background: "#2c2c33" }}
         className="ml-auto flex h-16 items-center gap-3 rounded-full border border-line-3 py-2 pl-2 pr-7 text-[15px] text-ink shadow-lg transition-colors hover:bg-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {/*
@@ -133,18 +133,18 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
 
           Ich hatte ihn kurz blau gemacht, weil er grau in grau wie
           abgeschaltet aussah. Am Bild nachgemessen ist er das aber
-          nicht: #282e3f, also die Knopffläche eine Stufe heller —
+          nicht: #3e3e46, also die Knopffläche eine Stufe heller —
           genug, um sich abzuheben, ohne eine zweite Aussage zu
           machen.
 
-          Das Zeichen darin steht in #e1e4ea, derselben Helligkeit
+          Das Zeichen darin steht in #e9e6e1, derselben Helligkeit
           wie die Schrift daneben. Dieser Unterschied trägt den Kreis:
           nicht seine Farbe, sondern der Sprung von der Fläche zum
           Zeichen.
         */}
         <span
           aria-hidden
-          style={{ background: "#282e3f" }}
+          style={{ background: "#3e3e46" }}
           className="grid size-12 shrink-0 place-items-center rounded-full text-ink"
         >
           {offen ? (

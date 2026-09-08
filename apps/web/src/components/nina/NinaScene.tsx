@@ -234,7 +234,7 @@ export function NinaScene({
        * Flächen aufzuhellen: Die tragen ihr Licht selbst und reagieren
        * auf Szenenlicht kaum.
        */
-      const gegenlicht = new DirectionalLight(0x9fc6ff, 0.8);
+      const gegenlicht = new DirectionalLight(0xffc899, 0.8);
       gegenlicht.position.set(-3, 1.5, -2.5);
       szene.add(gegenlicht);
 
@@ -252,7 +252,7 @@ export function NinaScene({
        * Kühler und schwächer als die beiden anderen, damit es die
        * Modellierung ergänzt und nicht mit ihr konkurriert.
        */
-      const aufheller = new DirectionalLight(0x6f9dff, 0.45);
+      const aufheller = new DirectionalLight(0xe8934f, 0.45);
       aufheller.position.set(2.5, -2, -1.5);
       szene.add(aufheller);
 
@@ -305,11 +305,11 @@ export function NinaScene({
        * die Ringe und Partikel, die den Core ausmachen.
        */
       const staffel = [
-        new Color("#00040F"),
-        new Color("#031444"),
-        new Color("#0A34C4"),
-        new Color("#1E5CF0"),
-        new Color("#4E96FF"),
+        new Color("#0A0300"),
+        new Color("#2E0E02"),
+        new Color("#8A3006"),
+        new Color("#B4520F"),
+        new Color("#E8873C"),
       ];
       /*
        * 0.55 statt 0.20.

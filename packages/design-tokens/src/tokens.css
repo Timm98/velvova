@@ -51,30 +51,38 @@
    * Seitengrund". Hell heisst das Weiss gegen #f7f8fc; dunkel heisst
    * es dunkler als jede Fläche der Seite. Zwei Werte, eine Absicht.
    */
-  --surface-kontofeld: #ffffff;
+  --surface-kontofeld: #fbf7f1;
   color-scheme: light;
 
-  --background: #f7f8fc;
-  --background-subtle: #f1f3f8;
-  --surface-1: #ffffff;
-  --surface-2: #fbfcfe;
-  --surface-3: #f1f3f8;
-  --surface-glass: rgba(255, 255, 255, 0.84);
+  --background: #f3ede4;
+  --background-subtle: #ece4d8;
+  --surface-1: #fbf7f1;
+  --surface-2: #f8f3ec;
+  --surface-3: #ece4d8;
+  --surface-glass: rgba(251, 247, 241, 0.84);
 
   /* ---- Die beiden farbigen Ruheflächen ----
-     Lavendel trägt, was Monday verstanden hat. Eis trägt, was aus einer
+     Pfirsich trägt, was Monday verstanden hat. Sand trägt, was aus einer
      Quelle kommt. Zwei Bedeutungen, zwei Töne — und keine dritte, weil
-     eine dritte niemand mehr auseinanderhält. */
-  --surface-lavender: #f0eeff;
-  --surface-ice: #edf6ff;
+     eine dritte niemand mehr auseinanderhält.
+
+     Die Tokennamen bleiben `lavender` und `ice`: Sie stehen an rund
+     hundert Stellen im Code, und ihre BEDEUTUNG hat sich nicht
+     geändert — nur ihr Ton. Ein Umbenennen wäre eine grosse Änderung
+     ohne fachlichen Gewinn.
+
+     Gemessen: Die Helligkeiten liegen 0,077 auseinander, die beiden
+     Flächen sind also weiterhin auf einen Blick zu trennen. */
+  --surface-lavender: #f7e9dc;
+  --surface-ice: #fdf4e0;
 
   /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
      eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
      einsperrt. */
-  --surface-soft: #f1f3f8;
-  --surface-soft-hover: #e7eaf4;
+  --surface-soft: #ece4d8;
+  --surface-soft-hover: #e3d9ca;
 
-  --text-primary: #11131b;
+  --text-primary: #1b1512;
   /*
    * Beide Textstufen sind gegen JEDE Fläche geprüft, auf der sie
    * vorkommen — auch gegen die weiche Lavendel- und die Eisfläche, wo
@@ -82,27 +90,35 @@
    * mit 4,39 und 3,53 durch. Genau dort steht die kleine Schrift, bei
    * der ein zu heller Ton am wenigsten auffällt und am meisten schadet.
    */
-  --text-secondary: #4a5261;
+  --text-secondary: #574d43;
   /* Aufgehellt wirkt „muted" wie Nebensache — und genau deshalb steht
      dort oft etwas, das man lesen muss. #9299A8 aus der Vorgabe erreicht
      2,50:1 auf der Lavendelfläche. Der Ton bleibt zurückhaltend, aber
      lesbar. */
-  --text-tertiary: #535863;
+  --text-tertiary: #665b50;
   --text-on-primary: #ffffff;
 
   /* Linien gibt es noch — für Tabellen, Trennungen in dichten Listen
      und das eine Mal, an dem eine Fläche wirklich eine Kante braucht.
      Sie sind bewusst zarter als vorher. */
-  --border-subtle: rgba(11, 14, 22, 0.07);
-  --border-strong: rgba(11, 14, 22, 0.13);
+  --border-subtle: rgba(60, 40, 22, 0.09);
+  --border-strong: rgba(60, 40, 22, 0.16);
 
-  --primary: #2E6FF2;
-  --primary-fill: #2E6FF2;
-  --primary-strong: #2159cf;
-  --primary-soft: #e6eefe;
-  /* 4,53:1 auf der ungünstigsten Fläche (Soft Lavender). Der Markenton
-     selbst liegt dort bei 4,13 und trägt deshalb Flächen, aber keine
-     Schrift. */
+  --primary: #C2410C;
+  --primary-fill: #C2410C;
+  --primary-strong: #9A3412;
+  --primary-soft: #fdece1;
+  /* Orange statt Blau — gewünschte Änderung vom 8. September 2026,
+     nur für den hellen Modus. Der dunkle bleibt unberührt.
+
+     #C2410C ist der HELLSTE Ton, der beides schafft: als Schrift auf
+     allen vier hellen Flächen über 4,5 (Weiss 5,18 · Grund 4,88 ·
+     Lavendel 4,53 · Soft 4,66) UND als Fläche mit weisser Schrift
+     (5,18). Gemessen, nicht geschätzt.
+
+     Jeder hellere Orangeton fällt durch: #D2500B kommt auf 3,76 gegen
+     Lavendel, #EA580C sogar nur auf 3,12. Beide sähen wärmer aus und
+     wären nicht mehr lesbar. */
   /*
    * Bleibt bewusst dunkler als die Füllfarbe.
    *
@@ -115,17 +131,20 @@
    * Fläche und Schrift dürfen sich unterscheiden: Ein Knopf trägt die
    * Farbe, ein Satz trägt sie nicht.
    */
-  --primary-text: #1d54c9;
+  --primary-text: #9A3412;
 
-  --signal-cyan: #b9d8ff;
-  --signal-cyan-text: #0e7290;
-  --signal-cyan-soft: #edf6ff;
-  --signal-violet: #8b84ff;
-  --signal-violet-text: #5b4fd6;
-  --signal-violet-soft: #f0eeff;
+  --signal-cyan: #ffd9a3;
+  --signal-cyan-text: #8a5a12;
+  --signal-cyan-soft: #fdf1dd;
+  --signal-violet: #e08a6a;
+  --signal-violet-text: #a5432a;
+  --signal-violet-soft: #fbe8e0;
 
   --success: #21a971;
-  --success-text: #177854;
+  /* Nachgezogen, weil die Grundflächen wärmer und dunkler wurden:
+     auf `--surface-soft` kam #177854 nur noch auf 4,32. Der
+     Kontrasttest hat es gefangen. #146a4a schafft überall 5,2+. */
+  --success-text: #146a4a;
   --success-soft: #e2f5ec;
   --warning: #c58b2b;
   --warning-text: #7a5d0a;
@@ -316,14 +335,14 @@
    * Helligkeit und Sättigung steigen — deshalb wirken die Ebenen wie
    * Schichten desselben Materials und nicht wie fünf Grautöne.
    */
-  --background: #0c0f18;
-  --background-subtle: #1c253a;
-  --surface-1: #141a28;
-  --surface-2: #1e232f;
-  --surface-3: #252b3a;
+  --background: #0e0e10;
+  --background-subtle: #26262c;
+  --surface-1: #18181b;
+  --surface-2: #202024;
+  --surface-3: #27272b;
   --surface-glass: rgba(12, 15, 24, 0.82);
 
-  --surface-soft: #1e232f;
+  --surface-soft: #202024;
   --surface-soft-hover: #252b3a;
 
   --text-primary: #e1e4ea;
@@ -346,17 +365,17 @@
    * Auf dem tiefen Marineblau trägt #7169ff, weil der Grund selbst
    * blau ist und nicht grau — die beiden gehören zur selben Familie.
    */
-  --primary: #5b83d6;
-  --primary-fill: #426dc5;
-  --primary-strong: #3a61b2;
+  --primary: #F0763C;
+  --primary-fill: #C2410C;
+  --primary-strong: #9A3412;
   --primary-soft: rgba(66, 109, 197, 0.24);
-  --primary-text: #8fabe4;
+  --primary-text: #F3A06A;
 
-  --signal-cyan: #7ee2ff;
-  --signal-cyan-text: #7ee2ff;
+  --signal-cyan: #FFC27A;
+  --signal-cyan-text: #FFC27A;
   --signal-cyan-soft: rgba(126, 226, 255, 0.14);
-  --signal-violet: #a89fff;
-  --signal-violet-text: #bcb5ff;
+  --signal-violet: #E8A08A;
+  --signal-violet-text: #F0B9A6;
   --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
   --success: #3fd79a;
@@ -417,13 +436,13 @@
     color-scheme: dark;
 
     --surface-kontofeld: #10141d;
-    --background: #0c0f18;
-    --background-subtle: #1c253a;
-    --surface-1: #141a28;
-    --surface-2: #1e232f;
-    --surface-3: #252b3a;
+    --background: #0e0e10;
+    --background-subtle: #26262c;
+    --surface-1: #18181b;
+    --surface-2: #202024;
+    --surface-3: #27272b;
     --surface-glass: rgba(12, 15, 24, 0.82);
-    --surface-soft: #1e232f;
+    --surface-soft: #202024;
     --surface-soft-hover: #252b3a;
 
     --text-primary: #e1e4ea;
@@ -434,17 +453,17 @@
     --border-subtle: rgba(225, 228, 234, 0.1);
     --border-strong: #545f78;
 
-    --primary: #5b83d6;
-    --primary-fill: #426dc5;
-    --primary-strong: #3a61b2;
+    --primary: #F0763C;
+    --primary-fill: #C2410C;
+    --primary-strong: #9A3412;
     --primary-soft: rgba(66, 109, 197, 0.24);
-    --primary-text: #8fabe4;
+    --primary-text: #F3A06A;
 
-    --signal-cyan: #7ee2ff;
-    --signal-cyan-text: #7ee2ff;
+    --signal-cyan: #FFC27A;
+    --signal-cyan-text: #FFC27A;
     --signal-cyan-soft: rgba(126, 226, 255, 0.14);
-    --signal-violet: #a89fff;
-    --signal-violet-text: #bcb5ff;
+    --signal-violet: #E8A08A;
+    --signal-violet-text: #F0B9A6;
     --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
     --success: #3fd79a;
@@ -529,40 +548,51 @@
 [data-surface="editorial"] {
   color-scheme: light;
 
-  --ed-canvas: #f7f8fc;
-  --ed-surface: #ffffff;
-  --ed-surface-raised: #ffffff;
-  --ed-ink: #090b12;
-  --ed-ink-2: #566070;
+  --ed-canvas: #f3ede4;
+  --ed-surface: #fbf7f1;
+  --ed-surface-raised: #fbf7f1;
+  --ed-ink: #1b1512;
+  --ed-ink-2: #574d43;
   /* 4,86:1 auf dem Canvas. Die erste Wahl (#7c8698) lag bei 3,42 und
      fiel durch — sie trägt die kleinen Labels über den Abschnitten,
      also genau die Schrift, bei der ein zu heller Ton am ehesten
      durchgeht und am wenigsten auffällt. */
-  --ed-ink-3: #646d7e;
+  --ed-ink-3: #665b50;
   --ed-hairline: rgba(9, 11, 18, 0.1);
   --ed-hairline-strong: rgba(9, 11, 18, 0.18);
 
   /* Farbe ist Signal, keine Fläche. Diese drei tauchen als Linie, als
      Punkt und als Verlauf auf — nie als grosser gefüllter Block. */
   /*
-   * Kein Violett mehr — dasselbe Blau wie überall sonst.
+   * Kein Violett und kein Blau mehr — derselbe Orangeton wie überall
+   * sonst im hellen Modus.
    *
-   * Die Startseite hatte eine eigene Akzentfarbe aus der Zeit, als das
-   * Produkt violett war. Sie fiel erst auf, als die Zahl in der
-   * Überschrift neben einem blauen Knopf stand: zwei Akzente auf einem
-   * Bildschirm, und keiner davon falsch genug, um es sofort zu sehen.
+   * Die Startseite hatte lange eine eigene Akzentfarbe. Sie fiel erst
+   * auf, als die Zahl in der Überschrift neben einem blauen Knopf
+   * stand: zwei Akzente auf einem Bildschirm, und keiner davon falsch
+   * genug, um es sofort zu sehen.
+   *
+   * Genau deshalb steht sie hier ein zweites Mal: Am 8. September 2026
+   * wurde der helle Modus auf Orange umgestellt — und die Landingpage
+   * blieb blau, weil sie ihre eigene Palette hat. Wer `--primary`
+   * ändert, muss hier mitziehen; sonst sieht der Kopfbereich warm aus
+   * und der Rest der Seite kalt.
+   *
+   * `--ed-ice` und `--ed-mint` gehören zum Kegelverlauf des Key
+   * Visuals. Bernstein und Gold statt Cyan und Minze — sonst bliebe
+   * der Wirbel blau, während alles um ihn herum warm ist.
    *
    * Die Namen bleiben (`--ed-violet`), weil sie an 40 Stellen stehen;
    * ein Umbenennen wäre eine Änderung ohne Wirkung.
    */
-  --ed-violet: #2E6FF2;
-  --ed-violet-text: #1d54c9;
-  --ed-ice: #55d8ff;
-  --ed-mint: #70f0c1;
-  --ed-violet-soft: #f0eeff;
+  --ed-violet: #C2410C;
+  --ed-violet-text: #9A3412;
+  --ed-ice: #F7A44B;
+  --ed-mint: #FFD79A;
+  --ed-violet-soft: #f7e9dc;
 
-  --ed-shadow-soft: 0 1px 2px rgba(9, 11, 18, 0.04), 0 8px 32px rgba(9, 11, 18, 0.06);
-  --ed-shadow-lift: 0 2px 6px rgba(9, 11, 18, 0.05), 0 24px 64px rgba(9, 11, 18, 0.09);
+  --ed-shadow-soft: 0 1px 2px rgba(60, 40, 22, 0.05), 0 8px 32px rgba(60, 40, 22, 0.07);
+  --ed-shadow-lift: 0 2px 6px rgba(60, 40, 22, 0.06), 0 24px 64px rgba(60, 40, 22, 0.10);
 
   background: var(--ed-canvas);
   color: var(--ed-ink);
@@ -596,18 +626,18 @@
 
   --ed-canvas: #070910;
   --ed-surface: #0e111b;
-  --ed-surface-raised: #151927;
+  --ed-surface-raised: #1b1b1f;
   --ed-ink: #f7f8fc;
-  --ed-ink-2: #9da7b8;
+  --ed-ink-2: #b0a89e;
   /* 5,56:1 auf dunklem Grund. */
-  --ed-ink-3: #7e8899;
+  --ed-ink-3: #8d857b;
   --ed-hairline: rgba(255, 255, 255, 0.1);
   --ed-hairline-strong: rgba(255, 255, 255, 0.18);
 
-  --ed-violet: #2E6FF2;
-  --ed-violet-text: #8fb6ff;
-  --ed-ice: #7ee2ff;
-  --ed-mint: #8ff5d3;
+  --ed-violet: #F0763C;
+  --ed-violet-text: #F3A06A;
+  --ed-ice: #FFB067;
+  --ed-mint: #FFD9A0;
   --ed-violet-soft: rgba(102, 92, 255, 0.16);
 
   --ed-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -617,20 +647,31 @@
 @media (prefers-color-scheme: dark) {
   /* Dieselbe Ausnahme wie oben: eine Seite, die sich hell erklärt,
      bleibt hell — auch wenn das Betriebssystem dunkel steht. */
-  :root[data-theme-mode="system"] [data-surface="editorial"]:not([data-theme="light"]) {
+  /* Bis zum 8. September 2026 hing das `:not()` am REDAKTIONELLEN
+       Element — und das trägt nie ein `data-theme`. Die Ausnahme traf
+       deshalb immer: Bei dunklem Betriebssystem bekam die Startseite
+       ihre dunklen Akzente, obwohl der Rest hell blieb. Warmer
+       Kopfbereich, weisser Grund, blaue Überschrift, blauer Knopf.
+
+       Aufgefallen ist es erst, als der helle Modus auf Orange ging und
+       die Landingpage als einzige blau blieb. Vorher waren beide Töne
+       blau, und niemand sah einen Widerspruch.
+
+       Jetzt hängt die Ausnahme an der Wurzel, wo die Wahl steht. */
+    :root[data-theme-mode="system"]:not([data-theme="light"]) [data-surface="editorial"] {
     color-scheme: dark;
     --ed-canvas: #070910;
     --ed-surface: #0e111b;
-    --ed-surface-raised: #151927;
+    --ed-surface-raised: #1b1b1f;
     --ed-ink: #f7f8fc;
-    --ed-ink-2: #9da7b8;
-    --ed-ink-3: #7e8899;
+    --ed-ink-2: #b0a89e;
+    --ed-ink-3: #8d857b;
     --ed-hairline: rgba(255, 255, 255, 0.1);
     --ed-hairline-strong: rgba(255, 255, 255, 0.18);
-    --ed-violet: #2E6FF2;
-    --ed-violet-text: #8fb6ff;
-    --ed-ice: #7ee2ff;
-    --ed-mint: #8ff5d3;
+    --ed-violet: #F0763C;
+    --ed-violet-text: #F3A06A;
+    --ed-ice: #FFB067;
+    --ed-mint: #FFD9A0;
     --ed-violet-soft: rgba(102, 92, 255, 0.16);
   }
 }

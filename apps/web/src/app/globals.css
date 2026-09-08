@@ -762,10 +762,22 @@ html {
  * `.zahlungsbadge` und nach den beiden Themenblöcken, und die
  * doppelte Klasse gewinnt ohnehin über die einfache.
  */
+/*
+ * Das Markenblau von American Express — bewusst KEIN Token.
+ *
+ * Hier stand `var(--color-accent)`. Solange der Akzent blau war, fiel
+ * das nicht auf: Das Feld sah aus wie American Express, weil unser
+ * Blau zufällig passte. Mit der Umstellung auf Orange am 8. September
+ * 2026 wäre daraus ein oranges AMEX-Feld geworden.
+ *
+ * Ein fremdes Logo trägt die Farbe seines Eigentümers, nicht unsere.
+ * Deshalb steht die Zahl hier fest und folgt keinem Thema — auch
+ * nicht dem dunklen.
+ */
 .zahlungsbadge.zahlungsbadge--blau,
 :root[data-theme="dark"] .zahlungsbadge.zahlungsbadge--blau,
 :root:not([data-theme="light"]) .zahlungsbadge.zahlungsbadge--blau {
-  background: var(--color-accent);
+  background: #006FCF;
   border-color: rgb(255 255 255 / 0.2);
 }
 .zahlungsbadge--blau .fuer-dunkel { display: block; }
