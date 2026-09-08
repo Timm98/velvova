@@ -37,23 +37,31 @@ export type Zielgruppe = "person" | "unternehmen";
 export interface Angebot {
   key: string;
   name: string;
-  /** Ein Satz, was man dafür bekommt. */
+  /** Ein Satz unter dem Namen. Was diese Stufe ist, nicht was sie kann. */
   nutzen: string;
-  /** Der Betrag, wie er dasteht. Nicht gerechnet, sondern beschlossen. */
+  /** Der Betrag, gross. Nicht gerechnet, sondern beschlossen. */
   preis: string;
-  /** Wofür der Betrag gilt: „einmalig", „im Monat", leer bei 0 €. */
-  takt: string;
   /**
-   * Höchstens drei Zeilen.
+   * Die kleine graue Zeile unter dem Betrag.
    *
-   * Die vollständigen Mengen und Grenzen gehören vor den Kauf, nicht
-   * auf die Karte: Eine Liste, die scrollt, wird überflogen.
+   * Hier steht, worauf er sich bezieht — „Pro Monat", eine
+   * Abrechnungsvariante, ein Vorbehalt. Alles, was den Preis
+   * einschränkt, gehört neben den Preis und nicht in eine Fussnote.
    */
+  taktzeile: string;
+  /**
+   * Die Überleitung über der Liste.
+   *
+   * „Alles in Kostenlos, plus:" spart, jede Zeile der Stufe darunter
+   * zu wiederholen — und sagt zugleich, dass sie enthalten ist. Ohne
+   * diesen Satz liest sich eine kürzere Liste wie ein kleinerer
+   * Umfang.
+   */
+  ueberleitung?: string;
   punkte: readonly string[];
   aktion: { text: string; ziel: string };
-  /** Der Halbsatz unter der Aktion, wo er nötig ist. */
-  fussnote?: string;
-  /** Hervorgehoben — höchstens eines je Ansicht. */
+  /** Der Halbsatz direkt unter dem Knopf. */
+  knopffussnote?: string;
   betont?: boolean;
   /**
    * Noch nicht freigegeben.
@@ -66,11 +74,20 @@ export interface Angebot {
 }
 
 /**
- * Einzelpersonen — zum ersten Verkaufsstand nur zwei Karten.
+ * Einzelpersonen — drei Stufen, alle monatlich.
+ *
+ * Ein Zwischenstand hatte das Wechselpaket zu 14,90 € einmalig für 42
+ * Tage. Das folgte dem Modell v2.0, das eine episodische Form
+ * empfiehlt — und ist auf Ansage ersetzt: drei monatliche Stufen.
+ *
+ * Die Beträge kommen aus demselben Dokument, Abschnitt 0.1: Begleitung
+ * Plus 9,90 € und Pro 19,90 €. Sie sind dort für „nach Nachweis
+ * fortlaufenden Nutzens" vorgesehen; hier stehen sie früher, und der
+ * Vorbehalt steht deshalb auf der Karte.
  *
  * Der erste vollständige Fall bleibt kostenlos und verschwindet nicht
- * nachträglich hinter einer Schranke. Bezahlt wird erst zusätzliche
- * Verarbeitung darüber hinaus.
+ * nachträglich hinter einer Schranke — das ist die eine Regel aus V8,
+ * die keine Preisrunde aufhebt.
  */
 export const PERSONEN: readonly Angebot[] = [
   {
@@ -78,28 +95,48 @@ export const PERSONEN: readonly Angebot[] = [
     name: "Kostenlos",
     nutzen: "Eine Stelle prüfen, bevor du dich entscheidest.",
     preis: "0 €",
-    takt: "",
+    taktzeile: "Kostenlos für alle",
     punkte: [
-      "Vollständiger erster Fall",
-      "Quellen und offene Fragen",
-      "Mit Konto 5 Checks pro Monat",
+      "Vollständiger erster Fall ohne Konto",
+      "Quellen, offene Fragen und Widersprüche sichtbar",
+      "Mit Konto 5 neue Stellenchecks je Monat",
+      "30 zusätzliche Nina-Antworten je Monat",
+      "Daten exportieren und löschen",
     ],
     aktion: { text: "Kostenlos starten", ziel: "/register" },
   },
   {
-    key: "wechselpaket",
-    name: "Wechselpaket",
-    nutzen: "Deine nächsten Optionen und Antworten zusammenhalten.",
-    preis: "14,90 €",
-    takt: "einmalig",
+    key: "plus",
+    name: "Begleitung Plus",
+    nutzen: "Für deine laufende Wechselentscheidung.",
+    preis: "9,90 €",
+    taktzeile: "Pro Monat, monatlich kündbar. Endpreis inklusive anwendbarer USt.",
+    ueberleitung: "Alles in Kostenlos, plus:",
     punkte: [
-      "42 Tage Begleitung",
-      "40 neue Stellenchecks",
-      "400 zusätzliche Nina-Antworten",
+      "20 neue Stellenchecks je Aboperiode",
+      "200 zusätzliche Nina-Antworten",
+      "Bestätigte Bedingungen über mehrere Stellen hinweg",
+      "Offene Fragen und Antworten bleiben zugeordnet",
     ],
-    aktion: { text: "Wechselpaket wählen", ziel: "/app/settings/abo" },
-    fussnote: "Keine automatische Verlängerung. Endpreis inklusive anwendbarer USt.",
+    aktion: { text: "Plus wählen", ziel: "/app/settings/abo" },
+    knopffussnote: "Keine Bindung · Jederzeit kündbar",
     betont: true,
+    nochNicht: true,
+  },
+  {
+    key: "pro",
+    name: "Begleitung Pro",
+    nutzen: "Wenn mehrere Entscheidungen gleichzeitig laufen.",
+    preis: "19,90 €",
+    taktzeile: "Pro Monat, monatlich kündbar. Endpreis inklusive anwendbarer USt.",
+    ueberleitung: "Alles in Plus, plus:",
+    punkte: [
+      "60 neue Stellenchecks je Aboperiode",
+      "600 zusätzliche Nina-Antworten",
+      "Mehrere Stellen im direkten Vergleich",
+    ],
+    aktion: { text: "Pro wählen", ziel: "/app/settings/abo" },
+    knopffussnote: "Keine Bindung · Jederzeit kündbar",
     nochNicht: true,
   },
 ] as const;
@@ -118,8 +155,12 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     name: "Klarheits-Check",
     nutzen: "Sehen, was in der eigenen Anzeige offen bleibt.",
     preis: "0 €",
-    takt: "",
-    punkte: ["1 aktiv verwaltete Stelle", "1 Bearbeiter", "Quellenkorrekturen bleiben frei"],
+    taktzeile: "Kostenlos, je Organisation",
+    punkte: [
+      "1 aktiv verwaltete Stelle, 1 Bearbeiter",
+      "2 Anzeigenprüfungen je Monat",
+      "Quellenkorrekturen bleiben frei",
+    ],
     aktion: { text: "Unternehmen registrieren", ziel: "/firma" },
   },
   {
@@ -127,10 +168,15 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     name: "Arbeitsraum Basis",
     nutzen: "Personal und Fachabteilung arbeiten am selben Stand.",
     preis: "49 €",
-    takt: "im Monat",
-    punkte: ["3 Stellen, 3 Bearbeiter", "Gemeinsamer Klärungsbereich", "20 Anzeigenprüfungen"],
+    taktzeile: "Pro Monat je Organisation, zzgl. anwendbarer USt.",
+    ueberleitung: "Alles im Klarheits-Check, plus:",
+    punkte: [
+      "3 aktiv verwaltete Stellen, 3 Bearbeiter",
+      "Gemeinsamer Klärungsbereich und Zuständigkeiten",
+      "20 Anzeigenprüfungen und 100 Entwürfe je Aboperiode",
+    ],
     aktion: { text: "Pilot anfragen", ziel: "/for-business" },
-    fussnote: "Je Organisation, zzgl. anwendbarer Umsatzsteuer.",
+    knopffussnote: "Keine Bindung · Monatlich kündbar",
     betont: true,
     nochNicht: true,
   },
@@ -139,10 +185,15 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     name: "Arbeitsraum Team",
     nutzen: "Zuständigkeiten, Freigaben und offene Klärungen im Blick.",
     preis: "149 €",
-    takt: "im Monat",
-    punkte: ["15 Stellen, 10 Bearbeiter", "Rollen und Freigaben", "100 Anzeigenprüfungen"],
+    taktzeile: "Pro Monat je Organisation, zzgl. anwendbarer USt.",
+    ueberleitung: "Alles in Basis, plus:",
+    punkte: [
+      "15 aktiv verwaltete Stellen, 10 Bearbeiter",
+      "Rollenbasierte Freigaben",
+      "100 Anzeigenprüfungen und 400 Entwürfe je Aboperiode",
+    ],
     aktion: { text: "Bedarf besprechen", ziel: "/for-business" },
-    fussnote: "Je Organisation, zzgl. anwendbarer Umsatzsteuer.",
+    knopffussnote: "Keine Bindung · Monatlich kündbar",
     nochNicht: true,
   },
 ] as const;

@@ -44,14 +44,22 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
       aria-labelledby="preise"
       className="mx-auto w-full max-w-[1240px] px-5 py-20 md:px-8 md:py-24"
     >
-      <div className="grid gap-4">
+      {/*
+        Überschrift und Umschalter mittig.
+
+        Die Vorlage stellt beides über die Karten und zentriert es. Das
+        ist nicht Geschmack: Der Umschalter gehört zu allen drei Karten
+        gleichermassen, und linksbündig sieht er aus, als gehöre er zur
+        ersten.
+      */}
+      <div className="grid justify-items-center gap-4 text-center">
         <h2
           id="preise"
-          className="font-display text-[clamp(1.6rem,3vw,2.2rem)] font-normal leading-tight tracking-[-0.02em]"
+          className="font-display text-[clamp(1.8rem,3.4vw,2.6rem)] font-normal leading-tight tracking-[-0.02em]"
         >
           Was Velvova kostet
         </h2>
-        <p className="max-w-[54ch] text-[15px] leading-relaxed text-ink-2">
+        <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-2">
           Einzelpersonen bezahlen für die Begleitung ihrer eigenen Wechselentscheidung. Unternehmen
           für klare Stelleninformationen und gemeinsame Abläufe. Niemand kauft Einfluss auf Ninas
           Rat.
@@ -67,11 +75,11 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
         <div
           role="group"
           aria-label="Angebote für"
-          className="mt-2 inline-flex w-fit gap-1 rounded-(--radius-pill) bg-soft p-1"
+          className="mt-2 inline-flex gap-1 rounded-(--radius-pill) bg-soft p-1"
         >
           {(
             [
-              ["person", "Einzelpersonen"],
+              ["person", "Einzelperson"],
               ["unternehmen", "Unternehmen"],
             ] as const
           ).map(([k, text]) => (
@@ -81,7 +89,7 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
               aria-pressed={wer === k}
               onClick={() => setWer(k)}
               className={[
-                "min-h-10 rounded-(--radius-pill) px-4 text-sm transition-colors duration-(--duration-fast)",
+                "min-h-10 rounded-(--radius-pill) px-5 text-sm transition-colors duration-(--duration-fast)",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
                 wer === k ? "bg-raised font-medium text-ink shadow-sm" : "text-ink-2 hover:text-ink",
               ].join(" ")}
@@ -92,88 +100,126 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
         </div>
       </div>
 
-      {/* Das Raster folgt der Zahl der Karten, nicht umgekehrt: Zwei
-          Angebote in drei Spalten lassen eine Lücke, die wie ein
-          fehlendes drittes Paket aussieht. */}
-      <ul
-        className={[
-          "mt-10 grid gap-4",
-          angebote.length === 2 ? "md:grid-cols-2 lg:max-w-[820px]" : "md:grid-cols-3",
-        ].join(" ")}
-      >
+      {/* `items-stretch` und `h-full` an der Karte: Sonst ist jede Karte
+          so hoch wie ihr Inhalt, und drei verschieden lange Listen
+          ergeben drei verschieden hohe Kästen mit versetzten
+          Unterkanten. */}
+      <ul className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
         {angebote.map((a) => (
           <li
             key={a.key}
             className={[
-              "grid content-start gap-5 rounded-(--radius-lg) border p-6",
-              a.betont ? "border-accent" : "border-line",
+              "grid h-full content-start gap-6 rounded-(--radius-lg) border p-7",
+              /*
+               * Die hervorgehobene Stufe bekommt den Akzentrand und
+               * einen sehr schwachen Schein darum — im hellen Modus
+               * orange, im dunklen blau, weil `--color-accent` dem
+               * Thema folgt.
+               *
+               * Ein zweiter Rahmen statt einer gefüllten Fläche: Eine
+               * eingefärbte Karte zieht den Blick so stark, dass die
+               * beiden anderen wie Restposten wirken.
+               */
+              a.betont
+                ? "border-accent shadow-[0_0_0_1px_rgb(from_var(--color-accent)_r_g_b_/_0.35),0_0_28px_-8px_rgb(from_var(--color-accent)_r_g_b_/_0.45)]"
+                : "border-line",
             ].join(" ")}
             style={{ background: "var(--ed-surface)" }}
           >
-            <div className="grid gap-1">
-              <h3 className="font-display text-xl font-medium">{a.name}</h3>
+            {/*
+              Kopf: Name, ein Satz, dann der Preis mit seiner
+              Erläuterungszeile.
+
+              Der Vorbehalt steht direkt am Preis. In einer Fussnote
+              unter allen Karten läse ihn, wer schon entschieden hat.
+            */}
+            <div className="grid gap-1.5">
+              <h3 className="font-display text-2xl font-normal">{a.name}</h3>
               <p className="text-[15px] leading-relaxed text-ink-2">{a.nutzen}</p>
             </div>
 
-            <p className="flex items-baseline gap-1.5">
+            <div className="grid gap-1.5">
               {/*
-                Keine Monospace für den Preis.
-
-                `font-mono tabular-nums` ist für Tabellen richtig, in
-                denen Ziffern untereinander stehen müssen. Hier steht
-                eine einzelne Zahl im Fliesstext, und die feste
-                Zeichenbreite zerlegte sie sichtbar: aus „14,90 €"
-                wurde „14 , 90 €", weil auch Komma und Leerzeichen
-                eine volle Zelle bekamen.
+                `tracking-[-0.02em]`: Die Titelschrift setzt Komma und
+                geschütztes Leerzeichen grosszügig, und bei 40 Pixeln
+                Schriftgrad wird daraus sichtbar „9 , 90 €". Dieselbe
+                Enge, die die Überschriften der Seite ohnehin tragen.
               */}
-              <span className="font-display text-3xl font-medium">{a.preis}</span>
-              {a.takt ? <span className="text-sm text-ink-2">{a.takt}</span> : null}
-            </p>
-
-            <ul className="grid gap-2 border-t border-line pt-5">
-              {a.punkte.map((p) => (
-                <li key={p} className="flex gap-2.5 text-[14px] leading-relaxed text-ink-2">
-                  {/*
-                    Ein Strich, kein Häkchen. Ein grünes Häkchen sagt
-                    „erledigt" oder „geprüft"; hier steht, was
-                    enthalten ist.
-                  */}
-                  <span aria-hidden className="mt-2.5 h-px w-2.5 shrink-0 bg-ink-3" />
-                  {p}
-                </li>
-              ))}
-            </ul>
-
-            {a.nochNicht ? (
-              <p className="rounded-(--radius-md) border border-line px-3 py-2 text-2xs leading-relaxed text-ink-3">
-                Noch nicht buchbar. Wir sagen Bescheid, sobald dieses Paket freigegeben ist.
+              <p className="font-display text-[2.5rem] font-normal leading-none tracking-[-0.02em]">
+                {a.preis}
               </p>
-            ) : null}
+              <p className="text-[13px] leading-relaxed text-ink-3">{a.taktzeile}</p>
+            </div>
 
-            <Link
-              href={a.nochNicht ? "/help" : angemeldet ? a.aktion.ziel : a.aktion.ziel}
-              className={[
-                "flex h-11 items-center justify-center rounded-(--radius-control) text-sm font-medium transition-colors duration-(--duration-fast)",
-                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
-                a.betont && !a.nochNicht
-                  ? "bg-accent text-white hover:opacity-90"
-                  : "border border-line text-ink hover:border-accent",
-              ].join(" ")}
-            >
-              {a.nochNicht ? "Benachrichtigen lassen" : a.aktion.text}
-            </Link>
+            {/*
+              Der Knopf steht über der Liste, nicht darunter.
 
-            {a.fussnote ? (
-              <p className="text-2xs leading-relaxed text-ink-3">{a.fussnote}</p>
-            ) : null}
+              Wer die Stufe schon kennt, muss nicht erst an fünf Zeilen
+              vorbei. Wer sie nicht kennt, liest die Liste ohnehin — und
+              findet den Knopf danach wieder, weil er die volle Breite
+              hat.
+            */}
+            <div className="grid gap-2">
+              <Link
+                href={a.nochNicht ? "/help" : a.aktion.ziel}
+                className={[
+                  "flex h-12 items-center justify-center rounded-(--radius-control) text-sm font-medium transition-colors duration-(--duration-fast)",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+                  a.betont && !a.nochNicht
+                    ? "bg-accent text-white hover:opacity-90"
+                    : "border border-line text-ink hover:border-accent",
+                ].join(" ")}
+              >
+                {a.nochNicht ? "Benachrichtigen lassen" : a.aktion.text}
+              </Link>
+              {a.nochNicht ? (
+                <p className="text-center text-2xs leading-relaxed text-ink-3">
+                  Noch nicht buchbar — wir sagen Bescheid, sobald diese Stufe freigegeben ist.
+                </p>
+              ) : a.knopffussnote ? (
+                <p className="text-center text-2xs text-ink-3">{a.knopffussnote}</p>
+              ) : null}
+            </div>
+
+            <div className="grid content-start gap-3 self-stretch border-t border-line pt-6">
+              {a.ueberleitung ? (
+                <p className="text-[14px] font-semibold text-ink">{a.ueberleitung}</p>
+              ) : null}
+              <ul className="grid gap-2.5">
+                {a.punkte.map((p) => (
+                  <li key={p} className="flex gap-3 text-[14px] leading-relaxed text-ink-2">
+                    {/*
+                      Ein Häkchen wie in der Vorlage — und `aria-hidden`,
+                      weil ein Vorleseprogramm sonst vor jeder Zeile
+                      „Häkchen" sagt. Die Liste ist bereits eine Liste;
+                      dass ihre Punkte enthalten sind, sagt die
+                      Überschrift darüber.
+                    */}
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 16 16"
+                      className="mt-1 size-3.5 shrink-0 text-ink-3"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 8.5 6.5 12 13 4.5" />
+                    </svg>
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </li>
         ))}
       </ul>
 
-      <p className="mt-6 max-w-[64ch] text-2xs leading-relaxed text-ink-3">
+      <p className="mx-auto mt-8 max-w-[72ch] text-center text-2xs leading-relaxed text-ink-3">
         {wer === "person"
-          ? "Der erste vollständige Check bleibt kostenlos und verschwindet nicht nachträglich hinter einer Schranke. Bezahlt wird erst zusätzliche Verarbeitung darüber hinaus. Eine laufende Begleitung im Monatsabo bieten wir an, sobald wir sehen, dass sie gebraucht wird."
-          : "Preise je Organisation, nicht je Bearbeiter. Kein bezahltes Ranking, keine Arbeitgebersiegel: Wer zahlt, erscheint in der Suche nicht weiter oben. Bewerberdaten bleiben getrennt — ein Firmenzugang sieht keinen privaten Check."}
+          ? "Der erste vollständige Check bleibt kostenlos und verschwindet nicht nachträglich hinter einer Schranke. Kontingente, Zählweise und Ablauf stehen vor dem Kauf fest; ungenutzte Einheiten werden nicht angespart. Preise inklusive anwendbarer Umsatzsteuer, Änderungen vorbehalten."
+          : "Preise je Organisation, nicht je Bearbeiter, und zuzüglich anwendbarer Umsatzsteuer. Kein bezahltes Ranking, keine Arbeitgebersiegel: Wer zahlt, erscheint in der Suche nicht weiter oben. Bewerberdaten bleiben getrennt — ein Firmenzugang sieht keinen privaten Check."}
       </p>
     </section>
   );

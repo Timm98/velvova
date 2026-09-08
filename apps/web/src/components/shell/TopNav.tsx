@@ -647,7 +647,24 @@ function Kopfsuche({
       role="search"
       aria-label="Stellensuche"
       data-springt={springt ? "an" : undefined}
-      className="kopfsuche absolute left-1/2 hidden w-[min(48vw,620px)] -translate-x-1/2 md:block"
+      /*
+       * Nicht mehr absolut zur Seitenmitte.
+       *
+       * Das Feld stand auf `absolute left-1/2 w-[min(48vw,620px)]` und
+       * war damit exakt mittig — und blind für alles daneben. Gemessen
+       * überlappte es „Anmelden" ab 1024 Pixeln Fensterbreite, bei 768
+       * um 82 Pixel. Sichtbar war das nur als Text, der unter einem
+       * Knopf verschwindet; nichts lief über den Rand, nichts brach um.
+       *
+       * Jetzt ein Kind der Zeile: `flex-1` nimmt den Platz zwischen
+       * Marke und Knöpfen, `max-w` deckelt bei 620, `mx-auto` zentriert
+       * es darin. Die Mitte verschiebt sich dadurch minimal gegenüber
+       * der Seitenmitte — genau um die Hälfte des Unterschieds zwischen
+       * Marke und Knopfgruppe. Das ist der Preis dafür, dass sich
+       * nichts mehr überlagern kann, und er ist niedriger als der
+       * Fehler.
+       */
+      className="kopfsuche relative mx-auto hidden w-full max-w-[620px] min-w-0 flex-1 md:block"
     >
       <label htmlFor="kopf-stellensuche" className="sr-only">
         {beschriftung}
