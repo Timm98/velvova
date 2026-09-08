@@ -156,20 +156,49 @@ export function AccountMenu({
             eine Kante — die Vorlage hat beides.
           */
           /*
-            Die Füllung liegt zwischen zwei Tokens, mit Absicht.
-            
-            `--surface-1` (#141a28) war zu hell, der Seitengrund
-            (#0c0f18) zu dunkel — das Feld verschwand darin. #10141d
-            liegt dazwischen: dunkler als jede Fläche der Seite,
-            aber noch als eigene Fläche erkennbar, und mit der
-            #545f78-Kante klar abgesetzt.
-            
-            Deshalb hier als Wert und nicht als Token: Es ist die
-            Farbe genau EINES schwebenden Feldes. Ein neues Token für
-            eine Stelle wäre eine Zeile mehr im Kern, die niemand
-            sonst benutzt.
+            ══════════════════════════════════════════════════════
+            Die Füllung ist ein Token, weil sie zwei Antworten hat
+            ══════════════════════════════════════════════════════
+
+            Hier stand `#10141d` als fester Wert. Im dunklen Theme
+            war er richtig gewählt: `--surface-1` (#141a28) war zu
+            hell, der Seitengrund (#0c0f18) zu dunkel — das Feld
+            verschwand darin. #10141d liegt dazwischen.
+
+            Nur gilt das ausschliesslich dort. Es gibt ein helles
+            Theme mit dem Seitengrund #f7f8fc, und in dem war dieses
+            Feld eine fast schwarze Fläche — mit `text-ink` darauf,
+            also dunkler Schrift auf Dunkel. Gemeldet am 8. September
+            2026: „oben rechts, wenn ich das aufklappe, ist
+            durchsichtig". Durchsichtig war es nicht; es war
+            unlesbar, und das sieht gleich aus.
+
+            Ein fester Farbwert in einem Bauteil ist eine Annahme
+            über das Theme. Sie stimmt genau so lange, wie es nur
+            eines gibt. Die Absicht — „eine eigene Fläche, klar
+            abgesetzt vom Seitengrund" — steht jetzt als
+            `--surface-kontofeld` im Kern und hat dort je Theme
+            ihren Wert.
           */
-          style={{ background: "#10141d" }}
+          /*
+           * Mit Rückfall, obwohl das Token überall definiert ist.
+           *
+           * Geprüft im gebauten CSS: `:root,[data-theme=light]` setzt
+           * es auf #fff, der Dunkelblock auf #10141d. Es kann also
+           * nicht fehlen.
+           *
+           * Der Rückfall steht trotzdem da, weil das Ausbleiben eines
+           * Tokens hier keinen sichtbaren Fehler ergibt, sondern ein
+           * DURCHSICHTIGES Feld — und ein durchsichtiges Menü sieht
+           * nicht nach einem fehlenden Wert aus, sondern nach einem
+           * kaputten Bauteil. Genau so wurde es dreimal gemeldet.
+           *
+           * `--surface-1` gibt es seit der ersten Fassung der Tokens.
+           * Sie ist einen Hauch heller als das Kontofeld sein soll;
+           * das ist der richtige Preis dafür, dass hier nie wieder
+           * etwas durchscheint.
+           */
+          style={{ background: "var(--surface-kontofeld, var(--surface-1, #141a28))" }}
           className="absolute right-0 top-[calc(100%_+_10px)] z-50 w-[21.75rem] animate-fade-in rounded-(--radius-sm) border border-line-3 px-2 pb-2 pt-12 shadow-xl"
         >
           {/*

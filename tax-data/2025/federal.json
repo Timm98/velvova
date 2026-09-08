@@ -1,0 +1,95 @@
+{
+  "taxYear": 2025,
+  "jurisdiction": "CH",
+  "level": "federal",
+  "name": "Direkte Bundessteuer",
+  "source": {
+    "primary": "ESTV, Form. 58c — Tabelle fuer die Berechnung der direkten Bundessteuer der natuerlichen Personen, Steuerperiode 2025 (Ausgabe 05.2025)",
+    "url": "https://www.estv.admin.ch/dam/de/sd-web/ZbaRlMm2u6u2/dbst-tarife-58c-2025-de.pdf",
+    "law": "SR 642.11 DBG, Art. 36",
+    "retrievedAt": "2026-09-08"
+  },
+  "warnung": {
+    "titel": "Diese Datei stand einmal falsch da — der Hergang gehoert dazu",
+    "text": [
+      "Der erste Anlauf holte den Tarif aus der konsolidierten Fassung des DBG auf Fedlex, Pfad '20250101'. Er lieferte: Grundtarif ab 14'800, Verheiratetentarif ab 28'800, Kinderabzug 255.",
+      "Die amtliche ESTV-Tabelle fuer 2025 widerspricht dem. Sie nennt bei 20'000 Franken eine Steuer von 36.96; das sind 48 mal 0.77, also ein Tarifbeginn bei 15'200. Bei 29'000 Franken stehen 106.26, das sind 138 mal 0.77 — wieder 15'200. Und der Verheiratetentarif zeigt bei 33'000 Franken genau 33.00, also 33 mal 1.00 ab 29'700.",
+      "Die Fedlex-Zahlen waren die des Vorjahres. Sie sahen richtig aus, waren in sich stimmig und haetten jede Pruefung bestanden, die nur eine Quelle kennt.",
+      "Abgelegt sind deshalb die Werte aus der ESTV-Tabelle, und zwar nicht abgeschrieben, sondern aus ihren Stuetzpunkten abgeleitet und gegengerechnet."
+    ]
+  },
+  "verification": {
+    "method": "Aus der ESTV-Tabelle wurden alle Stuetzpunkte gelesen und die Grenzsteuersaetze zwischen benachbarten Punkten berechnet. Wo der Satz wechselt, liegt eine Tarifkante. Anschliessend wurde jede Kante zurueckgerechnet: Grundbetrag der Vorstufe plus Spanne mal Satz muss den Grundbetrag der Folgestufe treffen.",
+    "beispiele": [
+      "ledig  33'200: (33'200-15'200)/100 x 0.77 = 138.60 — Tabelle: 138.60",
+      "ledig  58'000: 229.20 + 145 x 2.64 = 612.00 — Tabelle: 612.00",
+      "ledig 141'500: 3268.80 + 327 x 8.80 = 6146.40 — Tabelle: 6146.40",
+      "verh.  94'900: 929.00 + 158 x 4.00 = 1561.00 — Tabelle: 1561.00",
+      "verh. 152'300: 5446.00 + 20 x 12.00 = 5686.00 — Tabelle: 5686.00",
+      "verh. 940'900 x 0.115 = 108'203.50 — Tabelle: 108'203.50"
+    ],
+    "einFund": "Die Kante zum Satz 4.00 im Verheiratetentarif liegt bei 79'100, nicht bei 79'200. Gerechnet ab 79'200 ergab sich 932.00, die Tabelle nennt 933.00. Ein Franken Abweichung — und er war der einzige Hinweis darauf, dass die Kante hundert Franken tiefer liegt."
+  },
+  "rounding": {
+    "taxableIncomeDownToFranc": true,
+    "per100Franc": "abgerundet",
+    "taxToRappen": 2,
+    "minimumLevied": 25,
+    "note": "Der Tarif rechnet je VOLLE 100 Franken: 105'550 wird wie 105'500 besteuert. Steuerbetraege unter 25 Franken werden nicht erhoben — das ist eine Bezugs-, keine Berechnungsregel."
+  },
+  "tariffs": {
+    "single": {
+      "label": "Grundtarif (Art. 36 Abs. 1 DBG)",
+      "appliesTo": "Alleinstehende ohne Kinder",
+      "brackets": [
+        { "from": 0, "baseTax": 0, "ratePer100": 0 },
+        { "from": 15200, "baseTax": 0, "ratePer100": 0.77 },
+        { "from": 33200, "baseTax": 138.6, "ratePer100": 0.88 },
+        { "from": 43500, "baseTax": 229.2, "ratePer100": 2.64 },
+        { "from": 58000, "baseTax": 612.0, "ratePer100": 2.97 },
+        { "from": 76100, "baseTax": 1149.55, "ratePer100": 5.94 },
+        { "from": 82000, "baseTax": 1500.0, "ratePer100": 6.6 },
+        { "from": 108800, "baseTax": 3268.8, "ratePer100": 8.8 },
+        { "from": 141500, "baseTax": 6146.4, "ratePer100": 11.0 },
+        { "from": 184900, "baseTax": 10920.4, "ratePer100": 13.2 }
+      ],
+      "flatAbove": {
+        "from": 793300,
+        "rateOfTotalIncome": 0.115,
+        "note": "Maximalbelastung: 11,5 Prozent des GESAMTEN Einkommens, nicht des Teils darueber. Der Uebergang ist stetig — bei 793'300 ergibt der Stufentarif 91'229.20 und die Deckelung 91'229.50."
+      }
+    },
+    "married": {
+      "label": "Verheiratetentarif (Art. 36 Abs. 2 DBG)",
+      "appliesTo": "Verheiratete und eingetragene Partnerschaften in ungetrennter Ehe; ebenso Einelternfamilien (so fuehrt die ESTV-Tabelle sie)",
+      "brackets": [
+        { "from": 0, "baseTax": 0, "ratePer100": 0 },
+        { "from": 29700, "baseTax": 0, "ratePer100": 1.0 },
+        { "from": 53400, "baseTax": 237.0, "ratePer100": 2.0 },
+        { "from": 61300, "baseTax": 395.0, "ratePer100": 3.0 },
+        { "from": 79100, "baseTax": 929.0, "ratePer100": 4.0 },
+        { "from": 94900, "baseTax": 1561.0, "ratePer100": 5.0 },
+        { "from": 108600, "baseTax": 2246.0, "ratePer100": 6.0 },
+        { "from": 120500, "baseTax": 2960.0, "ratePer100": 7.0 },
+        { "from": 130500, "baseTax": 3660.0, "ratePer100": 8.0 },
+        { "from": 138300, "baseTax": 4284.0, "ratePer100": 9.0 },
+        { "from": 144200, "baseTax": 4815.0, "ratePer100": 10.0 },
+        { "from": 148200, "baseTax": 5215.0, "ratePer100": 11.0 },
+        { "from": 150300, "baseTax": 5446.0, "ratePer100": 12.0 },
+        { "from": 152300, "baseTax": 5686.0, "ratePer100": 13.0 }
+      ],
+      "flatAbove": {
+        "from": 940800,
+        "rateOfTotalIncome": 0.115,
+        "note": "Kontrolle an der Tabelle: 940'900 x 0.115 = 108'203.50, und genau das steht dort."
+      }
+    },
+    "parent": {
+      "label": "Elterntarif (Art. 36 Abs. 2bis DBG)",
+      "appliesTo": "Personen, die mit Kindern oder unterstuetzungsbeduerftigen Personen zusammenleben",
+      "basedOn": "married",
+      "deductionPerChild": 263,
+      "note": "Kein eigener Tarif: Es gilt der Verheiratetentarif, und von der so berechneten Steuer werden 263 Franken je Kind abgezogen. Der Abzug wirkt auf die STEUER, nicht auf das Einkommen — das wird regelmaessig verwechselt und aendert das Ergebnis um ein Vielfaches. Der Wert 255 gehoert zum Vorjahr; er kam aus derselben veralteten Fedlex-Fassung wie die falschen Tarifanfaenge."
+    }
+  }
+}

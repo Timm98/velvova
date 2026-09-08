@@ -38,6 +38,20 @@
    wenn im Konto dunkel steht — die öffentlichen Seiten. */
 :root,
 [data-theme="light"] {
+  /*
+   * Das schwebende Kontofeld oben rechts.
+   *
+   * Es stand als fester Wert `#10141d` im Bauteil — ein Dunkelton,
+   * gewählt gegen den dunklen Seitengrund. Im hellen Theme wurde
+   * daraus eine fast schwarze Fläche mit dunklem Text darauf:
+   * gemeldet am 8. September 2026 als „oben rechts, wenn ich das
+   * aufklappe, ist durchsichtig" — man sah nichts mehr.
+   *
+   * Die Absicht war „eine eigene Fläche, klar abgesetzt vom
+   * Seitengrund". Hell heisst das Weiss gegen #f7f8fc; dunkel heisst
+   * es dunkler als jede Fläche der Seite. Zwei Werte, eine Absicht.
+   */
+  --surface-kontofeld: #ffffff;
   color-scheme: light;
 
   --background: #f7f8fc;
@@ -281,6 +295,10 @@
  */
 :root[data-theme="dark"],
 [data-theme="dark"] {
+  /* Siehe `--surface-kontofeld` im hellen Block. `--surface-1`
+     (#141a28) war zu hell und der Seitengrund (#0c0f18) zu dunkel —
+     #10141d liegt dazwischen. */
+  --surface-kontofeld: #10141d;
   color-scheme: dark;
 
   /*
@@ -398,6 +416,7 @@
   :root[data-theme-mode="system"] {
     color-scheme: dark;
 
+    --surface-kontofeld: #10141d;
     --background: #0c0f18;
     --background-subtle: #1c253a;
     --surface-1: #141a28;

@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { Columns3, Compass } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { ortNachschlagen } from "@paycheck/jobs";
 import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { listJobsForUser, type ScoredJob } from "@/lib/matching";
@@ -18,6 +19,7 @@ import { Jobalarm } from "@/components/jobs/Jobalarm";
 import { Vertrauensbereich } from "@/components/shell/Vertrauensbereich";
 import { JobFilters } from "./JobFilters";
 import { JobPagination } from "./JobPagination";
+import { Rollrastung } from "./Rollrastung";
 import { FilterChips } from "./FilterChips";
 import { JobSplitView } from "./JobSplitView";
 import { workspaceDaten } from "./nina/daten";
@@ -33,9 +35,14 @@ import { fahrzeitMinuten } from "@/lib/jobs/fahrzeit";
 import { entfernungKm } from "@paycheck/matching";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { nurFilter } from "@/lib/jobs/listenfilter";
+import { zweigeLesen, zweigeSchreiben, type Suchzweig } from "@/lib/jobs/zweige";
+import { trifftSuche } from "@/lib/jobs/textsuche";
 import { Suchrichtungen } from "@/components/jobs/Suchrichtungen";
 import { suchrichtungen } from "@paycheck/matching";
 import { abdeckungssatz, ladeQuellenabdeckung } from "@/lib/jobs/coverage";
+import { grundlagenzahlen } from "@/lib/jobs/grundlagen";
+import { kursstand } from "@/lib/waehrung/kurse";
+import { LAND_ZU_WAEHRUNG } from "@paycheck/jobs/waehrung";
 import { stellenseitendaten } from "@/lib/jobs/seitendaten";
 import { listensignale } from "@/lib/jobs/listensignale";
 import { gehaltsanzeige } from "@/lib/jobs/gehaltsanzeige";
@@ -347,6 +354,16 @@ async function Stellenliste({
     sichtbar: gewuenschteAnzahl,
     suche: params.q ?? null,
     /*
+     * Mehrere Berufe mit eigenem Gehalt.
+     *
+     * Sie stehen als EIN Adressparameter da — `zweige=beruf~betrag;…`
+     * —, weil die ganze Filterkette dieser Seite mit
+     * `Record<string, string>` arbeitet: die Adresse, das Blättern,
+     * das Merken. Ein wiederholter Parameter käme als `string[]` an
+     * und hätte alle drei aufgebrochen.
+     */
+    zweige: zweigeLesen(params.zweige),
+    /*
      * Der Ort geht in die Datenbank, nicht mehr in den Nachfilter.
      *
      * Vorher lieferte die Abfrage die neuesten 2.000 Anzeigen
@@ -398,11 +415,66 @@ async function Stellenliste({
    * filterte. Jetzt trägt jede Zeile, wie weit es ist — dafür muss
    * er immer da sein, sobald ein Wohnort im Profil steht.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Der Mittelpunkt des Umkreises
+   * ══════════════════════════════════════════════════════════════
+   *
+   * `umkreisKm` stand bis zum 8. September 2026 in den gespeicherten
+   * Filtern, wurde als Plättchen „30 km Umkreis" angezeigt und vom
+   * Deuter gesetzt — und dann von keiner einzigen Zeile angewendet.
+   * Gefiltert hat in Wahrheit der ORTSTEXT: `location` enthält
+   * „Karlsruhe". Ettlingen liegt zwölf Kilometer entfernt und fiel
+   * heraus, Köln lag draussen und kam herein, sobald der Text
+   * wegfiel.
+   *
+   * Für eine echte Entfernung braucht es den Mittelpunkt in
+   * Koordinaten. Den gibt es — `ortNachschlagen` löst ihn auf, und
+   * `wohnpunkt` entsteht nebenan auf demselben Weg.
+   *
+   * ── Warum nur bei gesetztem Umkreis ─────────────────────────
+   *
+   * Weil es eine Abfrage kostet, und diese Seite zählt ihre
+   * Netzrunden. Ohne Umkreis gibt es nichts zu rechnen — dann bleibt
+   * es beim Ortstext, der für „Stellen in Karlsruhe" auch richtig
+   * ist.
+   */
+  const suchpunkt =
+    params.ort && params.umkreisKm
+      ? await ortNachschlagen(await getDb(), params.ort)
+          .then((a) =>
+            /*
+             * Genau oder auf Stadtebene — wie beim Wohnort. `ambiguous`
+             * ausdrücklich nicht: Ein falscher Mittelpunkt verschiebt
+             * nicht eine Anzeige, sondern die ganze Suche.
+             */
+            (a.status === "resolved_exact" || a.status === "resolved_city") &&
+            a.latitude !== null &&
+            a.longitude !== null
+              ? { latitude: a.latitude, longitude: a.longitude }
+              : null,
+          )
+          .catch(() => null)
+      : null;
+
+  /*
+   * Die Zuordnung Zeile → Zweig, für die Kennzeichen in der Liste.
+   *
+   * Sie benutzt `zweigTrifft` — dieselbe Prüfung, mit der oben
+   * gefiltert wurde. Eine eigene Regel dafür wäre eine zweite
+   * Wahrheit: Dann könnte eine Zeile in der Liste stehen und
+   * behaupten, aus einem Zweig zu stammen, der sie gar nicht
+   * hereingelassen hat.
+   */
+  const zweigeFuerNamen = zweigeLesen(params.zweige);
+  const zweigNamen: Record<string, string> = {};
+
   const { jobs: filtered, ohneAngabe } = applyFilters(
     jobs,
     params,
     wohnpunkt,
     ctx.constraints.commuteMode ?? null,
+    suchpunkt,
   );
   const blockedJobs = includeBlocked
     ? filtered.filter((j) => j.constraints.overall === "blocked")
@@ -431,6 +503,17 @@ async function Stellenliste({
         )
         .slice(0, 6)
     : [];
+
+  if (zweigeFuerNamen.length > 0) {
+    for (const j of filtered) {
+      const treffer = zweigeFuerNamen.find((z) => zweigTrifft(j, z));
+      if (!treffer) continue;
+      zweigNamen[j.jobId] =
+        treffer.gehaltAb === undefined
+          ? treffer.q
+          : `${treffer.q} ab ${treffer.gehaltAb.toLocaleString("de-DE")} €`;
+    }
+  }
 
   const realCount = filtered.length;
 
@@ -550,7 +633,55 @@ async function Stellenliste({
   const referenz = (j: ScoredJob) => referenzFinden(j, nachKldb, nachTitel);
 
   /** Was in einer Zeile als Gehalt steht — echte Angabe oder Referenz. */
-  const gehaltszeile = (j: ScoredJob) => gehaltszeileFuer(j, referenz);
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * In welcher Währung die Liste rechnet
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Nach dem Land, in dem die Person sucht — nicht nach dem Land der
+   * Stelle. Eine Stelle in Zürich schreibt Franken aus; wer in
+   * Deutschland sucht, kann 95.000 CHF nicht neben 70.000 € einordnen,
+   * ohne im Kopf zu rechnen.
+   *
+   * Umgerechnet wird ein AUSGESCHRIEBENER Betrag. Das ist etwas
+   * anderes als das, wogegen `lib/landeslage.ts` argumentiert: Dort
+   * geht es darum, ein deutsches Beispielgehalt per Kurs zu einem
+   * schweizerischen zu machen — eine Behauptung über ein Lohnniveau,
+   * die niemand geprüft hat. Hier steht eine Zahl, die ein
+   * Arbeitgeber genannt hat, nur in einer anderen Einheit.
+   *
+   * `landWahl === null` heisst „überall suchen". Dann bleibt Euro,
+   * weil es keine Landeswährung gibt, nach der man sich richten
+   * könnte — und weil die Person, die überall sucht, von irgendwo
+   * kommt und die vorige Wahl behält.
+   */
+  const kurse = await kursstand();
+  const zielWaehrung = LAND_ZU_WAEHRUNG[(landWahl ?? "DE").toUpperCase()] ?? "EUR";
+  const waehrung =
+    Object.keys(kurse.kurse).length > 0
+      ? { ziel: zielWaehrung, kurse: kurse.kurse, stand: kurse.stand }
+      : undefined;
+
+  const gehaltszeile = (j: ScoredJob) => gehaltszeileFuer(j, referenz, waehrung);
+
+  /*
+   * Steht überhaupt eine fremde Währung in der Liste?
+   *
+   * Ohne diese Frage stünde der Kurshinweis auf jeder Seite — auch
+   * bei einer reinen Deutschlandsuche, wo nichts umgerechnet wurde.
+   * Ein Hinweis, der immer da ist, wird nicht gelesen; einer, der nur
+   * bei Bedarf erscheint, erklärt genau dann etwas.
+   *
+   * Gefragt wird über die sichtbaren Stellen, nicht über den
+   * Bestand: Was nicht in der Liste steht, braucht keine Fussnote.
+   */
+  const fremdwaehrungInListe =
+    waehrung !== undefined &&
+    sichtbar.some(
+      (j) =>
+        (j.job.salary.min !== null || j.job.salary.max !== null) &&
+        (j.job.salary.currency ?? "").toUpperCase() !== waehrung.ziel.toUpperCase(),
+    );
 
   const fortbewegung = ctx.constraints.commuteMode ?? null;
 
@@ -566,6 +697,7 @@ async function Stellenliste({
    * Das Laden bleibt hier: Wohnort, Referenzgehälter und abgelegte
    * Stellen holt die Seite, die Funktion rechnet nur.
    */
+
   const rows: JobRowData[] = zeilenAusStellen(sichtbar, {
     wohnpunkt,
     fortbewegung,
@@ -573,6 +705,7 @@ async function Stellenliste({
     nachKldb,
     nachTitel,
     vertragsarten: CONTRACT,
+    waehrung,
   });
 
   /*
@@ -786,8 +919,39 @@ async function Stellenliste({
                   </span>
                   <span className="text-2xs text-ink-3">
                     Monday prüft die neuesten Anzeigen, nicht den ganzen Bestand ·{" "}
-                    {abdeckungssatz(abdeckung, realCount)}
+                    {abdeckungssatz(abdeckung, realCount, jobs.length + blockedCount)}
                   </span>
+                  {/*
+                    ══════════════════════════════════════════════
+                    Woher der Kurs kommt und wann der nächste kommt
+                    ══════════════════════════════════════════════
+
+                    Sie steht nur da, wenn wirklich umgerechnet wird —
+                    also wenn Stellen in einer anderen Währung
+                    ausgeschrieben sind als der, in der die Liste
+                    rechnet. Wer nur in Deutschland sucht, liest sie
+                    nie.
+
+                    Zwei Daten, weil sie Verschiedenes sagen: Der
+                    Stand ist der Tag, für den die EZB rechnet — an
+                    Werktagen gegen 16 Uhr, am Sonntag also zwei Tage
+                    alt. Die nächste Aktualisierung ist unsere, alle
+                    zwölf Stunden.
+
+                    Klein und in der Fussnotenzeile, weil es eine
+                    Fussnote ist. Wer ein Gehalt liest, will die Zahl;
+                    wer ihr nicht traut, will wissen, worauf sie
+                    beruht — und findet es an derselben Stelle.
+                  */}
+                  {waehrung && fremdwaehrungInListe && (
+                    <span className="text-2xs text-ink-3">
+                      Fremde Währungen in {waehrung.ziel} umgerechnet
+                      {kurse.stand ? ` · EZB-Kurs vom ${new Intl.DateTimeFormat("de-DE", { day: "numeric", month: "short" }).format(new Date(kurse.stand))}` : ""}
+                      {kurse.naechsteAktualisierung
+                        ? ` · nächste Aktualisierung ${new Intl.DateTimeFormat("de-DE", { hour: "2-digit", minute: "2-digit" }).format(kurse.naechsteAktualisierung)} Uhr`
+                        : ""}
+                    </span>
+                  )}
                 </span>
         {/* Der Zeitstempel steht ganz rechts. Er ist eine Fussnote zur
             Zahl links, keine Angabe, die man sucht — dazwischen wäre
@@ -833,6 +997,19 @@ async function Stellenliste({
       <NinaSteuerungProvider jobId={selected?.jobId ?? null}>
       <JobSplitView
         rows={rows}
+        /*
+         * Welche Zeile aus welchem Zweig kommt.
+         *
+         * Gerechnet wird hier und nicht in der Zeile: Nur hier stehen
+         * die Zweige und dieselbe Prüfung, die auch gefiltert hat
+         * (`zweigTrifft`). Eine zweite Regel im Bauteil wäre eine
+         * zweite Wahrheit — und die erste, die auseinanderläuft.
+         *
+         * Der ERSTE passende Zweig gewinnt. Eine Stelle kann zu
+         * beiden passen („Elektriker" in einem Landratsamt); zwei
+         * Kennzeichen an einer Zeile erklären dann weniger als eines.
+         */
+        zweigNamen={zweigNamen}
         selectedId={selected?.jobId ?? null}
         explicitSelection={Boolean(requested)}
         /*
@@ -914,7 +1091,7 @@ async function Stellenliste({
               <div className="flex flex-wrap justify-center gap-2">
                 {aktiveBedingungen(params).map((b) => (
                   <Button key={b.key} asChild variant="secondary">
-                    <Link href={`/app/jobs?${ohneBedingung(params, b.key)}`}>
+                    <Link href={`/app/jobs?${b.adresse ?? ohneBedingung(params, b.key)}`}>
                       Ohne „{b.label}“
                     </Link>
                   </Button>
@@ -1212,7 +1389,7 @@ async function Stellenliste({
         />
         </div>
 
-        <Vertrauensbereich />
+        <Vertrauensbereich zahlen={await grundlagenzahlen()} />
 
 
       </div>
@@ -1258,6 +1435,56 @@ const CONTRACT: Record<string, string> = {
  * sie dazu nichts sagen" ist etwas völlig anderes als „es gibt nur
  * zwei Stellen".
  */
+/**
+ * Der Text, in dem gesucht wird.
+ *
+ * Bewusst breiter als die Datenbankabfrage: Sie kann nur Titel und
+ * Ortsfeld indiziert durchsuchen, hier stehen auch Arbeitgeber,
+ * Branche und Kernaufgaben zur Verfügung. Der Nachfilter darf mehr
+ * finden als die Auswahl — er darf ihr nur nichts wegnehmen, was sie
+ * behalten wollte.
+ */
+function textbasis(j: ScoredJob): string {
+  return [
+    j.job.title,
+    j.job.companyName,
+    j.job.location,
+    j.job.industry ?? "",
+    ...j.job.coreTasks,
+  ].join(" ");
+}
+
+/** Der Jahresbetrag einer Anzeige, oder `null`, wenn keiner dasteht. */
+function jahresgehalt(j: ScoredJob): number | null {
+  const von = j.job.salary.min ?? j.job.salary.max;
+  if (typeof von !== "number") return null;
+  return j.job.salary.period === "month"
+    ? von * 12
+    : j.job.salary.period === "hour"
+      ? von * 40 * 52
+      : von;
+}
+
+/**
+ * Passt die Stelle zu DIESEM Zweig?
+ *
+ * Beruf und Gehalt zusammen — das ist der ganze Sinn der Zweige. Wer
+ * „Bürokaufmann ab 40k, Elektriker ab 50k" sagt, will keinen
+ * Bürokaufmann für 50.000 ausschliessen und keinen Elektriker für
+ * 42.000 einschliessen.
+ *
+ * Ohne Gehaltsangabe fällt die Stelle heraus — wie beim gewöhnlichen
+ * Gehaltsfilter eine Zeile weiter unten. Sie wird dort als
+ * „schweigsam" gezählt, damit die Zahl unter der Liste erklärt, wo
+ * sie geblieben ist.
+ */
+function zweigTrifft(j: ScoredJob, z: Suchzweig): boolean {
+  if (!trifftSuche(textbasis(j), z.q)) return false;
+  if (z.gehaltAb === undefined) return true;
+  const proJahr = jahresgehalt(j);
+  return proJahr !== null && proJahr >= z.gehaltAb;
+}
+
 function applyFilters(
   jobs: ScoredJob[],
   params: Record<string, string | undefined>,
@@ -1270,6 +1497,15 @@ function applyFilters(
    */
   wohnpunkt: { latitude: number; longitude: number } | null = null,
   fortbewegung: string | null = null,
+  /**
+   * Der Mittelpunkt für `umkreisKm`, in Koordinaten.
+   *
+   * `null` heisst: nicht auflösbar oder kein Umkreis verlangt. Dann
+   * wird NICHT nach Entfernung gefiltert — eine Grenze aus einem
+   * Mittelpunkt, den niemand bestimmen konnte, wäre geraten, und
+   * geratene Grenzen leeren Listen ohne sichtbaren Grund.
+   */
+  suchpunkt: { latitude: number; longitude: number } | null = null,
 ): { jobs: ScoredJob[]; ohneAngabe: number } {
   let result = jobs;
 
@@ -1286,24 +1522,43 @@ function applyFilters(
     for (const j of vorher) if (stumm(j)) schweigsam.add(j.jobId);
   };
 
-  const q = params.q?.trim().toLowerCase();
-  if (q) {
-    /* Ab zwei Zeichen, wie in der Datenbankabfrage. „IT" ist ein
-       Suchwort; es hier wegzuwerfen hiesse, dass die Liste breiter
-       filtert als die Auswahl. */
-    const words = q.split(/\s+/).filter((w) => w.length >= 2);
-    result = result.filter((j) => {
-      const haystack = [
-        j.job.title,
-        j.job.companyName,
-        j.job.location,
-        j.job.industry ?? "",
-        ...j.job.coreTasks,
-      ]
-        .join(" ")
-        .toLowerCase();
-      return words.every((w) => haystack.includes(w));
-    });
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Der Nachfilter und die Datenbank müssen dasselbe meinen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `words.every(...)` über den ROHEN Wörtern des Satzes.
+   * Bei „landratsamt karlsruhe sozialen bereich" musste also jedes
+   * dieser vier Wörter buchstäblich vorkommen — „bereich" ist ein
+   * Füllwort, und „sozialen" steht so in keiner Anzeige; sie schreibt
+   * „Sozialarbeiter" oder „Sozialer Dienst". Ergebnis: null Treffer
+   * für einen Satz, den jeder versteht.
+   *
+   * Die Datenbank machte es längst besser: `plainto_tsquery('german',
+   * …)` wirft Füllwörter weg und führt Beugungen zusammen. Der
+   * Nachfilter zog danach wieder enger — zwei Regeln für eine Frage,
+   * und die strengere gewann.
+   *
+   * `trifft` gleicht beides an: Füllwörter fallen weg, und verglichen
+   * wird über einen Wortstamm statt buchstäblich.
+   */
+  const zweige = zweigeLesen(params.zweige);
+  if (zweige.length > 0) {
+    /*
+     * Mehrere Berufe: ODER dazwischen, wie in der Datenbank.
+     *
+     * Wer „Bürokaufmann und auch Elektriker" sagt, will Stellen aus
+     * beiden Berufen — nicht Stellen, die beides zugleich sind. Und
+     * das Gehalt gehört zum Zweig: Der eine soll ab 40.000 gelten,
+     * der andere ab 50.000.
+     */
+    if (zweige.some((z) => z.gehaltAb !== undefined)) {
+      zaehleStumme(result, (j) => jahresgehalt(j) === null);
+    }
+    result = result.filter((j) => zweige.some((z) => zweigTrifft(j, z)));
+  } else {
+    const q = params.q?.trim();
+    if (q) result = result.filter((j) => trifftSuche(textbasis(j), q));
   }
 
   /*
@@ -1348,13 +1603,51 @@ function applyFilters(
      * Baden-Württemberg" ist Karlsruhe, „Bruchsal, Baden-Württemberg"
      * nicht.
      */
-    result =
-      params.ortGenau === "1"
-        ? result.filter((j) => {
-            const stadt = j.job.location.split(",")[0]?.trim().toLowerCase() ?? "";
-            return stadt === ort;
-          })
-        : result.filter((j) => j.job.location.toLowerCase().includes(ort));
+    /*
+     * ══════════════════════════════════════════════════════════
+     * Mit Umkreis zählt die Entfernung, nicht das Ortsfeld
+     * ══════════════════════════════════════════════════════════
+     *
+     * „30 km um Karlsruhe" hiess bis zum 8. September 2026 in
+     * Wahrheit „im Ortsfeld steht Karlsruhe". Das ist etwas anderes,
+     * und der Unterschied geht in beide Richtungen:
+     *
+     *   Ettlingen, 12 km   →  fiel heraus, obwohl im Umkreis
+     *   Landkreis Karlsruhe → kam herein, auch von weit her
+     *
+     * Mit einem Mittelpunkt wird gerechnet statt verglichen.
+     *
+     * ── Anzeigen ohne Koordinaten fallen nicht durch ────────
+     *
+     * Nicht jede Anzeige trägt sie. Sie deshalb wegzuwerfen hiesse,
+     * einen Umkreis zu setzen und dabei still die halbe Stadt zu
+     * verlieren. Für sie gilt weiterhin der Ortstext — dieselbe
+     * Regel wie bisher, nur noch als Rückfall.
+     */
+    const km = Number(params.umkreisKm);
+    if (suchpunkt && Number.isFinite(km) && km > 0) {
+      result = result.filter((j) => {
+        if (j.job.latitude === null || j.job.longitude === null) {
+          return j.job.location.toLowerCase().includes(ort);
+        }
+        return (
+          entfernungKm(
+            suchpunkt.latitude,
+            suchpunkt.longitude,
+            j.job.latitude,
+            j.job.longitude,
+          ) <= km
+        );
+      });
+    } else {
+      result =
+        params.ortGenau === "1"
+          ? result.filter((j) => {
+              const stadt = j.job.location.split(",")[0]?.trim().toLowerCase() ?? "";
+              return stadt === ort;
+            })
+          : result.filter((j) => j.job.location.toLowerCase().includes(ort));
+    }
   }
 
   /*
@@ -1586,10 +1879,18 @@ function applyFilters(
  * leer ist. Der häufigste Grund für „die Suche ist kaputt" ist ein
  * Filter, den man vor zwei Minuten gesetzt und längst vergessen hat.
  */
-function aktiveBedingungen(
-  params: Record<string, string | undefined>,
-): { key: string; label: string }[] {
-  const raus: { key: string; label: string }[] = [];
+/**
+ * Eine Bedingung, die man wieder wegnehmen kann.
+ *
+ * `adresse` steht nur dort, wo das Wegnehmen nicht bedeutet, einen
+ * ganzen Parameter zu löschen: Von zwei Berufen soll EINER gehen, der
+ * andere bleiben. `ohneBedingung` kann das nicht ausdrücken — es
+ * kennt nur Schlüssel.
+ */
+type Bedingung = { key: string; label: string; adresse?: string };
+
+function aktiveBedingungen(params: Record<string, string | undefined>): Bedingung[] {
+  const raus: Bedingung[] = [];
   const arbeitsmodell: Record<string, string> = {
     remote: "nur remote",
     hybrid: "höchstens zwei Bürotage",
@@ -1621,6 +1922,46 @@ function aktiveBedingungen(
     });
   }
   if (params.since) raus.push({ key: "since", label: `aus den letzten ${params.since} Tagen` });
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Jeder Beruf ein eigenes Plättchen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Sie stehen zusammen in EINEM Adressparameter, aber sie sind zwei
+   * Entscheidungen. Ein gemeinsames Plättchen „zwei Berufe" hiesse:
+   * Wer den Elektriker nicht mehr will, verliert auch den
+   * Bürokaufmann — und muss den ganzen Satz noch einmal tippen.
+   *
+   * Deshalb trägt jedes Plättchen seine eigene Adresse: dieselbe
+   * Suche ohne genau diesen Zweig. Bleibt danach nur einer übrig,
+   * wird er zur gewöhnlichen Suche mit `q` und `gehaltAb` — dort, wo
+   * die Filterknöpfe ihn finden.
+   */
+  const zweige = zweigeLesen(params.zweige);
+  for (const [i, z] of zweige.entries()) {
+    const rest = zweige.filter((_, j) => j !== i);
+    const next = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v === undefined || k === "zweige") continue;
+      next.set(k, v);
+    }
+    const alsZweige = zweigeSchreiben(rest);
+    if (alsZweige !== null) next.set("zweige", alsZweige);
+    else if (rest[0]) {
+      next.set("q", rest[0].q);
+      if (rest[0].gehaltAb !== undefined) next.set("gehaltAb", String(rest[0].gehaltAb));
+    }
+    raus.push({
+      key: `zweig:${z.q}`,
+      label:
+        z.gehaltAb === undefined
+          ? z.q
+          : `${z.q} ab ${z.gehaltAb.toLocaleString("de-DE")} €`,
+      adresse: next.toString(),
+    });
+  }
+
   return raus;
 }
 
@@ -1774,6 +2115,8 @@ export default async function JobsPage({
         <Suchrueckfrage assistantName={brand.assistantName} />
       </SuchdialogProvider>
 
+      <Rollrastung />
+
       <Suspense fallback={<Listengeruest />}>
         <Stellenliste searchParams={searchParams} />
       </Suspense>
@@ -1807,11 +2150,21 @@ async function Hinweisstreifen() {
           Diese Reihenfolge ist noch nicht auf dich zugeschnitten.
         </span>{" "}
         {gate.reason}{" "}
+        {/*
+         * Der Weg richtet sich danach, WAS fehlt.
+         *
+         * Vorher hing er allein an `profileConfirmed` — und schickte
+         * damit zum Bestätigen, wer noch gar nichts zu bestätigen
+         * hatte. Wem Angaben fehlen, dem hilft kein Formular, sondern
+         * das Gespräch, aus dem sie sich ergeben.
+         */}
         <Link
-          href={gate.profileConfirmed ? "/app/monday" : "/app/career"}
+          href={gate.missingStages.length > 0 ? "/app/monday" : "/app/career"}
           className="text-accent-text underline underline-offset-[3px]"
         >
-          {gate.profileConfirmed ? t("jobs.lockedCta") : "Profil bestätigen"}
+          {gate.missingStages.length > 0
+            ? t("jobs.lockedCta")
+            : "Profil ansehen und bestätigen"}
         </Link>
       </p>
     </div>

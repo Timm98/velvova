@@ -39,6 +39,9 @@ function demoJob({ vollstaendig }: { vollstaendig: boolean }) {
     location: "Hamburg",
     country: "DE",
     kldb: null,
+    /* Der Baustein beschreibt eine offene Ausschreibung. */
+    availabilityState: "active",
+    availabilityReason: null,
     workModel: "on_site" as const,
     remotePercent: vollstaendig ? 0 : null,
     salary: {

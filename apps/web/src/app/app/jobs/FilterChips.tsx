@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { zweigeLesen, zweigeSchreiben } from "@/lib/jobs/zweige";
 import { useTransition } from "react";
 import { X } from "lucide-react";
 
@@ -72,7 +73,22 @@ const FOLGE = [
   "nicht",
   "since",
   "q",
+  /*
+   * Mehrere Berufe stehen in EINEM Parameter, brauchen aber je ein
+   * Plättchen — siehe `zweigeAlsChips`. Der Schlüssel steht hier,
+   * damit die Reihenfolge stimmt; aufgefaltet wird er unten.
+   */
+  "zweige",
 ];
+
+/**
+ * Ein Plättchen.
+ *
+ * `adresse` steht nur dort, wo Wegnehmen nicht heisst, einen
+ * Parameter zu löschen: Von zwei Berufen soll einer gehen und der
+ * andere bleiben.
+ */
+type Chip = { schluessel: string; wert: string; text: string; adresse?: string };
 
 const LANDNAME: Record<string, string> = {
   DE: "Deutschland",
@@ -116,16 +132,37 @@ export function FilterChips({
   const router = useRouter();
   const [unterwegs, starte] = useTransition();
 
-  const aktiv = FOLGE.flatMap((k) => {
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein Parameter, zwei Entscheidungen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * `zweige=bürokaufmann~40000;elektriker~50000` ist ein einziger
+   * Adressparameter — aber wer den Elektriker nicht mehr will, soll
+   * nicht auch den Bürokaufmann verlieren und den ganzen Satz noch
+   * einmal tippen.
+   *
+   * Deshalb wird er hier aufgefaltet: ein Plättchen je Beruf, und
+   * jedes trägt seine eigene Adresse mit. Bleibt danach nur einer
+   * übrig, wird er zur gewöhnlichen Suche mit `q` und `gehaltAb` —
+   * dort, wo die anderen Plättchen ihn finden.
+   */
+  const aktiv: Chip[] = FOLGE.flatMap((k): Chip[] => {
+    if (k === "zweige") return zweigeAlsChips(params);
     const v = params.get(k);
     return v ? [{ schluessel: k, wert: v, text: NAMEN[k]?.(v) ?? v }] : [];
   });
 
   if (aktiv.length === 0 && !abgeleitetesLand) return null;
 
-  function entfernen(schluessel: string) {
-    const next = new URLSearchParams(params.toString());
-    next.delete(schluessel);
+  function entfernen(schluessel: string, adresse?: string) {
+    /*
+     * Ein Zweig bringt seine eigene Adresse mit — bei ihm heisst
+     * Wegnehmen nicht, einen Parameter zu löschen, sondern ihn neu
+     * zu schreiben.
+     */
+    const next = adresse !== undefined ? new URLSearchParams(adresse) : new URLSearchParams(params.toString());
+    if (adresse === undefined) next.delete(schluessel);
     /*
      * Die Anzahl fällt mit weg.
      *
@@ -144,7 +181,7 @@ export function FilterChips({
           <button
             type="button"
             disabled={unterwegs}
-            onClick={() => entfernen(f.schluessel)}
+            onClick={() => entfernen(f.schluessel, f.adresse)}
             className="inline-flex min-h-8 items-center gap-1.5 rounded-(--radius-pill) bg-accent-soft px-3 text-sm text-ink transition-colors hover:bg-soft disabled:opacity-60"
           >
             {f.text}
@@ -207,4 +244,35 @@ export function FilterChips({
       )}
     </ul>
   );
+}
+
+/**
+ * Die Zweige als einzeln entfernbare Plättchen.
+ *
+ * Jedes bekommt die vollständige Adresse OHNE genau diesen Beruf.
+ * Bleibt einer übrig, ist das keine Mehrfachsuche mehr — dann steht
+ * er als `q` und `gehaltAb` da, damit die gewöhnlichen Plättchen und
+ * Filterknöpfe ihn wieder finden.
+ */
+function zweigeAlsChips(params: URLSearchParams): Chip[] {
+  const zweige = zweigeLesen(params.get("zweige"));
+  return zweige.map((z, i) => {
+    const rest = zweige.filter((_, j) => j !== i);
+    const next = new URLSearchParams(params.toString());
+    next.delete("zweige");
+    next.delete("anzahl");
+    const alsZweige = zweigeSchreiben(rest);
+    if (alsZweige !== null) next.set("zweige", alsZweige);
+    else if (rest[0]) {
+      next.set("q", rest[0].q);
+      if (rest[0].gehaltAb !== undefined) next.set("gehaltAb", String(rest[0].gehaltAb));
+    }
+    return {
+      schluessel: `zweig:${z.q}`,
+      wert: z.q,
+      text:
+        z.gehaltAb === undefined ? z.q : `${z.q} ab ${z.gehaltAb.toLocaleString("de-DE")} €`,
+      adresse: next.toString(),
+    };
+  });
 }

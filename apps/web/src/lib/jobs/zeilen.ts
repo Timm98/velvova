@@ -1,3 +1,4 @@
+import { verfuegbarkeitstext } from "@paycheck/domain";
 import type { Entgeltreferenz } from "@/lib/jobs/berufsreferenz";
 import type { JobRowData } from "@/components/jobs/JobRow";
 import type { ScoredJob } from "@/lib/matching";
@@ -53,6 +54,26 @@ export interface Zeilenlage {
   nachTitel: Map<string, Entgeltreferenz>;
   /** Anzeigenamen der Vertragsarten. */
   vertragsarten: Record<string, string>;
+  /**
+   * In welche Währung Gehälter umgerechnet werden — und womit.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum das an der Zeile hängt und nicht an der Stelle
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die Stelle hat eine Währung: Zürich schreibt Franken aus, und
+   * daran ändert sich nichts. Was sich ändert, ist die Person davor.
+   * Wer in Deutschland sucht, will Franken neben Euro einordnen
+   * können; wer in der Schweiz sucht, will das Umgekehrte.
+   *
+   * Dieselbe Stelle sieht also für zwei Menschen verschieden aus —
+   * und deshalb steht die Zielwährung in der LAGE, nicht in den
+   * Daten.
+   *
+   * `undefined` heisst: nicht umrechnen. Der Betrag steht dann in
+   * der Währung der Anzeige, so wie bisher.
+   */
+  waehrung?: { ziel: string; kurse: Record<string, number>; stand: string | null };
 }
 
 /**
@@ -134,7 +155,28 @@ export function zeilenAusStellen(stellen: ScoredJob[], lage: Zeilenlage): JobRow
      * Liste 1.446 Mal „nicht angegeben" schreiben, obwohl in siebzig
      * Anzeigen eine Zahl stand.
      */
-    salaryLabel: gehaltsanzeige(j.job.salary)?.betrag ?? null,
+    /*
+     * Der Satz steht nur da, wenn er etwas sagt.
+     *
+     * Bei `active` bleibt er leer: Eine offene Ausschreibung braucht
+     * keine Erklärung, und ein Hinweis, der an jeder Zeile steht,
+     * wird nicht gelesen.
+     *
+     * `verification_pending` bekommt ebenfalls keinen — die Stelle
+     * ist einmal vermisst und noch nicht bestätigt. Das ist eine
+     * Vermutung über unseren Abruf, keine Auskunft über die Stelle.
+     */
+    verfuegbarkeit:
+      j.job.availabilityState && !["active", "verification_pending", "unknown"].includes(j.job.availabilityState)
+        ? verfuegbarkeitstext({
+            zustand: j.job.availabilityState as Parameters<typeof verfuegbarkeitstext>[0]["zustand"],
+            grund: j.job.availabilityReason ?? null,
+            fehltSeitLaeufen: 0,
+            geprueftAm: null,
+            zuletztGesehenAm: j.job.fetchedAt ?? null,
+          })
+        : null,
+    salaryLabel: gehaltsanzeige(j.job.salary, lage.waehrung)?.betrag ?? null,
     /*
      * Die Referenzspanne — getrennt vom echten Gehalt.
      *
@@ -158,8 +200,8 @@ export function zeilenAusStellen(stellen: ScoredJob[], lage: Zeilenlage): JobRow
      * geschätzt. Wer die Liste überfliegt und sich eine Zahl merkt,
      * merkt sich sonst eine Vermutung als Tatsache.
      */
-    salaryHerkunft: gehaltsanzeige(j.job.salary)?.herkunftKurz ?? null,
-    salaryZugesagt: gehaltsanzeige(j.job.salary)?.zugesagt ?? false,
+    salaryHerkunft: gehaltsanzeige(j.job.salary, lage.waehrung)?.herkunftKurz ?? null,
+    salaryZugesagt: gehaltsanzeige(j.job.salary, lage.waehrung)?.zugesagt ?? false,
     ageLabel: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).label,
     isFresh: relativeAge(j.job.publishedAt ?? j.job.fetchedAt).fresh,
     sourceName: j.source?.displayName ?? "unbekannt",
@@ -229,8 +271,10 @@ export function referenzFinden(
 export function gehaltszeileFuer(
   j: ScoredJob,
   referenz: (j: ScoredJob) => Entgeltreferenz | null,
+  /* Dieselbe Umrechnung wie in der Zeile — siehe `Zeilenlage.waehrung`. */
+  waehrung?: Zeilenlage["waehrung"],
 ): { text: string; geschaetzt: boolean } | null {
-  const a = gehaltsanzeige(j.job.salary);
+  const a = gehaltsanzeige(j.job.salary, waehrung);
   /*
    * „umgerechnet" gehört an die Zahl, nicht in eine Fussnote.
    *

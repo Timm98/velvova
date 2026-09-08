@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { brand } from "@paycheck/config";
 import { usePathname } from "next/navigation";
 import { CreditCard, Globe, LifeBuoy, Palette, ShieldCheck, User } from "lucide-react";
@@ -145,6 +145,49 @@ export function AppShell({
   const fülltFenster = pathname === "/app/monday";
 
   /*
+   * ══════════════════════════════════════════════════════════════
+   * Wie hoch die klebende Kopfzeile gerade ist
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Sie klebt bei `top-0` mit `z-40`. Alles andere, was auf einer
+   * Seite kleben will, muss darunter anfangen — sonst rutscht es
+   * beim Rollen dahinter und ist weg.
+   *
+   * Gemeldet am 8. September 2026: „bei faq verschwindet das links
+   * die leiste irgendwie". Die Rechtsleiste dort klebte bei `top-6`,
+   * also 24 Pixel unter dem Fensterrand — und die Kopfzeile ist 88
+   * Pixel hoch. Sie verschwand nicht, sie lag dahinter.
+   *
+   * ── Warum gemessen und nicht geschrieben ────────────────────
+   *
+   * Weil die Höhe nicht feststeht. Über der Navigation sitzt die
+   * Hinweisleiste, und die gibt es nur ohne laufendes Abo. Eine
+   * feste Zahl wäre für die eine Hälfte der Menschen falsch — und
+   * zwar unsichtbar falsch, weil man einen Fehler von 40 Pixeln
+   * nicht sieht, bis etwas dahinterrutscht.
+   *
+   * Der Wert steht auf `documentElement`, damit jede Seite ihn
+   * lesen kann, ohne durch den Baum gereicht zu werden.
+   */
+  const kopfRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const kopf = kopfRef.current;
+    if (!kopf) return;
+    const schreiben = () =>
+      document.documentElement.style.setProperty(
+        "--kopfzeile-hoehe",
+        `${Math.round(kopf.getBoundingClientRect().height)}px`,
+      );
+    schreiben();
+    const beobachter = new ResizeObserver(schreiben);
+    beobachter.observe(kopf);
+    return () => {
+      beobachter.disconnect();
+      document.documentElement.style.removeProperty("--kopfzeile-hoehe");
+    };
+  }, []);
+
+  /*
    * Wieder dieselbe Breite wie überall.
    *
    * Die Stellenseite lief zweimal auf mehr als 1200 Pixel — einmal auf
@@ -233,7 +276,7 @@ export function AppShell({
         untereinander kleben jedes für sich am Fensterrand und
         schieben sich übereinander.
       */}
-      <div className="sticky top-0 z-40">
+      <div ref={kopfRef} className="sticky top-0 z-40">
         <AppHinweisleiste nachtsZiel={nachtsZiel} />
 
         <TopNav

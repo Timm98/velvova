@@ -79,6 +79,18 @@ export function rowToJob(
     applyTarget: row.applyTarget,
     publishedAt: row.publishedAt,
     expiresAt: row.expiresAt,
+    /*
+     * Ob die Quelle die Stelle noch führt.
+     *
+     * Steht hier, weil die Oberfläche es zeigen muss: Eine gemerkte
+     * Stelle bleibt sichtbar, auch wenn sie aus den Empfehlungen
+     * gefallen ist — und dann gehört der Grund daneben.
+     *
+     * Der Wert entsteht in der Ernte aus allen Fundstellen; die Regel
+     * steht in `standAusFundstellen`.
+     */
+    availabilityState: row.availabilityState ?? "unknown",
+    availabilityReason: row.availabilityReason ?? null,
     fetchedAt: row.fetchedAt,
     lastLinkCheckAt: row.lastLinkCheckAt,
     lastLinkCheckOk: row.lastLinkCheckOk,

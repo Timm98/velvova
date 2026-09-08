@@ -1005,6 +1005,19 @@ input[type="number"] {
    */
   --uebergang-schritt: 90ms;
   /*
+   * Zeilen brauchen einen anderen Takt als Blöcke.
+   *
+   * Neunzig Millisekunden sind richtig für fünf Flächen, die
+   * nacheinander ankommen. Bei einer Liste sind es nicht fünf: Mit
+   * demselben Schritt stand die sechste Stelle erst nach 930 ms
+   * vollständig da — 450 ms Verzögerung plus 480 ms Einblendung. Das
+   * liest sich nicht als Rhythmus, sondern als langsame Seite.
+   *
+   * Dreissig Millisekunden halten die Reihenfolge sichtbar und
+   * bringen dieselben sechs Zeilen nach 410 ms ins Bild.
+   */
+  --uebergang-schritt-zeile: 30ms;
+  /*
    * Das Alte geht schneller, als das Neue kommt.
    *
    * Vorher liefen beide 720 ms und überschnitten sich fast über die
@@ -1412,17 +1425,25 @@ input[type="number"] {
  * neue Seite ein Standbild, käme die Bewegung erst danach und man
  * hätte sie verpasst.
  */
+/*
+ * Kein `filter: blur()` mehr.
+ *
+ * Ein Weichzeichner zwingt den Browser für JEDE Zeile zu einer
+ * eigenen Ebene, die er über die volle Laufzeit neu rechnet — bei
+ * fünfundzwanzig Zeilen ist das der teuerste Teil des Auftritts, und
+ * zwei Pixel davon sieht niemand. Deckkraft und Verschiebung laufen
+ * auf der Grafikkarte und kosten nichts.
+ */
 @keyframes zeile-auftritt {
   from {
     opacity: 0;
     transform: translateY(12px) scale(0.99);
-    filter: blur(2px);
   }
 }
 
 .zeile-auftritt {
-  animation: zeile-auftritt 480ms var(--uebergang-kurve) both;
-  animation-delay: calc(var(--rang, 0) * var(--uebergang-schritt));
+  animation: zeile-auftritt 260ms var(--uebergang-kurve) both;
+  animation-delay: calc(var(--rang, 0) * var(--uebergang-schritt-zeile));
 }
 
 /*
@@ -1441,7 +1462,6 @@ input[type="number"] {
   animation: none;
   opacity: 0;
   transform: translateY(12px) scale(0.99);
-  filter: blur(2px);
 }
 
 /*
@@ -1491,16 +1511,34 @@ input[type="number"] {
   }
 }
 
-.bloecke-auftritt > * {
-  animation: block-auftritt 480ms var(--uebergang-kurve) both;
+/*
+ * Eigener Takt, weil die Stellenliste hinten steht.
+ *
+ * `bloecke-auftritt` steht nur auf der Stellenseite, und dort ist die
+ * Liste der fünfte Block. Mit dem allgemeinen Schritt von 90 ms fing
+ * ihre Einblendung erst nach 450 ms an und war nach 930 ms fertig —
+ * die Zeilen darin liefen bis dahin hinter einer durchsichtigen
+ * Fläche ab, wo sie niemand sah. Was zählt, ist nicht der Takt der
+ * Blöcke, sondern wann die Stellen dastehen.
+ *
+ * Fünfundfünfzig Millisekunden und 320 ms Einblendung: Die Blöcke
+ * kommen weiterhin nacheinander, die Liste steht nach 595 statt nach
+ * 930 ms.
+ */
+.bloecke-auftritt {
+  --uebergang-schritt-block: 55ms;
 }
 
-.bloecke-auftritt > *:nth-child(1) { animation-delay: calc(0 * var(--uebergang-schritt)); }
-.bloecke-auftritt > *:nth-child(2) { animation-delay: calc(1 * var(--uebergang-schritt)); }
-.bloecke-auftritt > *:nth-child(3) { animation-delay: calc(2 * var(--uebergang-schritt)); }
-.bloecke-auftritt > *:nth-child(4) { animation-delay: calc(3 * var(--uebergang-schritt)); }
-.bloecke-auftritt > *:nth-child(5) { animation-delay: calc(4 * var(--uebergang-schritt)); }
-.bloecke-auftritt > *:nth-child(n + 6) { animation-delay: calc(5 * var(--uebergang-schritt)); }
+.bloecke-auftritt > * {
+  animation: block-auftritt 320ms var(--uebergang-kurve) both;
+}
+
+.bloecke-auftritt > *:nth-child(1) { animation-delay: calc(0 * var(--uebergang-schritt-block)); }
+.bloecke-auftritt > *:nth-child(2) { animation-delay: calc(1 * var(--uebergang-schritt-block)); }
+.bloecke-auftritt > *:nth-child(3) { animation-delay: calc(2 * var(--uebergang-schritt-block)); }
+.bloecke-auftritt > *:nth-child(4) { animation-delay: calc(3 * var(--uebergang-schritt-block)); }
+.bloecke-auftritt > *:nth-child(5) { animation-delay: calc(4 * var(--uebergang-schritt-block)); }
+.bloecke-auftritt > *:nth-child(n + 6) { animation-delay: calc(5 * var(--uebergang-schritt-block)); }
 
 /*
  * Wer Bewegung abbestellt hat, bekommt alles sofort und ganz.
@@ -1646,5 +1684,76 @@ input[type="number"] {
     background-image: none;
     color: var(--text-tertiary);
     -webkit-text-fill-color: var(--text-tertiary);
+  }
+}
+
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die Rastung — gegen das versehentliche Wegrollen
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Gemeldet am 8. September 2026, zweimal und nachdrücklich: Man
+ * rollt in der Stellenliste, und die Seite rutscht dabei nach oben
+ * zu Mondays Eingabefeld. Ohne Absicht, ohne dass man es merkt —
+ * und dann steht man woanders, als man dachte.
+ *
+ * `overscroll-contain` auf den Spalten hat die eine Hälfte gelöst:
+ * Am Ende der Liste geht das Rad nicht mehr auf die Seite über. Die
+ * andere Hälfte bleibt — die Seite selbst rollt weiter, sobald der
+ * Zeiger neben den Spalten steht oder das Rad einmal zu weit dreht.
+ *
+ * ── Warum keine Sperre in JavaScript ────────────────────────
+ *
+ * Weil sie das Rollen kaputtmachen KANN. Ein `wheel`-Zuhörer, der
+ * `preventDefault` ruft, entscheidet bei jeder Bewegung neu, ob sie
+ * gelten darf — und wenn er sich irrt, ist die Seite tot. Das wäre
+ * schlimmer als der Fehler, den er behebt.
+ *
+ * ── Was `proximity` tut ─────────────────────────────────────
+ *
+ * Es ist die weiche Sorte der Rastung. Eine kleine Radbewegung
+ * fällt zum nächsten Rastpunkt zurück — die Liste bleibt stehen, wo
+ * sie stand. Eine entschiedene Bewegung läuft durch; die Seite geht
+ * weiter, wohin jemand wollte.
+ *
+ * `mandatory` wäre das Falsche: Es liesse die Seite ÜBERALL
+ * einrasten, auch mitten in einem Text, den jemand gerade liest.
+ *
+ * Der Browser bewegt dabei selbst und gleichmässig — deshalb sieht
+ * es weich aus, ohne dass eine einzige Zeile Code läuft.
+ *
+ * ── Erst ab `md` ────────────────────────────────────────────
+ *
+ * Darunter hat die Liste keinen eigenen Rollbereich; sie läuft mit
+ * der Seite. Dort einzurasten hiesse, gewöhnliches Rollen zu
+ * bremsen, und das ist kein Fehler, den jemand gemeldet hat.
+ */
+@media (min-width: 48rem) {
+  html[data-rastung] {
+    scroll-snap-type: y proximity;
+  }
+
+  .rastpunkt {
+    scroll-snap-align: start;
+    /*
+     * `normal` und nicht `always`: Wer entschieden weiterrollt, soll
+     * durchkommen. `always` zwänge an jedem Punkt zum Halt — aus
+     * einer Bremse gegen Versehen würde eine Schranke.
+     */
+    scroll-snap-stop: normal;
+  }
+}
+
+/*
+ * Wer Bewegung abbestellt hat, bekommt kein Zurückgleiten.
+ *
+ * Die Rastung IST eine Bewegung — sie holt die Seite an einen Punkt
+ * zurück, den niemand angesteuert hat. Genau das ist es, was bei
+ * Bewegungsempfindlichkeit stört.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html[data-rastung] {
+    scroll-snap-type: none;
   }
 }

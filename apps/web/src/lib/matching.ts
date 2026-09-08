@@ -8,6 +8,7 @@ import {
   type Vorauswahl,
 } from "./kandidaten.ts";
 import { getDb, schema, withUser, type Database } from "@paycheck/db";
+import type { Suchzweig } from "@/lib/jobs/zweige";
 import {
   UserConstraintsSchema,
   type EvidenceItem,
@@ -666,7 +667,18 @@ export async function scoreAllJobs(
    * Sonst bekäme dieselbe Person für „Erzieher" die Kandidaten ihrer
    * vorherigen Suche — zwischengespeichert und falsch.
    */
-  const abdruck = `${profilAbdruck(ctx)}|${vorauswahl?.suche ?? ""}|${vorauswahl?.ort ?? ""}|${vorauswahl?.bedarf ?? ""}`;
+  /*
+   * Die Zweige gehören in den Schlüssel wie jeder andere Filter.
+   *
+   * Ohne sie bekäme „Bürokaufmann ab 40k, Elektriker ab 50k" das
+   * Ergebnis der vorigen Suche zurück — dieselbe Person, dasselbe
+   * Profil, derselbe leere `suche`-Anteil. Ein Zwischenspeicher, der
+   * die Frage nicht kennt, beantwortet die falsche.
+   */
+  const zweigAbdruck = (vorauswahl?.zweige ?? [])
+    .map((z) => `${z.q}~${z.gehaltAb ?? ""}`)
+    .join(";");
+  const abdruck = `${profilAbdruck(ctx)}|${vorauswahl?.suche ?? ""}|${vorauswahl?.ort ?? ""}|${zweigAbdruck}|${vorauswahl?.bedarf ?? ""}`;
   const gemerkt = bewertungsCache.get(userId);
   if (gemerkt && gemerkt.profil === abdruck && Date.now() - gemerkt.at < BEWERTUNG_TTL_MS) {
     return gemerkt.jobs;
@@ -731,7 +743,55 @@ const KANDIDATEN_HOECHSTENS = Number(process.env.BEWERTUNG_KANDIDATEN ?? 2_000);
  * Stellen sieht, bekommt sie aus 600 bewerteten; wer bis 150 blättert,
  * aus 1.800. Die alte Obergrenze bleibt die Obergrenze.
  */
-export function kandidatenBedarf(sichtbar: number): number {
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Mit einem Suchbegriff ist die Grenze fest
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `kandidatenLaden` sortiert bei einer Textbedingung NICHT — die
+ * Sortierung zwang die Datenbank, erst alle Treffer zu holen, und das
+ * dauerte bei „Berlin" gemessen 37 Sekunden. Ohne `order by` liefert
+ * `limit n` aber eine BELIEBIGE Teilmenge, und welche, entscheidet
+ * Postgres nach der Speicherlage.
+ *
+ * Solange die Grenze mitwächst, ist das ein Fehler mit Ansage: Beim
+ * Blättern von 50 auf 75 Stellen steigt sie von 600 auf 900 — und die
+ * Datenbank darf dafür 900 völlig andere Zeilen zurückgeben. Gemeldet
+ * wurde genau das: Filter auf Karlsruhe gesetzt, versehentlich
+ * gescrollt, danach standen wieder andere Stellen da. Nicht weil der
+ * Filter verlorenging, sondern weil die Auswahl darunter eine andere
+ * war.
+ *
+ * Eine feste Grenze nimmt dem Blättern diese Freiheit: Dieselbe Suche
+ * fragt dieselben Zeilen ab, egal wie weit jemand gescrollt hat. Sie
+ * füllt auch den Zwischenspeicher richtig — sein Schlüssel enthält
+ * den Bedarf, und ein wachsender Bedarf traf ihn nie.
+ *
+ * ── Warum 600 und nicht 1.200 ───────────────────────────────
+ *
+ * Hier stand zuerst 1.200 — die Grenze, die hundert sichtbare
+ * Stellen ohnehin angefordert hätten. Das war zu teuer. Gemessen am
+ * 8. September 2026 an 3,45 Mio. Zeilen über die Direktverbindung:
+ *
+ *   Suchbegriff, limit 1200   7.123 ms   536 Zeilen
+ *   Suchbegriff, limit  600     191 ms   536 Zeilen
+ *
+ * Dieselben 536 Zeilen. Die Kosten stecken nicht in der Auswahl,
+ * sondern darin, wie viele Seiten die Datenbank dafür kalt von der
+ * Platte holt — und das wächst mit der Grenze, nicht mit dem
+ * Ergebnis.
+ *
+ * Fest bleibt sie trotzdem, und darum ging es: Eine Grenze, die beim
+ * Blättern mitwächst, gibt ohne `order by` eine andere Teilmenge
+ * zurück. Fest UND klein ist beides zu haben.
+ *
+ * Ohne Suchbegriff bleibt alles wie bisher — dort wird sortiert, und
+ * eine wachsende Grenze liefert dieselben Zeilen und ein paar mehr.
+ */
+const BEDARF_BEI_SUCHE = 600;
+
+export function kandidatenBedarf(sichtbar: number, textsuche = false): number {
+  if (textsuche) return Math.min(BEDARF_BEI_SUCHE, KANDIDATEN_HOECHSTENS);
   const noetig = Math.max(600, Math.ceil(sichtbar) * 12);
   return Math.min(noetig, KANDIDATEN_HOECHSTENS);
 }
@@ -1034,6 +1094,14 @@ export interface JobListOptions {
    */
   suche?: string | null;
   /**
+   * Mehrere Berufe mit eigenem Mindestgehalt — siehe `Vorauswahl`.
+   *
+   * Aus demselben Grund wie `suche` bis in die Auswahl durchgereicht:
+   * Erst die neuesten Stellen holen und danach nach zwei Berufen zu
+   * filtern findet von jedem ein paar Zeilen und von beiden zu wenig.
+   */
+  zweige?: Suchzweig[];
+  /**
    * Wie viele Stellen die Seite zeigen will.
    *
    * Entscheidet, wie gross die bewertete Auswahl sein muss. Ohne
@@ -1216,7 +1284,22 @@ export async function listJobsForUser(
     scoreAllJobs(userId, ctx, {
       suche: options.suche,
       ort: options.ort,
-      bedarf: options.sichtbar ? kandidatenBedarf(options.sichtbar) : KANDIDATEN_HOECHSTENS,
+      zweige: options.zweige,
+      /*
+       * Dieselbe Frage wie in `kandidatenLaden`: Wird sortiert oder
+       * nicht? Wird nicht sortiert, muss die Grenze fest sein — sonst
+       * liefert `limit` beim Blättern eine andere Teilmenge.
+       */
+      bedarf: options.sichtbar
+        ? kandidatenBedarf(
+            options.sichtbar,
+            !brauchtReihenfolge({
+              suche: options.suche,
+              ort: options.ort,
+              zweige: options.zweige,
+            }),
+          )
+        : KANDIDATEN_HOECHSTENS,
     }),
     options.abgelegt ?? abgelegteStellen(userId),
   ]);

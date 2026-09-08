@@ -224,9 +224,39 @@ async function abdeckungBerechnen(): Promise<Quellenabdeckung> {
  * Quelle steht „1 Quelle" — der Plural allein wäre schon eine
  * Übertreibung.
  */
+/**
+ * ══════════════════════════════════════════════════════════════
+ * Was hier gestanden hat und warum es falsch war
+ * ══════════════════════════════════════════════════════════════
+ *
+ * „28 Quellen durchsucht · 3.454.589 Stellen geprüft · 558 erfüllen
+ * deine Bedingungen."
+ *
+ * Gemeldet am 8. September 2026, wörtlich: „das macht null sinn ich
+ * hab keine filter angegeben." Und der Satz stimmt — an zwei Stellen.
+ *
+ * ── „Stellen geprüft" war unwahr ────────────────────────────
+ *
+ * Geprüft wurden nicht 3,45 Mio., sondern 596. So viele werden je
+ * Seitenaufbau geladen und bewertet (`kandidatenBedarf`). Die grosse
+ * Zahl ist der BESTAND — was da ist, nicht was angesehen wurde.
+ * Direkt daneben stand „558 der 596 neuesten passen", also beide
+ * Zahlen im selben Blick, und sie widersprachen sich.
+ *
+ * ── „deine Bedingungen" klang nach Filtern ──────────────────
+ *
+ * Es sind die Angaben aus dem PROFIL — Gehalt, Arbeitsmodell,
+ * Pendelgrenze. Wer keinen einzigen Filter gesetzt hat, liest
+ * „erfüllen deine Bedingungen" und sucht nach Filtern, die es nicht
+ * gibt.
+ *
+ * Jetzt stehen drei Zahlen, die zusammen eine Rechnung ergeben:
+ * was da ist, was davon angesehen wurde, was davon passt.
+ */
 export function abdeckungssatz(
   a: Quellenabdeckung,
   passend: number,
+  bewertet: number,
 ): string {
   const quellen = a.aktiveQuellen === 1 ? "1 Quelle" : `${a.aktiveQuellen} Quellen`;
   /*
@@ -246,8 +276,9 @@ export function abdeckungssatz(
    */
   const teile = [
     `${quellen} durchsucht`,
-    `${a.aktiv.toLocaleString("de-DE")} Stellen geprüft`,
-    `${passend.toLocaleString("de-DE")} erfüllen deine Bedingungen`,
+    `${a.aktiv.toLocaleString("de-DE")} Stellen im Bestand`,
+    `davon die ${bewertet.toLocaleString("de-DE")} neuesten bewertet`,
+    `${passend.toLocaleString("de-DE")} passen zu deinem Profil`,
   ];
   return teile.join(" · ");
 }

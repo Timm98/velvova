@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, or, sql, isNull, gte } from "drizzle-orm";
 import { schema } from "@paycheck/db";
 import type { UserConstraints } from "@paycheck/domain";
+import type { Suchzweig } from "@/lib/jobs/zweige";
 
 /**
  * Welche Stellen überhaupt in die Bewertung kommen.
@@ -47,6 +48,37 @@ import type { UserConstraints } from "@paycheck/domain";
  */
 
 /** Wie `normaliseSalaryToYear` in `constraints.ts` — nur in SQL. */
+/**
+ * Stellen, deren ARBEITGEBER auf den Suchbegriff passt.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum eine Untermenge und kein Verbund
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Der erste Anlauf schrieb `companies.name` direkt in die
+ * Bedingung. Das lief in der Stellenliste, die `companies` ohnehin
+ * verbindet — und brach überall sonst:
+ *
+ *   42P01  missing FROM-clause entry for table "companies"
+ *
+ * `kandidatenBedingung` wird nämlich auch für Abfragen benutzt, die
+ * nur `jobs` lesen. Eine Bedingung, die stillschweigend voraussetzt,
+ * wie der Aufrufer seine Tabellen verbindet, ist keine Bedingung,
+ * sondern eine Falle.
+ *
+ * Als Untermenge trägt sie sich selbst. Und sie ist nicht langsamer:
+ * Der Index auf `companies.name` (Migration 0098) liefert die
+ * Kennungen in einem Durchgang, und `jobs_company_idx` schlägt sie
+ * auf der Stellenseite nach. 416.198 Firmen gegen 3,46 Mio. Stellen
+ * — gesucht wird auf der kleinen Seite.
+ */
+function firmennameTrifft(begriff: string) {
+  return sql`${schema.jobs.companyId} in (
+    select ${schema.companies.id} from ${schema.companies}
+    where to_tsvector('simple', ${schema.companies.name}) @@ plainto_tsquery('simple', ${begriff})
+  )`;
+}
+
 const JAHRESGEHALT = sql<number>`
   case ${schema.jobs.salaryPeriod}
     when 'month' then coalesce(${schema.jobs.salaryMax}, ${schema.jobs.salaryMin}) * 12
@@ -85,6 +117,28 @@ export interface Vorauswahl {
    */
   ort?: string | null;
   /**
+   * Mehrere Berufe mit eigenem Mindestgehalt.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum sie nicht in `suche` passen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * `suche` wird mit `plainto_tsquery` gelesen, und das verbindet die
+   * Wörter mit UND. „bürokaufmann elektriker" verlangt also beides in
+   * EINEM Titel — eine Bedingung, die nie erfüllt ist.
+   *
+   * Zweige werden stattdessen mit ODER verbunden, und jeder trägt
+   * sein eigenes Gehalt: „Bürokaufmann ab 40.000 ODER Elektriker ab
+   * 50.000". Das Gehalt gehört in den Zweig, weil es sich zwischen
+   * den Berufen unterscheidet — ein gemeinsames `gehaltAb` hätte den
+   * einen zu hoch und den anderen zu niedrig angesetzt.
+   *
+   * Steht hier etwas, wird `suche` nicht mehr gelesen: Zwei
+   * Textbedingungen nebeneinander wären zwei Wahrheiten über
+   * dieselbe Frage.
+   */
+  zweige?: Suchzweig[];
+  /**
    * Wie viele Kandidaten geladen werden sollen.
    *
    * Steht hier und nicht als eigenes Argument, weil es zur Auswahl
@@ -105,7 +159,42 @@ export function kandidatenBedingung(
       : vorauswahl;
   const suche = v.suche;
 
-  const teile = [eq(schema.jobs.isDemo, false)];
+  const teile = [
+    eq(schema.jobs.isDemo, false),
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Was die Quelle nicht mehr führt, wird nicht mehr empfohlen
+     * ══════════════════════════════════════════════════════════════
+     *
+     * `jobs.availability_state` entsteht am Ende jedes vollständigen
+     * Ernte-Laufs aus den Fundstellen (siehe `standAusFundstellen`).
+     * Hier wird er zum ersten Mal gelesen.
+     *
+     * Ausgeschlossen wird, was die Quelle nicht mehr als offene
+     * Ausschreibung führt:
+     *
+     *   no_longer_published      aus zwei vollständigen Läufen weg
+     *   source_reported_closed   die Quelle sagt es ausdrücklich
+     *   deadline_expired         die Frist ist verstrichen
+     *   application_unavailable  die Bewerbungsseite ist weg
+     *
+     * Drin bleiben `active`, `verification_pending` und `unknown` —
+     * und die beiden letzten mit Absicht: `verification_pending`
+     * heisst „einmal vermisst, noch nicht bestätigt", und wer das
+     * ausblendet, verliert bei jedem Sonderfall einer Quelle für
+     * einen halben Tag Stellen, die es noch gibt. `unknown` betrifft
+     * alles, was vor dieser Logik in den Bestand kam.
+     *
+     * ── Warum hier und nicht im Nachfilter ──────────────────────
+     *
+     * Weil die Auswahl vorher greift. Wer erst sechshundert
+     * Kandidaten holt und danach die geschlossenen entfernt, hat
+     * sechshundert minus die geschlossenen — und keinen Ersatz
+     * dafür. Der Teilindex `jobs_availability_idx` macht diese
+     * Bedingung billig.
+     */
+    sql`${schema.jobs.availabilityState} in ('active', 'verification_pending', 'unknown')`,
+  ];
 
   /*
    * ══════════════════════════════════════════════════════════════
@@ -137,7 +226,10 @@ export function kandidatenBedingung(
    * kurz genug, dass niemand eine Anzeige aufschlägt, die es nicht
    * mehr gibt. Wer weiter zurück will, sucht ohne Begriff.
    */
-  const textsuche = (v.suche?.trim().length ?? 0) >= 2 || (v.ort?.trim().length ?? 0) >= 2;
+  const textsuche =
+    (v.suche?.trim().length ?? 0) >= 2 ||
+    (v.ort?.trim().length ?? 0) >= 2 ||
+    (v.zweige ?? []).some((z) => z.q.trim().length >= 2);
   if (textsuche) {
     teile.push(
       sql`coalesce(${schema.jobs.publishedAt}, ${schema.jobs.fetchedAt}) > now() - (${SUCHFENSTER_TAGE} || ' days')::interval`,
@@ -233,14 +325,92 @@ export function kandidatenBedingung(
    * „in" verschwindet. Wort für Wort geprüft, hätte „in" eine leere
    * Anfrage ergeben — und eine leere Anfrage passt auf nichts.
    */
-  const begriff = suche?.trim();
-  if (begriff && begriff.length >= 2) {
-    teile.push(
-      or(
-        sql`to_tsvector('german', ${schema.jobs.title}) @@ plainto_tsquery('german', ${begriff})`,
-        sql`to_tsvector('simple', ${schema.jobs.location}) @@ plainto_tsquery('simple', ${begriff})`,
-      )!,
-    );
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Mehrere Berufe: ODER dazwischen, das Gehalt im Zweig
+   * ══════════════════════════════════════════════════════════════
+   *
+   * „Bürokaufmann ab 40k und auch Elektriker ab 50k" ist keine
+   * schwierige Bedingung — sie ist nur keine EINZELNE. Als ein
+   * Suchbegriff geschrieben wurde daraus `'bürokaufmann' &
+   * 'elektriker'`, und kein Stellentitel trägt beide Berufe.
+   *
+   * Jeder Zweig steht deshalb für sich: sein Beruf im Titel, sein
+   * Gehalt daneben. Verbunden werden sie mit ODER — wer zwei Berufe
+   * nennt, will Stellen aus beiden, nicht Stellen, die beides sind.
+   *
+   * ── Warum das Gehalt hier steht und nicht im Nachfilter ─────
+   *
+   * Weil der Nachfilter erst nach der Auswahl greift. Bei zwei
+   * Berufen mit verschiedenen Ansprüchen hiesse das: Die Datenbank
+   * liefert 1.200 Zeilen ohne Rücksicht auf das Gehalt, und danach
+   * fällt der halbe Elektrikerzweig weg. Übrig bliebe eine Liste, in
+   * der ein Beruf gut vertreten ist und der andere kaum — aus einem
+   * Grund, den niemand sehen kann.
+   */
+  const zweige = (v.zweige ?? []).filter((z) => z.q.trim().length >= 2);
+  if (zweige.length > 0) {
+    const zweigBedingungen = zweige.map((z) => {
+      const wort = z.q.trim();
+      const text = or(
+        sql`to_tsvector('german', ${schema.jobs.title}) @@ plainto_tsquery('german', ${wort})`,
+        sql`to_tsvector('simple', ${schema.jobs.location}) @@ plainto_tsquery('simple', ${wort})`,
+        firmennameTrifft(wort),
+      )!;
+      if (z.gehaltAb === undefined) return text;
+      /*
+       * Dieselbe Nachsicht wie beim Gehalt aus dem Profil: Wer nichts
+       * angegeben hat, fliegt nicht raus. Nur die nachgewiesene
+       * Unterschreitung fliegt raus — sonst verschwänden mit dem
+       * Filter auch alle schweigsamen Anzeigen, und das sind bis
+       * heute knapp achtzehn Prozent.
+       */
+      return and(
+        text,
+        or(
+          eq(schema.jobs.salaryDisclosed, false),
+          and(isNull(schema.jobs.salaryMin), isNull(schema.jobs.salaryMax)),
+          gte(JAHRESGEHALT, z.gehaltAb),
+        )!,
+      )!;
+    });
+    teile.push(zweigBedingungen.length === 1 ? zweigBedingungen[0]! : or(...zweigBedingungen)!);
+  } else {
+    const begriff = suche?.trim();
+    if (begriff && begriff.length >= 2) {
+      teile.push(
+        or(
+          sql`to_tsvector('german', ${schema.jobs.title}) @@ plainto_tsquery('german', ${begriff})`,
+          sql`to_tsvector('simple', ${schema.jobs.location}) @@ plainto_tsquery('simple', ${begriff})`,
+          /*
+           * ══════════════════════════════════════════════════════
+           * Der Arbeitgeber ist die zweite Art zu suchen
+           * ══════════════════════════════════════════════════════
+           *
+           * Gemeldet am 8. September 2026: „ein job im landratsamt
+           * karlsruhe im sozialen bereich" fand nichts. „Landratsamt
+           * Karlsruhe" steht weder im Stellentitel noch im Ortsfeld
+           * — es ist der Name des Arbeitgebers, und danach wurde
+           * nirgends gesucht.
+           *
+           * Migration 0061 hatte das schon vorgesehen: „Die Suche
+           * nach Arbeitgebern läuft deshalb getrennt über
+           * `companies.name`." Den Index dafür gab es nie; er kommt
+           * mit 0098.
+           *
+           * `simple` wie beim Ort: Firmennamen werden nicht gebeugt,
+           * und der deutsche Stemmer führte sonst Namen zusammen,
+           * die nichts miteinander zu tun haben.
+           *
+           * Der Verbund auf `companies` steht ohnehin in der Abfrage
+           * — die Zeile kostet also keine zusätzliche Tabelle,
+           * sondern nur die Bedingung. 416.198 Firmen gegen 3,46
+           * Mio. Stellen: die kleinere Seite des Verbunds.
+           */
+          firmennameTrifft(begriff),
+        )!,
+      );
+    }
   }
 
   /*
@@ -364,7 +534,11 @@ export function brauchtReihenfolge(vorauswahl?: Vorauswahl | string | null): boo
     typeof vorauswahl === "string" || vorauswahl === null || vorauswahl === undefined
       ? { suche: vorauswahl ?? null }
       : vorauswahl;
-  return !((v.suche?.trim().length ?? 0) >= 2 || (v.ort?.trim().length ?? 0) >= 2);
+  return !(
+    (v.suche?.trim().length ?? 0) >= 2 ||
+    (v.ort?.trim().length ?? 0) >= 2 ||
+    (v.zweige ?? []).some((z) => z.q.trim().length >= 2)
+  );
 }
 
 export const KANDIDATEN_REIHENFOLGE = desc(

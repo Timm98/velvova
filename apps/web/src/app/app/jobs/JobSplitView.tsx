@@ -28,6 +28,7 @@ const SOFORT = 6;
  */
 export function JobSplitView({
   rows,
+  zweigNamen,
   selectedId,
   explicitSelection,
   detail,
@@ -36,6 +37,13 @@ export function JobSplitView({
   emptyState,
 }: {
   rows: JobRowData[];
+  /**
+   * Welche Zeile aus welchem Suchzweig stammt — nach Stellenkennung.
+   *
+   * Leer bei einer gewöhnlichen Suche. Dann gibt es nichts zu
+   * unterscheiden, und an den Zeilen steht nichts.
+   */
+  zweigNamen?: Record<string, string>;
   selectedId: string | null;
   /**
    * Hat die Person eine Stelle ausgewählt, oder ist es die
@@ -284,7 +292,13 @@ export function JobSplitView({
      * einem 390 Pixel breiten Fenster, und die ganze Seite rollte
      * seitlich.
      */
-    <div className="uebergang-stellen-liste grid gap-6 lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] lg:items-start">
+    /*
+     * `rastpunkt`: Hier ruht die Seite.
+     *
+     * Siehe `.rastpunkt` in globals.css — die Aufteilung ist der
+     * Punkt, zu dem eine beiläufige Radbewegung zurückfällt.
+     */
+    <div className="rastpunkt uebergang-stellen-liste grid gap-6 lg:grid-cols-[minmax(0,40fr)_minmax(0,60fr)] lg:items-start">
       {/* ── Liste ──────────────────────────────────────────── */}
       <div
         ref={listRef}
@@ -358,8 +372,15 @@ export function JobSplitView({
            * Der Fühler zum Nachladen sitzt IN diesem Bereich (siehe
            * `blaetterung`) — sonst bekäme er vom Rollen darin nichts
            * mit.
+           *
+           * `overscroll-contain`: Am Ende der Liste hört das Rollen
+           * auf, statt auf die Seite überzugehen. Ohne die Regel nahm
+           * das Rad, sobald oben oder unten Schluss war, die ganze
+           * Seite mit — und man stand unvermittelt bei Mondays Panel,
+           * das unter beiden Spalten liegt. Wer dorthin will, rollt
+           * die Seite neben der Aufteilung oder scrollt am Rand.
            */
-          "min-w-0 ohne-rollbalken md:max-h-[calc(100dvh_-_0.5rem)] md:overflow-y-auto md:border-b md:border-line lg:pr-2",
+          "min-w-0 ohne-rollbalken md:max-h-[calc(100dvh_-_0.5rem)] md:overflow-y-auto md:overscroll-contain md:border-b md:border-line lg:pr-2",
           explicitSelection && "hidden lg:block",
         )}
       >
@@ -404,7 +425,12 @@ export function JobSplitView({
               {...(rang >= SOFORT ? { "data-wartet": "" } : {})}
               style={{ "--rang": Math.min(rang, SOFORT - 1) } as CSSProperties}
             >
-              <JobRow job={row} selected={row.id === selectedId} href={hrefFor(row.id)} />
+              <JobRow
+                job={row}
+                selected={row.id === selectedId}
+                href={hrefFor(row.id)}
+                zweig={zweigNamen?.[row.id]}
+              />
             </li>
           ))}
         </ul>
@@ -427,9 +453,12 @@ export function JobSplitView({
            *
            * Ist die Stelle kürzer als der Bereich, gibt es hier
            * nichts zu rollen. Das ist richtig so und kein Fehler:
-           * Dann steht alles im Bild. Wer trotzdem am Rad dreht,
-           * bewegt die Seite — die hat unter der Aufteilung weiter
-           * Inhalt.
+           * Dann steht alles im Bild.
+           *
+           * `overscroll-contain` wie links: Das Rad bleibt in dieser
+           * Spalte. Vorher ging es an ihrem Ende auf die Seite über,
+           * und die trägt unter der Aufteilung Mondays Panel — man
+           * landete dort, ohne es zu wollen.
            *
            * `pb-10` ist der Rest aus einem früheren Anlauf und bleibt:
            * Ohne Luft am Ende steht der letzte Knopf bündig an der
@@ -440,7 +469,7 @@ export function JobSplitView({
            * — Titel, Gehalt und Knöpfe bleiben also stehen, während
            * man in der Stelle nach unten liest.
            */
-          "min-w-0 md:max-h-[calc(100dvh_-_0.5rem)] md:overflow-y-auto md:border-b md:border-line lg:pl-1 lg:pb-10",
+          "min-w-0 md:max-h-[calc(100dvh_-_0.5rem)] md:overflow-y-auto md:overscroll-contain md:border-b md:border-line lg:pl-1 lg:pb-10",
           !explicitSelection && "hidden lg:block",
         )}
       >

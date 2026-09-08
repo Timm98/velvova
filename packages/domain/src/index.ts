@@ -23,3 +23,4 @@ export * from "./probenauswahl.ts";
 export * from "./erfahrungsebene.ts";
 export * from "./berufsfelder.ts";
 export * from "./sprache.ts";
+export * from "./verfuegbarkeit.ts";

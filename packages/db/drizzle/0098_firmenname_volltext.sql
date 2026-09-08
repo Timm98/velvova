@@ -1,0 +1,32 @@
+-- Volltextsuche über den Arbeitgebernamen.
+--
+-- Migration 0061 hat den Index auf `jobs.title` angelegt und dabei
+-- ausdrücklich notiert: „Nur der Titel, nicht der Unternehmensname:
+-- Der Name steht in `companies` und wäre nur über einen Verbund zu
+-- indizieren. Die Suche nach Arbeitgebern läuft deshalb getrennt über
+-- `companies.name`." Diesen getrennten Index gab es nie.
+--
+-- Gemeldet am 8. September 2026: Gesucht wurde nach einem Job „im
+-- Landratsamt Karlsruhe im sozialen Bereich" — die Liste blieb leer.
+-- „Landratsamt Karlsruhe" ist der ARBEITGEBER; gesucht wurde aber nur
+-- in `jobs.title` und `jobs.location`. In beiden steht er nicht, und
+-- eine leere Liste sagt nicht, woran es lag.
+--
+-- Wer einen Arbeitgeber nennt, nennt fast immer eine Behörde, eine
+-- Klinik oder einen bekannten Betrieb der Gegend. Das ist keine
+-- Randnutzung, sondern eine der beiden Arten, wie Menschen suchen.
+--
+-- `simple` und nicht `german`: Firmennamen werden nicht gebeugt. Der
+-- deutsche Stemmer schnitte „Stadtwerke" auf „stadtwerk" und führte
+-- damit Namen zusammen, die nichts miteinander zu tun haben. Dieselbe
+-- Begründung wie bei `jobs_ort_idx`.
+--
+-- Kein Teilindex auf `is_demo`: Die Spalte steht in `jobs`, nicht in
+-- `companies`. Demostellen fallen weiterhin über die Bedingung auf
+-- `jobs.is_demo` heraus, nur eben nach dem Verbund.
+--
+-- Auf einer bestehenden Datenbank besser mit CONCURRENTLY anlegen
+-- (siehe scripts/index-anlegen.mjs); hier steht er für frische
+-- Umgebungen und für den gewöhnlichen Migrationslauf.
+create index if not exists companies_name_volltext_idx
+  on companies using gin (to_tsvector('simple', name));

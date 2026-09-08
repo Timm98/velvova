@@ -160,7 +160,18 @@ export async function POST(request: Request) {
        * passiert ist, und es ist nicht kaputt, nur weniger klug.
        */
       return NextResponse.json({
-        filter: { ...regel.filter, ...(rest ? { q: rest } : {}) },
+        /*
+         * Bei mehreren Berufen trägt `zweige` den Text, nicht `q`.
+         *
+         * `regel.rest` ist dann die Aneinanderreihung der Berufe —
+         * „bürokaufmann elektriker". Als `q` gesetzt verlangte sie
+         * beide in EINEM Stellentitel und machte die Zweige daneben
+         * wirkungslos.
+         */
+        filter: { ...regel.filter, ...(rest && !regel.zweige ? { q: rest } : {}) },
+        zweige: regel.zweige,
+        umkreisSchritt: regel.umkreisSchritt,
+        allesEntfernen: regel.allesEntfernen,
         entfernen: regel.entfernen,
         erklaerung: regel.erkannt.length > 0 ? kurz(regel.erkannt) : `sucht nach „${rest}".`,
         rueckfrage: null,
@@ -254,7 +265,18 @@ export async function POST(request: Request) {
      */
       console.warn("[suchdeutung] Modellaufruf fehlgeschlagen:", fehler);
       return NextResponse.json({
-        filter: { ...regel.filter, ...(rest ? { q: rest } : {}) },
+        /*
+         * Bei mehreren Berufen trägt `zweige` den Text, nicht `q`.
+         *
+         * `regel.rest` ist dann die Aneinanderreihung der Berufe —
+         * „bürokaufmann elektriker". Als `q` gesetzt verlangte sie
+         * beide in EINEM Stellentitel und machte die Zweige daneben
+         * wirkungslos.
+         */
+        filter: { ...regel.filter, ...(rest && !regel.zweige ? { q: rest } : {}) },
+        zweige: regel.zweige,
+        umkreisSchritt: regel.umkreisSchritt,
+        allesEntfernen: regel.allesEntfernen,
         entfernen: regel.entfernen,
         erklaerung: regel.erkannt.length > 0 ? kurz(regel.erkannt) : `sucht nach „${rest}".`,
         rueckfrage: null,
@@ -437,8 +459,32 @@ export async function POST(request: Request) {
     if (angelegt) rueckfrage = { schluessel, frage: deutung.rueckfrage.frage };
   }
 
+  /*
+   * Die Zweige kommen aus den Regeln, nicht aus dem Modell.
+   *
+   * Das Modell kennt nur das flache Filterbild — es würde aus zwei
+   * Berufen einen machen und ein Gehalt verlieren. Die Zerlegung ist
+   * dagegen eine reine Satzfrage, die die Regeln sicher beantworten.
+   *
+   * Wo es Zweige gibt, müssen `q` und `gehaltAb` weichen: Sie
+   * beantworten dieselbe Frage und würden ein zweites Mal filtern —
+   * das Ergebnis wäre eine leere Liste ohne sichtbaren Grund.
+   */
+  if (regel.zweige) {
+    delete filter.q;
+    delete filter.gehaltAb;
+  }
+
   return NextResponse.json({
     filter,
+    zweige: regel.zweige,
+    /*
+     * Beides kommt aus den Regeln, nicht aus dem Modell: Es sind
+     * Anweisungen auf den bestehenden Stand („eine Stufe weiter",
+     * „alles weg"), und der Stand steht erst im Browser fest.
+     */
+    umkreisSchritt: regel.umkreisSchritt,
+    allesEntfernen: regel.allesEntfernen,
     entfernen,
     erklaerung: deutung.erklaerung || (regel.erkannt.length > 0 ? kurz(regel.erkannt) : ""),
     rueckfrage,

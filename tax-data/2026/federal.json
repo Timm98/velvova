@@ -1,0 +1,181 @@
+{
+  "taxYear": 2026,
+  "jurisdiction": "CH",
+  "level": "federal",
+  "name": "Direkte Bundessteuer",
+  "source": {
+    "law": "SR 642.11 DBG, Art. 36",
+    "url": "https://fedlex.data.admin.ch/eli/cc/1991/1184_1184_1184/20260101/de",
+    "consolidatedAt": "2026-01-01",
+    "retrievedAt": "2026-09-08"
+  },
+  "verification": {
+    "method": "Jede Stufe zurueckgerechnet: Grundbetrag der Vorstufe plus Spanne durch 100 mal Satz muss den Grundbetrag der Folgestufe treffen.",
+    "result": "Alle 24 Stufen beider Tarife gehen exakt auf.",
+    "beispiele": [
+      "ledig 108'900 -> 141'500: 326 x 8.80 = 2868.80; 3271.75 + 2868.80 = 6140.55",
+      "ledig 185'100 -> 793'900: 6088 x 13.20 = 80361.60; 10936.55 + 80361.60 = 91298.15",
+      "ledig 794'000 x 0.115 = 91'310.00",
+      "verh. 152'400 -> 941'300: 7889 x 13.00 = 102'557; 5692 + 102557 = 108'249",
+      "verh. 941'400 x 0.115 = 108'261.00"
+    ],
+    "abgrenzungZumVorjahr": "2025 und 2026 unterscheiden sich in den oberen Stufen: 2025 beginnt die 5,94-Prozent-Stufe bei 76'100, 2026 bei 76'200; die Deckelung liegt 2025 bei 793'300, 2026 bei 793'900. Die unteren vier Stufen sind identisch — genau deshalb ist ein Jahresirrtum hier so leicht und so folgenreich."
+  },
+  "rounding": {
+    "taxableIncomeDownToFranc": true,
+    "per100Franc": "abgerundet",
+    "taxToRappen": 2,
+    "minimumLevied": 25
+  },
+  "tariffs": {
+    "single": {
+      "label": "Grundtarif (Art. 36 Abs. 1 DBG)",
+      "appliesTo": "Alleinstehende ohne Kinder",
+      "brackets": [
+        {
+          "from": 0,
+          "baseTax": 0,
+          "ratePer100": 0
+        },
+        {
+          "from": 15200,
+          "baseTax": 0,
+          "ratePer100": 0.77
+        },
+        {
+          "from": 33200,
+          "baseTax": 138.6,
+          "ratePer100": 0.88
+        },
+        {
+          "from": 43500,
+          "baseTax": 229.2,
+          "ratePer100": 2.64
+        },
+        {
+          "from": 58000,
+          "baseTax": 612.0,
+          "ratePer100": 2.97
+        },
+        {
+          "from": 76200,
+          "baseTax": 1152.55,
+          "ratePer100": 5.94
+        },
+        {
+          "from": 82100,
+          "baseTax": 1502.95,
+          "ratePer100": 6.6
+        },
+        {
+          "from": 108900,
+          "baseTax": 3271.75,
+          "ratePer100": 8.8
+        },
+        {
+          "from": 141500,
+          "baseTax": 6140.55,
+          "ratePer100": 11.0
+        },
+        {
+          "from": 185100,
+          "baseTax": 10936.55,
+          "ratePer100": 13.2
+        }
+      ],
+      "flatAbove": {
+        "from": 793900,
+        "rateOfTotalIncome": 0.115,
+        "note": "Maximalbelastung auf das GESAMTE Einkommen. Stetig: 793'900 ergibt im Stufentarif 91'298.15, und 794'000 x 0.115 = 91'310.00."
+      }
+    },
+    "married": {
+      "label": "Verheiratetentarif (Art. 36 Abs. 2 DBG)",
+      "appliesTo": "Verheiratete und eingetragene Partnerschaften in ungetrennter Ehe; ebenso Einelternfamilien",
+      "brackets": [
+        {
+          "from": 0,
+          "baseTax": 0,
+          "ratePer100": 0
+        },
+        {
+          "from": 29700,
+          "baseTax": 0,
+          "ratePer100": 1.0
+        },
+        {
+          "from": 53400,
+          "baseTax": 237.0,
+          "ratePer100": 2.0
+        },
+        {
+          "from": 61300,
+          "baseTax": 395.0,
+          "ratePer100": 3.0
+        },
+        {
+          "from": 79100,
+          "baseTax": 929.0,
+          "ratePer100": 4.0
+        },
+        {
+          "from": 94900,
+          "baseTax": 1561.0,
+          "ratePer100": 5.0
+        },
+        {
+          "from": 108700,
+          "baseTax": 2251.0,
+          "ratePer100": 6.0
+        },
+        {
+          "from": 120600,
+          "baseTax": 2965.0,
+          "ratePer100": 7.0
+        },
+        {
+          "from": 130500,
+          "baseTax": 3658.0,
+          "ratePer100": 8.0
+        },
+        {
+          "from": 138400,
+          "baseTax": 4290.0,
+          "ratePer100": 9.0
+        },
+        {
+          "from": 144300,
+          "baseTax": 4821.0,
+          "ratePer100": 10.0
+        },
+        {
+          "from": 148300,
+          "baseTax": 5221.0,
+          "ratePer100": 11.0
+        },
+        {
+          "from": 150400,
+          "baseTax": 5452.0,
+          "ratePer100": 12.0
+        },
+        {
+          "from": 152400,
+          "baseTax": 5692.0,
+          "ratePer100": 13.0
+        }
+      ],
+      "flatAbove": {
+        "from": 941300,
+        "rateOfTotalIncome": 0.115,
+        "note": "Stetig: 941'300 ergibt 108'249.00, und 941'400 x 0.115 = 108'261.00."
+      }
+    },
+    "parent": {
+      "label": "Elterntarif (Art. 36 Abs. 2bis DBG)",
+      "appliesTo": "Personen, die mit Kindern oder unterstuetzungsbeduerftigen Personen zusammenleben",
+      "basedOn": "married",
+      "deductionPerChild": 263,
+      "note": "Der Abzug wirkt auf die STEUER, nicht auf das Einkommen."
+    }
+  }
+}

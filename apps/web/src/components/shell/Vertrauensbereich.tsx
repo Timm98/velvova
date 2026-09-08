@@ -1,4 +1,6 @@
 import { Check, ShieldCheck } from "lucide-react";
+import { LebendeZahl } from "@/components/marketing/LebendeZahl";
+import type { Grundlagenzahlen } from "@/lib/jobs/grundlagen";
 
 /**
  * Wofür Monday gebaut wird.
@@ -54,14 +56,76 @@ const GRENZE =
   "Monday darf suchen, vergleichen und vorbereiten. Was sie veröffentlichen, " +
   "versenden oder verbindlich entscheiden darf, bestimmst immer du.";
 
-const GRUNDLAGEN = [
-  ["2,5 Mio.", "Stellen im Bestand, aus 28 Quellen"],
-  ["82 %", "der deutschen Stellen mit Gehaltsorientierung"],
-  ["436", "Berufsgruppen mit Zukunftseinschätzung"],
-  ["33", "Berufsfelder mit einer Arbeitsprobe"],
-] as const;
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Die Zahlen kommen aus der Datenbank, nicht aus dieser Datei
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Hier stand eine feste Liste:
+ *
+ *   "2,5 Mio."  Stellen im Bestand, aus 28 Quellen
+ *   "82 %"      der deutschen Stellen mit Gehaltsorientierung
+ *   "436"       Berufsgruppen mit Zukunftseinschätzung
+ *   "33"        Berufsfelder mit einer Arbeitsprobe
+ *
+ * Am 8. September 2026 nachgezählt: 3,46 Mio. Stellen aus 34 Quellen,
+ * 436 Berufsgruppen, 34 Arbeitsproben. Zwei Zahlen waren falsch, eine
+ * davon um fast eine Million — und zwar im Abschnitt, der überschrieben
+ * ist mit „Worauf das beruht".
+ *
+ * Eine eingetippte Zahl neben einer wachsenden Datenbank stimmt an dem
+ * Tag, an dem sie geschrieben wird, und danach nie wieder.
+ *
+ * ── Die 82 Prozent sind weg ─────────────────────────────────
+ *
+ * Sie liessen sich nicht belegen. Gemessen an 50.000 deutschen
+ * Anzeigen tragen 20,2 Prozent einen Betrag vom Arbeitgeber; die 82
+ * kamen zustande, indem eigene Schätzungen mitgezählt wurden. Das ist
+ * eine Aussage über unsere Rechnung, nicht über den Arbeitsmarkt —
+ * und in dieser Liste stünde sie wie eine Messung.
+ *
+ * Lieber drei Zahlen, die stimmen, als vier, von denen eine erklärt
+ * werden muss.
+ */
 
-export function Vertrauensbereich() {
+export function Vertrauensbereich({ zahlen }: { zahlen: Grundlagenzahlen }) {
+  /*
+   * Was `0` ist, wird nicht gezeigt.
+   *
+   * `grundlagenzahlen()` gibt bei einem Ausfall Nullen zurück, statt
+   * zu raten. Eine Zeile „0 Berufsgruppen mit Zukunftseinschätzung"
+   * wäre schlimmer als keine Zeile.
+   */
+  type Grundlage = { zahl: React.ReactNode; was: string };
+  const GRUNDLAGEN: Grundlage[] = ([
+    zahlen.stellen > 0 && {
+      /*
+       * Die einzige Zahl hier, die mitläuft.
+       *
+       * `LebendeZahl` liest den Wert aus dem `BestandProvider`, den
+       * der Rahmen ohnehin führt — derselbe Zähler wie oben in der
+       * Kopfzeile. Zwei eigene Zeitgeber zeigten früher abwechselnd
+       * Zahlen, die sich um eins unterschieden.
+       *
+       * Die anderen drei laufen nicht, weil sie nicht laufen: Eine
+       * Berufsgruppe kommt nicht sekündlich dazu.
+       */
+      zahl: <LebendeZahl start={zahlen.stellen} />,
+      was:
+        zahlen.quellen > 0
+          ? `Stellen im Bestand, aus ${zahlen.quellen} Quellen`
+          : "Stellen im Bestand",
+    },
+    zahlen.berufsgruppen > 0 && {
+      zahl: zahlen.berufsgruppen.toLocaleString("de-DE"),
+      was: "Berufsgruppen mit Zukunftseinschätzung",
+    },
+    zahlen.arbeitsproben > 0 && {
+      zahl: zahlen.arbeitsproben.toLocaleString("de-DE"),
+      was: "Berufsfelder mit einer Arbeitsprobe",
+    },
+  ] as (Grundlage | false)[]).filter((x): x is Grundlage => x !== false);
+
   return (
     <section aria-labelledby="vertrauen" className="grid gap-8 lg:grid-cols-2 lg:gap-12">
       <div className="grid content-start gap-5">
@@ -95,7 +159,7 @@ export function Vertrauensbereich() {
           Worauf das beruht
         </h3>
         <dl className="grid gap-4">
-          {GRUNDLAGEN.map(([zahl, was]) => (
+          {GRUNDLAGEN.map(({ zahl, was }) => (
             <div key={was} className="grid gap-0.5">
               <dt className="text-xl font-semibold tabular text-ink">{zahl}</dt>
               <dd className="text-sm leading-relaxed text-ink-2">{was}</dd>

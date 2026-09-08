@@ -227,6 +227,62 @@ export async function referenzHolen(
          and r.plz in (select value from jsonb_array_elements_text(${plzJson}::jsonb)))
         or (
           r.quelle = 'geonames_zip'
+          /*
+           * ══════════════════════════════════════════════════════
+           * Grosskunden-Postleitzahlen sind keine Orte
+           * ══════════════════════════════════════════════════════
+           *
+           * Der GeoNames-PLZ-Bestand für Deutschland enthält neben
+           * Städten und Gemeinden auch Postleitzahlen, die EINEM
+           * Unternehmen gehören. Der Ortsname ist dann der
+           * Firmenname: „Zurich Gruppe Deutschland", „HUK-Coburg",
+           * „LBS Süd Landesbausparkasse".
+           *
+           * Gemeldet am 8. September 2026: Jemand trug „zurich" als
+           * Wohnort ein und suchte Stellen in Zürich. Der Rechner
+           * meldete 170 Minuten Autofahrt. Er hatte recht — nur
+           * nicht mit dem Ort: „zurich" traf die Zurich Gruppe in
+           * Bonn (50,728 / 7,0955), und von dort ist es tatsächlich
+           * weit.
+           *
+           * Das ist die schlimmere Sorte Fehler. Ein nicht gefundener
+           * Ort sagt, dass er nicht gefunden wurde. Ein falsch
+           * gefundener liefert eine Zahl, die aussieht wie eine
+           * Auskunft.
+           *
+           * ── Warum ein Namensmuster und keine Spalte ─────────
+           *
+           * Weil es keine gibt. 6.816 Zeilen sind als
+           * 'geonames_zip_grosskunde' gekennzeichnet, aber die
+           * genannten Beispiele stehen alle unter 'geonames_zip' —
+           * die Kennzeichnung ist unvollständig, und GeoNames selbst
+           * markiert diese Einträge nicht.
+           *
+           * Ein Ortsname trägt keine Rechtsform. Wer eine Gemeinde
+           * ausschliesst, weil „GmbH" darin steht, hat keine
+           * ausgeschlossen.
+           */
+          /*
+           * Ohne Backslash geschrieben, mit Absicht.
+           *
+           * Postgres kennt '\y' als Wortgrenze — nur ist diese Datei
+           * TypeScript, und ein '\y' in einem Template-Literal ist
+           * dort eine ungültige Escape-Folge. Node bricht das Modul
+           * mit 'ERR_INVALID_TYPESCRIPT_SYNTAX' ab, bevor eine einzige
+           * Zeile läuft.
+           *
+           * Stattdessen wird der Name links und rechts mit einem
+           * Leerzeichen umschlossen. Dann trifft ' ag ' das Kürzel und
+           * nicht die Silbe in „Hagen" oder „Wagenfeld".
+           */
+          /*
+           * Geprüft gegen die 74.677 Zeilen der Quelle: Von den
+           * Ausgeschlossenen haben genau zehn mehr als drei
+           * Postleitzahlen — und die heissen alle 'Stadtverwaltung'.
+           * Es ist also keine einzige Gemeinde dabei.
+           */
+          and (' ' || r.name_norm || ' ') !~*
+            ' (gmbh|mbh|ag|kg|ohg|se|eg|ug|co|v|versicherung|versicherungen|lebensversicherung|bausparkasse|sparkasse|volksbank|bank|konzern|gruppe|holding|service|servicecenter|verwaltung|stadtverwaltung|zentrale|niederlassung|vertrieb|management|universitaet|hochschule|kammer|postfach|grosskunde|deutschland) '
           and (
             r.name_norm in (select name_norm from gesucht)
             or exists (

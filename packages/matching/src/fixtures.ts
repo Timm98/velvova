@@ -20,6 +20,8 @@ export function makeJob(over: Partial<Job> = {}): Job {
     latitude: null, longitude: null, workModel: "hybrid", remotePercent: 50, kldb: null,
     salary: { min: 44000, max: 52000, currency: "EUR", period: "year", disclosed: true, provenance: null, evidence: null },
     contractType: "permanent", weeklyHours: 40, shiftWork: false, travelPercent: 10,
+    /* Der Baustein beschreibt eine offene Ausschreibung. */
+    availabilityState: "active", availabilityReason: null,
     experienceLevel: "junior", industry: "Software", languageRequirements: { de: "C1" },
     requiredLicenses: [], workPermitRequired: false,
     coreTasks: [

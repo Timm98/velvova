@@ -17,39 +17,18 @@ import { getDb, schema, withUser, type Database } from "@paycheck/db";
  * aufgeschlagen, in einer Liste von 150 Einträgen. Was gespeichert
  * wird, muss die Frage „wonach suche ich" beantworten — sonst nichts.
  */
-export const FILTER_SCHLUESSEL = [
-  "q",
-  "nicht",
-  "ort",
-  "ortGenau",
-  "umkreisKm",
-  "pendelzeit",
-  "remote",
-  "contract",
-  "arbeitszeit",
-  "schicht",
-  "gehaltAb",
-  "salary",
-  "since",
-  /* Die Wahl „nur dieses Land" beziehungsweise „überall". */
-  "land",
-] as const;
+/*
+ * Die Schlüsselliste und `nurFilter` stehen in `filterschluessel.ts`.
+ *
+ * Dieselbe Trennung wie beim Zweig-Codec: Diese Datei greift auf die
+ * Datenbank zu, der Suchcomposer im Browser braucht aber nur die
+ * Liste. Ein Import von hier hätte Drizzle mit ins Client-Bündel
+ * genommen.
+ */
+import { FILTER_SCHLUESSEL, nurFilter, type Filterschluessel } from "./filterschluessel.ts";
 
-export type Filterschluessel = (typeof FILTER_SCHLUESSEL)[number];
+export { FILTER_SCHLUESSEL, nurFilter, type Filterschluessel };
 
-function istFilter(k: string): k is Filterschluessel {
-  return (FILTER_SCHLUESSEL as readonly string[]).includes(k);
-}
-
-/** Nur die Filter aus einem Adressobjekt — der Rest bleibt draussen. */
-export function nurFilter(params: Record<string, string | undefined>): Record<string, string> {
-  const raus: Record<string, string> = {};
-  for (const [k, v] of Object.entries(params)) {
-    if (v === undefined || v === "") continue;
-    if (istFilter(k)) raus[k] = v;
-  }
-  return raus;
-}
 
 /**
  * Den zuletzt benutzten Stand holen.

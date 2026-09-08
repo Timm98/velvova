@@ -59,7 +59,71 @@ export interface Suchintention {
     umkreisKm?: number;
     /** Höchste Fahrzeit zur Arbeit, in Minuten. */
     pendelzeit?: number;
+    /**
+     * Die Reihenfolge der Liste.
+     *
+     * Sie ist kein Filter — sie nimmt nichts weg. „Nette
+     * Arbeitskollegen" ist trotzdem ein Wunsch, und der einzige
+     * ehrliche Weg, ihn zu erfüllen, ist: gute Arbeitgeber nach oben,
+     * ohne dass etwas verschwindet. Eine Schwelle wäre eine Zahl, die
+     * niemand genannt hat.
+     */
+    sort?: "best_job_quality";
   };
+  /**
+   * ══════════════════════════════════════════════════════════════
+   * „Kannst weiter suchen" — eine Richtung, keine Zahl
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Gemeldet am 8. September 2026: Umkreis stand auf 30 km um
+   * Karlsruhe, dann „kannst mehr suchen" — und es kamen Stellen aus
+   * Köln. Zweihundertfünfzig Kilometer sind keine Erweiterung von
+   * dreissig, das ist ein anderes Land.
+   *
+   * Der Satz nennt keine Zahl, und eine zu erfinden wäre falsch. Was
+   * er nennt, ist eine RICHTUNG. Die Zahl ergibt sich aus dem, was
+   * gerade eingestellt ist — deshalb steht hier nicht `umkreisKm`,
+   * sondern der Schritt dorthin. Angewendet wird er vom Aufrufer,
+   * der den bestehenden Stand kennt; genauso wie `entfernen`.
+   *
+   * Ein Schritt und nicht das Doppelte: 30 → 50 → 75 → 100. Wer
+   * zweimal „weiter" sagt, kommt zweimal weiter — und sieht
+   * dazwischen, was das bringt.
+   */
+  umkreisSchritt?: "weiter" | "enger";
+  /**
+   * Der ganze Satz sagt: alles weg.
+   *
+   * „Lösche alle Filter" wurde vorher zur Volltextsuche nach genau
+   * diesen drei Wörtern — der Satz setzte also einen Filter, statt
+   * alle zu nehmen. Das Gegenteil dessen, was dasteht.
+   */
+  allesEntfernen?: true;
+  /**
+   * ══════════════════════════════════════════════════════════════
+   * Mehrere Berufe in einem Satz
+   * ══════════════════════════════════════════════════════════════
+   *
+   * „Bürokaufmann ab 40k und auch Elektriker ab 50k" sind ZWEI
+   * Suchen, nicht eine. Im flachen Modell ging das nicht: Es kennt
+   * genau ein `gehaltAb`, und die zweite Zahl fiel in den Volltext.
+   * Gemessen am 8. September 2026 blieb von dem Satz
+   *
+   *   q = "bürokaufmann jahr verdienen elektriker 50k beides …"
+   *
+   * — und weil der Volltext mit UND verbindet, hätte das alles in
+   * EINEM Stellentitel stehen müssen. Der Satz war vollständig
+   * verstanden und fand trotzdem garantiert nichts.
+   *
+   * `zweige` steht nur da, wenn es WIRKLICH mehrere sind. Bei einem
+   * Beruf bleibt alles wie bisher im flachen `filter` — sonst hätte
+   * jeder Aufrufer zwei Fälle zu behandeln, wo es einen gibt.
+   *
+   * Was in `filter` steht, gilt für ALLE Zweige: die Fahrzeit, der
+   * Ort, die Sortierung. Was den einen Beruf vom anderen
+   * unterscheidet, steht im Zweig.
+   */
+  zweige?: { q: string; gehaltAb?: number }[];
   /**
    * Filter, die dieser Satz ENTFERNEN will.
    *
@@ -87,7 +151,7 @@ export interface Suchintention {
  * Sie sind der eigentliche Grund, warum der UND-Vergleich nichts fand.
  * Was hiervon übrig bleibt, sucht nicht mehr mit.
  */
-const FÜLLWÖRTER = new Set([
+export const FÜLLWÖRTER = new Set([
   "ich", "mir", "mich", "mein", "meine", "meinen", "einen", "eine", "einem",
   "der", "die", "das", "den", "dem", "des", "ein", "und", "oder", "aber",
   "mit", "für", "von", "zu", "zum", "zur", "im", "in", "am", "an",
@@ -118,6 +182,32 @@ const FÜLLWÖRTER = new Set([
   "autofahrt", "auto", "fahrt", "fahrzeit", "anfahrt", "arbeitsweg",
   "pendeln", "pendelei", "pendelzeit", "weg", "entfernt", "entfernung",
   "kilometer", "km", "umkreis", "radius",
+  /*
+   * ── Wörter rund um das Gehalt und den Satzbau ───────────────
+   *
+   * Aus „will min 40k im jahr verdienen" blieb nach der Gehaltsregel
+   * „jahr verdienen" stehen und wurde mitgesucht. Kein Mensch sucht
+   * eine Stelle, in deren Titel „verdienen" vorkommt.
+   *
+   * „beides" und „zuhause" stammen aus demselben gemeldeten Satz:
+   * „beides nicht länger als 30 min weg von mir zuhause". Das eine
+   * verbindet zwei Suchen, das andere beschreibt den Startpunkt der
+   * Fahrt — gesucht wird nach keinem von beiden.
+   */
+  "jahr", "jahre", "jährlich", "jaehrlich", "monat", "monatlich",
+  "verdienen", "verdiene", "verdient", "brutto", "netto", "gehalt",
+  "beides", "beide", "beiden", "zuhause", "hause", "daheim", "wohnort",
+  "dann", "danach", "außerdem", "ausserdem", "zusätzlich", "zusaetzlich",
+  "sowie", "dazu", "hol", "gib", "mach",
+  /*
+   * „im sozialen Bereich" — das Wort trägt nichts.
+   *
+   * Es stand in dem gemeldeten Satz und musste als eigenes Wort in
+   * der Anzeige vorkommen. Keine Stellenanzeige schreibt „Bereich" in
+   * den Titel; die Suche war damit unerfüllbar, obwohl der Rest des
+   * Satzes gut war.
+   */
+  "bereich", "bereichen", "branche", "richtung", "sparte", "feld",
   "stunde", "stunden", "std", "auto", "fahren", "will",
 ]);
 
@@ -140,14 +230,36 @@ function alsBetrag(roh: string): number | null {
  * wenn ein echter Fall auftaucht — jeder Eintrag ist ein Ort, den
  * jemand nie suchen kann.
  */
+/*
+ * Seit die Ortsregel auch klein geschriebene Wörter annimmt, kommen
+ * hier Artikel und Pronomen an: „in der Nähe", „bei mir", „bei uns".
+ * Sie standen vorher nie zur Debatte, weil sie klein geschrieben sind
+ * — und wären jetzt Orte geworden.
+ */
 const KEIN_ORT =
-  /^(vollzeit|teilzeit|remote|hybrid|homeoffice|home\s*office|unbefristet|befristet|deutsch|englisch|schicht|nachtschicht|minijob|ausbildung|praktikum|werkstudent|stellen?|jobs?|arbeit|positionen?|angebote?|firmen|unternehmen|arbeitgeber|anzeigen?|ergebnisse?)$/i;
+  /^(vollzeit|teilzeit|remote|hybrid|homeoffice|home\s*office|unbefristet|befristet|deutsch|englisch|schicht|nachtschicht|minijob|ausbildung|praktikum|werkstudent|stellen?|jobs?|arbeit|positionen?|angebote?|firmen|unternehmen|arbeitgeber|anzeigen?|ergebnisse?|der|die|das|den|dem|des|ein|eine|einen|einem|einer|mir|mich|uns|dir|ihm|ihr|sich|beiden?|allen?|meiner?|deiner?|nähe|umgebung|umkreis|zuhause|hause)$/i;
 
-export function deuteSuchintention(eingabe: string): Suchintention {
+/**
+ * Ein Satzteil, eine Absicht — die bisherige Deutung, unverändert.
+ *
+ * Sie kennt genau eine Suche. Wer mehrere Berufe nennt, wird von
+ * `deuteSuchintention` vorher zerlegt und kommt hier stückweise an.
+ */
+function deuteEinzeln(eingabe: string): Suchintention {
   let rest = ` ${eingabe} `;
   const filter: Suchintention["filter"] = {};
   const erkannt: string[] = [];
   const entfernen: (keyof Suchintention["filter"])[] = [];
+  /*
+   * Beide stehen bewusst NEBEN `filter` und nicht darin.
+   *
+   * `filter` wird vom Aufrufer eins zu eins in die Adresse
+   * geschrieben. Ein `umkreisSchritt=weiter` in der Adresse wäre
+   * kein Filter, sondern eine Anweisung, die dort stehen bliebe und
+   * bei jedem Neuladen noch einmal wirkte.
+   */
+  let umkreisSchritt: Suchintention["umkreisSchritt"];
+  let allesEntfernen: true | undefined;
 
   /**
    * Schneidet den Treffer aus dem Resttext heraus.
@@ -392,6 +504,75 @@ export function deuteSuchintention(eingabe: string): Suchintention {
     return `${km} km Umkreis`;
   });
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * „Alle Filter löschen" — vor jeder Einzelregel
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Gemeldet am 8. September 2026. Der Satz wurde zur Volltextsuche
+   * nach genau seinen Wörtern:
+   *
+   *   "lösche alle filter"  →  q = "lösche alle filter"
+   *
+   * Er SETZTE also einen Filter, statt alle zu nehmen — und zwar den
+   * schlechtestmöglichen, denn kein Stellentitel enthält diese drei
+   * Wörter. Das Gegenteil dessen, was dasteht.
+   *
+   * Zuerst, weil danach nichts mehr zu deuten ist: Wer alles
+   * weghaben will, hat keine Bedingung genannt, die noch gelten
+   * soll.
+   */
+  nimm(
+    /\b(?:l[öo]sch|entfern|nimm|mach|setz|schmeiss|wirf)\w*\s+(?:mir\s+)?(?:bitte\s+)?(?:alle[nsr]?|s[äa]mtliche)\s+(?:filter|bedingungen|einstellungen)?\s*(?:wieder\s+)?(?:weg|raus|heraus|zur[üu]ck)?/i,
+    () => {
+      allesEntfernen = true;
+      return "alle Filter entfernt";
+    },
+  );
+  /* Dieselbe Absicht ohne Verb davor: „alle Filter weg", „von vorn". */
+  nimm(/\b(?:alle[nsr]?\s+filter\s+(?:weg|raus)|von\s+vorn(?:e)?\s+(?:anfangen)?|alles\s+zur[üu]ck)/i, () => {
+    if (allesEntfernen) return "";
+    allesEntfernen = true;
+    return "alle Filter entfernt";
+  });
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * „Kannst weiter suchen" — ein Schritt, kein Freibrief
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Gemeldet: Umkreis 30 km um Karlsruhe, dann „kannst mehr suchen"
+   * — und es kamen Stellen aus Köln. Zweihundertfünfzig Kilometer
+   * sind keine Erweiterung von dreissig.
+   *
+   * ── Warum VOR der Entfernen-Regel ───────────────────────────
+   *
+   * Weil die sonst zuerst greift. Ihr Muster liess das Schlusswort
+   * („weg", „raus") OPTIONAL — „mach den umkreis …" reichte schon,
+   * und „mach den umkreis GRÖSSER" wurde damit als „mach den
+   * Umkreis weg" gelesen. Vergrössern hiess Löschen, und ohne
+   * Umkreis war ganz Deutschland dran.
+   *
+   * Diese Regel fängt den Satz vorher ab. Die Entfernen-Regel ist
+   * ausserdem enger geworden — beides zusammen, weil eines allein
+   * beim nächsten Satz wieder danebenläge.
+   */
+  nimm(
+    /\b(?:(?:mach|zieh)\w*\s+(?:den\s+)?(?:umkreis|radius|suchradius)\s+(?:etwas\s+)?(?:gr[öo]sser|gr[öo][sß]er|weiter)|(?:such|schau|geh|guck)\w*\s+(?:auch\s+)?(?:noch\s+)?(?:etwas\s+)?weiter(?:\s+weg|\s+raus|\s+entfernt)?|kannst?\s+(?:auch\s+)?(?:noch\s+)?(?:etwas\s+)?(?:mehr|weiter)(?:\s+weg)?\s+(?:suchen|schauen|gucken)|erweiter\w*\s+(?:die\s+)?(?:suche|umkreis)|(?:gr[öo][sß]ere[rn]?|weitere[rn]?)\s+(?:umkreis|radius|umgebung))/i,
+    () => {
+      umkreisSchritt = "weiter";
+      return "weiterer Umkreis";
+    },
+  );
+  nimm(
+    /\b(?:(?:mach|zieh)\w*\s+(?:den\s+)?(?:umkreis|radius|suchradius)\s+(?:etwas\s+)?(?:kleiner|enger|n[äa]her)|(?:such|schau)\w*\s+(?:etwas\s+)?(?:n[äa]her|enger)|(?:kleinere[rn]?|engere[rn]?)\s+(?:umkreis|radius|umgebung)|n[äa]her\s+(?:an\s+)?(?:zuhause|zu\s+hause|dran))/i,
+    () => {
+      if (umkreisSchritt) return "";
+      umkreisSchritt = "enger";
+      return "engerer Umkreis";
+    },
+  );
+
   // ── Filter entfernen ─────────────────────────────────────────
   /*
    * Was der Satz wegnehmen will.
@@ -409,10 +590,22 @@ export function deuteSuchintention(eingabe: string): Suchintention {
     [/schicht/i, "schicht", "Schichtfilter"],
     [/umkreis|radius/i, "umkreisKm", "Umkreis"],
   ];
+  /*
+   * ── „mach" braucht ein Schlusswort, „lösch" nicht ───────────
+   *
+   * Vorher war `(?:weg|raus|heraus)?` optional — für ALLE Verben.
+   * Damit reichte „mach den umkreis …", und was danach kam, war
+   * gleichgültig: „mach den umkreis GRÖSSER" entfernte ihn.
+   *
+   * Der Unterschied liegt im Verb. „Lösch", „entfern", „vergiss"
+   * sagen für sich allein schon, was passieren soll. „Mach" und
+   * „nimm" sagen es nicht — sie brauchen das Schlusswort, sonst
+   * raten sie.
+   */
   nimm(
-    /\b(?:mach|nimm|lösch|loesch|entfern|vergiss)\w*\s+(?:den|die|das)?\s*([\wäöüß]+?)(?:filter|grenze)?\s*(?:wieder\s*)?(?:weg|raus|heraus)?\b/i,
+    /\b(?:(?:mach|nimm)\w*\s+(?:den|die|das)?\s*([\wäöüß]+?)(?:filter|grenze)?\s+(?:wieder\s+)?(?:weg|raus|heraus)|(?:lösch|loesch|entfern|vergiss)\w*\s+(?:den|die|das)?\s*([\wäöüß]+?)(?:filter|grenze)?\b)/i,
     (t) => {
-      const wort = t[1] ?? "";
+      const wort = t[1] ?? t[2] ?? "";
       const treffer = WEGFELDER.find(([m]) => m.test(wort));
       if (!treffer) return null;
       entfernen.push(treffer[1]);
@@ -483,8 +676,34 @@ export function deuteSuchintention(eingabe: string): Suchintention {
     },
   );
 
+  /*
+   * Kleingeschriebene Orte zählen auch.
+   *
+   * Die Regel verlangte einen Grossbuchstaben: `[A-ZÄÖÜ]`. In ein
+   * Suchfeld tippt aber niemand gross. Gemessen am 8. September 2026:
+   *
+   *   "job in Karlsruhe"  →  ort = Karlsruhe        ✓
+   *   "job in karlsruhe"  →  q   = karlsruhe        ✗
+   *
+   * Im zweiten Fall ging die Stadt in den Volltext — und der sucht in
+   * Titel und Ortsfeld zugleich, findet also auch Firmen, die eine
+   * Stadt im Namen tragen. Genau das sollte der eigene Ortsfilter
+   * verhindern.
+   *
+   * ── Warum kein `i`-Schalter ─────────────────────────────────
+   *
+   * Weil er auch das ZWEITE Wort kleinschreiben liesse. Das ist für
+   * „St. Gallen" und „Bad Homburg" da, und ohne Grossbuchstaben als
+   * Grenze verschluckt es den nächsten Satzteil: Aus „in karlsruhe
+   * und elektriker" würde der Ort „karlsruhe und". Geöffnet wird
+   * deshalb nur der erste Buchstabe; ein zweiteiliger Ortsname
+   * braucht weiterhin die Grossschreibung, die ihn kenntlich macht.
+   *
+   * Der Schutz gegen Wörter, die keine Orte sind, steht in
+   * `KEIN_ORT` — er arbeitet unabhängig von der Schreibweise.
+   */
   nimm(
-    /\b(?:in|um|rund\s+um|nahe|bei|around|near)\s+([A-ZÄÖÜ][\wäöüß.-]*(?:\s+[A-ZÄÖÜ][\wäöüß.-]*)?)/,
+    /\b(?:in|um|rund\s+um|nahe|bei|around|near)\s+([A-Za-zÄÖÜäöüß][\wäöüß.-]*(?:\s+[A-ZÄÖÜ][\wäöüß.-]*)?)/,
     (t) => {
       /*
        * Satzzeichen am Ende abschneiden.
@@ -495,6 +714,17 @@ export function deuteSuchintention(eingabe: string): Suchintention {
        */
       const ort = (t[1] ?? "").trim().replace(/[.,;:!?]+$/, "");
       if (ort.length < 2) return null;
+      /*
+       * Dieselbe Sperre wie bei „nur <Ort>" — sie hat hier gefehlt.
+       *
+       * Solange die Regel Grossschreibung verlangte, fiel das nicht
+       * auf: „bei mir", „in der Nähe" schreibt niemand gross. Seit
+       * auch kleine Wörter ankommen, wäre aus „stelle bei mir in der
+       * nähe" der Ort „mir" geworden — ein Ortsfilter auf ein
+       * Pronomen findet nichts, und die leere Liste hätte
+       * ausgesehen wie ein leerer Arbeitsmarkt.
+       */
+      if (KEIN_ORT.test(ort)) return null;
       filter.ort = ort;
       return `rund um ${ort}`;
     },
@@ -563,6 +793,35 @@ export function deuteSuchintention(eingabe: string): Suchintention {
   nimm(/\bkeine?\s+(?:lange|weite)\s+(?:anfahrt|autofahrt|fahrt|pendelei)\b/i, () => "");
 
   /*
+   * ══════════════════════════════════════════════════════════════
+   * „Nette Arbeitskollegen" ist ein Wunsch, kein Filter
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Er stand vorher im Volltext und suchte nach Anzeigen, in deren
+   * TITEL „nette arbeitskollegen" vorkommt — das gibt es nicht, und
+   * weil der Volltext mit UND verbindet, leerte er die ganze Liste
+   * mit.
+   *
+   * Die Sortierung `best_job_quality` gibt es bereits. Sie stellt
+   * gute Arbeitgeber nach oben, ohne dass etwas verschwindet. Eine
+   * Schwelle wäre der falsche Weg: Wer „nette Kollegen" sagt, nennt
+   * keine Zahl, und eine erfundene Zahl erzeugt leere Listen, die wie
+   * ein leerer Arbeitsmarkt aussehen.
+   */
+  nimm(
+    /\b(?:nette?s?|gute?s?|freundliche?s?|angenehme?s?)\s+(?:arbeits)?(?:kollegen|klima|umfeld|atmosphäre|atmosphaere|team|betriebsklima)\b/i,
+    () => {
+      filter.sort = "best_job_quality";
+      return "gute Arbeitgeber zuerst";
+    },
+  );
+  nimm(/\b(?:gute?r?s?\s+)?(?:job|arbeitgeber|betriebs)[-\s]?(?:qualität|qualitaet|bewertung)\b/i, () => {
+    if (filter.sort) return "";
+    filter.sort = "best_job_quality";
+    return "gute Arbeitgeber zuerst";
+  });
+
+  /*
    * Was übrig bleibt, ohne Füllwörter.
    *
    * Ein leerer Rest ist ein gutes Ergebnis: dann ist der ganze Satz in
@@ -587,7 +846,166 @@ export function deuteSuchintention(eingabe: string): Suchintention {
    */
   if (filter.umkreisKm !== undefined) delete filter.ortGenau;
 
-  return { filter, erkannt, entfernen, rest: restWörter.join(" ") };
+  return {
+    filter,
+    erkannt,
+    entfernen,
+    ...(umkreisSchritt ? { umkreisSchritt } : {}),
+    ...(allesEntfernen ? { allesEntfernen } : {}),
+    rest: restWörter.join(" "),
+  };
+}
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Wo ein Satz aufhört, für alle zu gelten
+ * ══════════════════════════════════════════════════════════════
+ *
+ * „… und Elektriker mit min 50k BEIDES nicht länger als 30 min weg"
+ *
+ * Das Wort trennt zwei Dinge, die verschieden behandelt werden
+ * müssen: davor stehen die einzelnen Berufe mit ihren eigenen
+ * Gehältern, danach steht, was für alle gilt. Ohne diese Trennung
+ * landete die Fahrzeit beim zuletzt genannten Beruf — und der erste
+ * suchte ohne sie.
+ *
+ * Es ist bewusst ein AUSDRÜCKLICHES Wort. „Und" allein trennt nicht:
+ * „Kaufmann und Verwaltung" ist ein Beruf, keine zwei Suchen.
+ */
+const GEMEINSAM_AB = /\s+(?:bei\s+|für\s+|fuer\s+|in\s+)?beide[srmn]?\b/i;
+
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Wo eine zweite Suche anfängt
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Getrennt wird nur an einem ZWEITEN Suchbefehl — „und find mir auch
+ * noch …", „außerdem …". Das ist absichtlich streng.
+ *
+ * ── Warum nicht an „und" oder „oder" ────────────────────────
+ *
+ * Weil beide viel häufiger innerhalb EINES Berufs stehen:
+ * „Kaufmann für Büromanagement und Verwaltung", „Erzieher oder
+ * Kinderpfleger". An jedem „und" zu trennen hiesse, aus einem Beruf
+ * zwei halbe zu machen — und zwei halbe Berufe finden nichts.
+ *
+ * Diese Datei entscheidet solche Fälle immer gleich: lieber ein
+ * Filter weniger als ein falscher. Ein zweiter Suchbefehl ist ein
+ * eindeutiges Zeichen; alles andere bleibt eine Suche.
+ */
+const ZWEIG_TRENNER =
+  /\s+(?:und|sowie|oder)\s+(?:auch\s+)?(?:noch\s+)?(?:bitte\s+)?(?:such|finde?|zeige?|hol|gib|mach|schau)\w*\b|\s+(?:außerdem|ausserdem|zusätzlich|zusaetzlich|daneben)\b/i;
+
+/**
+ * Die Absicht hinter einem Satz — auch wenn er mehrere Berufe nennt.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum das eine eigene Schicht ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Regeln in `deuteEinzeln` sind auf EINE Suche gebaut: Es gibt
+ * genau ein `gehaltAb`, und wer zwei nennt, überschreibt das erste.
+ * Gemessen am 8. September 2026 an
+ *
+ *   „such mir ein job als bürokaufmann will min 40k im jahr verdienen
+ *    und find mir auch noch ein elektriker mit min 50k beides nicht
+ *    länger als 30 min weg von mir zuhause und nette arbeitskollegen"
+ *
+ * blieben davon `gehaltAb=40000` und ein Volltext, in dem
+ * „bürokaufmann", „elektriker" und „50k" mit UND verbunden waren —
+ * eine Bedingung, die kein Stellentitel erfüllen kann.
+ *
+ * Die Regeln dafür umzubauen wäre der falsche Schnitt: Sie sind gut
+ * darin, aus einem Satzteil einen Filter zu machen. Was gefehlt hat,
+ * ist die Frage davor — wie viele Suchen stehen hier eigentlich?
+ * Diese Schicht beantwortet sie und ruft die Regeln dann so oft auf,
+ * wie es Suchen gibt.
+ */
+export function deuteSuchintention(eingabe: string): Suchintention {
+  const [kopf = "", ...schwanz] = eingabe.split(GEMEINSAM_AB);
+  const gemeinsamerText = schwanz.join(" ").trim();
+  const teile = kopf
+    .split(ZWEIG_TRENNER)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+
+  /* Eine Suche bleibt eine Suche — flach, wie bisher, ohne `zweige`. */
+  if (teile.length < 2) return deuteEinzeln(eingabe);
+
+  const gedeutet = teile.map(deuteEinzeln);
+  const mitBeruf = gedeutet.filter((d) => d.filter.q);
+
+  /*
+   * Zwei Satzteile sind noch keine zwei Suchen.
+   *
+   * „Zeig mir Stellen ab 45.000 und such auch remote" nennt nur einen
+   * Beruf — nämlich keinen. Daraus zwei Zweige zu machen hiesse,
+   * einen zu erfinden. Dann ist die flache Deutung richtig, und sie
+   * bekommt den ganzen Satz zu sehen.
+   */
+  if (mitBeruf.length < 2) return deuteEinzeln(eingabe);
+
+  const gemeinsam = gemeinsamerText ? deuteEinzeln(gemeinsamerText) : null;
+
+  /*
+   * Der gemeinsame Teil legt den Grundstock — ohne seinen Volltext.
+   *
+   * Was hinter „beides" steht, beschreibt die Bedingungen, nicht den
+   * Beruf. Bliebe sein `q` stehen, müsste jede Stelle zusätzlich
+   * dieses Wort tragen, und die Zweige fänden nichts mehr.
+   */
+  const filter: Suchintention["filter"] = { ...(gemeinsam?.filter ?? {}) };
+  delete filter.q;
+
+  const erkannt: string[] = [];
+  const entfernen = [...(gemeinsam?.entfernen ?? [])];
+  const zweige: NonNullable<Suchintention["zweige"]> = [];
+
+  for (const einzeln of gedeutet) {
+    const { q, gehaltAb, ...übrig } = einzeln.filter;
+
+    /*
+     * Was das Modell nicht je Zweig kennt, gilt für alle.
+     *
+     * Ort, Arbeitsmodell, Vertragsart stehen einmal da. Wer sie in
+     * einem Zweig nennt, meint sie fast immer für die ganze Suche —
+     * „Bürokaufmann in Karlsruhe und auch Elektriker" sucht beides in
+     * Karlsruhe. Der erste Zweig gewinnt, damit dieselbe Eingabe
+     * immer dasselbe ergibt.
+     */
+    for (const [k, v] of Object.entries(übrig)) {
+      const bereits = (filter as Record<string, unknown>)[k];
+      if (bereits === undefined) (filter as Record<string, unknown>)[k] = v;
+    }
+    entfernen.push(...einzeln.entfernen);
+
+    if (!q) continue;
+    zweige.push(gehaltAb === undefined ? { q } : { q, gehaltAb });
+    erkannt.push(
+      gehaltAb === undefined ? q : `${q} ab ${gehaltAb.toLocaleString("de-DE")} €`,
+    );
+  }
+
+  /* Was für alle gilt, wird einmal genannt — nicht je Zweig. */
+  for (const satz of gemeinsam?.erkannt ?? []) erkannt.push(satz);
+
+  /*
+   * Beides gilt für die ganze Suche, nicht je Zweig: Wer „alles weg"
+   * sagt, meint alles; wer „weiter" sagt, meint den einen Umkreis,
+   * den es gibt.
+   */
+  const schritt = gemeinsam?.umkreisSchritt ?? gedeutet.find((d) => d.umkreisSchritt)?.umkreisSchritt;
+  const alles = gemeinsam?.allesEntfernen ?? gedeutet.find((d) => d.allesEntfernen)?.allesEntfernen;
+
+  return {
+    filter,
+    zweige,
+    entfernen,
+    erkannt,
+    ...(schritt ? { umkreisSchritt: schritt } : {}),
+    ...(alles ? { allesEntfernen: alles } : {}),
+    rest: zweige.map((z) => z.q).join(" "),
+  };
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { Job } from "@paycheck/domain";
 import { spanne } from "./geld.ts";
+import { umrechnen } from "@/lib/waehrung/umrechnen";
 
 /**
  * Wie ein Gehalt angezeigt wird — und woher es stammt.
@@ -77,6 +78,32 @@ export interface Gehaltsanzeige {
   umgerechnet: boolean;
   /** Was in der Anzeige stand, etwa „pro Monat". */
   urspruenglich: string;
+  /**
+   * Ob der Betrag aus einer anderen Währung stammt — und aus welcher.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum das dasteht und nicht nur die Zahl
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Eine Stelle in Zürich schreibt 95.000 CHF aus. Wer in Deutschland
+   * sucht, sieht 101.010 € — und das ist richtig so: Ohne Umrechnung
+   * steht die Zahl neben deutschen Gehältern und lässt sich nicht
+   * einordnen.
+   *
+   * Aber sie ist nicht die Zahl aus der Anzeige. Beim Arbeitgeber
+   * steht CHF, im Vertrag stünde CHF, und der Kurs von heute ist
+   * nicht der von übermorgen. Wer sich auf 101.010 € beruft, beruft
+   * sich auf unsere Rechnung.
+   *
+   * Deshalb steht die Herkunft daneben — dieselbe Regel wie bei
+   * `umgerechnet` für den Zeitraum: Eine gerechnete Zahl, die sich
+   * nicht als gerechnet zu erkennen gibt, ist die Sorte still
+   * erfundene Angabe, gegen die dieses Produkt gebaut ist.
+   *
+   * `null`, wenn nicht umgerechnet wurde — weil die Währung schon
+   * stimmte oder weil es keinen Kurs gibt.
+   */
+  waehrungUmgerechnet: { von: string; originalBetrag: string; stand: string | null } | null;
   herkunft: Gehaltsherkunft;
   /** Die Herkunft in einem Satzteil, für die Überschrift. */
   herkunftText: string;
@@ -194,14 +221,65 @@ export const AUF_JAHR: Record<string, number> = {
  * aufrufende Stelle schreibt dann „Gehalt nicht angegeben" — was die
  * ehrliche Aussage ist: Wir wissen es nicht.
  */
-export function gehaltsanzeige(salary: Job["salary"]): Gehaltsanzeige | null {
+export function gehaltsanzeige(
+  salary: Job["salary"],
+  /**
+   * In welche Währung umgerechnet werden soll — und womit.
+   *
+   * Ohne diese Angabe bleibt alles, wie es war: Der Betrag steht in
+   * der Währung der Anzeige. Das ist der richtige Rückfall — eine
+   * Umrechnung ohne Kurs wäre keine.
+   */
+  umrechnung?: { ziel: string; kurse: Record<string, number>; stand?: string | null },
+): Gehaltsanzeige | null {
   if (salary.min === null && salary.max === null) return null;
 
   const faktor = AUF_JAHR[salary.period] ?? 1;
-  const jahresMin = salary.min === null ? null : Math.round(salary.min * faktor);
-  const jahresMax = salary.max === null ? null : Math.round(salary.max * faktor);
+  let jahresMin = salary.min === null ? null : Math.round(salary.min * faktor);
+  let jahresMax = salary.max === null ? null : Math.round(salary.max * faktor);
 
-  const betrag = spanne(jahresMin, jahresMax, salary.currency);
+  /*
+   * Erst auf ein Jahr, dann in die Währung.
+   *
+   * Die Reihenfolge ist gleichgültig fürs Ergebnis und nicht fürs
+   * Runden: Erst zu runden und dann zu multiplizieren häuft den
+   * Rundungsfehler mit dem Faktor an. Bei einem Stundenlohn ist der
+   * Faktor 1760.
+   */
+  let waehrungUmgerechnet: Gehaltsanzeige["waehrungUmgerechnet"] = null;
+  let anzeigeWaehrung = salary.currency;
+
+  if (umrechnung && salary.currency && salary.currency.toUpperCase() !== umrechnung.ziel.toUpperCase()) {
+    const min = jahresMin === null ? null : umrechnen(jahresMin, salary.currency, umrechnung.ziel, umrechnung.kurse);
+    const max = jahresMax === null ? null : umrechnen(jahresMax, salary.currency, umrechnung.ziel, umrechnung.kurse);
+
+    /*
+     * Nur wenn ALLES umgerechnet werden konnte.
+     *
+     * Eine Spanne, deren Untergrenze in Euro und deren Obergrenze in
+     * Franken steht, ist keine Spanne. Fehlt der Kurs — bei ARS und
+     * UAH veröffentlicht die EZB keinen —, bleibt der Betrag ganz in
+     * seiner Währung.
+     */
+    const vollstaendig =
+      (jahresMin === null || min !== null) && (jahresMax === null || max !== null);
+
+    if (vollstaendig) {
+      const original = spanne(jahresMin, jahresMax, salary.currency);
+      jahresMin = min === null ? null : Math.round(min);
+      jahresMax = max === null ? null : Math.round(max);
+      anzeigeWaehrung = umrechnung.ziel;
+      if (original) {
+        waehrungUmgerechnet = {
+          von: salary.currency.toUpperCase(),
+          originalBetrag: original,
+          stand: umrechnung.stand ?? null,
+        };
+      }
+    }
+  }
+
+  const betrag = spanne(jahresMin, jahresMax, anzeigeWaehrung);
   if (!betrag) return null;
 
   /*
@@ -231,6 +309,7 @@ export function gehaltsanzeige(salary: Job["salary"]): Gehaltsanzeige | null {
     zeitraum: ZEITRAUM.year!,
     umgerechnet: faktor !== 1,
     urspruenglich: ZEITRAUM[salary.period] ?? "",
+    waehrungUmgerechnet,
     herkunft,
     herkunftText: h.lang,
     herkunftKurz: h.kurz,

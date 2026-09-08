@@ -126,6 +126,15 @@ export const JobSchema = z.object({
   applyTarget: z.string().nullable(),
   publishedAt: z.date().nullable(),
   expiresAt: z.date().nullable(),
+  /**
+   * Ob die Quelle die Stelle noch als offene Ausschreibung führt.
+   *
+   * Siehe `Verfuegbarkeit` in `verfuegbarkeit.ts`. Vorgabe `unknown`
+   * — alles, was vor dieser Logik in den Bestand kam, hat keinen
+   * Stand, und das ist etwas anderes als „aktiv".
+   */
+  availabilityState: z.string().default("unknown"),
+  availabilityReason: z.string().nullable().default(null),
   /** Wann wir die Anzeige zuletzt tatsächlich gesehen haben. */
   fetchedAt: z.date(),
   lastLinkCheckAt: z.date().nullable(),

@@ -88,6 +88,18 @@ export interface JobRowData {
    * anzuklicken oder zu überblättern, fällt auf falscher Grundlage.
    */
   offeneBedingungen: string[];
+  /**
+   * Ob die Quelle die Stelle noch führt — und warum nicht.
+   *
+   * Steht in der Zeile, weil eine gemerkte Stelle sichtbar bleibt,
+   * auch wenn sie aus den Empfehlungen gefallen ist. Dann gehört der
+   * Grund daneben, statt dass sie wie jede andere aussieht.
+   *
+   * `null` bei `active` — eine offene Ausschreibung braucht keine
+   * Erklärung, und ein Hinweis, der immer dasteht, wird nicht
+   * gelesen.
+   */
+  verfuegbarkeit: string | null;
   saved: boolean;
 }
 
@@ -101,10 +113,35 @@ export function JobRow({
   job,
   selected,
   href,
+  zweig,
 }: {
   job: JobRowData;
   selected: boolean;
   href: string;
+  /**
+   * Aus welchem Suchzweig diese Zeile stammt.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum das an der Zeile steht und nicht nur oben
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Wer „Bürokaufmann ab 40k und auch Elektriker ab 50k" sucht,
+   * bekommt EINE Liste aus zwei Suchen. Ohne Kennzeichen sieht sie
+   * aus wie ein Durcheinander: Ein Elektriker für 52.000 steht neben
+   * einem Bürokaufmann für 41.000, und warum beide dastehen — der
+   * eine über der einen Grenze, der andere über der anderen — ist
+   * nicht zu sehen.
+   *
+   * Es steht NICHT in `JobRowData`: Die Zeile beschreibt die Stelle,
+   * und aus welchem Zweig sie kommt, ist eine Eigenschaft dieser
+   * Suche. Dieselbe Stelle wäre morgen in einer anderen Suche ein
+   * anderer Zweig.
+   *
+   * `undefined` heisst: gewöhnliche Suche, es gibt nichts zu
+   * unterscheiden. Dann erscheint auch nichts — ein Kennzeichen, das
+   * bei jeder Zeile dasselbe sagt, ist Rauschen.
+   */
+  zweig?: string;
 }) {
   /*
    * Passung, wenn es sie gibt — sonst Jobqualität.
@@ -611,6 +648,49 @@ export function JobRow({
             </li>
           ))}
         </ul>
+      )}
+
+      {/*
+        Aus welcher der beiden Suchen diese Zeile kommt.
+        
+        Unter den Signalen und über den offenen Bedingungen: Es ist
+        eine Auskunft über die SUCHE, nicht über die Stelle — deshalb
+        nicht oben beim Titel, wo alles steht, was die Anzeige selbst
+        sagt.
+        
+        Kleiner Punkt statt Rahmen: Bei fünfundzwanzig Zeilen wären
+        fünfundzwanzig Rahmen eine zweite Liste neben der Liste.
+      */}
+      {zweig && (
+        <p className="mt-2.5 flex items-center gap-1.5 text-[13px] text-ink-3">
+          <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-accent" />
+          <span>
+            <span className="sr-only">Gefunden über: </span>
+            {zweig}
+          </span>
+        </p>
+      )}
+
+      {/*
+        Was die Quelle sagt — und was sie nicht sagt.
+        
+        Nie „besetzt". Das wissen wir fast nie, und es zu behaupten
+        macht aus einer Beobachtung über einen Feed eine Aussage über
+        einen Arbeitsvertrag.
+        
+        Die Sätze kommen aus `verfuegbarkeitstext` in
+        `@paycheck/domain` — derselben Stelle, die auch die
+        Zustandslogik hält. Zwei Formulierungen desselben Zustands
+        liefen auseinander, sobald einer dazukommt.
+        
+        Warnfarbe, nicht Fehlerfarbe: Eine Stelle, die nicht mehr
+        ausgeschrieben ist, ist kein Fehler — sie ist eine Auskunft.
+      */}
+      {job.verfuegbarkeit && (
+        <p className="mt-2.5 flex items-start gap-1.5 rounded-(--radius-sm) bg-caution-soft px-2.5 py-1.5 text-[13px] leading-relaxed text-ink-2">
+          <AlertTriangle aria-hidden className="mt-0.5 size-3.5 shrink-0 text-caution" strokeWidth={2} />
+          <span>{job.verfuegbarkeit}</span>
+        </p>
       )}
 
       {(job.blocked || job.offeneBedingungen.length > 0) && (

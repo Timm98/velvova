@@ -1,4 +1,4 @@
-import { bigint, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, date, numeric, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 /**
  * Vorberechnete Bestandszahlen für die Stellenseite.
@@ -79,4 +79,58 @@ export const bestandsverlauf = pgTable("bestandsverlauf", {
   stellen: bigint("stellen", { mode: "number" }).notNull(),
   laender: bigint("laender", { mode: "number" }).notNull().default(0),
   quellen: bigint("quellen", { mode: "number" }).notNull().default(0),
+});
+
+/**
+ * Wechselkurse gegen den Euro.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Wofür sie da sind
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Damit ein ausgeschriebenes Gehalt aus Zürich neben einem deutschen
+ * einzuordnen ist. Umgerechnet wird ein BETRAG, den ein Arbeitgeber
+ * genannt hat — nicht ein Lohnniveau.
+ *
+ * Der Unterschied ist in `lib/landeslage.ts` ausführlich begründet:
+ * Aus einem deutschen Beispielgehalt per Kurs ein schweizerisches zu
+ * machen, wäre eine Aussage über den Schweizer Arbeitsmarkt, die
+ * niemand geprüft hat. Löhne folgen keinem Wechselkurs. Ein
+ * ausgeschriebener Betrag schon.
+ *
+ * ── Warum eine Tabelle ──────────────────────────────────────
+ *
+ * Im Arbeitsspeicher hätte jede Serverinstanz ihren eigenen Kurs.
+ * Zwei Besucher sähen dieselbe Stelle mit verschiedenen Beträgen, je
+ * nachdem wer antwortet — und beim Neuladen änderte sich die Zahl
+ * ohne Anlass.
+ *
+ * ── Zwei Zeitpunkte, mit Absicht ────────────────────────────
+ *
+ * `stand` ist der Tag, für den die Quelle den Kurs nennt; `geholtAm`
+ * der Zeitpunkt unseres Abrufs. Die EZB veröffentlicht an Werktagen
+ * gegen 16 Uhr — am Sonntag ist der frischeste Kurs zwei Tage alt.
+ * Das ist kein Fehler, aber es soll dastehen können.
+ *
+ * Keine Nutzerdaten, deshalb keine RLS-Zeile.
+ */
+export const wechselkurse = pgTable("wechselkurse", {
+  /** ISO-4217, drei Grossbuchstaben. */
+  waehrung: text("waehrung").primaryKey(),
+  /**
+   * Wie viele Einheiten dieser Währung ein Euro kostet.
+   *
+   * `USD 1.1622` heisst: 1 EUR = 1,1622 USD. So veröffentlicht die
+   * EZB, und so bleibt es — jede andere Umrechnung läuft über EUR als
+   * Zwischenschritt. Kreuzkurse selbst zu bilden hiesse, zwei
+   * Rundungen zu einer zusammenzufassen und das Ergebnis für genauer
+   * zu halten, als es ist.
+   *
+   * `numeric` als Zeichenkette gelesen: Eine Gleitkommazahl über den
+   * Treiber zu holen verliert Stellen, die in der Datenbank stehen.
+   */
+  kurs: numeric("kurs", { precision: 18, scale: 6 }).notNull(),
+  stand: date("stand").notNull(),
+  quelle: text("quelle").notNull().default("ecb"),
+  geholtAm: timestamp("geholt_am", { withTimezone: true }).notNull().defaultNow(),
 });

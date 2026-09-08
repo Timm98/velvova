@@ -7,6 +7,9 @@ import { useNinaActions } from "@/components/nina/NinaProvider";
 import { cn } from "@/lib/cn";
 import { useSuchdialog } from "./Suchrueckfrage";
 import { deuteSuchintention } from "@/lib/jobs/suchintention";
+import { zweigeSchreiben } from "@/lib/jobs/zweige";
+import { umkreisStufe } from "@/lib/jobs/umkreis";
+import { FILTER_SCHLUESSEL } from "@/lib/jobs/filterschluessel";
 
 /**
  * Eine Eingabe für die Jobsuche.
@@ -152,7 +155,13 @@ export function NinaSearchComposer({
    * sieht — der stille Filter, der die Liste unerklärlich leer hält.
    */
   function alsAdresse(
-    deutung: { filter: Record<string, unknown>; entfernen: readonly string[] },
+    deutung: {
+      filter: Record<string, unknown>;
+      entfernen: readonly string[];
+      zweige?: { q: string; gehaltAb?: number }[];
+      umkreisSchritt?: "weiter" | "enger";
+      allesEntfernen?: true;
+    },
     aktuell: URLSearchParams,
   ): string {
     const next = new URLSearchParams(aktuell.toString());
@@ -165,6 +174,32 @@ export function NinaSearchComposer({
      * steht die Absicht, dort die Sicherung.
      */
     next.delete("seite");
+
+    /*
+     * ══════════════════════════════════════════════════════════
+     * „Lösch alle Filter" — und zwar wirklich alle
+     * ══════════════════════════════════════════════════════════
+     *
+     * Zuerst, damit derselbe Satz danach noch etwas setzen kann:
+     * „alles weg, aber bleib in Karlsruhe" ist eine sinnvolle
+     * Eingabe. Was der Satz nennt, überlebt; alles andere geht.
+     *
+     * `anzahl` fällt mit: Eine leere Suche fängt oben an, nicht auf
+     * der Höhe, bis zu der jemand vorher gescrollt hatte.
+     */
+    if (deutung.allesEntfernen) {
+      for (const k of FILTER_SCHLUESSEL) next.delete(k);
+      next.delete("anzahl");
+      next.delete("job");
+      next.delete("leer");
+      /*
+       * `leer=1` sagt der Seite ausdrücklich: Ich will wirklich
+       * nichts. Ohne diese Marke legt sie den zuletzt gespeicherten
+       * Stand wieder darüber — und der Mensch bekäme genau die
+       * Filter zurück, die er gerade weggenommen hat.
+       */
+      next.set("leer", "1");
+    }
 
     const { filter, entfernen } = deutung;
 
@@ -198,6 +233,54 @@ export function NinaSearchComposer({
     if (filter.umkreisKm !== undefined) next.delete("ortGenau");
     /* Eine geänderte Bedingung fängt die Liste von vorne an. */
     next.delete("anzahl");
+
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Mehrere Berufe ersetzen den einen Suchbegriff — und umgekehrt
+     * ══════════════════════════════════════════════════════════════
+     *
+     * `zweige` und `q` beantworten dieselbe Frage: wonach wird
+     * gesucht. Stehen beide in der Adresse, filtert die Seite zweimal
+     * und die Liste bleibt leer, ohne dass es irgendwo steht — genau
+     * der stille Filter, gegen den diese Funktion geschrieben ist.
+     *
+     * Deshalb löscht jede Seite die andere. Wer nach zwei Berufen
+     * fragt, verliert den alten Suchbegriff samt seinem Gehalt; wer
+     * danach einen einzelnen Beruf nennt, verliert die Zweige. Beide
+     * Male ist es das, was der Satz sagt.
+     */
+    const zweige = deutung.zweige ?? [];
+    const alsZweige = zweigeSchreiben(zweige);
+    if (alsZweige !== null) {
+      next.set("zweige", alsZweige);
+      next.delete("q");
+      next.delete("gehaltAb");
+    } else if (filter.q !== undefined || filter.gehaltAb !== undefined) {
+      next.delete("zweige");
+    }
+
+    /*
+     * ══════════════════════════════════════════════════════════
+     * „Kannst weiter suchen" — eine Stufe, nicht die Welt
+     * ══════════════════════════════════════════════════════════
+     *
+     * Der Satz nennt keine Zahl; die ergibt sich aus dem, was
+     * eingestellt ist. Deshalb wird hier gerechnet und nicht im
+     * Deuter — nur hier ist der bestehende Stand bekannt.
+     *
+     * Nach dem Filterblock, damit ein Ort aus DEMSELBEN Satz schon
+     * dasteht: „Karlsruhe, und such ruhig etwas weiter" setzt erst
+     * den Ort und erweitert dann um ihn herum.
+     *
+     * `ortGenau` fällt dabei weg — „nur Karlsruhe" und „50 km um
+     * Karlsruhe" widersprechen sich, und der spätere Satz gewinnt.
+     */
+    if (deutung.umkreisSchritt) {
+      const jetzt = Number.parseInt(next.get("umkreisKm") ?? "", 10);
+      const neu = umkreisStufe(Number.isFinite(jetzt) ? jetzt : null, deutung.umkreisSchritt);
+      next.set("umkreisKm", String(neu));
+      next.delete("ortGenau");
+    }
 
     for (const [k, v] of Object.entries(filter)) {
       if (v === undefined || v === null || v === "") continue;
@@ -306,6 +389,9 @@ export function NinaSearchComposer({
       {
         filter: sofort.filter,
         entfernen: sofort.entfernen,
+        zweige: sofort.zweige,
+        umkreisSchritt: sofort.umkreisSchritt,
+        allesEntfernen: sofort.allesEntfernen,
       },
       params,
     );
@@ -325,6 +411,9 @@ export function NinaSearchComposer({
 
       const d = (await antwort.json()) as {
         filter?: Record<string, unknown>;
+        zweige?: { q: string; gehaltAb?: number }[];
+        umkreisSchritt?: "weiter" | "enger";
+        allesEntfernen?: true;
         entfernen?: string[];
         erklaerung?: string;
         rueckfrage?: { schluessel: string; frage: string } | null;
@@ -364,7 +453,13 @@ export function NinaSearchComposer({
       );
 
       const feineAdresse = alsAdresse(
-        { filter: feinerFilter, entfernen: [...(d.entfernen ?? []), ...ueberholt] },
+        {
+          filter: feinerFilter,
+          entfernen: [...(d.entfernen ?? []), ...ueberholt],
+          zweige: d.zweige,
+          umkreisSchritt: d.umkreisSchritt,
+          allesEntfernen: d.allesEntfernen,
+        },
         params,
       );
       if (feineAdresse !== grobeAdresse) {

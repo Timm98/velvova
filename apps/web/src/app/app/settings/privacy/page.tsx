@@ -9,40 +9,23 @@ import { Card, Separator } from "@/components/ui";
 import { AuffindbarSchalter, ConsentToggles, DangerZone, ExportButton } from "../SettingsClient";
 import { standLaden } from "@/lib/nina/einrichtung/speicher";
 import { NinaBereich } from "./NinaBereich";
+import { EINWILLIGUNGEN } from "@/lib/privacy/einwilligungen";
 
 export const metadata: Metadata = { title: "Datenschutz & Daten" };
 export const dynamic = "force-dynamic";
 
-const CONSENT_TEXT: Record<string, { title: string; body: string }> = {
-  career_profile: {
-    title: "Karriereprofil",
-    body: "Deine Antworten werden gespeichert, damit daraus ein Profil entsteht.",
-  },
-  document_analysis: {
-    title: "Unterlagen auswerten",
-    body: "Text aus hochgeladenen Dokumenten wird ausgewertet, um das Profil vorzubefüllen.",
-  },
-  voice_input: {
-    title: "Spracheingabe",
-    body: "Du kannst sprechen statt zu schreiben.",
-  },
-  transcript_storage: {
-    title: "Transkript speichern",
-    body: "Ohne diese Zustimmung wird gesprochener Text verarbeitet, aber nicht abgelegt.",
-  },
-  external_ai_processing: {
-    title: "Externer KI-Anbieter",
-    body: "Texte werden zur Analyse an einen externen Anbieter übermittelt. Direkte Identifikatoren werden vorher entfernt.",
-  },
-  model_training: {
-    title: "Training von Modellen",
-    body: "Standardmäßig aus. Ohne diese ausdrückliche Zustimmung werden deine Daten nicht für Modelltraining verwendet.",
-  },
-  partner_sharing: {
-    title: "Weitergabe an Partner",
-    body: "Standardmäßig aus. Ohne diese Zustimmung sehen institutionelle Partner ausschließlich aggregierte Zahlen, nie dein Profil.",
-  },
-};
+/*
+ * Die Liste steht in `lib/privacy/einwilligungen.ts`.
+ *
+ * Sie stand hier als lokale Konstante — und damit nur hier. Wer nicht
+ * angemeldet ist, konnte nirgends nachlesen, worin er einwilligen
+ * würde. Seit die Sicherheitsseite im öffentlichen Kopf sie ebenfalls
+ * zeigt, gäbe es zwei Aufzählungen derselben Einwilligungen, und die
+ * laufen auseinander, sobald eine dazukommt.
+ */
+const CONSENT_TEXT: Record<string, { title: string; body: string }> = Object.fromEntries(
+  Object.entries(EINWILLIGUNGEN).map(([k, v]) => [k, { title: v.title, body: v.body }]),
+);
 
 /**
  * Privacy Center.

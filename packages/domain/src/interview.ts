@@ -108,6 +108,54 @@ export interface MinimumProfileGate {
   reason: string;
 }
 
+/**
+ * ══════════════════════════════════════════════════════════════
+ * Was jede Stufe über den Menschen weiss
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Vorher stand im Hinweis „Es fehlen noch 3 Themen, bevor
+ * Empfehlungen sinnvoll sind." Der Satz zählte etwas, das niemand
+ * sehen kann: Wer nie in den Code geschaut hat, weiss nicht, was ein
+ * „Thema" ist, wie viele es gibt oder welche drei fehlen. Er las sich
+ * wie eine Aufgabenliste ohne Aufgaben — drei Häkchen, die man
+ * irgendwo abarbeiten soll.
+ *
+ * Es geht aber gar nicht um Aufgaben. Es geht darum, was wir über
+ * einen Menschen wissen — und wenn etwas fehlt, ist das Ehrliche,
+ * genau das zu benennen. „Ich weiss noch nicht, wo du arbeiten
+ * kannst" sagt in einem Satz, was fehlt UND warum die Reihenfolge
+ * ohne diese Angabe nicht zu begründen ist.
+ *
+ * Formuliert als das, was BEKANNT wäre — nicht als Frage. Es ist
+ * kein Fragebogen, den jemand ausfüllt; es ist ein Gespräch, aus dem
+ * sich das ergibt.
+ */
+const WAS_DIE_STUFE_WEISS: Partial<Record<InterviewStage, string>> = {
+  consent_and_goal: "wonach du eigentlich suchst",
+  current_situation: "wo du gerade stehst",
+  experience_episodes: "was du bisher gemacht hast",
+  tasks_and_energy: "welche Arbeit dir liegt",
+  hard_constraints: "was für dich nicht infrage kommt",
+  location_and_logistics: "wo du arbeiten kannst",
+};
+
+/**
+ * Eine Aufzählung, wie man sie spricht: A, B und C.
+ *
+ * Bei mehr als drei fehlenden Angaben wird gekürzt. Sechs Halbsätze
+ * hintereinander liest niemand — und eine Liste, die überfordert,
+ * erreicht dasselbe wie gar keine.
+ */
+function alsAufzaehlung(teile: string[]): string {
+  const gekuerzt = teile.length > 3 ? teile.slice(0, 3) : teile;
+  const rest = teile.length - gekuerzt.length;
+  const kern =
+    gekuerzt.length === 1
+      ? gekuerzt[0]!
+      : `${gekuerzt.slice(0, -1).join(", ")} und ${gekuerzt.at(-1)}`;
+  return rest > 0 ? `${kern} — und noch ${plural(rest, "eine Sache", "Sachen")}` : kern;
+}
+
 export function evaluateGate(
   session: InterviewSession | null,
   profileConfirmed: boolean,
@@ -117,7 +165,8 @@ export function evaluateGate(
       unlocked: false,
       missingStages: [...REQUIRED_STAGES],
       profileConfirmed: false,
-      reason: "Es wurde noch kein Karrieregespräch begonnen.",
+      reason:
+        "Bisher weiss ich nichts über dich — die Liste zeigt deshalb, was neu ist, nicht was zu dir passt.",
     };
   }
   const handled = new Set(session.completedStages);
@@ -127,7 +176,21 @@ export function evaluateGate(
       unlocked: false,
       missingStages: missing,
       profileConfirmed,
-      reason: `Es ${pluralVerb(missing.length, "fehlt", "fehlen")} noch ${plural(missing.length, "Thema", "Themen")}, bevor Empfehlungen sinnvoll sind.`,
+      /*
+       * „Ich weiss noch nicht" und nicht „es fehlt": Das Zweite
+       * klingt, als hätte der Mensch etwas versäumt. Versäumt hat
+       * niemand etwas — wir haben nur noch nicht darüber gesprochen.
+       */
+      /*
+       * `Partial`, weil es mehr Gesprächsstufen gibt als die sechs
+       * verlangten. Beschrieben sind nur die, die im Riegel stehen —
+       * für alles andere gäbe es hier nichts zu sagen. Der Rückfall
+       * ist bewusst allgemein und nicht der technische Name: Der
+       * gehört in kein Fenster, in das ein Mensch schaut.
+       */
+      reason: `Ich weiss noch nicht, ${alsAufzaehlung(
+        missing.map((s) => WAS_DIE_STUFE_WEISS[s] ?? "was dir sonst noch wichtig ist"),
+      )}.`,
     };
   }
   if (!profileConfirmed) {
@@ -135,7 +198,8 @@ export function evaluateGate(
       unlocked: false,
       missingStages: [],
       profileConfirmed: false,
-      reason: "Das Profil muss noch von dir bestätigt werden.",
+      reason:
+        "Ich habe alles zusammen — schau einmal drüber, ob es stimmt. Danach rechne ich damit.",
     };
   }
   return { unlocked: true, missingStages: [], profileConfirmed: true, reason: "Profil bestätigt." };

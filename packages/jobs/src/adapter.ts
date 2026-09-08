@@ -389,6 +389,15 @@ export function normalise(listing: RawListing, fetchedAt = new Date()): Normalis
               : ("skill" as const),
     })),
     job: {
+      /*
+       * Eine frisch geholte Anzeige ist eine offene Ausschreibung.
+       *
+       * Sie kam gerade aus dem Feed der Quelle — das IST die
+       * Beobachtung „aktiv". Der Zustand wird später aus allen
+       * Fundstellen neu gebildet; hier steht der Anfangswert.
+       */
+      availabilityState: "active",
+      availabilityReason: null,
       title: listing.title.trim(),
       companyName: listing.companyName.trim(),
       location: listing.location.trim(),

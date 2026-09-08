@@ -23,6 +23,15 @@ export const jobSources = pgTable("job_sources", {
   lastRunAt: timestamp("last_run_at", { withTimezone: true }),
   lastRunOk: boolean("last_run_ok"),
   lastRunError: text("last_run_error"),
+  /**
+   * Wann diese Quelle zuletzt VOLLSTÄNDIG geladen wurde.
+   *
+   * `lastRunAt` beantwortet die falsche Frage: Es sagt, wann ein Lauf
+   * war, nicht ob er den ganzen Bestand gesehen hat. Ein Lauf mit
+   * Zeitbudget oder Stückzahlgrenze endet mittendrin — und aus so
+   * einem Lauf folgt über eine fehlende Stelle nichts.
+   */
+  lastFullSyncAt: timestamp("last_full_sync_at", { withTimezone: true }),
 }, (t) => [uniqueIndex("job_sources_key_unique").on(t.key)]);
 
 export const companies = pgTable("companies", {
@@ -156,6 +165,20 @@ export const jobs = pgTable("jobs", {
   applyTarget: text("apply_target"),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
+  /**
+   * Der Zustand der STELLE, aus ihren Fundstellen gebildet.
+   *
+   * Die Fundstellen tragen ihren eigenen Zustand (siehe
+   * `jobSourceLinks`); hier steht die Antwort auf die Frage, die eine
+   * Liste stellt: Soll das noch angezeigt werden?
+   *
+   * Gebildet mit `standAusFundstellen` aus `@paycheck/domain` — die
+   * nähere Quelle entscheidet, und bei Gleichstand die aktivste
+   * Aussage.
+   */
+  availabilityState: text("availability_state").notNull().default("unknown"),
+  availabilityReason: text("availability_reason"),
+  availabilityCheckedAt: timestamp("availability_checked_at", { withTimezone: true }),
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
   lastLinkCheckAt: timestamp("last_link_check_at", { withTimezone: true }),
   lastLinkCheckOk: boolean("last_link_check_ok"),
@@ -352,6 +375,38 @@ export const jobSourceLinks = pgTable("job_source_links", {
   lastSeenAt: timestamp("last_seen_at", { withTimezone: true }).notNull().defaultNow(),
   /** Letzte Linkprüfung dieser einen Fundstelle. */
   lastCheckOk: boolean("last_check_ok"),
+  /**
+   * Ob diese Fundstelle noch eine aktive Ausschreibung ist.
+   *
+   * Siehe `Verfuegbarkeit` in `@paycheck/domain` — dort steht die
+   * Zustandslogik, und dort ist sie geprüft.
+   *
+   * Am LINK, nicht an der Stelle: Dieselbe Vakanz kann beim ATS des
+   * Arbeitgebers aktiv sein und beim Aggregator verschwunden. Welche
+   * Aussage gilt, entscheidet `rank` — kleiner ist näher an der
+   * Quelle.
+   */
+  availabilityState: text("availability_state").notNull().default("unknown"),
+  /** Warum. Der Grund unterscheidet eine Auskunft von einer Behauptung. */
+  availabilityReason: text("availability_reason"),
+  /**
+   * Wann zuletzt wirklich geprüft wurde.
+   *
+   * Bleibt bei einem unvollständigen Lauf stehen: Es gab keine
+   * Prüfung, und ein Zeitstempel liesse den Stand frischer aussehen,
+   * als er ist.
+   */
+  availabilityCheckedAt: timestamp("availability_checked_at", { withTimezone: true }),
+  /**
+   * Wie oft die Stelle bei einem VOLLSTÄNDIGEN Lauf gefehlt hat.
+   *
+   * Nur dort gezählt. Ohne diese Bedingung schliesst ein
+   * fünfminütiger Ausfall eines ATS den halben Bestand — lautlos,
+   * denn eine Stelle, die verschwindet, beschwert sich nicht.
+   */
+  missingSuccessfulSyncCount: integer("missing_successful_sync_count").notNull().default(0),
+  /** Bewerbungsfrist laut DIESER Quelle. */
+  validThrough: timestamp("valid_through", { withTimezone: true }),
 }, (t) => [
   uniqueIndex("job_source_links_unique").on(t.sourceId, t.externalId),
   index("job_source_links_job_idx").on(t.jobId),

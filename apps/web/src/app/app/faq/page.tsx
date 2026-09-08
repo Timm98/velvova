@@ -72,7 +72,50 @@ export default async function AppFaqSeite({
         sie auch die Tastatur zuerst. Auf schmalen Geräten rutscht sie
         über den Text; ein Menü unter zwanzig Antworten findet niemand.
       */}
-      <nav aria-label="Rechtliches und Hilfe" className="lg:sticky lg:top-6 lg:self-start">
+      {/*
+        Sie klebt UNTER der Kopfzeile, nicht am Fensterrand.
+        
+        Hier stand `lg:top-6` — 24 Pixel unter dem oberen Rand. Die
+        Kopfzeile der Anwendung klebt aber selbst bei `top-0` und ist
+        88 Pixel hoch (mit Hinweisleiste mehr). Beim Rollen glitt die
+        Leiste also hinter sie und war weg: gemeldet am 8. September
+        2026 als „bei faq verschwindet das links die leiste
+        irgendwie".
+        
+        `--kopfzeile-hoehe` wird in `AppShell` gemessen und steht auf
+        `documentElement`. Der Rückfallwert 88px gilt für den einen
+        Moment vor dem ersten Effekt — und für den Fall, dass diese
+        Seite je ausserhalb der Anwendung landet.
+        
+        ── Ab `md`, nicht erst ab `lg` ──────────────────────────
+        
+        Das Kleben stand auf `lg`, die Spaltenteilung auch. Unter 1024
+        Pixeln gab es also weder zwei Spalten noch eine klebende
+        Leiste: Das Menü stand als gewöhnlicher Block über dem Text
+        und rollte beim Lesen einfach weg. Genau das wurde ein zweites
+        Mal gemeldet, nachdem der Abstand zur Kopfzeile schon
+        stimmte.
+        
+        Die Spaltenteilung braucht die Breite wirklich — 220 Pixel
+        Menü neben lesbarem Text gehen unter 1024 nicht auf. Das
+        Kleben braucht sie nicht. Deshalb bleibt die Teilung bei `lg`
+        und das Kleben beginnt bei `md`.
+        
+        Auf dem Telefon bleibt es beim gewöhnlichen Blockfluss: Ein
+        klebendes Menü mit neun Einträgen nähme dort den halben
+        Bildschirm.
+        
+        ── Eigene Höhe und eigener Rollbereich ──────────────────
+        
+        Ohne sie klebt ein Menü, das höher ist als das Fenster, mit
+        abgeschnittenem Ende — und die letzten Einträge sind nie
+        erreichbar. Mit `max-h` und `overflow-y-auto` rollt es in
+        sich, wenn es muss, und steht sonst still.
+      */}
+      <nav
+        aria-label="Rechtliches und Hilfe"
+        className="md:sticky md:top-[calc(var(--kopfzeile-hoehe,88px)_+_1.5rem)] md:max-h-[calc(100dvh_-_var(--kopfzeile-hoehe,88px)_-_3rem)] md:self-start md:overflow-y-auto"
+      >
         <ul className="grid gap-0.5">
           {RECHTSWEGE.map((w) => (
             <li key={w.href}>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Card, Stack } from "@/components/ui";
+import { EINWILLIGUNGEN, EINWILLIGUNGSERKLAERUNG } from "@/lib/privacy/einwilligungen";
 
 export const metadata: Metadata = { title: "Sicherheit" };
 
@@ -35,6 +37,130 @@ export default function SecurityPage() {
           </Card>
         ))}
       </ul>
+
+      {/*
+        ══════════════════════════════════════════════════════════
+        Die Haken und die Erklärung — hier, wo sie jeder lesen kann
+        ══════════════════════════════════════════════════════════
+
+        Sie standen ausschliesslich im Privacy Center, also hinter der
+        Anmeldung. Wer noch kein Konto hat, konnte nirgends nachlesen,
+        worin er einwilligen würde — und genau das ist die Frage, die
+        vor der Anmeldung gestellt wird.
+
+        Diese Seite zählte bis dahin Verschlüsselung, Rollenmodell und
+        Protokollierung auf. Alles richtig, alles über die Technik —
+        und nichts über die einzige Entscheidung, die dem Menschen
+        gehört.
+
+        Die Liste kommt aus `lib/privacy/einwilligungen.ts`, derselben
+        Quelle wie die Schalter in den Einstellungen. Zwei Listen
+        derselben Einwilligungen laufen auseinander, sobald eine
+        dazukommt, und dann verspricht die öffentliche Seite etwas
+        anderes, als die Anwendung schaltet.
+      */}
+      <Card>
+        <Stack gap={3}>
+          <h2 style={{ fontSize: "var(--text-base)" }}>Datenschutz: die Haken</h2>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+            Sieben Einwilligungen, jede einzeln zu setzen und einzeln zu widerrufen.
+            Keine ist voreingestellt: Was nicht ausdrücklich erteilt wurde, gilt als
+            nicht erteilt.
+          </p>
+
+          {(["funktion", "weitergabe"] as const).map((art) => (
+            <Stack gap={2} key={art}>
+              <h3 style={{ fontSize: "var(--text-sm)" }}>
+                {art === "funktion"
+                  ? "Damit Funktionen möglich sind"
+                  : "Damit Daten das Haus verlassen dürfen"}
+              </h3>
+              <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
+                {Object.entries(EINWILLIGUNGEN)
+                  .filter(([, e]) => e.art === art)
+                  .map(([schluessel, e]) => (
+                    <li
+                      key={schluessel}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "auto 1fr",
+                        gap: "var(--space-3)",
+                        alignItems: "start",
+                      }}
+                    >
+                      {/*
+                        Ein leeres Kästchen, kein Häkchen.
+                        
+                        Es zeigt den Zustand, in dem jedes Konto
+                        anfängt — und der ist „nicht erteilt". Ein
+                        gesetztes Häkchen daneben zu zeichnen wäre
+                        eine Abbildung von etwas, das es nicht gibt.
+                        
+                        `aria-hidden`, weil es keine Bedienung ist:
+                        Geschaltet wird im Privacy Center, hier steht
+                        nur, was es gibt.
+                      */}
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 16,
+                          height: 16,
+                          marginTop: 3,
+                          borderRadius: 4,
+                          border: "1.5px solid var(--border-default)",
+                          display: "block",
+                        }}
+                      />
+                      <div>
+                        <span style={{ fontWeight: 500, fontSize: "var(--text-sm)" }}>{e.title}</span>
+                        <p
+                          style={{
+                            fontSize: "var(--text-sm)",
+                            color: "var(--text-secondary)",
+                            marginTop: 2,
+                          }}
+                        >
+                          {e.body}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            </Stack>
+          ))}
+        </Stack>
+      </Card>
+
+      <Card>
+        <Stack gap={3}>
+          <h2 style={{ fontSize: "var(--text-base)" }}>Einwilligungserklärung</h2>
+          <ol
+            style={{
+              display: "grid",
+              gap: "var(--space-3)",
+              paddingLeft: "var(--space-5)",
+              margin: 0,
+            }}
+          >
+            {EINWILLIGUNGSERKLAERUNG.map((satz) => (
+              <li key={satz} style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+                {satz}
+              </li>
+            ))}
+          </ol>
+          <p style={{ fontSize: "var(--text-sm)" }}>
+            Gesetzt und widerrufen wird alles im{" "}
+            <Link href="/app/settings/privacy" style={{ textDecoration: "underline" }}>
+              Privacy Center
+            </Link>
+            . Der vollständige Rechtstext steht in der{" "}
+            <Link href="/privacy" style={{ textDecoration: "underline" }}>
+              Datenschutzerklärung
+            </Link>
+            .
+          </p>
+        </Stack>
+      </Card>
 
       {/*
         Was ein Arbeitgeber sieht — und was nicht.

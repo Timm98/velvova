@@ -1,0 +1,165 @@
+{
+  "taxYear": 2026,
+  "jurisdiction": "CH-ZH",
+  "canton": "ZH",
+  "name": "Zürich — einfache Staatssteuer",
+  "source": {
+    "law": "§ 35 StG ZH",
+    "document": "ESTV, Kantonsblatt Zürich, Seite 13",
+    "url": "https://www.estv2.admin.ch/stp/kb/zh-de.pdf",
+    "validFrom": "Das Dokument vermerkt bei beiden Tarifen ausdrücklich: „Gültig ab Steuerperiode 2026.“",
+    "retrievedAt": "2026-09-08"
+  },
+  "verification": {
+    "method": "Zürich schreibt den Tarif als Kette: „0 % für die ersten 7'000, 2 % für die weiteren 5'000, …“. Hier in Kanten mit Untergrenze und Grundbetrag umgerechnet und jede Kante zurückgerechnet.",
+    "beispiele": [
+      "Grundtarif: 0 auf 7'000, dann 2 % auf 5'000 = 100 → Kante 12'000 mit Grundbetrag 100.00",
+      "Grundtarif: bis 24'800 sind es 100 + 4'800 x 3 % = 244.00",
+      "Verheiratete: 0 auf 14'100, dann 2 % auf 6'400 = 128 → Kante 20'500 mit Grundbetrag 128.00"
+    ],
+    "warnung": "Die 2025er-Werte sind NICHT abgelegt. Der Regierungsratsbeschluss zum Progressionsausgleich nennt drei Spalten (bisher / teuerungsausgeglichen / warme Progression), und keine davon ergibt die Zahlen des Kantonsblatts. Welcher Stand 2025 galt, geht daraus nicht hervor — und geraten wird hier nichts."
+  },
+  "tariffs": {
+    "single": {
+      "label": "Grundtarif (§ 35 Abs. 1 StG)",
+      "brackets": [
+        {
+          "from": 0,
+          "baseTax": 0.0,
+          "ratePer100": 0
+        },
+        {
+          "from": 7000,
+          "baseTax": 0.0,
+          "ratePer100": 2
+        },
+        {
+          "from": 12000,
+          "baseTax": 100.0,
+          "ratePer100": 3
+        },
+        {
+          "from": 16800,
+          "baseTax": 244.0,
+          "ratePer100": 4
+        },
+        {
+          "from": 24800,
+          "baseTax": 564.0,
+          "ratePer100": 5
+        },
+        {
+          "from": 34500,
+          "baseTax": 1049.0,
+          "ratePer100": 6
+        },
+        {
+          "from": 45700,
+          "baseTax": 1721.0,
+          "ratePer100": 7
+        },
+        {
+          "from": 58800,
+          "baseTax": 2638.0,
+          "ratePer100": 8
+        },
+        {
+          "from": 76400,
+          "baseTax": 4046.0,
+          "ratePer100": 9
+        },
+        {
+          "from": 110400,
+          "baseTax": 7106.0,
+          "ratePer100": 10
+        },
+        {
+          "from": 144100,
+          "baseTax": 10476.0,
+          "ratePer100": 11
+        },
+        {
+          "from": 197400,
+          "baseTax": 16339.0,
+          "ratePer100": 12
+        },
+        {
+          "from": 266700,
+          "baseTax": 24655.0,
+          "ratePer100": 13
+        }
+      ]
+    },
+    "married": {
+      "label": "Verheiratetentarif (§ 35 Abs. 2 StG)",
+      "appliesTo": "Ehegatten in ungetrennter Ehe sowie verwitwete, getrennt lebende, geschiedene und ledige Steuerpflichtige, die mit Kindern zusammenleben",
+      "brackets": [
+        {
+          "from": 0,
+          "baseTax": 0.0,
+          "ratePer100": 0
+        },
+        {
+          "from": 14100,
+          "baseTax": 0.0,
+          "ratePer100": 2
+        },
+        {
+          "from": 20500,
+          "baseTax": 128.0,
+          "ratePer100": 3
+        },
+        {
+          "from": 28600,
+          "baseTax": 371.0,
+          "ratePer100": 4
+        },
+        {
+          "from": 38400,
+          "baseTax": 763.0,
+          "ratePer100": 5
+        },
+        {
+          "from": 49600,
+          "baseTax": 1323.0,
+          "ratePer100": 6
+        },
+        {
+          "from": 64100,
+          "baseTax": 2193.0,
+          "ratePer100": 7
+        },
+        {
+          "from": 96300,
+          "baseTax": 4447.0,
+          "ratePer100": 8
+        },
+        {
+          "from": 128700,
+          "baseTax": 7039.0,
+          "ratePer100": 9
+        },
+        {
+          "from": 177200,
+          "baseTax": 11404.0,
+          "ratePer100": 10
+        },
+        {
+          "from": 235100,
+          "baseTax": 17194.0,
+          "ratePer100": 11
+        },
+        {
+          "from": 298000,
+          "baseTax": 24113.0,
+          "ratePer100": 12
+        },
+        {
+          "from": 370600,
+          "baseTax": 32825.0,
+          "ratePer100": 13
+        }
+      ]
+    }
+  }
+}
