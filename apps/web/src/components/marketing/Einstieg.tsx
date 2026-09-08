@@ -1,7 +1,29 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { GoogleKnopf, Trenner, KNOPF, KNOPF_RAND } from "@/app/(auth)/formstuecke";
-import { cn } from "@/lib/cn";
+import { GoogleKnopf, Trenner } from "@/app/(auth)/formstuecke";
+
+/**
+ * Die Knopfstile stehen hier, nicht als Import.
+ *
+ * `formstuecke.tsx` trägt „use client". Beim Import in eine
+ * Server-Komponente ersetzt Next.js das Modul durch einen Verweis:
+ * Komponenten werden korrekt durchgereicht, einfache Konstanten
+ * dagegen nicht — sie kommen leer an.
+ *
+ * Genau das war passiert. `cn(KNOPF_RAND)` ergab `class=""`, und
+ * „Mit E-Mail fortfahren" stand ohne Rahmen als nackter Text unter
+ * einem umrandeten Google-Knopf. Sichtbar wurde es erst auf einem
+ * Screenshot; im Code sah alles richtig aus.
+ *
+ * Die Werte sind dieselben wie in `formstuecke.tsx`. Wenn sich die
+ * dort ändern, muss es hier mit — der Preis dafür, dass eine
+ * Server-Komponente keine Konstanten aus einem Client-Modul lesen
+ * kann.
+ */
+const KNOPF =
+  "inline-flex h-[56px] w-full items-center justify-center gap-3 rounded-[6px] text-[15px] font-medium transition-[background-color,border-color,opacity,transform] duration-(--duration-fast) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--primary)";
+const KNOPF_HAUPT = `${KNOPF} bg-accent text-accent-on hover:opacity-90 active:translate-y-px`;
+const KNOPF_RAND = `${KNOPF} border border-line-3 bg-transparent text-ink hover:bg-soft active:translate-y-px`;
 
 /**
  * Der Einstieg auf der Startseite — ein Container statt sechs Knöpfe.
@@ -57,12 +79,12 @@ export function Einstieg({
       <div className="grid gap-3">
         <Link
           href="/app/jobs"
-          className={cn(KNOPF, "bg-accent text-accent-on hover:opacity-90 active:translate-y-px")}
+          className={KNOPF_HAUPT}
         >
           Zu meinen Jobs
           <ArrowRight aria-hidden className="size-4" strokeWidth={2} />
         </Link>
-        <Link href="/business" className={cn(KNOPF_RAND, "text-sm")}>
+        <Link href="/business" className={`${KNOPF_RAND} text-sm`}>
           Zum Unternehmensbereich
         </Link>
       </div>
@@ -77,7 +99,7 @@ export function Einstieg({
           unter allem. Er trennt zwei Wege, er schliesst keinen Block ab. */}
       <Trenner />
 
-      <Link href="/register" className={cn(KNOPF_RAND)}>
+      <Link href="/register" className={KNOPF_RAND}>
         Mit E-Mail fortfahren
       </Link>
 
