@@ -811,20 +811,44 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
 
              Die ersten beiden verschieben die rechte Kante um 32
              Pixel nach aussen und lassen die linke, wo sie war — die
-             Karte wird also nach rechts breiter statt beidseitig. Die
-             dritte gibt genau diese 32 Pixel als Innenabstand wieder
-             ab: Der Bereich, in dem der Core sitzt, bleibt damit
-             unverändert breit und steht an derselben Stelle.
+             Karte wird also nach rechts breiter statt beidseitig.
 
-             Ohne die dritte Zahl wäre der Core mitgewandert. Ein
-             mittig sitzendes Element in einem Kasten, der nur auf
-             einer Seite wächst, verschiebt sich um die halbe
-             Zunahme — hier 16 Pixel, genug um aufzufallen.
+             Eine Weile stand hier zusätzlich `pr-14`, um genau diese
+             32 Pixel als Innenabstand zurückzugeben und den Core an
+             seiner Stelle zu halten. Das tat es auch — und setzte ihn
+             dabei 16 Pixel links der Kartenmitte ab. In einem Kasten
+             mit sichtbarem Rahmen fällt eine solche Verschiebung auf,
+             sobald man sie einmal gesehen hat.
+
+             Deshalb wieder gleicher Abstand auf beiden Seiten. Der
+             Core steht mittig; seine Grösse hält der Deckel in
+             `NinaVisual`, nicht der Innenabstand.
           */
-          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-14 md:p-6 md:pr-14"
+          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-14 md:p-6"
           style={{ background: "var(--ed-surface)" }}
         >
-          <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />
+          {/*
+            `self-center`, und der Grund ist keine Vorliebe.
+
+            Die Karte ist eine Flex-Spalte. Deren Kinder werden in der
+            Breite gestreckt — bis eines eine Höchstbreite hat: Dann
+            hört es beim Höchstmass auf und bleibt am Anfang der Achse
+            stehen, also links. Gemessen sass der Core dadurch 7 Pixel
+            links der Kartenmitte, bei ansonsten völlig symmetrischen
+            Abständen.
+
+            `items-center` auf der Karte wäre der breitere Hebel und
+            hätte auch die Partnerzeile auf ihre Inhaltsbreite
+            geschrumpft. Hier soll nur ein Kind mittig stehen, also
+            steht es an diesem Kind.
+          */}
+          <NinaVisual
+            size="hero"
+            strategie="sichtbar"
+            grund="keiner"
+            zyklus
+            className="self-center"
+          />
           <Partnerleiste />
         </div>
       </div>

@@ -69,24 +69,19 @@ const MARKEN: Marke[] = [
 ];
 
 /*
- * Zwei Masse, und beide sind Absicht.
+ * Die Höhe bindet, die Breite ergibt sich.
  *
- * Der Platz je Marke ist 120 × 64 und überall gleich — daran liegt es,
- * dass die Zeile ruhig wirkt. Das Zeichen darin bekommt 110 × 42 und
- * `object-contain`: Es füllt diesen Rahmen nie ganz aus, sondern
- * passt sich hinein, und die 11 Pixel Luft ringsum verhindern, dass
- * eine breite Wortmarke an die nächste stösst.
+ * Ein Zwischenstand gab jedem Zeichen ein Feld von 110 × 42. Das
+ * klang nach gleicher Grösse und war zur Hälfte Luft: Die Dateien
+ * sind 16:9, auf 42 Pixel Höhe gebracht also rund 75 breit. Die
+ * restlichen 35 Pixel je Kachel waren durchsichtiger Rand — und zu
+ * fünft ergab das 175 Pixel Lücke, die niemand gesetzt hatte.
  *
- * Die Dateien sind 16:9 mit dem Zeichen mittig im transparenten
- * Rahmen. In einem Feld von 110 × 42 — also deutlich flacher — bindet
- * deshalb die Höhe, und alle fünf werden auf dasselbe Mass gebracht.
- * Genau das ist der Grund, warum sie optisch gleich gross wirken,
- * obwohl LinkedIn ein breites Wort und Claude ein Zeichen plus Wort
- * ist.
+ * Deshalb steht hier nur noch die Höhe. Alle fünf Dateien haben
+ * dasselbe Seitenverhältnis, also werden sie dadurch ohnehin gleich
+ * gross; die Breite folgt und ist bei allen dieselbe. Der Abstand
+ * dazwischen ist jetzt der Abstand der Liste und sonst nichts.
  */
-const FELD_BREIT = 120;
-const FELD_HOCH = 64;
-const ZEICHEN_BREIT = 110;
 const ZEICHEN_HOCH = 42;
 
 export function Partnerleiste({
@@ -106,23 +101,23 @@ export function Partnerleiste({
         auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
         keine Bewegung.
       */}
-      <ul className="mt-4 flex flex-wrap items-center justify-center gap-0">
+      <ul className="mt-5 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
         {MARKEN.map((m) => (
           <li
             key={m.name}
             title={m.name}
             /*
-             * Kein Rahmen und keine Fläche.
+             * Kein Rahmen, keine Fläche, keine feste Breite.
              *
-             * Beides gab es in früheren Fassungen, und beides war eine
-             * Antwort auf Dateien, die ihren eigenen Grund mitbrachten.
-             * Freigestellte Zeichen brauchen weder das eine noch das
-             * andere: Sie stehen auf der Fläche der Karte, und was sie
-             * gleich gross macht, ist der gleiche Platz — nicht ein
-             * Kasten darum.
+             * Rahmen und Fläche gab es in früheren Fassungen, und
+             * beides war eine Antwort auf Dateien, die ihren eigenen
+             * Grund mitbrachten. Freigestellte Zeichen brauchen weder
+             * das eine noch das andere — und auch kein Feld, in dem
+             * sie sitzen: Was sie gleich gross macht, ist die gleiche
+             * Höhe.
              */
             className="markenbadge flex items-center justify-center"
-            style={{ width: FELD_BREIT, height: FELD_HOCH, background: "transparent" }}
+            style={{ background: "transparent" }}
           >
             {/*
               Beide Fassungen stehen im Markup, umgeschaltet wird über
@@ -133,9 +128,9 @@ export function Partnerleiste({
             <Image
               src={m.datei}
               alt={m.name}
-              width={ZEICHEN_BREIT}
+              width={ZEICHEN_HOCH * 3}
               height={ZEICHEN_HOCH}
-              style={{ width: ZEICHEN_BREIT, height: ZEICHEN_HOCH, background: "transparent" }}
+              style={{ height: ZEICHEN_HOCH, width: "auto", background: "transparent" }}
               className={m.dateiDunkel ? "fuer-hell object-contain" : "object-contain"}
             />
             {m.dateiDunkel ? (
@@ -143,9 +138,9 @@ export function Partnerleiste({
                 src={m.dateiDunkel}
                 alt=""
                 aria-hidden
-                width={ZEICHEN_BREIT}
+                width={ZEICHEN_HOCH * 3}
                 height={ZEICHEN_HOCH}
-                style={{ width: ZEICHEN_BREIT, height: ZEICHEN_HOCH, background: "transparent" }}
+                style={{ height: ZEICHEN_HOCH, width: "auto", background: "transparent" }}
                 className="fuer-dunkel object-contain"
               />
             ) : null}
