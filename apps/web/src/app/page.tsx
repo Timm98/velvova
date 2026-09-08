@@ -669,8 +669,19 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Anmeldekarte unter dem Core statt neben ihm, und der Einstieg
         lag unterhalb des ersten Bildschirms.
 
-        Bei 768 passt beides, und darunter greift ohnehin die schmale
-        Fassung.
+        Ab 640, nicht erst ab 768.
+
+        Die Grenze lag zweimal zu hoch. Erst auf `lg` (1024) — da stand
+        die Anmeldekarte in einem halbierten Notebook-Fenster unter dem
+        Core. Dann auf `md` (768), und auch das war noch zu hoch: Ein
+        Browserfenster auf halber Bildschirmbreite liegt bei
+        gebräuchlichen Auflösungen häufig zwischen 640 und 760 Pixeln.
+
+        Bei 640 bleibt die Aufteilung tragfähig, wenn die Spalten fast
+        gleich sind — deshalb dort 46/54. Die grössere Hälfte bekommt
+        die Karte erst ab 1024: Bei 768 mit 40/60 blieben der
+        Überschrift 280 Pixel, und „Dein nächster Job. Mit mehr
+        Klarheit." brach auf drei Zeilen.
 
         ── Warum 40/60 und nicht 34/66 ─────────────────────────
         Ein Zwischenstand gab der Karte zwei Drittel. Sie wurde damit
@@ -691,7 +702,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Position auf dem Telefon; wer sie ändern will, dreht die
         beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.4fr_0.6fr] md:gap-8 md:px-8 md:pb-28 md:pt-16 lg:gap-12">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[0.4fr_0.6fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (

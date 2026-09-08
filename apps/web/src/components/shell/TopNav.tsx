@@ -186,6 +186,29 @@ export function TopNav({
   proSekunde?: number;
 }) {
   const pathname = usePathname();
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die Wege richten sich nach der Seite, nicht nach der Sitzung
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `angemeldet ? BEREICHE : BESUCHER`. Das klang richtig
+   * und war es an genau einer Stelle nicht: auf den Marketingseiten.
+   *
+   * Wer angemeldet ist und die Startseite, „Lösungen" oder „Für
+   * Unternehmen" öffnet, bekam dort die App-Wege — Monday, Jobs,
+   * Bewerbungen. Auf einer Seite, die erklärt, was das Produkt ist,
+   * fehlte damit jeder Weg zu den übrigen Erklärseiten. „Lösungen"
+   * stand für Besucher oben und für Angemeldete nicht, obwohl beide
+   * dieselbe Seite ansahen.
+   *
+   * Massgeblich ist deshalb der Ort: Unter `/app` und `/business`
+   * arbeitet man, überall sonst liest man. Die Anmeldung entscheidet
+   * weiterhin über die Knöpfe rechts oben — nur nicht mehr darüber,
+   * welche Seiten es gibt.
+   */
+  const imArbeitsbereich = pathname.startsWith("/app") || pathname.startsWith("/business");
+  const wege = imArbeitsbereich ? BEREICHE : BESUCHER;
   /*
    * Nur die Handlungen.
    *
@@ -414,7 +437,9 @@ export function TopNav({
          */
         className={cn(
           "laufband mx-auto w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:px-8 lg:justify-center",
-          angemeldet ? "hidden md:flex" : "flex",
+          /* Ausgeblendet nur dort, wo die untere Leiste dieselben Wege
+             trägt — also im Arbeitsbereich. */
+          imArbeitsbereich ? "hidden md:flex" : "flex",
         )}
       >
         {/* Mehr Luft zwischen den Wegen: Ohne Symbole stehen jetzt nur
@@ -458,7 +483,7 @@ export function TopNav({
               nicht die Schrumpfneigung.
             */}
           <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0 whitespace-nowrap pb-2.5 md:w-max md:shrink-0 md:flex-nowrap md:gap-5 lg:gap-8 xl:gap-12">
-          {(angemeldet ? BEREICHE : BESUCHER).map((b) => {
+          {wege.map((b) => {
             const aktiv = istAktiv(pathname, b.href, b.exact);
             const Icon = b.icon;
             return (
