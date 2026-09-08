@@ -672,46 +672,26 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Bei 768 passt beides, und darunter greift ohnehin die schmale
         Fassung.
 
-        ── Warum der Core links steht ──────────────────────────
-        Nicht aus Symmetrie. Unter 768 Pixeln bricht die Zeile um, und
-        die Reihenfolge im Text ist dann die Reihenfolge auf dem
-        Schirm: Was rechts stand, landet unten. Der Core lag damit auf
-        dem Telefon unterhalb der Anmeldekarte — sichtbar erst nach
-        einem Bildschirm Scrollen, obwohl er das Erste ist, was die
-        Seite zeigen soll.
+        ── Warum 40/60 und nicht 34/66 ─────────────────────────
+        Ein Zwischenstand gab der Karte zwei Drittel. Sie wurde damit
+        742 Pixel breit — und die Überschrift brach auf drei Zeilen,
+        weil „Dein nächster Job." bei 51 Pixeln Schriftgrad rund 430
+        Pixel braucht und nur 383 übrig waren. Ein grösserer Core, der
+        die Aussage daneben zerlegt, ist kein besserer Einstieg.
 
-        Links heisst deshalb auch: zuerst.
+        ── Text links, Core rechts — und was das kostet ────────
+        Ein Zwischenstand hatte es umgedreht. Der Grund war nicht
+        Symmetrie, sondern der Umbruch: Unter 768 Pixeln ist die
+        Reihenfolge im Text die Reihenfolge auf dem Schirm, und was
+        rechts steht, landet unten. Gemessen bei 390 Pixeln lag der
+        Core dann auf y=924 gegen y=313 für die Überschrift — ein
+        Bildschirm Scrollen, bevor man ihn sieht.
+
+        Auf Ansage wieder Text links. Der Preis ist genau jene
+        Position auf dem Telefon; wer sie ändern will, dreht die
+        beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.6fr_0.4fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-14">
-      {/*
-        Der Core in einer ruhigen Karte — und darunter die Marken.
-
-        ── Warum kein Quadrat mehr ─────────────────────────────
-        Die Karte stand auf `aspect-square` bei höchstens 560 Pixeln.
-        Das war eine sichere Wahl und eine zu kleine: Neben einer
-        Anmeldekarte von rund 470 Pixeln Höhe wirkte der Core wie eine
-        Abbildung daneben statt wie die Hauptsache.
-
-        Jetzt 4:5 und bis 680 Pixel breit. Das Verhältnis bleibt fest,
-        damit beim Laden nichts springt — eine feste Höhe hätte auf
-        schmalen Geräten entweder Luft verschenkt oder den Core
-        angeschnitten.
-
-        ── Warum die Leiste in derselben Spalte steht ──────────
-        Sie gehört unter den Core, nicht unter die ganze Seite. In
-        einer eigenen Zeile unterhalb beider Spalten stünde sie
-        mittig unter Anmeldekarte und Core und damit unter nichts.
-      */}
-      <div className="grid gap-8">
-        <div
-          className="relative mx-auto flex aspect-[4/5] w-full max-w-[680px] items-center justify-center rounded-(--radius-lg) border border-line"
-          style={{ background: "var(--ed-surface)" }}
-        >
-          <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
-        </div>
-
-        <Partnerleiste />
-      </div>
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.4fr_0.6fr] md:gap-8 md:px-8 md:pb-28 md:pt-16 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
@@ -744,6 +724,49 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         <Einstieg angemeldet={angemeldet} />
       </div>
 
+      {/*
+        Der Core in einer ruhigen Karte — und darunter die Marken.
+
+        ── Warum kein Quadrat mehr ─────────────────────────────
+        Die Karte stand auf `aspect-square` bei höchstens 560 Pixeln.
+        Das war eine sichere Wahl und eine zu kleine: Neben einer
+        Anmeldekarte von rund 470 Pixeln Höhe wirkte der Core wie eine
+        Abbildung daneben statt wie die Hauptsache.
+
+        Jetzt 4:5 und bis 680 Pixel breit. Das Verhältnis bleibt fest,
+        damit beim Laden nichts springt — eine feste Höhe hätte auf
+        schmalen Geräten entweder Luft verschenkt oder den Core
+        angeschnitten.
+
+        ── Warum die Leiste in derselben Spalte steht ──────────
+        Sie gehört unter den Core, nicht unter die ganze Seite. In
+        einer eigenen Zeile unterhalb beider Spalten stünde sie
+        mittig unter Anmeldekarte und Core und damit unter nichts.
+      */}
+      <div className="grid gap-8">
+        <div
+          /*
+             Kein `mx-auto` und kein `ml-auto`.
+
+             Beides sind automatische Aussenabstände, und die heben bei
+             einem Gitterkind die Streckung auf: Das Element bemisst
+             sich dann nach seinem Inhalt statt nach der Spalte.
+             Gemessen blieb die Karte deshalb bei 620 Pixeln stehen,
+             obwohl die Spalte 744 breit war und `w-full` danebenstand —
+             `max-w-[820px]` und `aspect-[4/5]` liefen ins Leere, weil
+             es gar keine Breite gab, auf die sie sich bezogen hätten.
+
+             `justify-self-end` sagt dasselbe über die Ausrichtung, ohne
+             die Breite anzufassen.
+          */
+          className="relative flex aspect-square w-full items-center justify-center justify-self-end rounded-(--radius-lg) border border-line"
+          style={{ background: "var(--ed-surface)" }}
+        >
+          <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />
+        </div>
+
+        <Partnerleiste />
+      </div>
     </section>
   );
 }

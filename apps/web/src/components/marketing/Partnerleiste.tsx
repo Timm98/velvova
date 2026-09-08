@@ -4,46 +4,46 @@ import Image from "next/image";
  * Die Markenzeile unter dem Core.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum Kacheln und keine frei stehenden Logos
+ * Warum hier nichts mehr ausgeglichen werden muss
  * ══════════════════════════════════════════════════════════════
  *
- * Die fünf Dateien sind keine Logo-Assets, sondern Vorschaubilder:
+ * Ein erster Anlauf stand auf fünf Vorschaubildern mit
+ * Seitenverhältnissen von 1:1 bis 2,42 und drei verschiedenen
+ * Hintergründen. Dagegen half nichts: Gleich grosse Kacheln wirkten
+ * unterschiedlich schwer, `object-cover` schnitt die Wortmarken an
+ * („psto", „Open"), und `object-contain` liess drei Marken in einem
+ * Kasten sitzen, während zwei schwebten.
  *
- *     OpenAI      3840 × 2160   Alpha
- *     linkedin    1024 × 1024   ohne Alpha
- *     indeed      1200 × 630    Alpha
- *     stepstone    800 × 330    ohne Alpha
- *     claude       600 × 600    ohne Alpha
+ * Die eigentliche Lösung lag nicht im CSS, sondern in den Dateien.
+ * Die richtigen lagen bereits vor — `*_Badge_4K_White.png`, alle
+ * 3840 × 2160, alle mit dem Zeichen mittig auf weissem Grund. Ich
+ * hatte sie als „zu gross" aussortiert und die Vorschaubilder
+ * behalten; das war der Fehler, nicht die Darstellung.
  *
- * Drei von fünf haben keinen Alphakanal, tragen also ihren eigenen
- * farbigen Grund mit. Frei nebeneinandergestellt sieht das aus wie ein
- * Versehen: zwei Logos schweben, drei sitzen in einem Kasten.
+ * Der Zusatz `-badge` im Dateinamen ist kein Schmuck: Next legt
+ * optimierte Bilder unter Pfad und Breite ab. Beim ersten Austausch
+ * blieben die Namen gleich, und die Seite zeigte weiter die alten
+ * Dateien — sichtbar nur daran, dass „the stepstone group" rechts
+ * angeschnitten war, wo im neuen Bild Platz ist.
  *
- * Eine Kachel dreht das um. Wenn jedes Zeichen in derselben runden
- * Fläche sitzt, ist der mitgebrachte Grund kein Fehler mehr, sondern
- * der Inhalt der Kachel — und die Zeile wirkt gewollt statt schlampig.
- * Das ist auch der Grund für `object-cover` mit quadratischem
- * Zuschnitt: Bei einem 16:9-Vorschaubild mit kleinem Zeichen in der
- * Mitte schneidet es die leeren Ränder weg, statt das Zeichen auf
- * Briefmarkengrösse zu schrumpfen.
- *
- * Sobald eng beschnittene Dateien mit Transparenz vorliegen — die
- * gibt es auf den Presseseiten der Marken —, kann `KACHEL` entfallen
- * und die Zeile auf frei stehende Zeichen umgestellt werden.
+ * Jetzt haben alle fünf dasselbe Seitenverhältnis wie die Kachel.
+ * Damit ist `object-contain` gleich `object-cover`: Es wird nichts
+ * beschnitten und nichts eingepasst, weil es nichts auszugleichen
+ * gibt. Auf 480 Pixel Breite verkleinert wiegt jede Datei rund 20 KB
+ * statt einem halben Megabyte.
  *
  * ══════════════════════════════════════════════════════════════
- * Was die Überschrift behauptet
+ * Was die Zeile behauptet
  * ══════════════════════════════════════════════════════════════
  *
- * Sie steht als Eigenschaft im Aufruf, nicht fest im Bauteil. Der
- * Grund ist keine Bequemlichkeit: Was diese Marken für Velvova sind,
- * entscheidet ein Vertrag, nicht eine Komponente.
+ * Der Satz darüber steht als Eigenschaft im Aufruf, nicht fest im
+ * Bauteil. Er behauptet eine Geschäftsbeziehung, und ob sie besteht,
+ * entscheidet ein Vertrag und keine Komponente.
  *
  * Das Quellenregister führt LinkedIn, Indeed und StepStone unter
  * „Nicht freigegebene Plattformen". Das betrifft die Datennutzung und
- * sagt über eine Geschäftsbeziehung nichts — aber wer hier „Partner"
- * setzt, behauptet eine solche Beziehung öffentlich. Wer die
- * Überschrift setzt, muss wissen, was zutrifft.
+ * sagt über eine Partnerschaft nichts — aber wer den Satz stehen
+ * lässt, sagt sie öffentlich zu.
  */
 type Marke = {
   name: string;
@@ -51,35 +51,30 @@ type Marke = {
 };
 
 const MARKEN: Marke[] = [
-  { name: "LinkedIn", datei: "/marken/linkedin.webp" },
-  { name: "Indeed", datei: "/marken/indeed.png" },
-  { name: "StepStone", datei: "/marken/stepstone.png" },
-  { name: "OpenAI", datei: "/marken/OpenAI.png" },
-  { name: "Claude", datei: "/marken/claude.png" },
+  { name: "LinkedIn", datei: "/marken/linkedin-badge.png" },
+  { name: "Indeed", datei: "/marken/indeed-badge.png" },
+  { name: "StepStone", datei: "/marken/stepstone-badge.png" },
+  { name: "OpenAI", datei: "/marken/openai-badge.png" },
+  { name: "Claude", datei: "/marken/claude-badge.png" },
 ];
 
 /*
- * Querformat, nicht quadratisch.
+ * 16:9 — dasselbe Verhältnis wie die Dateien.
  *
- * Der erste Versuch waren quadratische Kacheln mit `object-cover`.
- * Das schnitt genau die Wortmarken an, um die es geht: Aus StepStone
- * wurde „psto", aus OpenAI „Open". Ein angeschnittener Markenname
- * sieht kaputt aus, egal wie sauber die Kachel ist.
- *
- * `object-contain` in einem Querformat zeigt jedes Bild ganz. Vier
- * der fünf Vorlagen sind breiter als hoch; das quadratische
- * Claude-Zeichen bekommt links und rechts Luft und wirkt dadurch
- * nicht schwerer als die Wortmarken.
+ * Genau deshalb sitzt jedes Zeichen gleich gross und gleich mittig,
+ * ohne dass irgendwo ein Ausgleich nötig wäre.
  */
-const KACHEL_BREIT = 84;
-const KACHEL_HOCH = 44;
+const KACHEL_BREIT = 112;
+const KACHEL_HOCH = 63;
 
-export function Partnerleiste({ titel = "Partner" }: { titel?: string }) {
+export function Partnerleiste({
+  titel = "Wir arbeiten mit diesen Partnern zusammen",
+}: {
+  titel?: string;
+}) {
   return (
     <section aria-label={titel}>
-      <p className="text-center text-2xs font-medium uppercase tracking-[0.16em] text-ink-3">
-        {titel}
-      </p>
+      <p className="text-center text-sm leading-relaxed text-ink-2">{titel}</p>
 
       {/*
         Umbruch statt Laufband.
@@ -94,15 +89,18 @@ export function Partnerleiste({ titel = "Partner" }: { titel?: string }) {
           <li
             key={m.name}
             title={m.name}
-            className="overflow-hidden rounded-(--radius-md) border border-line opacity-80 transition-opacity hover:opacity-100"
-            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH }}
+            className="overflow-hidden rounded-(--radius-md) border border-line opacity-90 transition-opacity hover:opacity-100"
+            /* Weiss unter der Kachel: Vier Dateien bringen ihren weissen
+               Grund mit, die von OpenAI ist transparent und stünde
+               sonst als einzige dunkel zwischen vier hellen. */
+            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH, background: "#ffffff" }}
           >
             <Image
               src={m.datei}
               alt={m.name}
               width={KACHEL_BREIT}
               height={KACHEL_HOCH}
-              className="h-full w-full object-contain"
+              className="h-full w-full object-cover"
             />
           </li>
         ))}
