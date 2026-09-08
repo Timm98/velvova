@@ -394,7 +394,28 @@ export function TopNav({
          * `justify-center` greift nur, solange Platz ist; darunter
          * rollt die Zeile weiter seitlich.
          */
-        className="laufband mx-auto hidden w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:flex md:px-8 lg:justify-center"
+        /*
+         * Ausgeblendet nur für Angemeldete.
+         *
+         * Unter 768 Pixeln stand hier `hidden` für alle. Für Angemeldete
+         * stimmt das: Sie haben `BottomNav`, und zwei Navigationen
+         * übereinander sind eine zu viel.
+         *
+         * Für Besucher stimmte es nicht. `BottomNav` erscheint nur in
+         * `AppShell`, also nur nach der Anmeldung — auf dem Telefon
+         * standen oben damit genau zwei Dinge: das Logo und „Konto
+         * anlegen". Kein Weg zu Lösungen, keiner zu „Warum Velvova",
+         * keiner zu „Für Unternehmen". Wer nicht angemeldet ist, kam
+         * von der Startseite nirgendwo hin.
+         *
+         * Die Zeile kann das schon: `laufband` und `overflow-x-auto`
+         * sind für schmale Geräte gebaut und rollen seitlich, statt
+         * über den Rand zu laufen.
+         */
+        className={cn(
+          "laufband mx-auto w-full max-w-(--breite-inhalt) overflow-x-auto px-5 md:px-8 lg:justify-center",
+          angemeldet ? "hidden md:flex" : "flex",
+        )}
       >
         {/* Mehr Luft zwischen den Wegen: Ohne Symbole stehen jetzt nur
               noch Wörter da, und die brauchen Abstand, um als einzelne
@@ -411,7 +432,32 @@ export function TopNav({
               bei 1024. Seit die Zeile linksbündig steht, braucht es
               ihn ohnehin nicht mehr.
             */}
-          <ul className="flex items-center gap-3 whitespace-nowrap pb-2.5 md:gap-5 lg:gap-8 xl:gap-12">
+          {/*
+              Schmal umbrechen, breit in einer Zeile.
+
+              ── Warum nicht rollen ──────────────────────────────
+              Der Behälter kann seitlich rollen, und das war zuerst der
+              Plan. Nur: Was rechts aus dem Bild läuft, sieht auf einem
+              Telefon niemand — es gibt keine Bildlaufleiste und keinen
+              Hinweis darauf, dass da noch etwas kommt. „Sicherheit"
+              wäre damit vorhanden und trotzdem unauffindbar.
+
+              Fünf kurze Wörter passen umgebrochen in zwei Zeilen. Das
+              kostet 24 Pixel Höhe und zeigt dafür alles.
+
+              ── Warum `shrink-0` ab `md` ────────────────────────
+              In einer Zeile ist die Liste ein Flex-Kind in einem
+              Behälter mit `overflow-x: auto` und gibt bei Platzmangel
+              zuerst nach: Die Wege werden schmaler als ihr Text, und
+              mit `whitespace-nowrap` schiebt sich der Text übereinander
+              statt zu rollen. Gemessen bei 390 Pixeln — die Liste
+              schrumpfte von 514 auf 350 Pixel, und „Für Unternehmen"
+              stand quer über „Ressourcen".
+
+              `w-max` allein genügt dafür nicht: Es setzt die Breite,
+              nicht die Schrumpfneigung.
+            */}
+          <ul className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0 whitespace-nowrap pb-2.5 md:w-max md:shrink-0 md:flex-nowrap md:gap-5 lg:gap-8 xl:gap-12">
           {(angemeldet ? BEREICHE : BESUCHER).map((b) => {
             const aktiv = istAktiv(pathname, b.href, b.exact);
             const Icon = b.icon;
@@ -431,7 +477,7 @@ export function TopNav({
                      * nicht mehr — und ein Symbol ohne Wort ist eine
                      * Vokabel, die man raten muss.
                      */
-                    "flex h-12 items-center justify-center rounded-(--radius-control) px-3 text-[15px] transition-colors duration-(--duration-fast)",
+                    "flex h-12 items-center justify-center rounded-(--radius-control) px-2 text-[13px] transition-colors duration-(--duration-fast) md:px-3 md:text-[15px]",
                     /*
                      * Alle Wege in Schwarz, nicht nur der aktive.
                      *
