@@ -104,6 +104,12 @@ export type JoobleCountry = (typeof JOOBLE_COUNTRIES)[number];
  * für AT nur auf at. — deshalb steht der Host hier neben dem Land und
  * nicht als Konstante an der Abrufstelle.
  */
+/** Gemessen am 8. September 2026: Jooble liefert 30 Anzeigen je Seite. */
+const JE_SEITE = 30;
+
+/** Eine Sekunde zwischen zwei Seiten. Jooble nennt kein Kontingent. */
+const ABSTAND_MS = 1_000;
+
 const LAND: Record<JoobleCountry, { name: string; code: string; standardOrt: string; host: string }> = {
   de: { name: "Deutschland", code: "DE", standardOrt: "Deutschland", host: "de.jooble.org" },
   ch: { name: "Schweiz", code: "CH", standardOrt: "Schweiz", host: "ch.jooble.org" },
@@ -177,7 +183,10 @@ export class JoobleAdapter implements JobSourceAdapter {
     search: true,
     details: false,
     since: true,
-    maxPerRequest: 100,
+    /* Gemessen: 30 je Seite, nicht 100. Der frühere Wert war eine
+       Annahme — und weil der Adapter nur eine Seite holte, fiel sie
+       nie auf. */
+    maxPerRequest: JE_SEITE,
     rateLimitPerMinute: null,
     salary: true,
     expiry: false,
@@ -196,17 +205,70 @@ export class JoobleAdapter implements JobSourceAdapter {
       );
     }
 
-    const response = await this.fetchImpl(`https://${LAND[this.country].host}/api/${this.apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: mitFrist(options.signal),
-      body: JSON.stringify({
-        keywords: this.keywords,
-        location: this.location,
-        page: "1",
-      }),
-    });
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Geblättert wird, bis nichts Neues mehr kommt
+     * ══════════════════════════════════════════════════════════════
+     *
+     * Hier stand `page: "1"` fest eingetragen — eine einzige Anfrage,
+     * und der Rest von Jooble blieb unsichtbar. Gemessen am
+     * 8. September 2026: Egal ob 25, 100 oder 2000 Anzeigen angefragt
+     * wurden, es kamen genau 30. Das sah aus wie eine Grenze des
+     * Anbieters und war unsere eigene.
+     *
+     * `maxPerRequest: 100` in den Fähigkeiten war damit ebenfalls
+     * falsch: Jooble liefert 30 je Seite.
+     *
+     * ── Woran der Lauf endet ────────────────────────────────────
+     *
+     * An drei Dingen, und keines davon ist eine geratene Seitenzahl:
+     * eine nicht volle Seite, eine Seite ohne eine einzige neue
+     * Anzeige, oder das erreichte Ziel. Die zweite Bedingung fängt
+     * den Fall ab, dass Jooble jenseits einer inneren Decke dieselben
+     * Ergebnisse wiederholt — genau das tut Careerjet ab Seite zehn.
+     */
+    const raus: RawListing[] = [];
+    const gesehen = new Set<string>();
+    const ziel = options.limit ?? 50;
+    let response!: Response;
 
+    for (let seite = 1; raus.length < ziel; seite++) {
+      /* Zwischen zwei Seiten wird gewartet, vor der ersten nicht. */
+      if (seite > 1) await new Promise((f) => setTimeout(f, ABSTAND_MS));
+
+      response = await this.fetchImpl(`https://${LAND[this.country].host}/api/${this.apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: mitFrist(options.signal),
+        body: JSON.stringify({
+          keywords: this.keywords,
+          location: this.location,
+          page: String(seite),
+        }),
+      });
+
+      if (!response.ok) break;
+
+      const daten = (await response.json()) as { jobs?: JoobleJob[] };
+      const treffer = daten.jobs ?? [];
+      let neuAufSeite = 0;
+      for (const j of treffer) {
+        const l = this.toRawListing(j);
+        if (gesehen.has(l.externalId)) continue;
+        gesehen.add(l.externalId);
+        raus.push(l);
+        neuAufSeite++;
+        if (raus.length >= ziel) break;
+      }
+
+      if (treffer.length === 0 || neuAufSeite === 0) break;
+      if (treffer.length < JE_SEITE) break;
+    }
+
+    if (raus.length > 0) return raus.slice(0, ziel);
+
+    /* Nichts geholt: Dann muss der Fehler laut sein — eine leere Liste
+       sähe aus wie eine Quelle ohne Stellen. */
     if (!response.ok) {
       /*
        * Eine 403 von Jooble heisst „falscher Host", nicht „falscher
@@ -237,8 +299,7 @@ export class JoobleAdapter implements JobSourceAdapter {
       );
     }
 
-    const body = (await response.json()) as { jobs?: JoobleJob[] };
-    return (body.jobs ?? []).slice(0, options.limit ?? 50).map((j) => this.toRawListing(j));
+    return raus;
   }
 
   private toRawListing(j: JoobleJob): RawListing {
