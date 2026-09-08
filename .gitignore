@@ -54,3 +54,15 @@ secrets/
 # Arbeitsdateien der Prüfläufe. Nichts davon gehört ins Projekt.
 .scratch/
 packages/db/.scratch/
+
+# Bildschirmfotos der Prüfläufe. Erzeugt von scripts/screenshots.mjs.
+#
+# Sie lagen bis zum 8. September 2026 in der Historie und machten mit
+# 275 MB drei Viertel des Repositories aus — bei 53 MB Gesamtgrösse
+# ohne sie. Der erste Push nach GitHub scheiterte daran mit HTTP 408.
+#
+# Sie sind Belege eines Zustands, kein Quellcode: Kein Modul lädt sie,
+# nichts liefert sie aus, und `pnpm run screenshots` erzeugt sie
+# jederzeit neu. Wer sie aufheben will, legt sie neben das Projekt,
+# nicht hinein.
+docs/screenshots/
