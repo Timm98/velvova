@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { Bell, Briefcase, Building2, CircleQuestionMark, FileText, MessagesSquare, Mic, Puzzle, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useBestand } from "@/components/marketing/BestandProvider";
@@ -599,6 +600,41 @@ function Kopfsuche({
   const bestand = useBestand();
   const lebend = bestand?.wert ?? null;
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein kurzes Aufhellen, wenn die Zahl weiterspringt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die Zahl zählt hoch, seit es den `BestandProvider` gibt — nur sah
+   * man es kaum. Sie steht im Platzhalter des Suchfelds, und ein
+   * Platzhalter ist ein Attribut: Man kann darin keine Ziffer einzeln
+   * auszeichnen und keinen Wechsel animieren.
+   *
+   * Was geht, ist das Feld selbst kurz heller zu stellen. `::placeholder`
+   * nimmt eine Farbübergabe an, und ein Datenattribut am Formular
+   * schaltet sie. Das genügt für den Zweck: Man soll nicht die Ziffer
+   * lesen, die sich ändert, sondern merken, dass sich etwas ändert.
+   *
+   * Der Abdruck steht auf 700 Millisekunden. Kürzer wirkt es wie ein
+   * Fehler in der Darstellung, länger wie ein Blinken — und die Zahl
+   * springt bei rund 0,7 Stellen je Sekunde ohnehin unregelmässig.
+   *
+   * `springt` hängt am Wert und nicht an einem Zeitgeber: Zwei
+   * Sekunden ohne neue Stelle sollen kein Aufleuchten erzeugen.
+   */
+  const [springt, setSpringt] = useState(false);
+  const vorher = useRef<number | null>(null);
+  useEffect(() => {
+    if (lebend === null) return;
+    if (vorher.current !== null && lebend !== vorher.current) {
+      setSpringt(true);
+      const uhr = setTimeout(() => setSpringt(false), 700);
+      vorher.current = lebend;
+      return () => clearTimeout(uhr);
+    }
+    vorher.current = lebend;
+  }, [lebend]);
+
   const zahl = lebend !== null ? lebend.toLocaleString("de-DE") : stellenzahl;
   const beschriftung = zahl
     ? `Finde ${zahl} Jobs mit Hilfe von Monday`
@@ -610,6 +646,7 @@ function Kopfsuche({
       method="get"
       role="search"
       aria-label="Stellensuche"
+      data-springt={springt ? "an" : undefined}
       className="kopfsuche absolute left-1/2 hidden w-[min(48vw,620px)] -translate-x-1/2 md:block"
     >
       <label htmlFor="kopf-stellensuche" className="sr-only">

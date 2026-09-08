@@ -71,14 +71,15 @@ const GRÖSSE = {
   /*
    * `hero` — dieselbe Regel, nur ein grösserer Deckel.
    *
-   * Auf der Startseite steht der Core in einer Spalte von rund 740
-   * Pixeln und war bei 620 gedeckelt: Die Karte um ihn herum wuchs,
-   * er nicht, und es entstand ein Rand, der wie ein Fehler aussah.
+   * Auf der Startseite steht der Core in einer Karte, die höchstens 680
+   * Pixel breit wird; abzüglich Innenabstand bleiben 632. Der Deckel
+   * liegt knapp darüber, damit er nie greift und die Karte allein die
+   * Grösse bestimmt.
    *
    * Eine eigene Stufe statt eines grösseren `xl`, weil `xl` auch
    * anderswo steht und dort die 620 richtig sind.
    */
-  hero: "aspect-square w-full max-w-[820px]",
+  hero: "aspect-square w-full max-w-[640px]",
 } as const;
 
 /** Fürs Vorlesegerät. Das Bild selbst ist Dekoration. */

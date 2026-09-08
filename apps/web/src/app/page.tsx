@@ -702,16 +702,16 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         bei 51 Pixeln Schriftgrad genau 418 — knapp darüber, damit die
         Überschrift zweizeilig bleibt und nicht auf drei bricht.
 
-        ── Und warum der Einstieg breiter sein darf als der Rest ──
-        Weiter liess sich die Karte nicht ziehen: Bei einem
-        Inhaltsbereich von 1240 Pixeln und einer Textspalte an ihrer
-        Untergrenze war bei 680 Pixeln Schluss, gleich wie gross der
-        Bildschirm war.
+        ── Und warum die Karte trotzdem nicht alles nimmt ──────
+        Ein Zwischenstand gab dem Einstieg 1400 Pixel statt 1240 und
+        der Karte damit 856. Das war zu viel: Der Core füllte die halbe
+        Seite und wurde vom Blickfang zum Hintergrundbild, und die
+        Anmeldekarte daneben sah aus wie eine Randnotiz.
 
-        Die 1240 sind das Mass für Text — eine Zeile, die darüber
-        hinausgeht, liest sich schlecht. Für eine Fläche gilt das
-        nicht. Ab 1280 bekommt der Einstieg deshalb 1400, und die
-        zusätzlichen 160 Pixel gehen vollständig an die Karte.
+        Deshalb wieder 1240 für den Abschnitt und ein Deckel auf der
+        Karte selbst. Sie nimmt, was die Spalte hergibt, aber höchstens
+        680 Pixel — der Rest der Spalte bleibt Luft zwischen Text und
+        Fläche.
 
         ── Warum 40/60 und nicht 34/66 ─────────────────────────
         Ein Zwischenstand gab der Karte zwei Drittel. Sie wurde damit
@@ -732,7 +732,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Position auf dem Telefon; wer sie ändern will, dreht die
         beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] xl:max-w-[1400px] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
@@ -793,65 +793,35 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              einem Gitterkind die Streckung auf: Das Element bemisst
              sich dann nach seinem Inhalt statt nach der Spalte.
              Gemessen blieb die Karte deshalb bei 620 Pixeln stehen,
-             obwohl die Spalte 744 breit war und `w-full` danebenstand —
-             `max-w-[820px]` und `aspect-[4/5]` liefen ins Leere, weil
-             es gar keine Breite gab, auf die sie sich bezogen hätten.
-
+             obwohl die Spalte 744 breit war und `w-full` danebenstand.
              `justify-self-end` sagt dasselbe über die Ausrichtung, ohne
              die Breite anzufassen.
+
+             ── Und warum der Überhang wieder weg ist ────────────
+             Eine Weile griff die Karte über den Innenabstand der Seite
+             hinaus, zuletzt bis zu 7rem weit. Das schob sie nach
+             rechts an die Fensterkante — und damit aus der Flucht, in
+             der Kopfzeile, Preise und Fuss stehen. Eine einzelne
+             Fläche, die weiter aussen sitzt als alles darüber und
+             darunter, sieht nicht grosszügig aus, sondern verrutscht.
+
+             ── Nach rechts breiter, ohne den Core zu bewegen ───
+             Drei Zahlen, die zusammengehören: `max-w` von 680 auf 712,
+             `-mr` von 24 auf 56, `pr` von 24 auf 56.
+
+             Die ersten beiden verschieben die rechte Kante um 32
+             Pixel nach aussen und lassen die linke, wo sie war — die
+             Karte wird also nach rechts breiter statt beidseitig. Die
+             dritte gibt genau diese 32 Pixel als Innenabstand wieder
+             ab: Der Bereich, in dem der Core sitzt, bleibt damit
+             unverändert breit und steht an derselben Stelle.
+
+             Ohne die dritte Zahl wäre der Core mitgewandert. Ein
+             mittig sitzendes Element in einem Kasten, der nur auf
+             einer Seite wächst, verschiebt sich um die halbe
+             Zunahme — hier 16 Pixel, genug um aufzufallen.
           */
-          /*
-             Kein festes Seitenverhältnis mehr.
-
-             Die Karte trägt jetzt zwei Dinge: den Core und darunter,
-             innerhalb desselben Rahmens, die Partnerzeile. Ein
-             `aspect-square` würde beides in eine feste Höhe zwängen
-             und entweder den Core stauchen oder unter den Kacheln
-             Leerraum lassen.
-
-             Stattdessen bestimmt der Inhalt die Höhe: Der Core ist
-             quadratisch und so breit wie die Karte innen, die Zeile
-             darunter ist so hoch, wie ihre Kacheln sind. Beides
-             zusammen ergibt die Karte — und keine Zahl muss dazu
-             passen.
-          */
-          /*
-             Die Karte greift über den Innenabstand hinaus.
-
-             Der Inhaltsbereich hat links und rechts 32 Pixel Luft, und
-             die galt bisher auch für die Karte — sie stand also 32
-             Pixel vor der Kante, an der die Kopfzeile darüber endet.
-             Für Text ist dieser Abstand richtig, für eine Fläche mit
-             eigenem Rahmen sieht er aus wie ein vergessener Rand.
-
-             Wie weit sie greifen darf, hängt vom Fenster ab und lässt
-             sich deshalb nicht als Stufe schreiben. Der Inhaltsbereich
-             hört bei 1240 Pixeln auf zu wachsen; alles darüber wird zu
-             Rand links und rechts. Genau dieser Rand ist der Platz,
-             den die Karte zusätzlich nehmen kann:
-
-                 (100vw − 1240px) / 2 + 2rem
-
-             Die 2rem sind der Innenabstand, der immer da ist. `max`
-             hält den Wert bei schmalen Fenstern bei genau diesen 2rem,
-             `min` deckelt ihn bei 7rem — sonst stiege der Überhang auf
-             einem sehr breiten Schirm ins Absurde.
-
-             Eine Stufe wie `xl:-mr-24` wäre einfacher gewesen und
-             falsch: Bei 1280 Pixeln stehen nur 52 Pixel Rand zur
-             Verfügung, 96 hätten die Seite um 44 Pixel überlaufen
-             lassen. Die Rechnung kann das nicht, weil sie genau den
-             vorhandenen Platz nimmt.
-
-             Ab 1280 entfällt sie ganz: Dort reicht der Abschnitt
-             selbst bis 1400 und braucht keinen Überhang mehr.
-
-             Erst ab 768: Darunter steht die Karte unter dem Text statt
-             daneben. Ein Überhang nur auf einer Seite sähe dort nicht
-             nach Absicht aus, sondern nach einem Element, das aus der
-             Spalte gerutscht ist.
-          */
-          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mr-[calc(-1*min(7rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6 xl:mr-0"
+          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-14 md:p-6 md:pr-14"
           style={{ background: "var(--ed-surface)" }}
         >
           <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />

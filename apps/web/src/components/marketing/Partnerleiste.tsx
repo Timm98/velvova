@@ -4,40 +4,47 @@ import Image from "next/image";
  * Die Markenzeile unter dem Core.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum hier nichts mehr ausgeglichen werden muss
+ * Dritter Anlauf, und diesmal lag es wieder an den Dateien
  * ══════════════════════════════════════════════════════════════
  *
- * Ein erster Anlauf stand auf fünf Vorschaubildern mit
- * Seitenverhältnissen von 1:1 bis 2,42 und drei verschiedenen
- * Hintergründen. Dagegen half nichts: Gleich grosse Kacheln wirkten
- * unterschiedlich schwer, `object-cover` schnitt die Wortmarken an
- * („psto", „Open"), und `object-contain` liess drei Marken in einem
- * Kasten sitzen, während zwei schwebten.
+ * Der erste stand auf fünf Vorschaubildern mit Seitenverhältnissen von
+ * 1:1 bis 2,42 und drei verschiedenen Hintergründen — dagegen half
+ * kein CSS. Der zweite auf Badge-Dateien, alle 16:9, aber mit
+ * eingebranntem weissem beziehungsweise schwarzem Grund: einheitlich,
+ * nur brachte jede Kachel ihre eigene Fläche mit und sass als Kasten
+ * in einer Karte, die schon eine Fläche hat.
  *
- * Die eigentliche Lösung lag nicht im CSS, sondern in den Dateien.
- * Die richtigen lagen bereits vor — `*_Badge_4K_White.png`, alle
- * 3840 × 2160, alle mit dem Zeichen mittig auf weissem Grund. Ich
- * hatte sie als „zu gross" aussortiert und die Vorschaubilder
- * behalten; das war der Fehler, nicht die Darstellung.
+ * Jetzt liegen alle Zeichen freigestellt vor, 3840 × 2160, gemessen
+ * nur zu rund zehn Prozent deckend. Damit braucht es weder Rahmen
+ * noch Fläche: Sie stehen auf der Karte, und was sie gleich gross
+ * macht, ist der gleiche Platz.
  *
- * Der Zusatz `-badge` im Dateinamen ist kein Schmuck: Next legt
- * optimierte Bilder unter Pfad und Breite ab. Beim ersten Austausch
- * blieben die Namen gleich, und die Seite zeigte weiter die alten
- * Dateien — sichtbar nur daran, dass „the stepstone group" rechts
- * angeschnitten war, wo im neuen Bild Platz ist.
+ * ── Der Zusatz `-frei` im Dateinamen ────────────────────────
+ * Next legt optimierte Bilder unter Pfad und Breite ab. Die Pfade
+ * `/marken/linkedin.png` und so weiter gab es in diesem Projekt
+ * bereits — mit weissem Grund. Nach dem Austausch zeigte die Seite
+ * weiter die alten: fünf Zeichen mit weissem und blauem Kasten,
+ * obwohl in den Dateien nachweislich keiner steckt. Ein neuer Name
+ * ist die einzige verlässliche Art, diesen Speicher zu umgehen.
  *
- * Jetzt haben alle fünf dasselbe Seitenverhältnis wie die Kachel.
- * Damit ist `object-contain` gleich `object-cover`: Es wird nichts
- * beschnitten und nichts eingepasst, weil es nichts auszugleichen
- * gibt. Auf 480 Pixel Breite verkleinert wiegt jede Datei rund 20 KB
- * statt einem halben Megabyte.
+ * ══════════════════════════════════════════════════════════════
+ * Warum OpenAI zwei Dateien hat und die anderen nicht
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Das OpenAI-Zeichen ist einfarbig. Schwarz verschwindet auf dunklem
+ * Grund, Weiss auf hellem — es braucht deshalb je Seite seine Fassung,
+ * so wie AMEX und die Überweisung bei den Zahlungsarten.
+ *
+ * Die vier anderen tragen ihre Markenfarbe: LinkedIn und Indeed Blau,
+ * StepStone Blau mit Farbverlauf, Claude Orange und Schwarz. Die sind
+ * auf beiden Seiten sichtbar und bleiben eine Datei.
  *
  * ══════════════════════════════════════════════════════════════
  * Was die Zeile behauptet
  * ══════════════════════════════════════════════════════════════
  *
  * Der Satz darüber steht als Eigenschaft im Aufruf, nicht fest im
- * Bauteil. Er behauptet eine Geschäftsbeziehung, und ob sie besteht,
+ * Bauteil. Er sagt eine Geschäftsbeziehung zu, und ob sie besteht,
  * entscheidet ein Vertrag und keine Komponente.
  *
  * Das Quellenregister führt LinkedIn, Indeed und StepStone unter
@@ -47,49 +54,40 @@ import Image from "next/image";
  */
 type Marke = {
   name: string;
-  /** Die helle Fassung: Zeichen auf weissem Grund. */
+  /** Das freigestellte Zeichen. Gilt für beide Darstellungen … */
   datei: string;
-  /** Die dunkle Fassung, wenn es eine gibt. */
+  /** … ausser hier steht eine zweite Fassung für die dunkle Seite. */
   dateiDunkel?: string;
-  /**
-   * Kein dunkles Bild, aber ein einfarbiges Zeichen auf durchsichtigem
-   * Grund — das lässt sich umkehren.
-   */
-  umkehren?: boolean;
 };
 
 const MARKEN: Marke[] = [
-  {
-    name: "LinkedIn",
-    datei: "/marken/linkedin-badge.png",
-    dateiDunkel: "/marken/linkedin-badge-dunkel.png",
-  },
-  {
-    name: "Indeed",
-    datei: "/marken/indeed-badge.png",
-    dateiDunkel: "/marken/indeed-badge-dunkel.png",
-  },
-  {
-    name: "StepStone",
-    datei: "/marken/stepstone-badge.png",
-    dateiDunkel: "/marken/stepstone-badge-dunkel.png",
-  },
-  { name: "OpenAI", datei: "/marken/openai-badge.png", umkehren: true },
-  {
-    name: "Claude",
-    datei: "/marken/claude-badge.png",
-    dateiDunkel: "/marken/claude-badge-dunkel.png",
-  },
+  { name: "LinkedIn", datei: "/marken/linkedin-frei.png" },
+  { name: "Indeed", datei: "/marken/indeed-frei.png" },
+  { name: "StepStone", datei: "/marken/stepstone-frei.png" },
+  { name: "OpenAI", datei: "/marken/openai-hell-frei.png", dateiDunkel: "/marken/openai-dunkel-frei.png" },
+  { name: "Claude", datei: "/marken/claude-frei.png" },
 ];
 
 /*
- * 16:9 — dasselbe Verhältnis wie die Dateien.
+ * Zwei Masse, und beide sind Absicht.
  *
- * Genau deshalb sitzt jedes Zeichen gleich gross und gleich mittig,
- * ohne dass irgendwo ein Ausgleich nötig wäre.
+ * Der Platz je Marke ist 120 × 64 und überall gleich — daran liegt es,
+ * dass die Zeile ruhig wirkt. Das Zeichen darin bekommt 110 × 42 und
+ * `object-contain`: Es füllt diesen Rahmen nie ganz aus, sondern
+ * passt sich hinein, und die 11 Pixel Luft ringsum verhindern, dass
+ * eine breite Wortmarke an die nächste stösst.
+ *
+ * Die Dateien sind 16:9 mit dem Zeichen mittig im transparenten
+ * Rahmen. In einem Feld von 110 × 42 — also deutlich flacher — bindet
+ * deshalb die Höhe, und alle fünf werden auf dasselbe Mass gebracht.
+ * Genau das ist der Grund, warum sie optisch gleich gross wirken,
+ * obwohl LinkedIn ein breites Wort und Claude ein Zeichen plus Wort
+ * ist.
  */
-const KACHEL_BREIT = 112;
-const KACHEL_HOCH = 63;
+const FELD_BREIT = 120;
+const FELD_HOCH = 64;
+const ZEICHEN_BREIT = 110;
+const ZEICHEN_HOCH = 42;
 
 export function Partnerleiste({
   titel = "Wir arbeiten mit diesen Partnern zusammen",
@@ -108,18 +106,23 @@ export function Partnerleiste({
         auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
         keine Bewegung.
       */}
-      <ul className="mt-4 flex flex-wrap items-center justify-center gap-3 md:gap-4">
+      <ul className="mt-4 flex flex-wrap items-center justify-center gap-0">
         {MARKEN.map((m) => (
           <li
             key={m.name}
             title={m.name}
-            className={[
-              "markenbadge overflow-hidden rounded-(--radius-md) opacity-90 transition-opacity hover:opacity-100",
-              m.umkehren ? "markenbadge--umkehren" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-            style={{ width: KACHEL_BREIT, height: KACHEL_HOCH }}
+            /*
+             * Kein Rahmen und keine Fläche.
+             *
+             * Beides gab es in früheren Fassungen, und beides war eine
+             * Antwort auf Dateien, die ihren eigenen Grund mitbrachten.
+             * Freigestellte Zeichen brauchen weder das eine noch das
+             * andere: Sie stehen auf der Fläche der Karte, und was sie
+             * gleich gross macht, ist der gleiche Platz — nicht ein
+             * Kasten darum.
+             */
+            className="markenbadge flex items-center justify-center"
+            style={{ width: FELD_BREIT, height: FELD_HOCH, background: "transparent" }}
           >
             {/*
               Beide Fassungen stehen im Markup, umgeschaltet wird über
@@ -130,18 +133,20 @@ export function Partnerleiste({
             <Image
               src={m.datei}
               alt={m.name}
-              width={KACHEL_BREIT}
-              height={KACHEL_HOCH}
-              className={m.dateiDunkel ? "fuer-hell h-full w-full object-cover" : "h-full w-full object-cover"}
+              width={ZEICHEN_BREIT}
+              height={ZEICHEN_HOCH}
+              style={{ width: ZEICHEN_BREIT, height: ZEICHEN_HOCH, background: "transparent" }}
+              className={m.dateiDunkel ? "fuer-hell object-contain" : "object-contain"}
             />
             {m.dateiDunkel ? (
               <Image
                 src={m.dateiDunkel}
                 alt=""
                 aria-hidden
-                width={KACHEL_BREIT}
-                height={KACHEL_HOCH}
-                className="fuer-dunkel h-full w-full object-cover"
+                width={ZEICHEN_BREIT}
+                height={ZEICHEN_HOCH}
+                style={{ width: ZEICHEN_BREIT, height: ZEICHEN_HOCH, background: "transparent" }}
+                className="fuer-dunkel object-contain"
               />
             ) : null}
           </li>

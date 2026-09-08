@@ -671,60 +671,36 @@
 :root[data-theme="dark"] .zahlungsbadge .fuer-hell { display: none; }
 
 /*
- * ── Markenkacheln: hell weiss, dunkel fast schwarz ───────────
+ * ── Markenkacheln: nur die Umschaltung, keine Fläche ─────────
  *
- * Dieselbe Frage wie bei den Zahlungsarten, deshalb dieselbe Antwort.
- * Ein weisser Kasten sitzt im dunklen Modus als Leuchtfläche in einer
- * ruhigen Seite; die Zeichen brauchen dort einen dunklen Grund.
+ * Hier standen einmal Hintergrundfarben — weiss für hell, fast schwarz
+ * für dunkel. Sie waren nötig, solange die Dateien ihren eigenen Grund
+ * mitbrachten und die Kachel nur der Ausschnitt war.
  *
- * Und dieselbe Dreizustandslogik: Vorgabe hell, Systemwunsch dunkel
- * sofern nicht ausdrücklich hell gewählt, ausdrückliche Wahl gewinnt
- * in beide Richtungen. Eine Regel nur in der Medienabfrage griffe beim
- * Umschalten über den Schalter nicht.
+ * Freigestellte Zeichen brauchen das nicht. Die Kachel trägt eine
+ * Linie und sonst nichts; dahinter steht die Fläche der Karte. Eine
+ * eigene Farbe wäre jetzt ein Kasten im Kasten.
+ *
+ * Was bleibt, ist die Umschaltung für die eine einfarbige Marke —
+ * dieselbe Dreizustandslogik wie bei den Zahlungsarten: Vorgabe hell,
+ * Systemwunsch dunkel sofern nicht ausdrücklich hell gewählt,
+ * ausdrückliche Wahl gewinnt in beide Richtungen. Eine Regel nur in
+ * der Medienabfrage griffe beim Umschalten über den Schalter nicht.
  *
  * `:root` und kein beliebiger Vorfahr mit `data-theme`: Die Kachel
- * steht in einer Karte, die ihr Thema selbst setzen könnte, und würde
- * dann auch im hellen Modus schwarz.
+ * steht in einer Karte, die ihr Thema selbst setzen könnte, und zeigte
+ * dann auch im hellen Modus die dunkle Fassung.
  */
-.markenbadge {
-  background: #ffffff;
-  border: 1px solid rgb(11 14 22 / 0.12);
-}
 .markenbadge .fuer-dunkel { display: none; }
 .markenbadge .fuer-hell { display: block; }
 
-/*
- * Eine Marke ohne dunkle Datei.
- *
- * OpenAI liegt als einfarbiges Zeichen auf durchsichtigem Grund vor —
- * umgekehrt wird daraus genau das weisse Zeichen, das die Marke im
- * Dunkeln selbst verwendet. Das ist keine Umfärbung, sondern dieselbe
- * Form in der Gegenhelligkeit.
- *
- * Für die übrigen vier gibt es echte dunkle Dateien. Bei LinkedIn
- * stand hier eine Weile eine Ausnahme: Blau auf Weiss umgekehrt ergibt
- * Orange auf Schwarz, und eine falsche Markenfarbe wäre schlimmer als
- * eine helle Kachel in einer dunklen Reihe gewesen. Seit
- * `LinkedIn_Badge_4K_Black_Blue.png` vorliegt, braucht es sie nicht
- * mehr.
- */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .markenbadge {
-    background: #0b0d12;
-    border-color: rgb(255 255 255 / 0.14);
-  }
   :root:not([data-theme="light"]) .markenbadge .fuer-dunkel { display: block; }
   :root:not([data-theme="light"]) .markenbadge .fuer-hell { display: none; }
-  :root:not([data-theme="light"]) .markenbadge--umkehren img { filter: invert(1); }
 }
 
-:root[data-theme="dark"] .markenbadge {
-  background: #0b0d12;
-  border-color: rgb(255 255 255 / 0.14);
-}
 :root[data-theme="dark"] .markenbadge .fuer-dunkel { display: block; }
 :root[data-theme="dark"] .markenbadge .fuer-hell { display: none; }
-:root[data-theme="dark"] .markenbadge--umkehren img { filter: invert(1); }
 
 /* ── Aufmerksamkeit ohne Lärm ─────────────────────────────────
  *
@@ -755,6 +731,36 @@
 .kopfsuche input {
   animation: velvova-atmen-rand 8s ease-in-out infinite;
 }
+/*
+ * Der Sprung der Zahl — ein kurzes Aufhellen, kein Blinken.
+ *
+ * Die Zahl steht im Platzhalter, und ein Platzhalter ist ein Attribut:
+ * Eine einzelne Ziffer lässt sich darin nicht auszeichnen. Was geht,
+ * ist die Farbe des ganzen Platzhalters, und `::placeholder` nimmt
+ * eine Übergabe an.
+ *
+ * Hell hinein, langsam zurück: 120 Millisekunden auf die volle
+ * Schriftfarbe, 700 wieder heraus. Andersherum — gleich schnell in
+ * beide Richtungen — läse sich derselbe Wechsel als Blinken. Der
+ * Unterschied zwischen „etwas hat sich geändert" und „hier blinkt
+ * etwas" liegt fast nur in dieser Asymmetrie.
+ *
+ * Der Rahmen bekommt denselben Anstoss, sehr schwach. Er trägt die
+ * Bewegung über die Breite des Feldes, wo der Text sie nur in der
+ * Mitte zeigt.
+ */
+.kopfsuche input::placeholder {
+  transition: color 700ms ease-out;
+}
+.kopfsuche[data-springt="an"] input::placeholder {
+  color: var(--color-ink);
+  transition: color 120ms ease-out;
+}
+.kopfsuche[data-springt="an"] input {
+  border-color: rgb(from var(--color-accent) r g b / 0.38);
+  transition: border-color 120ms ease-out;
+}
+
 /* Beim Tippen hört das Atmen auf: Wer das Feld benutzt, muss nicht
    mehr darauf hingewiesen werden. */
 .kopfsuche input:focus,
@@ -774,6 +780,10 @@
 @media (prefers-reduced-motion: reduce) {
   .kopfsuche input,
   .nina-streifen__knopf { animation: none; }
+  /* Auch das Aufhellen beim Sprung der Zahl ist Bewegung. */
+  .kopfsuche input::placeholder,
+  .kopfsuche[data-springt="an"] input::placeholder,
+  .kopfsuche[data-springt="an"] input { transition: none; }
 }
 
 /* ── Der Rand hinter der Seite ────────────────────────────────

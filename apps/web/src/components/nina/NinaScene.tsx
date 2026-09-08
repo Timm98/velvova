@@ -723,7 +723,33 @@ export function NinaScene({
           const atem = 1 + Math.sin(laufzeit * 0.55) * 0.015;
           wurzel.scale.setScalar(einpassung * atem);
 
-          blickX = blickX + (Math.sin(laufzeit * 0.13) * 0.12 + zeigerX * 0.1 - blickX) * 0.02;
+          /*
+           * ══════════════════════════════════════════════════════
+           * Seitlich ruhiger, ohne die Parallaxe aufzugeben
+           * ══════════════════════════════════════════════════════
+           *
+           * Die waagerechte Auslenkung stand auf 0,12 bei einer
+           * Kameradistanz von 3,4 — rund dreieinhalb Prozent der
+           * Distanz und damit eine sichtbare Wanderung nach links und
+           * rechts. In einer Karte mit festem Rahmen liest sich das
+           * als Verrutschen, nicht als Raum.
+           *
+           * Jetzt 0,05, und der Zeigereinfluss von 0,10 auf 0,045. Die
+           * Bewegung bleibt in beide Richtungen erhalten, nur als
+           * Andeutung.
+           *
+           * Wichtig ist, was NICHT kleiner wird: Die senkrechte
+           * Auslenkung bleibt bei 0,07, und beide Frequenzen — 0,13
+           * und 0,17 — stehen unverändert. Sie sind so gewählt, dass
+           * sich die zusammengesetzte Bewegung erst nach Minuten
+           * wiederholt; wer eine davon anfasst, macht aus der
+           * unauffälligen Wanderung ein erkennbares Pendeln.
+           *
+           * Die Tiefe kommt ohnehin überwiegend aus dem Atmen und
+           * daraus, dass nahe und ferne Schichten unterschiedlich
+           * schnell wandern — nicht aus der Amplitude.
+           */
+          blickX = blickX + (Math.sin(laufzeit * 0.13) * 0.05 + zeigerX * 0.045 - blickX) * 0.02;
           blickY = blickY + (Math.cos(laufzeit * 0.17) * 0.07 - zeigerY * 0.07 - blickY) * 0.02;
           kamera.position.set(blickX, 0.15 + blickY, 3.4);
           kamera.lookAt(0, 0, 0);
