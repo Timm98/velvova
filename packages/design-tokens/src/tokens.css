@@ -365,17 +365,17 @@
    * Auf dem tiefen Marineblau trägt #7169ff, weil der Grund selbst
    * blau ist und nicht grau — die beiden gehören zur selben Familie.
    */
-  --primary: #F0763C;
-  --primary-fill: #C2410C;
-  --primary-strong: #9A3412;
+  --primary: #5b83d6;
+  --primary-fill: #426dc5;
+  --primary-strong: #3a61b2;
   --primary-soft: rgba(66, 109, 197, 0.24);
-  --primary-text: #F3A06A;
+  --primary-text: #8fabe4;
 
-  --signal-cyan: #FFC27A;
-  --signal-cyan-text: #FFC27A;
+  --signal-cyan: #7ee2ff;
+  --signal-cyan-text: #7ee2ff;
   --signal-cyan-soft: rgba(126, 226, 255, 0.14);
-  --signal-violet: #E8A08A;
-  --signal-violet-text: #F0B9A6;
+  --signal-violet: #a89fff;
+  --signal-violet-text: #bcb5ff;
   --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
   --success: #3fd79a;
@@ -453,17 +453,17 @@
     --border-subtle: rgba(225, 228, 234, 0.1);
     --border-strong: #545f78;
 
-    --primary: #F0763C;
-    --primary-fill: #C2410C;
-    --primary-strong: #9A3412;
+    --primary: #5b83d6;
+    --primary-fill: #426dc5;
+    --primary-strong: #3a61b2;
     --primary-soft: rgba(66, 109, 197, 0.24);
-    --primary-text: #F3A06A;
+    --primary-text: #8fabe4;
 
-    --signal-cyan: #FFC27A;
-    --signal-cyan-text: #FFC27A;
+    --signal-cyan: #7ee2ff;
+    --signal-cyan-text: #7ee2ff;
     --signal-cyan-soft: rgba(126, 226, 255, 0.14);
-    --signal-violet: #E8A08A;
-    --signal-violet-text: #F0B9A6;
+    --signal-violet: #a89fff;
+    --signal-violet-text: #bcb5ff;
     --signal-violet-soft: rgba(168, 159, 255, 0.14);
 
     --success: #3fd79a;
@@ -634,10 +634,10 @@
   --ed-hairline: rgba(255, 255, 255, 0.1);
   --ed-hairline-strong: rgba(255, 255, 255, 0.18);
 
-  --ed-violet: #F0763C;
-  --ed-violet-text: #F3A06A;
-  --ed-ice: #FFB067;
-  --ed-mint: #FFD9A0;
+  --ed-violet: #2E6FF2;
+  --ed-violet-text: #8fb6ff;
+  --ed-ice: #7ee2ff;
+  --ed-mint: #8ff5d3;
   --ed-violet-soft: rgba(102, 92, 255, 0.16);
 
   --ed-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -668,10 +668,10 @@
     --ed-ink-3: #8d857b;
     --ed-hairline: rgba(255, 255, 255, 0.1);
     --ed-hairline-strong: rgba(255, 255, 255, 0.18);
-    --ed-violet: #F0763C;
-    --ed-violet-text: #F3A06A;
-    --ed-ice: #FFB067;
-    --ed-mint: #FFD9A0;
+    --ed-violet: #2E6FF2;
+    --ed-violet-text: #8fb6ff;
+    --ed-ice: #7ee2ff;
+    --ed-mint: #8ff5d3;
     --ed-violet-soft: rgba(102, 92, 255, 0.16);
   }
 }

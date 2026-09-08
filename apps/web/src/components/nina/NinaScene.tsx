@@ -155,6 +155,58 @@ function ladeModell() {
 }
 
 /** Vorladen, sobald die Anwendung im Browser läuft. */
+/**
+ * Zwei Farbstaffeln, eine je Darstellung.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum der Core die Farbe wechselt
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Das Modell ist emissiv: Seine Farben werden zum Grund addiert, statt
+ * ihn zu ersetzen. Was auf dunklem Grund leuchtet, kann auf hellem
+ * darin verschwinden — und umgekehrt. Eine Staffel für beide Seiten
+ * gibt es deshalb nicht, ohne dass eine der beiden Seiten verliert.
+ *
+ * Hell trägt Orange, weil die helle Darstellung durchgehend warm ist.
+ * Dunkel trägt Blau: Auf dem neutralen Grau der dunklen Flächen liest
+ * sich ein warmer Kern wie eine Warnfarbe, ein kühler wie Licht.
+ *
+ * Die fünf Stufen sind keine gleichmässige Rampe. Jedes der elf
+ * Materialien bekommt seinen Platz darin aus seiner ursprünglichen
+ * Helligkeit — was in der Datei hell war, liegt vorn. Eine gerade
+ * Mischung wäre ohne Ereignis; an den Stützstellen entstehen die
+ * sichtbaren Kanten zwischen den Schichten.
+ *
+ * Bewusst kein Cyan und kein Gelb am oberen Ende: Alles oberhalb eines
+ * mittleren Tons verschwindet auf heller Seite im Papier — und mit ihm
+ * die Ringe und Partikel, die den Core ausmachen.
+ */
+const STAFFEL_HELL = ["#0A0300", "#2E0E02", "#8A3006", "#B4520F", "#E8873C"] as const;
+const STAFFEL_DUNKEL = ["#00040F", "#031444", "#0A34C4", "#1E5CF0", "#4E96FF"] as const;
+
+/** Für die Spitzlichter — einmal angelegt statt je Schicht neu. */
+const WEISS = new Color("#ffffff");
+
+/** Gegenlicht und Aufheller — je Darstellung, damit die Säume passen. */
+const LICHTER_HELL = { gegen: 0xffc899, auf: 0xe8934f } as const;
+const LICHTER_DUNKEL = { gegen: 0x9fc6ff, auf: 0x6f9dff } as const;
+
+/**
+ * Welche Darstellung gilt gerade?
+ *
+ * Drei Fälle, und der dritte ist der, den man vergisst: `data-theme`
+ * steht nur, wenn hell oder dunkel ausdrücklich gewählt wurde. Ohne
+ * das Attribut — der Normalfall, siehe `ThemeToggle` — entscheidet
+ * das Gerät, und danach muss hier gefragt werden.
+ */
+function istDunkel(): boolean {
+  if (typeof document === "undefined") return false;
+  const gewaehlt = document.documentElement.dataset.theme;
+  if (gewaehlt === "dark") return true;
+  if (gewaehlt === "light") return false;
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 export function ninaVorladen(): void {
   if (typeof window !== "undefined") void ladeModell().catch(() => undefined);
 }
@@ -234,7 +286,7 @@ export function NinaScene({
        * Flächen aufzuhellen: Die tragen ihr Licht selbst und reagieren
        * auf Szenenlicht kaum.
        */
-      const gegenlicht = new DirectionalLight(0xffc899, 0.8);
+      const gegenlicht = new DirectionalLight(0xffffff, 0.8);
       gegenlicht.position.set(-3, 1.5, -2.5);
       szene.add(gegenlicht);
 
@@ -252,7 +304,7 @@ export function NinaScene({
        * Kühler und schwächer als die beiden anderen, damit es die
        * Modellierung ergänzt und nicht mit ihr konkurriert.
        */
-      const aufheller = new DirectionalLight(0xe8934f, 0.45);
+      const aufheller = new DirectionalLight(0xffffff, 0.45);
       aufheller.position.set(2.5, -2, -1.5);
       szene.add(aufheller);
 
@@ -304,13 +356,10 @@ export function NinaScene({
        * alles oberhalb eines mittleren Blaus im Papier — und mit ihm
        * die Ringe und Partikel, die den Core ausmachen.
        */
-      const staffel = [
-        new Color("#0A0300"),
-        new Color("#2E0E02"),
-        new Color("#8A3006"),
-        new Color("#B4520F"),
-        new Color("#E8873C"),
-      ];
+      /* Die Schichten merken sich ihren Platz in der Staffel, damit ein
+         Wechsel der Darstellung sie umfärben kann, ohne dass das Modell
+         neu geladen und die Szene neu aufgebaut wird. */
+      const schichten: { stoff: MeshStandardMaterial; lage: number }[] = [];
       /*
        * 0.55 statt 0.20.
        *
@@ -341,21 +390,9 @@ export function NinaScene({
             ? Math.min(1, Math.max(0, (quelle.r + quelle.g + quelle.b) / 3))
             : 0.5;
 
-          const platz = lage * (staffel.length - 1);
-          const unten = Math.min(staffel.length - 2, Math.floor(platz));
-          const ton = staffel[unten]!.clone().lerp(staffel[unten + 1]!, platz - unten);
+          schichten.push({ stoff: kopie, lage });
 
-          /*
-           * Spitzlichter nur in den obersten zwei Prozent, und
-           * schwach. Bei 0,95 und Faktor 1,4 wurden aus „ein paar
-           * Kanten leuchten" flächige weisse Zonen — auf hellem Grund
-           * verschwindet dort jede Zeichnung.
-           */
-          if (lage > 0.98) ton.lerp(new Color("#ffffff"), (lage - 0.98) * 0.9);
-
-          if (kopie.color) kopie.color.copy(ton).multiplyScalar(koerperfaktor);
           if (kopie.emissive) {
-            kopie.emissive.copy(ton);
             /*
              * Gestaucht, nicht skaliert.
              *
@@ -377,6 +414,75 @@ export function NinaScene({
         });
         teil.material = neu.length === 1 ? neu[0]! : neu;
       });
+
+      /*
+       * Einfärben — und zwar jederzeit wieder.
+       *
+       * Die Staffel steckte früher fest im Aufbau. Das reichte, solange
+       * beide Darstellungen denselben Kern trugen; seit Hell orange und
+       * Dunkel blau ist, muss ein Wechsel der Darstellung ankommen,
+       * ohne die Szene neu aufzubauen — ein Neuaufbau hiesse Modell
+       * neu laden, und das sieht man.
+       *
+       * Deshalb liegt hier nur noch die Farbe. Leuchtstärke, Einpassung
+       * und Bewegung bleiben, wo sie sind: Sie hängen nicht am Modus.
+       */
+      const tonspeicher = new Color();
+      function einfaerben(dunkel: boolean) {
+        const namen = dunkel ? STAFFEL_DUNKEL : STAFFEL_HELL;
+        const licht = dunkel ? LICHTER_DUNKEL : LICHTER_HELL;
+        gegenlicht.color.setHex(licht.gegen);
+        aufheller.color.setHex(licht.auf);
+
+        const staffel = namen.map((n) => new Color(n));
+        for (const { stoff, lage } of schichten) {
+          const platz = lage * (staffel.length - 1);
+          const unten = Math.min(staffel.length - 2, Math.floor(platz));
+          const ton = tonspeicher
+            .copy(staffel[unten]!)
+            .lerp(staffel[unten + 1]!, platz - unten);
+
+          /*
+           * Spitzlichter nur in den obersten zwei Prozent, und
+           * schwach. Bei 0,95 und Faktor 1,4 wurden aus „ein paar
+           * Kanten leuchten" flächige weisse Zonen — auf hellem Grund
+           * verschwindet dort jede Zeichnung.
+           */
+          if (lage > 0.98) ton.lerp(WEISS, (lage - 0.98) * 0.9);
+
+          if (stoff.color) stoff.color.copy(ton).multiplyScalar(koerperfaktor);
+          if (stoff.emissive) stoff.emissive.copy(ton);
+        }
+      }
+
+      einfaerben(istDunkel());
+
+      /*
+       * Zwei Wege führen zu einem Wechsel, und beide müssen hier
+       * ankommen:
+       *
+       *   **Der Schalter** setzt `data-theme` am Wurzelelement. Das
+       *   sieht kein Medienereignis — dafür braucht es den Beobachter.
+       *
+       *   **Das Gerät** wechselt, während „System" gewählt ist. Davon
+       *   weiss das Attribut nichts, denn es steht dann gar nicht da.
+       *
+       * Wer nur einen der beiden hört, hat einen Core, der beim
+       * Umschalten in der alten Farbe stehen bleibt — bis zum nächsten
+       * Seitenaufbau, und damit genau so lange, wie es auffällt.
+       */
+      const nachfuehren = () => einfaerben(istDunkel());
+
+      const modusBeobachter = new MutationObserver(nachfuehren);
+      modusBeobachter.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+      });
+      aufräumen.push(() => modusBeobachter.disconnect());
+
+      const geraet = window.matchMedia("(prefers-color-scheme: dark)");
+      geraet.addEventListener("change", nachfuehren);
+      aufräumen.push(() => geraet.removeEventListener("change", nachfuehren));
 
       /*
        * Automatisches Einpassen.
