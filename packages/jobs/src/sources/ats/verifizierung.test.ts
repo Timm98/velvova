@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pruefeArbeitgeberBoard } from "./verifizierung.ts";
+import { findeArbeitgeberBoards, pruefeArbeitgeberBoard } from "./verifizierung.ts";
 
 /**
  * Die Prüfung entscheidet, ob wir ein fremdes System abfragen dürfen.
@@ -126,5 +126,87 @@ describe("Kein Nachweis", () => {
       fetchImpl: seite('{"x":"boards.greenhouse.io/musterfirma"}', "application/json"),
     });
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("Recruitee: der Bezeichner steht davor, nicht dahinter", () => {
+  /*
+   * ── Warum das eine eigene Beschreibung verdient ───────────────
+   *
+   * Vier Anbieter hängen den Arbeitgeber hinten an
+   * (`boards.greenhouse.io/musterfirma`), Recruitee stellt ihn davor
+   * (`musterfirma.recruitee.com`). Der Pfadleser findet auf
+   * `musterfirma.recruitee.com/o/stelle` den Bezeichner `o` — ein
+   * Treffer, der nach Verifizierung aussieht und keine ist.
+   *
+   * Die Tests hier prüfen beide Richtungen: dass die richtige Form
+   * erkannt wird, und dass die falschen es nicht werden.
+   */
+
+  it("erkennt den Mandanten in der Subdomäne", async () => {
+    const r = await pruefeArbeitgeberBoard("recruitee", "musterfirma", "muster.de", {
+      fetchImpl: seite('<a href="https://musterfirma.recruitee.com/o/stelle-1">Offene Stellen</a>'),
+    });
+    expect(r.ok).toBe(true);
+    expect(r.beleg).toContain("musterfirma");
+  });
+
+  it("lässt sich von einem ähnlichen Mandanten nicht überzeugen", async () => {
+    /*
+     * Ohne die Wache vor dem Bezeichner belegte `musterfirma` auch
+     * `nichtmusterfirma.recruitee.com` — ein fremdes Board, gemessen
+     * an einem Namen, der zufällig darin endet.
+     */
+    const r = await pruefeArbeitgeberBoard("recruitee", "musterfirma", "muster.de", {
+      fetchImpl: seite('<a href="https://nichtmusterfirma.recruitee.com/o/stelle-1">Jobs</a>'),
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("nimmt den Host allein nicht als Beleg", async () => {
+    const r = await pruefeArbeitgeberBoard("recruitee", "musterfirma", "muster.de", {
+      fetchImpl: seite('<script src="https://cdn.recruitee.com/widget.js"></script>'),
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("liest den Mandanten aus der Karriereseite", async () => {
+    const funde = await findeArbeitgeberBoards("muster.de", {
+      fetchImpl: seite('<a href="https://musterfirma.recruitee.com/o/stelle-1">Karriere</a>'),
+    });
+    expect(funde).toHaveLength(1);
+    expect(funde[0]).toMatchObject({ board: "recruitee", boardToken: "musterfirma" });
+  });
+
+  it("hält Recruitees eigene Seiten nicht für Arbeitgeber", async () => {
+    /*
+     * `www.recruitee.com` und `help.recruitee.com` gehören dem
+     * Anbieter. Ohne diese Ausnahme würde jede Seite, die auf
+     * Recruitees Hilfe verlinkt, den Arbeitgeber „help" registrieren.
+     */
+    const funde = await findeArbeitgeberBoards("muster.de", {
+      fetchImpl: seite(
+        '<a href="https://www.recruitee.com">Bewerbersystem</a>' +
+        '<a href="https://help.recruitee.com/de">Hilfe</a>',
+      ),
+    });
+    expect(funde).toHaveLength(0);
+  });
+
+  it("verwechselt das Pfadsegment nicht mit dem Mandanten", async () => {
+    /* Aus `.../o/stelle-1` darf kein Arbeitgeber `o` werden. */
+    const funde = await findeArbeitgeberBoards("muster.de", {
+      fetchImpl: seite('<a href="https://musterfirma.recruitee.com/o/stelle-1">Karriere</a>'),
+    });
+    expect(funde.map((f) => f.boardToken)).not.toContain("o");
+  });
+
+  it("lässt die Pfadform der anderen vier unberührt", async () => {
+    const funde = await findeArbeitgeberBoards("muster.de", {
+      fetchImpl: seite('<a href="https://boards.greenhouse.io/musterfirma/jobs/1">Karriere</a>'),
+    });
+    expect(funde).toContainEqual(
+      expect.objectContaining({ board: "greenhouse", boardToken: "musterfirma" }),
+    );
   });
 });

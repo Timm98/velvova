@@ -6,7 +6,7 @@ import {
   type ProviderCapabilities,
   type RawListing,
 } from "../adapter.ts";
-import { envWert } from "../net.ts";
+import { envWert, mitFrist } from "../net.ts";
 
 /**
  * Reed.co.uk — das grösste Stellenportal Grossbritanniens.
@@ -115,7 +115,7 @@ export class ReedAdapter implements JobSourceAdapter {
             Authorization: `Basic ${Buffer.from(`${this.apiKey}:`).toString("base64")}`,
             Accept: "application/json",
           },
-          signal: options.signal,
+          signal: mitFrist(options.signal),
         }).catch(() => null);
 
         if (!antwort?.ok) {

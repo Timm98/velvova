@@ -3,6 +3,21 @@ export * from "./sources/userImport.ts";
 export * from "./registry.ts";
 export * from "./sources/arbeitnow.ts";
 export * from "./sources/adzuna.ts";
+export * from "./sources/careerjet.ts";
+/*
+ * Namentlich, nicht mit Stern.
+ *
+ * Jeder Adapter hat ein `zuRawListing` — bei einem Sternexport
+ * kollidieren sie. Careerjet war zuerst da und behält den Namen; hier
+ * steht, was Nomado24 nach aussen gibt.
+ */
+export {
+  Nomado24Adapter,
+  nomado24Adresse,
+  arbeitsmodell as nomado24Arbeitsmodell,
+  gehalt as nomado24Gehalt,
+  zuRawListing as nomado24ZuRawListing,
+} from "./sources/nomado24.ts";
 export * from "./sources/jooble.ts";
 export * from "./ingest.ts";
 export * from "./canonical.ts";
@@ -65,3 +80,4 @@ export * from "./suchauftrag/index.ts";
 export * from "./geodaten.ts";
 export * from "./proaktiv/index.ts";
 export * from "./intelligenz/index.ts";
+export * from "./sources/ats/smartrecruiters-partner.ts";

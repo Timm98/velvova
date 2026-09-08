@@ -4,6 +4,8 @@ import { UserTextImportAdapter } from "./sources/userImport.ts";
 import { ArbeitnowAdapter } from "./sources/arbeitnow.ts";
 import { ADZUNA_LAENDER, AdzunaAdapter } from "./sources/adzuna.ts";
 import { ReedAdapter } from "./sources/reed.ts";
+import { CareerjetAdapter, CAREERJET_LAENDER } from "./sources/careerjet.ts";
+import { Nomado24Adapter } from "./sources/nomado24.ts";
 import { UsaJobsAdapter } from "./sources/usajobs.ts";
 import { FindworkAdapter } from "./sources/findwork.ts";
 import { JOOBLE_COUNTRIES, JoobleAdapter } from "./sources/jooble.ts";
@@ -50,7 +52,7 @@ export function setBoardRegistrations(board: BoardKind, rows: BoardRegistration[
   boardRegistrations.set(board, rows);
 }
 
-export const ATS_BOARDS: BoardKind[] = ["greenhouse", "lever", "ashby", "smartrecruiters"];
+export const ATS_BOARDS: BoardKind[] = ["greenhouse", "lever", "ashby", "smartrecruiters", "recruitee"];
 
 /**
  * Suchbegriffe, die aus echten Profilen stammen.
@@ -180,6 +182,25 @@ function allAdapters(o: AdapterOptionen = {}): JobSourceAdapter[] {
      * Abrufreihenfolge (`orchestrierung.ts`) nach Datenqualität und
      * Kosten — nicht diese Liste. Hier steht nur, welche es gibt.
      */
+    /*
+     * Careerjet — je Land ein Adapter, wie bei Adzuna und Jooble.
+     *
+     * Gemessen am 8.9.2026: 726.896 Treffer allein für Deutschland.
+     * Sie kommt zum richtigen Zeitpunkt — die Ausbeute der
+     * bestehenden Quellen war am 7. September auf neun Prozent
+     * gefallen (5,7 Mio. geholt, 546.000 neu).
+     */
+    ...CAREERJET_LAENDER.map((l) => new CareerjetAdapter({ country: l.code })),
+    /*
+     * Nomado24 — Remote und Hybrid, ohne Schlüssel, aber mit Schalter.
+     *
+     * `isConfigured()` prüft `ENABLE_NOMADO24`, nicht ein Zugangsdatum:
+     * Die API ist offen, offen ist nur, was eine kostenpflichtige
+     * Plattform damit tun darf. Solange das nicht schriftlich geklärt
+     * ist, meldet die Quelle sich als nicht eingerichtet und wird nicht
+     * abgerufen.
+     */
+    new Nomado24Adapter(),
     new TheirStackAdapter(),
     new JSearchAdapter(),
     new BrightDataAdapter(),

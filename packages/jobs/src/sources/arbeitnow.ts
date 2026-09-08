@@ -1,4 +1,5 @@
 import type { ProviderCapabilities } from "../adapter.ts";
+import { mitFrist } from "../net.ts";
 import { landAusOrt } from "./landausort.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
@@ -188,7 +189,7 @@ export class ArbeitnowAdapter implements JobSourceAdapter {
       let response: Response | null = null;
       for (let versuch = 0; versuch < 4; versuch += 1) {
         response = await this.fetchImpl(url, {
-          signal: options.signal,
+          signal: mitFrist(options.signal),
           headers: {
             Accept: "application/json",
             "User-Agent": "VelvovaJobConnector/1.0 (+kandidatenseitige Stellensuche)",

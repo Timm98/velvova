@@ -4,6 +4,7 @@ import type {
   ProviderCapabilities,
   RawListing,
 } from "../adapter.ts";
+import { mitFrist } from "../net.ts";
 
 /**
  * Lightcast — vorbereitet, ohne Vertrag abgeschaltet.
@@ -121,7 +122,7 @@ export class LightcastAdapter implements JobSourceAdapter {
     const response = await this.fetchImpl(AUTH_URL, {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded" },
-      signal,
+      signal: mitFrist(signal),
       body: new URLSearchParams({
         client_id: this.clientId!,
         client_secret: this.clientSecret!,
@@ -160,7 +161,7 @@ export class LightcastAdapter implements JobSourceAdapter {
         authorization: `Bearer ${token}`,
         "content-type": "application/json",
       },
-      signal: options.signal,
+      signal: mitFrist(options.signal),
       body: JSON.stringify({
         filter: {
           when: options.since

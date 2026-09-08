@@ -396,6 +396,149 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
       "Schätzung geführt und nie als offengelegte Angabe dargestellt. " +
       "Beschreibungen sind vom Anbieter auf 500 Zeichen gekürzt.",
   })),
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Careerjet — je Land ein Eintrag
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Grundlage ist ein Partnerschlüssel aus dem offiziellen
+   * API-Programm, den der Betreiber am 8.9.2026 hinterlegt hat. Ohne
+   * ihn antwortet die Schnittstelle gar nicht — es gibt also keinen
+   * Weg, sie versehentlich ohne Vereinbarung zu benutzen.
+   *
+   * ── Kein Volltext, und das ist eine Feststellung ────────────
+   *
+   * Careerjet liefert einen Anriss, keine ganze Anzeige. Gemessen am
+   * 8.9.2026 an fünfzig deutschen Treffern: jede Beschreibung endet
+   * mitten im Satz, die längste bei rund 200 Zeichen. Der
+   * vollständige Text steht beim Arbeitgeber, und dorthin führt der
+   * Pflichtverweis.
+   *
+   * ── Was noch offen ist ──────────────────────────────────────
+   *
+   * `termsCheckedAt` steht auf `null`. Der Schlüssel belegt die
+   * Vereinbarung, aber niemand hat die Bedingungen Zeile für Zeile
+   * gelesen und ein Datum daruntergesetzt. Das ist kein Mangel des
+   * Eintrags, sondern eine offene Aufgabe für einen Menschen — und
+   * sie steht hier, damit sie nicht vergessen wird.
+   */
+  ...([
+    { land: "DE", name: "Deutschland" }, { land: "AT", name: "Österreich" },
+    { land: "CH", name: "Schweiz" }, { land: "JP", name: "Japan" },
+    { land: "US", name: "USA" }, { land: "FR", name: "Frankreich" },
+    { land: "BR", name: "Brasilien" }, { land: "GB", name: "Grossbritannien" },
+    { land: "IT", name: "Italien" }, { land: "MX", name: "Mexiko" },
+    { land: "IN", name: "Indien" }, { land: "PL", name: "Polen" },
+    { land: "CA", name: "Kanada" }, { land: "AR", name: "Argentinien" },
+    { land: "NL", name: "Niederlande" }, { land: "CZ", name: "Tschechien" },
+    { land: "ZA", name: "Südafrika" }, { land: "BE", name: "Belgien" },
+    { land: "AU", name: "Australien" }, { land: "SE", name: "Schweden" },
+    { land: "ES", name: "Spanien" }, { land: "SG", name: "Singapur" },
+    { land: "PT", name: "Portugal" }, { land: "TR", name: "Türkei" },
+    { land: "IE", name: "Irland" }, { land: "FI", name: "Finnland" },
+    { land: "DK", name: "Dänemark" }, { land: "HU", name: "Ungarn" },
+    { land: "RO", name: "Rumänien" }, { land: "NO", name: "Norwegen" },
+    { land: "UA", name: "Ukraine" }, { land: "NZ", name: "Neuseeland" },
+  ] as const).map((l) => ({
+    providerKey: `careerjet_${l.land.toLowerCase()}`,
+    displayName: `Careerjet (${l.name})`,
+    baseDomains: ["careerjet.de", "careerjet.at", "careerjet.ch", "careerjet.com", "jobviewtrack.com"],
+    sourceType: "aggregator" as const,
+    legalBasis: "official_api_terms" as const,
+    accessMode: "api" as const,
+    legalStatus: "active" as const,
+    allowedOperations: ["Search", "Cache", "Summarize", "Embed", "Rank"] as SourceOperation[],
+    allowedFields: [
+      ...METADATA_ONLY,
+      "description_summary",
+      "employment_type",
+      "salary_min",
+      "salary_currency",
+    ],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Stellendaten von Careerjet. Bewerbung über die Originalanzeige.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: [l.land],
+    termsUrl: "https://www.careerjet.de/partners/api/",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note:
+      "Basic-Auth mit leerem Passwort. Referer ist Pflicht (sonst 403). " +
+      "user_ip/user_agent bei jeder Anfrage; die Ernte sendet 203.0.113.1 " +
+      "(RFC 5737), nicht die IP eines Besuchers. Nur salary_min: der Betrag " +
+      "kommt als Fliesstext und trägt keine Spanne.",
+  })),
+  {
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Nomado24 — eingetragen, aber nicht freigegeben
+     * ══════════════════════════════════════════════════════════════
+     *
+     * Die API nennt ihre Lizenz selbst, im Kopf jeder Antwort:
+     *
+     *   "license": "Free to use with an attribution link to nomado24.de"
+     *   "attribution": "Data: Nomado24 (https://www.nomado24.de)"
+     *
+     * Das ist eine technische Erlaubnis und beantwortet die Frage
+     * nicht, die für eine kostenpflichtige Plattform zählt: Dürfen die
+     * Daten gespeichert, durch ein Sprachmodell verarbeitet und für
+     * Abgleiche benutzt werden, und wie lange?
+     *
+     * `legalStatus: "partner_pending"` hält die Quelle deshalb an —
+     * derselbe Riegel, der Careerjet vor der Eintragung angehalten hat.
+     * Er sitzt vor dem ersten Netzzugriff: Ein Abruf, der erst
+     * hinterher als unzulässig erkannt wird, hat stattgefunden.
+     *
+     * ── Kein Volltext, und zwar mangels Volltext ────────────────
+     *
+     * Die API liefert keine Stellenbeschreibung. `fullTextAllowed`
+     * steht hier also nicht als Beschränkung, sondern als
+     * Feststellung.
+     */
+    providerKey: "nomado24",
+    displayName: "Nomado24",
+    baseDomains: ["nomado24.de", "www.nomado24.de", "api.nomado24.de"],
+    sourceType: "aggregator",
+    legalBasis: "official_api_terms",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "Cache", "Summarize", "Embed", "Rank"] as SourceOperation[],
+    allowedFields: [...METADATA_ONLY],
+    fullTextAllowed: false,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Powered by Nomado24 (https://www.nomado24.de)",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: [],
+    termsUrl: "https://www.nomado24.de/de/developers",
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note:
+      "FREIGABE: Am 8.9.2026 auf BETREIBERENTSCHEIDUNG freigegeben, nicht auf schriftliche " +
+      "Zusage von Nomado24. Der Betreiber hat kommerzielle Nutzung, Speicherung, " +
+      "KI-Verarbeitung und Ausspielung bejaht und zugesagt, abgelaufene Stellen zu entfernen. " +
+      "Schriftlich belegt ist von Nomado24 nur die Entwicklerseite: Attribution gegen " +
+      "kostenlose Nutzung, Caching erwuenscht, 240 Anfragen je 15 Minuten. Kommerzielle " +
+      "Nutzung, Speicherdauer, Weiterverbreitung und KI-Verarbeitung erwaehnt sie nicht. " +
+      "Wer das spaeter liest: Es ist kein Vertrag. " +
+      "TECHNIK: Kein API-Schluessel noetig. Seitengroesse ueber per_page, nicht limit. " +
+      "Liefert keine Beschreibung und keine Bewerbungsadresse beim Arbeitgeber — " +
+      "die url zeigt auf die Nomado24-Seite.",
+  },
   {
     /*
      * Reed — grösstes Stellenportal Grossbritanniens.
@@ -649,6 +792,37 @@ export const SOURCE_REGISTRY: SourceEntry[] = [
     killSwitchReason: null,
     note:
       "Aktive Veröffentlichungen je Unternehmen. Die Listenantwort trägt keinen Volltext; die Beschreibung bleibt leer statt erfunden.",
+  },
+  {
+    providerKey: "ats_recruitee",
+    displayName: "Recruitee (Arbeitgeberboards)",
+    baseDomains: ["recruitee.com"],
+    sourceType: "ats",
+    legalBasis: "employer_authorization",
+    accessMode: "api",
+    legalStatus: "active",
+    allowedOperations: ["Search", "FetchDetails", "Cache", "PublicDisplay", "Summarize", "Embed", "Rank"],
+    allowedFields: FULL_FIELDS,
+    fullTextAllowed: true,
+    logoUsageAllowed: false,
+    maxCacheHours: 24,
+    attributionText: "Direkt vom Arbeitgeber veröffentlicht.",
+    requiresOriginalLink: true,
+    nativeApplyAllowed: false,
+    countriesAllowed: ["DE", "AT", "CH", "EU"],
+    termsUrl: null,
+    termsVersion: null,
+    termsCheckedAt: null,
+    nextLegalReviewAt: null,
+    reviewOwner: "unbesetzt",
+    removalEndpoint: null,
+    enabled: true,
+    killSwitchReason: null,
+    note:
+      "Öffentlicher Karriere-Endpunkt je Mandant, gemessen am 8. September 2026 gegen zwei Mandanten " +
+      "(203 Anzeigen). Anders als die vier anderen Boards steht der Mandant in der Subdomäne, nicht im " +
+      "Pfad — die Verifizierung kennt beide Formen. Einziges Board mit strukturiertem Gehalt " +
+      "(61 % der Anzeigen, mit Periode und Währung).",
   },
   {
     providerKey: "arbeitnow",

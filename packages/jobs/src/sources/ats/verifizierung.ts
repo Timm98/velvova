@@ -48,7 +48,70 @@ const HOSTS: Record<BoardKind, string[]> = {
   lever: ["jobs.lever.co", "lever.co"],
   ashby: ["jobs.ashbyhq.com", "ashbyhq.com"],
   smartrecruiters: ["careers.smartrecruiters.com", "jobs.smartrecruiters.com", "smartrecruiters.com"],
+  recruitee: ["recruitee.com"],
 };
+
+/**
+ * Wo der Bezeichner im Link steht.
+ *
+ * ── Warum das eine eigene Tabelle braucht ─────────────────────
+ *
+ * Vier der fünf Anbieter hängen den Arbeitgeber hinten an:
+ *
+ *     boards.greenhouse.io/musterfirma
+ *                          ^^^^^^^^^^^ erstes Pfadsegment
+ *
+ * Recruitee stellt ihn davor:
+ *
+ *     musterfirma.recruitee.com/o/stelle-123
+ *     ^^^^^^^^^^^                 Subdomäne
+ *
+ * Das ist kein Schönheitsunterschied. Der Pfadleser findet auf
+ * `musterfirma.recruitee.com/o/…` den Bezeichner `o` — ein Treffer,
+ * der nach Verifizierung aussieht und keine ist. Und die Prüfung
+ * „steht Host und Bezeichner beieinander?" ginge ins Leere, weil der
+ * Bezeichner VOR dem Host steht, nicht dahinter.
+ *
+ * Deshalb steht die Lage hier ausdrücklich und nicht als Sonderfall
+ * in einer Verzweigung: Wer den sechsten Anbieter einträgt, muss sich
+ * die Frage stellen.
+ */
+const BEZEICHNERLAGE: Record<BoardKind, "pfad" | "subdomaene"> = {
+  greenhouse: "pfad",
+  lever: "pfad",
+  ashby: "pfad",
+  smartrecruiters: "pfad",
+  recruitee: "subdomaene",
+};
+
+/** Der Host-Teil eines Musters, für den Einsatz in einem RegExp. */
+function hostMuster(h: string): string {
+  return h.replace(/\./g, "\\.");
+}
+
+/**
+ * Das Muster, das „dieser Arbeitgeber verlinkt dieses Board" belegt.
+ *
+ * Beide Formen verlangen Host UND Bezeichner im selben Vorkommen.
+ * Nur der Host reichte nicht — eine Seite kann Recruitee für ein
+ * Bewerbungsformular einbinden. Nur der Bezeichner erst recht nicht:
+ * er ist meistens der Firmenname und steht überall auf der Seite.
+ */
+function belegMuster(board: BoardKind, host: string, token: string): RegExp {
+  const t = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return BEZEICHNERLAGE[board] === "subdomaene"
+    // Der Bezeichner unmittelbar vor dem Host, mit einer Wache davor:
+    // ohne sie belegte `muster` auch `nichtmuster.recruitee.com`.
+    ? new RegExp(`(?:^|[^a-z0-9.-])${t}\\.${hostMuster(host)}`, "i")
+    : new RegExp(`${hostMuster(host)}[/a-z0-9._~-]*\\b${t}\\b`, "i");
+}
+
+/** Das Muster, das Bezeichner aus einer Seite LIEST. */
+function fundMuster(board: BoardKind, host: string): RegExp {
+  return BEZEICHNERLAGE[board] === "subdomaene"
+    ? new RegExp(`(?:^|[^a-z0-9.-])([a-z0-9][a-z0-9-]{1,60})\\.${hostMuster(host)}`, "gi")
+    : new RegExp(`${hostMuster(host)}/([a-z0-9][a-z0-9._~-]{1,60})`, "gi");
+}
 
 /**
  * Wo Karriereseiten üblicherweise liegen.
@@ -98,13 +161,7 @@ export async function pruefeArbeitgeberBoard(
      * anderes einbinden. Nur der Bezeichner reichte erst recht nicht —
      * er ist meistens der Firmenname und steht überall.
      */
-    const treffer = hosts.find((h) => {
-      const muster = new RegExp(
-        `${h.replace(/\./g, "\\.")}[/a-z0-9._~-]*\\b${token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
-        "i",
-      );
-      return muster.test(html);
-    });
+    const treffer = hosts.find((h) => belegMuster(board, h, token).test(html));
 
     if (treffer) {
       return {
@@ -214,8 +271,7 @@ export async function findeArbeitgeberBoards(
          * Segmente wie `embed` oder `job_board.js` sind kein Bezeichner,
          * sondern Einbindungscode — sie fliegen unten raus.
          */
-        const muster = new RegExp(`${h.replace(/\./g, "\\.")}/([a-z0-9][a-z0-9._~-]{1,60})`, "gi");
-        for (const t of html.matchAll(muster)) {
+        for (const t of html.matchAll(fundMuster(board, h))) {
           const token = (t[1] ?? "").toLowerCase();
           if (!token || KEIN_BEZEICHNER.has(token)) continue;
           const schluessel = `${board}:${token}`;
@@ -249,4 +305,20 @@ const KEIN_BEZEICHNER = new Set([
   "companies",
   "job_board.js",
   "job_board",
+  /*
+   * Die folgenden gelten der Subdomänen-Form.
+   *
+   * `www.recruitee.com` und `help.recruitee.com` sind Seiten des
+   * ANBIETERS, keine Arbeitgeberboards. Ohne diese Einträge würde
+   * jede Seite, die auf Recruitees eigene Hilfe verlinkt, als
+   * Arbeitgeber „www" registriert.
+   */
+  "www",
+  "careers",
+  "help",
+  "support",
+  "blog",
+  "app",
+  "status",
+  "docs",
 ]);

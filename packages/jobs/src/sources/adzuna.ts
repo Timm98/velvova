@@ -116,6 +116,31 @@ const MAX_SEITE = 100;
  */
 const GLEICHZEITIG = Math.max(1, Math.min(8, Number(process.env.ADZUNA_GLEICHZEITIG ?? 1)));
 
+/*
+ * ══════════════════════════════════════════════════════════════
+ * Jede Anfrage bekommt eine Frist — auch ohne Signal von aussen
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Hier stand `fetch(url, { signal: options.signal })`. Wer kein
+ * Signal mitgab — und die Ernteskripte geben keines mit —, bekam
+ * einen Abruf OHNE jede Zeitgrenze.
+ *
+ * Das ist nicht theoretisch. Am 8. September 2026 standen vier
+ * Läufe (de, fr, it, nl) sechseinhalb Stunden still: schlafend, eine
+ * offene Verbindung, null Prozent Last. Adzuna hatte die Verbindung
+ * angenommen und dann nicht mehr geantwortet — und `fetch` wartet in
+ * so einem Fall unbegrenzt.
+ *
+ * Ein hängender Lauf ist schlimmer als ein fehlgeschlagener: Der
+ * fehlgeschlagene wird bemerkt und wiederholt, der hängende sieht
+ * aus wie Arbeit.
+ *
+ * Die Frist umschliesst Anfrage UND Antwortkörper. Nur den
+ * Verbindungsaufbau zu begrenzen liesse die zweite Hälfte desselben
+ * Problems bestehen: Kopfzeilen da, Körper versiegt.
+ */
+const ANTWORT_FRIST_MS = Math.max(5_000, Number(process.env.ADZUNA_FRIST_MS ?? 45_000));
+
 /**
  * Pause zwischen zwei Blöcken.
  *
@@ -311,15 +336,37 @@ export class AdzunaAdapter implements JobSourceAdapter {
               const days = Math.ceil((Date.now() - options.since.getTime()) / 86_400_000);
               url.searchParams.set("max_days_old", String(Math.max(1, days)));
             }
-            return this.fetchImpl(url, { signal: options.signal }).catch(() => null);
+            /*
+             * Die Frist des Aufrufers UND unsere eigene. `AbortSignal.any`
+             * bricht ab, sobald eines von beiden auslöst — ein Lauf, den
+             * jemand abbricht, hängt nicht noch 45 Sekunden nach.
+             */
+            const frist = AbortSignal.timeout(ANTWORT_FRIST_MS);
+            const signal = options.signal
+              ? AbortSignal.any([options.signal, frist])
+              : frist;
+
+            try {
+              const antwort = await this.fetchImpl(url, { signal });
+              if (!antwort.ok) return { ok: false as const, status: antwort.status, body: null };
+              const koerper = (await antwort.json().catch(() => null)) as
+                | { results?: AdzunaResult[] }
+                | null;
+              return { ok: true as const, status: antwort.status, body: koerper };
+            } catch {
+              /* Zeitablauf, Abbruch oder Netzfehler — hier alles dasselbe:
+                 keine Antwort. Die Unterscheidung trifft der Aufrufer nicht,
+                 er kann nur weitermachen oder aufhören. */
+              return null;
+            }
           }),
         );
 
         let neuImBlock = 0;
         let letzteVoll = true;
 
-        for (const response of antworten) {
-          if (!response || !response.ok) {
+        for (const antwort of antworten) {
+          if (!antwort || !antwort.ok) {
             /*
              * ── Was wir schon haben, wird nicht weggeworfen ────
              *
@@ -336,19 +383,18 @@ export class AdzunaAdapter implements JobSourceAdapter {
              */
             if (raus.length === 0) {
               throw new Error(
-                `Adzuna antwortete mit ${response?.status ?? "keiner Antwort"}. ` +
+                `Adzuna antwortete mit ${antwort?.status ?? "keiner Antwort"}. ` +
                   "Es werden keine Stellen übernommen.",
               );
             }
             console.warn(
-              `[adzuna] ${this.country}: ${response?.status ?? "keine Antwort"} nach ` +
+              `[adzuna] ${this.country}: ${antwort?.status ?? "keine Antwort"} nach ` +
                 `${raus.length} Anzeigen — der Lauf endet mit dem, was da ist.`,
             );
             break begriffSchleife;
           }
 
-          const body = (await response.json().catch(() => null)) as { results?: AdzunaResult[] } | null;
-          const treffer = body?.results ?? [];
+          const treffer = antwort.body?.results ?? [];
           for (const r of treffer) {
             const l = this.toRawListing(r);
             if (gesehen.has(l.externalId)) continue;

@@ -1,5 +1,5 @@
 import type { ProviderCapabilities } from "../adapter.ts";
-import { envWert } from "../net.ts";
+import { envWert, mitFrist } from "../net.ts";
 import { normaliseWorkModel, type FetchOptions, type JobSourceAdapter, type RawListing } from "../adapter.ts";
 
 /**
@@ -199,7 +199,7 @@ export class JoobleAdapter implements JobSourceAdapter {
     const response = await this.fetchImpl(`https://${LAND[this.country].host}/api/${this.apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      signal: options.signal,
+      signal: mitFrist(options.signal),
       body: JSON.stringify({
         keywords: this.keywords,
         location: this.location,

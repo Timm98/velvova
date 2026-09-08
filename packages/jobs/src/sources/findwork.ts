@@ -6,7 +6,7 @@ import {
   type ProviderCapabilities,
   type RawListing,
 } from "../adapter.ts";
-import { envWert } from "../net.ts";
+import { envWert, mitFrist } from "../net.ts";
 
 /**
  * Findwork — Technikstellen weltweit.
@@ -92,7 +92,7 @@ export class FindworkAdapter implements JobSourceAdapter {
             Authorization: `Token ${this.apiKey}`,
             Accept: "application/json",
           },
-          signal: options.signal,
+          signal: mitFrist(options.signal),
         }).catch(() => null);
 
         if (!antwort?.ok) {
