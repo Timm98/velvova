@@ -28,7 +28,7 @@ import Image from "next/image";
  * ist die einzige verlässliche Art, diesen Speicher zu umgehen.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum zwei Marken zwei Dateien haben und drei nicht
+ * Warum drei Marken zwei Dateien haben und zwei nicht
  * ══════════════════════════════════════════════════════════════
  *
  * Das OpenAI-Zeichen ist einfarbig: Schwarz verschwindet auf dunklem
@@ -38,9 +38,13 @@ import Image from "next/image";
  * je Seite ihre Fassung, so wie AMEX und die Überweisung bei den
  * Zahlungsarten.
  *
- * Die drei anderen tragen durchgehend ihre Markenfarbe: LinkedIn und
- * Indeed Blau, StepStone Blau mit Farbverlauf. Die sind auf beiden
- * Seiten sichtbar und bleiben eine Datei.
+ * Bei StepStone ist es der kleine Zusatz „group" unter der Wortmarke:
+ * Er steht in einem gedeckten Blau, das auf hellem Grund liest und auf
+ * dunklem nicht mehr.
+ *
+ * LinkedIn und Indeed tragen durchgehend ein kräftiges Blau und
+ * bleiben deshalb je eine Datei — sie sind auf beiden Seiten sichtbar,
+ * und eine zweite Fassung wäre eine Datei mehr ohne Unterschied.
  *
  * ══════════════════════════════════════════════════════════════
  * Was die Zeile behauptet
@@ -66,7 +70,11 @@ type Marke = {
 const MARKEN: Marke[] = [
   { name: "LinkedIn", datei: "/marken/linkedin-frei.png" },
   { name: "Indeed", datei: "/marken/indeed-frei.png" },
-  { name: "StepStone", datei: "/marken/stepstone-frei.png" },
+  {
+    name: "StepStone",
+    datei: "/marken/stepstone-frei.png",
+    dateiDunkel: "/marken/stepstone-dunkel-frei.png",
+  },
   { name: "OpenAI", datei: "/marken/openai-hell-frei.png", dateiDunkel: "/marken/openai-dunkel-frei.png" },
   {
     name: "Claude",
