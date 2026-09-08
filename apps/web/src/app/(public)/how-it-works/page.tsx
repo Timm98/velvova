@@ -74,6 +74,39 @@ export default async function HowItWorksPage() {
         ))}
       </ol>
 
+      {/*
+        Ein Beispiel, ausdrücklich erfunden.
+
+        Die sechs Schritte darüber erklären, WAS geschieht. Sie
+        erklären nicht, wie sich das anfühlt, wenn zwei Dinge
+        gleichzeitig zutreffen — ein Vorteil und eine offene Frage.
+
+        Genau das ist der Fall, für den die ganze Unterscheidung
+        gebaut ist: Ein kürzerer Weg wiegt keine unbestätigte
+        Wochenendregelung auf. Eine Zahl, die beides verrechnet,
+        verschweigt die Hälfte.
+
+        Die Kennzeichnung als Beispiel steht im Text selbst, nicht
+        nur im Kleingedruckten. Wer die Seite überfliegt, soll nicht
+        glauben, hier stünde eine echte Stelle.
+      */}
+      <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
+        <Stack gap={3}>
+          <h2 style={{ fontSize: "var(--text-base)" }}>Ein erfundenes Beispiel</h2>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+            Angenommen, eine Stelle liegt näher an deiner Wohnung als deine jetzige — der Arbeitsweg
+            wäre kürzer. In der Anzeige steht aber nichts darüber, ob regelmässig samstags gearbeitet
+            wird, und freie Wochenenden hattest du als Bedingung genannt.
+          </p>
+          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+            {brand.assistantName} nennt dann beides: den kürzeren Weg als belegten Vorteil und die
+            Wochenendregelung als offene Frage. Der Vorteil hebt die Bedingung nicht auf, und die
+            offene Frage macht die Stelle nicht schlecht — sie ist eben offen. Als nächsten Schritt
+            schlägt {brand.assistantName} vor, genau danach zu fragen.
+          </p>
+        </Stack>
+      </Card>
+
       <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
         <Stack gap={3}>
           <h2 style={{ fontSize: "var(--text-base)" }}>Was hier ausdrücklich nicht passiert</h2>
