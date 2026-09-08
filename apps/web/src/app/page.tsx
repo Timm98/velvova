@@ -8,6 +8,7 @@ import { LebendeZahl } from "@/components/marketing/LebendeZahl";
 import { NinaVisual } from "@/components/nina/NinaVisual";
 import { Einstieg } from "@/components/marketing/Einstieg";
 import { HaeufigeFragen } from "@/components/marketing/HaeufigeFragen";
+import { Partnerleiste } from "@/components/marketing/Partnerleiste";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { NachtsWeiter } from "@/components/jobs/NachtsWeiter";
 import { TopNav } from "@/components/shell/TopNav";
@@ -191,6 +192,29 @@ export default async function LandingPage() {
       */}
       <main id="inhalt">
         <Einstiegshero angemeldet={sitzung.angemeldet} anrede={sitzung.anrede} />
+        {/*
+          Die Partnerleiste ist gebaut, aber nicht eingehängt.
+
+          Nicht wegen der Komponente — die stimmt. Sondern wegen der
+          Dateien: Alle fünf sind Vorschaubilder, keine Logo-Assets.
+          1200×630 ist das Open-Graph-Maß für soziale Netzwerke,
+          3840×2160 ist 16:9 mit dem Logo klein in der Mitte auf
+          farbigem Grund. Nur `indeed.png` hat überhaupt einen
+          Alphakanal.
+
+          Auf 22 Pixel Höhe skaliert wird daraus eine 39 Pixel breite
+          Kachel mit unlesbarem Inhalt — im Bild blaue Blöcke für
+          LinkedIn und Indeed, weisse Kästchen für StepStone und
+          Claude.
+
+          Eine Logozeile, die aussieht wie ein Versehen, kostet mehr
+          Glaubwürdigkeit, als sie bringt. Sobald eng beschnittene
+          SVG- oder PNG-Dateien mit Transparenz vorliegen — die gibt
+          es auf den Presseseiten der Marken —, genügt hier eine
+          Zeile:
+
+              <Partnerleiste />
+        */}
         <HaeufigeFragen assistentName={brand.assistantName} />
       </main>
 

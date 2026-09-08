@@ -335,14 +335,14 @@
    * Helligkeit und Sättigung steigen — deshalb wirken die Ebenen wie
    * Schichten desselben Materials und nicht wie fünf Grautöne.
    */
-  --background: #0e0e10;
-  --background-subtle: #26262c;
-  --surface-1: #18181b;
-  --surface-2: #202024;
-  --surface-3: #27272b;
+  --background: #17171a;
+  --background-subtle: #2e2e34;
+  --surface-1: #202023;
+  --surface-2: #28282c;
+  --surface-3: #303034;
   --surface-glass: rgba(12, 15, 24, 0.82);
 
-  --surface-soft: #202024;
+  --surface-soft: #28282c;
   --surface-soft-hover: #252b3a;
 
   --text-primary: #e1e4ea;
@@ -436,13 +436,13 @@
     color-scheme: dark;
 
     --surface-kontofeld: #10141d;
-    --background: #0e0e10;
-    --background-subtle: #26262c;
-    --surface-1: #18181b;
-    --surface-2: #202024;
-    --surface-3: #27272b;
+    --background: #17171a;
+    --background-subtle: #2e2e34;
+    --surface-1: #202023;
+    --surface-2: #28282c;
+    --surface-3: #303034;
     --surface-glass: rgba(12, 15, 24, 0.82);
-    --surface-soft: #202024;
+    --surface-soft: #28282c;
     --surface-soft-hover: #252b3a;
 
     --text-primary: #e1e4ea;
@@ -624,9 +624,9 @@
 :root[data-theme="dark"] [data-surface="editorial"]:not([data-theme="light"]) {
   color-scheme: dark;
 
-  --ed-canvas: #070910;
-  --ed-surface: #0e111b;
-  --ed-surface-raised: #1b1b1f;
+  --ed-canvas: #131316;
+  --ed-surface: #1b1b1f;
+  --ed-surface-raised: #232327;
   --ed-ink: #f7f8fc;
   --ed-ink-2: #b0a89e;
   /* 5,56:1 auf dunklem Grund. */
@@ -660,9 +660,9 @@
        Jetzt hängt die Ausnahme an der Wurzel, wo die Wahl steht. */
     :root[data-theme-mode="system"]:not([data-theme="light"]) [data-surface="editorial"] {
     color-scheme: dark;
-    --ed-canvas: #070910;
-    --ed-surface: #0e111b;
-    --ed-surface-raised: #1b1b1f;
+    --ed-canvas: #131316;
+    --ed-surface: #1b1b1f;
+    --ed-surface-raised: #232327;
     --ed-ink: #f7f8fc;
     --ed-ink-2: #b0a89e;
     --ed-ink-3: #8d857b;
