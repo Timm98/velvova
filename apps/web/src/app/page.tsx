@@ -669,10 +669,49 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Anmeldekarte unter dem Core statt neben ihm, und der Einstieg
         lag unterhalb des ersten Bildschirms.
 
-        Bei 768 passt beides: 45 Prozent von 1240 sind 558 Pixel für die
-        Karte, und darunter greift ohnehin die schmale Fassung.
+        Bei 768 passt beides, und darunter greift ohnehin die schmale
+        Fassung.
+
+        ── Warum der Core links steht ──────────────────────────
+        Nicht aus Symmetrie. Unter 768 Pixeln bricht die Zeile um, und
+        die Reihenfolge im Text ist dann die Reihenfolge auf dem
+        Schirm: Was rechts stand, landet unten. Der Core lag damit auf
+        dem Telefon unterhalb der Anmeldekarte — sichtbar erst nach
+        einem Bildschirm Scrollen, obwohl er das Erste ist, was die
+        Seite zeigen soll.
+
+        Links heisst deshalb auch: zuerst.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.4fr_0.6fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-14">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.6fr_0.4fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-14">
+      {/*
+        Der Core in einer ruhigen Karte — und darunter die Marken.
+
+        ── Warum kein Quadrat mehr ─────────────────────────────
+        Die Karte stand auf `aspect-square` bei höchstens 560 Pixeln.
+        Das war eine sichere Wahl und eine zu kleine: Neben einer
+        Anmeldekarte von rund 470 Pixeln Höhe wirkte der Core wie eine
+        Abbildung daneben statt wie die Hauptsache.
+
+        Jetzt 4:5 und bis 680 Pixel breit. Das Verhältnis bleibt fest,
+        damit beim Laden nichts springt — eine feste Höhe hätte auf
+        schmalen Geräten entweder Luft verschenkt oder den Core
+        angeschnitten.
+
+        ── Warum die Leiste in derselben Spalte steht ──────────
+        Sie gehört unter den Core, nicht unter die ganze Seite. In
+        einer eigenen Zeile unterhalb beider Spalten stünde sie
+        mittig unter Anmeldekarte und Core und damit unter nichts.
+      */}
+      <div className="grid gap-8">
+        <div
+          className="relative mx-auto flex aspect-[4/5] w-full max-w-[680px] items-center justify-center rounded-(--radius-lg) border border-line"
+          style={{ background: "var(--ed-surface)" }}
+        >
+          <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
+        </div>
+
+        <Partnerleiste />
+      </div>
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
@@ -705,35 +744,6 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         <Einstieg angemeldet={angemeldet} />
       </div>
 
-      {/*
-        Der Core in einer ruhigen Karte — und darunter die Marken.
-
-        ── Warum kein Quadrat mehr ─────────────────────────────
-        Die Karte stand auf `aspect-square` bei höchstens 560 Pixeln.
-        Das war eine sichere Wahl und eine zu kleine: Neben einer
-        Anmeldekarte von rund 470 Pixeln Höhe wirkte der Core wie eine
-        Abbildung daneben statt wie die Hauptsache.
-
-        Jetzt 4:5 und bis 680 Pixel breit. Das Verhältnis bleibt fest,
-        damit beim Laden nichts springt — eine feste Höhe hätte auf
-        schmalen Geräten entweder Luft verschenkt oder den Core
-        angeschnitten.
-
-        ── Warum die Leiste in derselben Spalte steht ──────────
-        Sie gehört unter den Core, nicht unter die ganze Seite. In
-        einer eigenen Zeile unterhalb beider Spalten stünde sie
-        mittig unter Anmeldekarte und Core und damit unter nichts.
-      */}
-      <div className="grid gap-8">
-        <div
-          className="relative mx-auto flex aspect-[4/5] w-full max-w-[680px] items-center justify-center rounded-(--radius-lg) border border-line"
-          style={{ background: "var(--ed-surface)" }}
-        >
-          <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
-        </div>
-
-        <Partnerleiste />
-      </div>
     </section>
   );
 }
