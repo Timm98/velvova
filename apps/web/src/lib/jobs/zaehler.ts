@@ -16,10 +16,19 @@
  * Wie lange der Anlauf dauert.
  *
  * Zwei Sekunden waren vorbei, bevor die Seite fertig geladen war.
- * Dreieinhalb reichen, um die Zahl laufen zu sehen, und sind kurz
- * genug, dass niemand darauf wartet.
+ * Dreieinhalb reichten, um die Zahl laufen zu sehen — und waren zu
+ * lang: Solange der Anlauf läuft, steht dort nicht der Bestand,
+ * sondern eine Annäherung von unten. Wer in dieser Zeit liest, liest
+ * eine Zahl, die noch nicht stimmt.
+ *
+ * Jetzt 1.600 Millisekunden. Die Bewegung ist weiterhin zu sehen, der
+ * echte Stand aber mehr als doppelt so früh erreicht.
+ *
+ * Was NICHT schneller wird, ist die Rate danach: Die kommt aus dem
+ * gemessenen Zulauf. Sie hochzudrehen hiesse, mehr Stellen zu zeigen,
+ * als es gibt — der Zähler wäre dann eine Animation und keine Angabe.
  */
-export const ANLAUF_MS = 3500;
+export const ANLAUF_MS = 1600;
 
 export function zaehlerBasis(): number {
   return (typeof performance !== "undefined" ? performance.timeOrigin : Date.now()) + ANLAUF_MS;

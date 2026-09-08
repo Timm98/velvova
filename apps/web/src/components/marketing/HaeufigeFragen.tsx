@@ -19,16 +19,16 @@
  * Was in den Antworten NICHT steht
  * ══════════════════════════════════════════════════════════════
  *
- * Die Preise stehen jetzt da, weil es sie gibt: 0, 9 und 19 Euro sind
- * dieselben Zahlen wie in `PLAENE` und gelten im Produkt bereits.
- * Vorher stand hier „keine veröffentlichten Tarife" — richtig, solange
- * sie nur hinter der Anmeldung standen, und falsch, sobald sie eine
- * Bildschirmhöhe weiter oben stehen.
+ * Die Preisantwort nennt dieselben Beträge wie der Abschnitt darüber
+ * und sagt denselben Vorbehalt: beschlossen, noch nicht buchbar. Zwei
+ * Stellen auf einer Seite, die verschiedene Preise nennen, sind
+ * schlimmer als eine Seite ohne Preise.
  *
- * Die Zahlen sind hier ausgeschrieben und kommen nicht aus `PLAENE`:
- * Ein Fliesstext, der sich selbst aus Konstanten zusammensetzt, liest
- * sich nach der dritten Einsetzung wie ein Formular. Wer die Preise
- * ändert, ändert diese Antwort mit — dafür steht der Hinweis hier.
+ * Die Zahlen sind ausgeschrieben und kommen nicht aus der
+ * Konfiguration: Ein Fliesstext, der sich selbst aus Konstanten
+ * zusammensetzt, liest sich nach der dritten Einsetzung wie ein
+ * Formular. Wer die Preise ändert, ändert diese Antwort mit — dafür
+ * steht der Hinweis hier.
  *
  * Keine Partnerschaften, keine Verfügbarkeitszusagen, keine
  * Datenschutzversprechen über das hinaus, was die Anwendung heute
@@ -58,10 +58,12 @@ const FRAGEN: { frage: string; antwort: string }[] = [
   {
     frage: "Was kostet Velvova?",
     antwort:
-      "Free ist dauerhaft kostenlos: Gespräch, Profil, begründete Jobempfehlungen und die Vorbereitung " +
-      "einer Bewerbung. Premium kostet 9 € im Monat, Max 19 € — beide monatlich kündbar. Die drei " +
-      "Pläne stehen weiter oben auf dieser Seite; was jeder genau enthält, steht in den Einstellungen " +
-      "unter \u201ePlan & Abrechnung\u201c. Über künftige Preise geben wir keine Zusage ab.",
+      "Der erste vollständige Check ist kostenlos, ohne Konto und ohne Zahlungsdaten. Mit Konto " +
+      "kommen fünf Checks im Monat dazu. Für einen laufenden Wechsel ist ein Paket für 14,90 € " +
+      "vorgesehen: 42 Tage, keine automatische Verlängerung. Unternehmen beginnen mit einem " +
+      "kostenlosen Klarheits-Check; der Arbeitsraum startet bei 49 € im Monat je Organisation. " +
+      "Die Pakete sind beschlossen, aber noch nicht buchbar — was heute schon geht, steht oben " +
+      "auf dieser Seite. Über künftige Preise geben wir keine Zusage ab.",
   },
   {
     frage: "Wie kann ich Velvova als Unternehmen nutzen?",

@@ -679,13 +679,18 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Anmeldekarte unter dem Core statt neben ihm, und der Einstieg
         lag unterhalb des ersten Bildschirms.
 
-        Ab 640, nicht erst ab 768.
+        Ab 520, nicht erst ab 768.
 
-        Die Grenze lag zweimal zu hoch. Erst auf `lg` (1024) — da stand
-        die Anmeldekarte in einem halbierten Notebook-Fenster unter dem
-        Core. Dann auf `md` (768), und auch das war noch zu hoch: Ein
-        Browserfenster auf halber Bildschirmbreite liegt bei
-        gebräuchlichen Auflösungen häufig zwischen 640 und 760 Pixeln.
+        Die Grenze wanderte dreimal nach unten: erst `lg` (1024), dann
+        `md` (768), dann `sm` (640) — und dreimal stand der Core bei
+        jemandem trotzdem unter dem Text. Ein Browserfenster auf halber
+        Bildschirmbreite, ein geteilter Bildschirm, ein Tablet quer:
+        Die Breiten, bei denen jemand tatsächlich sitzt, liegen tiefer
+        als die üblichen Stufen vermuten lassen.
+
+        520 ist deshalb kein Stufenname mehr, sondern ein Mass. Weiter
+        hinunter trägt es nicht: Bei 500 Pixeln blieben der Textspalte
+        rund 220, und darin steht keine Überschrift mehr.
 
         Bei 640 bleibt die Aufteilung tragfähig, wenn die Spalten fast
         gleich sind — deshalb dort 46/54.
@@ -732,7 +737,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Position auf dem Telefon; wer sie ändern will, dreht die
         beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 min-[520px]:grid-cols-[0.46fr_0.54fr] min-[520px]:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
