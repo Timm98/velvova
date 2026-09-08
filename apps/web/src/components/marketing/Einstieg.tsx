@@ -93,15 +93,55 @@ export function Einstieg({
 
   return (
     <div className="grid gap-4">
-      <GoogleKnopf weiter={weiter} />
+      {/*
+        Ein umrandeter Kasten, keine losen Knöpfe.
 
-      {/* Der Trenner steht zwischen Fremdanmeldung und E-Mail, nicht
-          unter allem. Er trennt zwei Wege, er schliesst keinen Block ab. */}
-      <Trenner />
+        In der Vorlage steht der Einstieg als eigene Fläche mit Rand —
+        und das macht einen Unterschied, den man erst sieht, wenn man
+        beides nebeneinander hält: Lose Knöpfe auf dem Seitengrund
+        gehören zur Seite. Ein Kasten gehört zusammen, und man erkennt
+        auf einen Blick, wo der Einstieg anfängt und aufhört.
+      */}
+      <div
+        className="grid gap-4 rounded-(--radius-lg) border border-line p-5 md:p-6"
+        style={{ background: "var(--ed-surface)" }}
+      >
+        {/*
+          E-Mail ist der Hauptknopf, Google der Nebenknopf.
 
-      <Link href="/register" className={KNOPF_RAND}>
-        Mit E-Mail fortfahren
-      </Link>
+          Vorher war es umgekehrt — Google umrandet, E-Mail umrandet,
+          beide gleich stark. Damit trägt keiner die Entscheidung.
+
+          Die Vorlage setzt den gefüllten Knopf auf E-Mail, und das ist
+          auch für uns richtig: Google ist ein Angebot für die, die es
+          wollen; E-Mail ist der Weg, der bei jedem funktioniert.
+        */}
+        <GoogleKnopf weiter={weiter} />
+        <Trenner />
+        <Link href="/register" className={KNOPF_HAUPT}>
+          Mit E-Mail fortfahren
+        </Link>
+
+        {/*
+          Unsere eigenen Rechtstexte, nicht die aus der Vorlage.
+
+          Dort steht eine Einwilligung zu Werbe-E-Mails mit im
+          Fortfahren-Satz. Die übernehmen wir ausdrücklich nicht: Eine
+          Anmeldung ist keine Einwilligung in Werbung, und eine
+          stillschweigende schon gar nicht.
+        */}
+        <p className="text-xs leading-relaxed text-ink-3">
+          Mit dem Fortfahren stimmst du unseren{" "}
+          <Link href="/terms" className="underline underline-offset-2 hover:opacity-80">
+            Nutzungsbedingungen
+          </Link>{" "}
+          zu und bestätigst die{" "}
+          <Link href="/privacy" className="underline underline-offset-2 hover:opacity-80">
+            Datenschutzerklärung
+          </Link>
+          .
+        </p>
+      </div>
 
       {/*
         Zwei Zeilen, keine zwei Knöpfe.
@@ -110,8 +150,11 @@ export function Einstieg({
         oben. Sie als gleich grosse Flächen zu setzen hiesse, drei
         gleichwertige Angebote zu machen, von denen zwei die meisten
         Besucher nichts angehen.
+
+        Sie stehen ausserhalb des Kastens: Der Kasten ist der Einstieg,
+        diese beiden sind Abzweigungen davon.
       */}
-      <div className="grid gap-1.5 pt-1 text-sm text-ink-3">
+      <div className="grid gap-1.5 text-sm text-ink-3">
         <p>
           Bereits ein Konto?{" "}
           <Link href="/login" className="text-accent-text underline underline-offset-4 hover:opacity-80">
@@ -120,10 +163,7 @@ export function Einstieg({
         </p>
         <p>
           Für Unternehmen:{" "}
-          <Link
-            href="/firma"
-            className="text-accent-text underline underline-offset-4 hover:opacity-80"
-          >
+          <Link href="/firma" className="text-accent-text underline underline-offset-4 hover:opacity-80">
             Unternehmen registrieren
           </Link>
         </p>
