@@ -99,6 +99,45 @@ const BEREICHE: {
 ] as const;
 
 /**
+ * Was Besucher sehen, die noch nicht angemeldet sind.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum es zwei Listen braucht
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `BEREICHE` führt an fünf von sieben Stellen nach `/app/…`. Für
+ * Angemeldete ist das genau richtig. Für alle anderen ist es eine
+ * Navigation, die bei jedem Klick zur Anmeldung umleitet — sieben
+ * Wege, sechs davon Sackgassen.
+ *
+ * Bis heute fiel das nicht auf, weil die Startseite ihre Erklärungen
+ * in vierzehn Abschnitten selbst mitbrachte. Seit sie reduziert ist,
+ * IST die Navigation der Weg zu diesen Erklärungen — und dann muss
+ * sie auch dorthin führen.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum flach und ohne Aufklappmenüs
+ * ══════════════════════════════════════════════════════════════
+ *
+ * TopNav kennt keine Untermenüs. Eines zu bauen hiesse, Zustand,
+ * Tastaturbedienung, Fokusfalle und Schliessverhalten neu zu
+ * erfinden — für fünf Ziele, die auch nebeneinander passen.
+ *
+ * Alle fünf zeigen auf öffentliche Seiten, die es bereits gibt und
+ * die geprüft mit 200 antworten. Kein Ziel ist erfunden.
+ */
+const BESUCHER: typeof BEREICHE = [
+  /* Was die Anwendung konkret tut. */
+  { href: "/product", label: "Lösungen", icon: Briefcase },
+  /* Der Ansatz dahinter — getrennt vom Was, wie es der Auftrag verlangt. */
+  { href: "/how-it-works", label: "Warum Velvova", icon: Puzzle },
+  { href: "/for-business", label: "Für Unternehmen", icon: Building2 },
+  { href: "/help", label: "Ressourcen", icon: CircleQuestionMark },
+  /* Bleibt: Der Eintrag war schon da und führt weiterhin irgendwohin. */
+  { href: "/security", label: "Sicherheit", icon: ShieldCheck },
+];
+
+/**
  * Kein Eintrag setzt `exact` mehr, seit „Heute" weg ist.
  *
  * Die Prüfung bleibt trotzdem: Sie kostet nichts und ist genau das,
@@ -373,7 +412,7 @@ export function TopNav({
               ihn ohnehin nicht mehr.
             */}
           <ul className="flex items-center gap-3 whitespace-nowrap pb-2.5 md:gap-5 lg:gap-8 xl:gap-12">
-          {BEREICHE.map((b) => {
+          {(angemeldet ? BEREICHE : BESUCHER).map((b) => {
             const aktiv = istAktiv(pathname, b.href, b.exact);
             const Icon = b.icon;
             return (
@@ -575,6 +614,9 @@ export function BottomNav() {
       )}
     >
       <ul className="flex h-(--nav-bottom-h) items-stretch px-1 py-1.5">
+        {/* `BottomNav` erscheint nur in `AppShell`, also ausschliesslich
+           fuer Angemeldete. Hier ist `BEREICHE` genau richtig — die
+           Besucherliste haette hier keinen Empfaenger. */}
         {BEREICHE.map((b) => {
           const aktiv = istAktiv(pathname, b.href, b.exact);
           const Icon = b.icon;
