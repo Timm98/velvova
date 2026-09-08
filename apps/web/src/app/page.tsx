@@ -682,7 +682,20 @@ function Nebenknopf({ href, children }: { href: string; children: React.ReactNod
  */
 function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: string | null }) {
   return (
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:px-8 md:pb-28 md:pt-16 lg:grid-cols-[0.45fr_0.55fr] lg:gap-16">
+    /*
+        Nebeneinander ab 768, nicht erst ab 1024.
+
+        Die Aufteilung stand auf `lg`. Das klingt nach „Desktop" und ist
+        es nicht: Ein Fenster mit 900 oder 1000 Pixeln Breite ist der
+        Normalfall auf einem Notebook — daneben ein Editor, ein Chat
+        oder einfach ein nicht maximiertes Fenster. Dort stand die
+        Anmeldekarte unter dem Core statt neben ihm, und der Einstieg
+        lag unterhalb des ersten Bildschirms.
+
+        Bei 768 passt beides: 45 Prozent von 1240 sind 558 Pixel für die
+        Karte, und darunter greift ohnehin die schmale Fassung.
+      */
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:grid-cols-[0.45fr_0.55fr] md:gap-10 md:px-8 md:pb-28 md:pt-16 lg:gap-16">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (

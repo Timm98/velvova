@@ -51,14 +51,14 @@
    * Seitengrund". Hell heisst das Weiss gegen #f7f8fc; dunkel heisst
    * es dunkler als jede Fläche der Seite. Zwei Werte, eine Absicht.
    */
-  --surface-kontofeld: #fbf7f1;
+  --surface-kontofeld: #f4ede2;
   color-scheme: light;
 
-  --background: #f3ede4;
-  --background-subtle: #ece4d8;
-  --surface-1: #fbf7f1;
-  --surface-2: #f8f3ec;
-  --surface-3: #ece4d8;
+  --background: #e9e0d2;
+  --background-subtle: #e0d5c3;
+  --surface-1: #f4ede2;
+  --surface-2: #efe6d9;
+  --surface-3: #e4dac8;
   --surface-glass: rgba(251, 247, 241, 0.84);
 
   /* ---- Die beiden farbigen Ruheflächen ----
@@ -73,14 +73,14 @@
 
      Gemessen: Die Helligkeiten liegen 0,077 auseinander, die beiden
      Flächen sind also weiterhin auf einen Blick zu trennen. */
-  --surface-lavender: #f7e9dc;
-  --surface-ice: #fdf4e0;
+  --surface-lavender: #f0e0cf;
+  --surface-ice: #f7ecd6;
 
   /* Die weiche Gruppenfläche. Sie ersetzt den Rahmen um eine Sektion:
      eine Zusammengehörigkeit, die man sieht, ohne dass eine Linie sie
      einsperrt. */
-  --surface-soft: #ece4d8;
-  --surface-soft-hover: #e3d9ca;
+  --surface-soft: #e4dac8;
+  --surface-soft-hover: #dacebb;
 
   --text-primary: #1b1512;
   /*
@@ -134,10 +134,10 @@
   --primary-text: #9A3412;
 
   --signal-cyan: #ffd9a3;
-  --signal-cyan-text: #8a5a12;
+  --signal-cyan-text: #84540c;
   --signal-cyan-soft: #fdf1dd;
   --signal-violet: #e08a6a;
-  --signal-violet-text: #a5432a;
+  --signal-violet-text: #a13f26;
   --signal-violet-soft: #fbe8e0;
 
   --success: #21a971;
@@ -147,7 +147,7 @@
   --success-text: #146a4a;
   --success-soft: #e2f5ec;
   --warning: #c58b2b;
-  --warning-text: #7a5d0a;
+  --warning-text: #765906;
   --warning-soft: #fbf0d8;
   --danger: #d44d66;
   --danger-text: #a32547;
@@ -548,9 +548,9 @@
 [data-surface="editorial"] {
   color-scheme: light;
 
-  --ed-canvas: #f3ede4;
-  --ed-surface: #fbf7f1;
-  --ed-surface-raised: #fbf7f1;
+  --ed-canvas: #e9e0d2;
+  --ed-surface: #f4ede2;
+  --ed-surface-raised: #f4ede2;
   --ed-ink: #1b1512;
   --ed-ink-2: #574d43;
   /* 4,86:1 auf dem Canvas. Die erste Wahl (#7c8698) lag bei 3,42 und
@@ -589,7 +589,7 @@
   --ed-violet-text: #9A3412;
   --ed-ice: #F7A44B;
   --ed-mint: #FFD79A;
-  --ed-violet-soft: #f7e9dc;
+  --ed-violet-soft: #f0e0cf;
 
   --ed-shadow-soft: 0 1px 2px rgba(60, 40, 22, 0.05), 0 8px 32px rgba(60, 40, 22, 0.07);
   --ed-shadow-lift: 0 2px 6px rgba(60, 40, 22, 0.06), 0 24px 64px rgba(60, 40, 22, 0.10);
