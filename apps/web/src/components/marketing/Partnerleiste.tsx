@@ -91,32 +91,46 @@ const MARKEN: Marke[] = [
  */
 const ZEICHEN_HOCH = 42;
 
+/**
+ * Der erklärende Satz unter der Zeile.
+ *
+ * Er steht hier und nicht im Aufruf, weil er nichts behauptet, was
+ * nicht im Code steht — anders als die Überschrift darüber.
+ *
+ * ── Was er sagt und warum es stimmt ─────────────────────────
+ *
+ * LinkedIn, Indeed und StepStone stehen im Quellenregister als
+ * `link_only` mit leeren `allowedOperations`: kein Abruf, kein
+ * Zwischenspeichern, kein Umformulieren. Was Velvova mit ihnen macht,
+ * ist genau das, was der Satz sagt — es nimmt entgegen, was jemand
+ * mitbringt.
+ *
+ * OpenAI und Anthropic sind die beiden Anbieter, zwischen denen
+ * `factory.ts` wählt. Auch das ist eine Tatsache über den Betrieb und
+ * keine Aussage über einen Vertrag.
+ *
+ * ── Was er bewusst NICHT sagt ───────────────────────────────
+ *
+ * Nichts über eine Geschäftsbeziehung. Der Satz erklärt, was mit
+ * diesen fünf Namen im Produkt geschieht; ob mit einem davon ein
+ * Vertrag besteht, steht in keiner Datei, die ich lesen kann.
+ */
+const ERKLAERUNG =
+  "Stellen von LinkedIn, Indeed und StepStone kannst du hier prüfen: Du bringst den Link " +
+  "oder den Text mit, und Monday ordnet ein, was darin steht. Die Seiten selbst rufen wir " +
+  "nicht ab und speichern sie nicht. Die Einordnung läuft über Sprachmodelle von OpenAI " +
+  "und Anthropic — deine Angaben werden dabei nicht zum Training verwendet.";
+
 export function Partnerleiste({
   titel = "Wir arbeiten mit diesen Partnern zusammen",
+  erklaerung = ERKLAERUNG,
 }: {
   titel?: string;
+  /** Leerer String blendet den Satz aus. */
+  erklaerung?: string;
 }) {
   return (
-    <section
-      aria-label={titel}
-      /*
-       * Ein eigenes Feld am Fuss der Karte.
-       *
-       * Bis eben standen die Zeichen direkt auf der Kartenfläche und
-       * gehörten dadurch optisch zum Core — als wären sie Teil der
-       * Darstellung statt eine Angabe darunter.
-       *
-       * Ein Rahmen allein hätte das nicht getrennt: Die Karte hat
-       * selbst einen, und zwei gleiche Linien ineinander lesen sich
-       * als Versehen. Deshalb zusätzlich ein Ton Unterschied —
-       * `--ed-canvas` ist die Fläche der Seite, auf der die Karte
-       * liegt. Sie ist in beiden Darstellungen eine Spur dunkler als
-       * `--ed-surface`, und mehr braucht es nicht: Das Feld soll sich
-       * abheben, nicht hervortreten.
-       */
-      className="rounded-(--radius-md) border border-line px-4 py-5"
-      style={{ background: "var(--ed-canvas)" }}
-    >
+    <section aria-label={titel}>
       <p className="text-center text-sm leading-relaxed text-ink-2">{titel}</p>
 
       {/*
@@ -127,23 +141,33 @@ export function Partnerleiste({
         auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
         keine Bewegung.
       */}
-      <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-7 gap-y-4">
+      <ul className="mt-4 flex flex-wrap items-center justify-center gap-3">
         {MARKEN.map((m) => (
           <li
             key={m.name}
             title={m.name}
             /*
-             * Kein Rahmen, keine Fläche, keine feste Breite.
+             * Jede Marke in ihrem eigenen Rahmen.
              *
-             * Rahmen und Fläche gab es in früheren Fassungen, und
-             * beides war eine Antwort auf Dateien, die ihren eigenen
-             * Grund mitbrachten. Freigestellte Zeichen brauchen weder
-             * das eine noch das andere — und auch kein Feld, in dem
-             * sie sitzen: Was sie gleich gross macht, ist die gleiche
-             * Höhe.
+             * Ein Zwischenstand fasste alle fünf in einen Kasten. Das
+             * trennte die Zeile vom Core, machte aber aus fünf Angaben
+             * einen Block — und der Block war das Auffällige, nicht das,
+             * was darin steht.
+             *
+             * Einzeln gerahmt ist jede Marke wieder eine für sich. Der
+             * Ton ist derselbe wie vorher, nur kleinteiliger:
+             * `--ed-canvas` ist die Fläche der Seite und in beiden
+             * Darstellungen eine Spur dunkler als die Karte. Mehr
+             * Unterschied würde die Zeichen erschlagen, die ohnehin die
+             * einzigen farbigen Dinge auf der Karte sind.
+             *
+             * Die Kacheln werden dabei unterschiedlich breit — jede
+             * genau so breit, wie ihr Zeichen ist. Gleich gross sind
+             * sie in der Höhe, und das ist die Achse, an der das Auge
+             * eine Reihe misst.
              */
-            className="markenbadge flex items-center justify-center"
-            style={{ background: "transparent" }}
+            className="markenbadge flex items-center justify-center rounded-(--radius-md) border border-line px-4 py-3"
+            style={{ background: "var(--ed-canvas)" }}
           >
             {/*
               Beide Fassungen stehen im Markup, umgeschaltet wird über
@@ -173,6 +197,12 @@ export function Partnerleiste({
           </li>
         ))}
       </ul>
+
+      {erklaerung ? (
+        <p className="mx-auto mt-5 max-w-[54ch] text-center text-2xs leading-relaxed text-ink-3">
+          {erklaerung}
+        </p>
+      ) : null}
     </section>
   );
 }
