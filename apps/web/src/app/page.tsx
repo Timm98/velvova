@@ -688,10 +688,30 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         gebräuchlichen Auflösungen häufig zwischen 640 und 760 Pixeln.
 
         Bei 640 bleibt die Aufteilung tragfähig, wenn die Spalten fast
-        gleich sind — deshalb dort 46/54. Die grössere Hälfte bekommt
-        die Karte erst ab 1024: Bei 768 mit 40/60 blieben der
-        Überschrift 280 Pixel, und „Dein nächster Job. Mit mehr
-        Klarheit." brach auf drei Zeilen.
+        gleich sind — deshalb dort 46/54.
+
+        ── Ab 1024 keine Anteile mehr, sondern ein Mass ────────
+        Anteile teilen jeden gewonnenen Pixel zwischen beiden Spalten
+        auf. Die Karte sollte aber breiter werden, ohne dass der Text
+        mitwächst — er braucht nicht mehr als seine Zeilenlänge, und
+        alles darüber macht ihn nur schwerer lesbar.
+
+        Deshalb steht links ein Höchstmass und rechts `1fr`: Die
+        Textspalte hört bei 27rem auf, die Karte bekommt den Rest.
+        27rem sind 432 Pixel, und gemessen braucht „Dein nächster Job."
+        bei 51 Pixeln Schriftgrad genau 418 — knapp darüber, damit die
+        Überschrift zweizeilig bleibt und nicht auf drei bricht.
+
+        ── Und warum der Einstieg breiter sein darf als der Rest ──
+        Weiter liess sich die Karte nicht ziehen: Bei einem
+        Inhaltsbereich von 1240 Pixeln und einer Textspalte an ihrer
+        Untergrenze war bei 680 Pixeln Schluss, gleich wie gross der
+        Bildschirm war.
+
+        Die 1240 sind das Mass für Text — eine Zeile, die darüber
+        hinausgeht, liest sich schlecht. Für eine Fläche gilt das
+        nicht. Ab 1280 bekommt der Einstieg deshalb 1400, und die
+        zusätzlichen 160 Pixel gehen vollständig an die Karte.
 
         ── Warum 40/60 und nicht 34/66 ─────────────────────────
         Ein Zwischenstand gab der Karte zwei Drittel. Sie wurde damit
@@ -712,7 +732,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Position auf dem Telefon; wer sie ändern will, dreht die
         beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[0.4fr_0.6fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 sm:grid-cols-[0.46fr_0.54fr] sm:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] xl:max-w-[1400px] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
@@ -823,12 +843,15 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              lassen. Die Rechnung kann das nicht, weil sie genau den
              vorhandenen Platz nimmt.
 
+             Ab 1280 entfällt sie ganz: Dort reicht der Abschnitt
+             selbst bis 1400 und braucht keinen Überhang mehr.
+
              Erst ab 768: Darunter steht die Karte unter dem Text statt
              daneben. Ein Überhang nur auf einer Seite sähe dort nicht
              nach Absicht aus, sondern nach einem Element, das aus der
              Spalte gerutscht ist.
           */
-          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mr-[calc(-1*min(7rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6"
+          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mr-[calc(-1*min(7rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6 xl:mr-0"
           style={{ background: "var(--ed-surface)" }}
         >
           <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />
