@@ -774,7 +774,27 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              zusammen ergibt die Karte — und keine Zahl muss dazu
              passen.
           */
-          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:p-6"
+          /*
+             Die Karte greift über den Innenabstand hinaus.
+
+             Der Inhaltsbereich hat links und rechts 32 Pixel Luft, und
+             die galt bisher auch für die Karte — sie stand also 32
+             Pixel vor der Kante, an der die Kopfzeile darüber endet.
+             Für Text ist dieser Abstand richtig, für eine Fläche mit
+             eigenem Rahmen sieht er aus wie ein vergessener Rand.
+
+             `-mr-8` nimmt genau den Innenabstand zurück, den die Seite
+             gesetzt hat — kein gegriffener Wert. Auf sehr breiten
+             Schirmen kommen 32 weitere Pixel dazu; bis zur
+             Fensterkante bleibt dort immer noch Platz, die Seite läuft
+             also nirgends über.
+
+             Erst ab 768: Darunter steht die Karte unter dem Text statt
+             daneben. Ein Überhang nur auf einer Seite sähe dort nicht
+             nach Absicht aus, sondern nach einem Element, das aus der
+             Spalte gerutscht ist.
+          */
+          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:-mr-8 md:p-6 xl:-mr-16"
           style={{ background: "var(--ed-surface)" }}
         >
           <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />

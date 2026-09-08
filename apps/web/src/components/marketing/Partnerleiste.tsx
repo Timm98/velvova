@@ -56,18 +56,14 @@ type Marke = {
    * Grund — das lässt sich umkehren.
    */
   umkehren?: boolean;
-  /**
-   * Bleibt auch im Dunkeln hell.
-   *
-   * Für Marken, von denen weder eine dunkle Datei noch ein umkehrbares
-   * Zeichen vorliegt. Eine helle Kachel in einer dunklen Reihe fällt
-   * auf; eine falsche Markenfarbe fällt mehr auf.
-   */
-  hellBleibt?: boolean;
 };
 
 const MARKEN: Marke[] = [
-  { name: "LinkedIn", datei: "/marken/linkedin-badge.png", hellBleibt: true },
+  {
+    name: "LinkedIn",
+    datei: "/marken/linkedin-badge.png",
+    dateiDunkel: "/marken/linkedin-badge-dunkel.png",
+  },
   {
     name: "Indeed",
     datei: "/marken/indeed-badge.png",
@@ -120,7 +116,6 @@ export function Partnerleiste({
             className={[
               "markenbadge overflow-hidden rounded-(--radius-md) opacity-90 transition-opacity hover:opacity-100",
               m.umkehren ? "markenbadge--umkehren" : "",
-              m.hellBleibt ? "markenbadge--hell-bleibt" : "",
             ]
               .filter(Boolean)
               .join(" ")}

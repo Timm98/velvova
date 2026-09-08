@@ -694,20 +694,22 @@
 .markenbadge .fuer-hell { display: block; }
 
 /*
- * Zwei Marken ohne dunkle Datei.
+ * Eine Marke ohne dunkle Datei.
  *
  * OpenAI liegt als einfarbiges Zeichen auf durchsichtigem Grund vor —
  * umgekehrt wird daraus genau das weisse Zeichen, das die Marke im
  * Dunkeln selbst verwendet. Das ist keine Umfärbung, sondern dieselbe
  * Form in der Gegenhelligkeit.
  *
- * Für LinkedIn geht das nicht: Blau auf Weiss umgekehrt ergibt Orange
- * auf Schwarz. Diese Kachel bleibt deshalb hell, bis die dunkle Datei
- * vorliegt — eine falsche Markenfarbe wäre schlimmer als eine helle
- * Kachel in einer dunklen Reihe.
+ * Für die übrigen vier gibt es echte dunkle Dateien. Bei LinkedIn
+ * stand hier eine Weile eine Ausnahme: Blau auf Weiss umgekehrt ergibt
+ * Orange auf Schwarz, und eine falsche Markenfarbe wäre schlimmer als
+ * eine helle Kachel in einer dunklen Reihe gewesen. Seit
+ * `LinkedIn_Badge_4K_Black_Blue.png` vorliegt, braucht es sie nicht
+ * mehr.
  */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .markenbadge:not(.markenbadge--hell-bleibt) {
+  :root:not([data-theme="light"]) .markenbadge {
     background: #0b0d12;
     border-color: rgb(255 255 255 / 0.14);
   }
@@ -716,7 +718,7 @@
   :root:not([data-theme="light"]) .markenbadge--umkehren img { filter: invert(1); }
 }
 
-:root[data-theme="dark"] .markenbadge:not(.markenbadge--hell-bleibt) {
+:root[data-theme="dark"] .markenbadge {
   background: #0b0d12;
   border-color: rgb(255 255 255 / 0.14);
 }
