@@ -31,6 +31,7 @@ import { besucherHerkunft } from "@/lib/herkunft";
 import { bestandszahl, type Bestandszahl } from "@/lib/jobs/bestandszahl";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { landesname, lageFuer, type Landeslage } from "@/lib/landeslage";
+import { Abomodell } from "@/components/marketing/Abomodell";
 
 /*
  * Kein `revalidate` — diese Seite wird ohnehin bei jedem Aufruf
@@ -192,6 +193,15 @@ export default async function LandingPage() {
       */}
       <main id="inhalt">
         <Einstiegshero angemeldet={sitzung.angemeldet} anrede={sitzung.anrede} />
+        {/*
+          Preise vor die Fragen.
+
+          Wer bis hierher gelesen hat, will als Nächstes wissen, was es
+          kostet — nicht, ob es ein Konto braucht. Steht die Preisfrage
+          erst unter der FAQ, beantwortet sie die FAQ zweimal: einmal
+          als Frage und einmal als Abschnitt darunter.
+        */}
+        <Abomodell angemeldet={sitzung.angemeldet} />
         <HaeufigeFragen assistentName={brand.assistantName} />
       </main>
 

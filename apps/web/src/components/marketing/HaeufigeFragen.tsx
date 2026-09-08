@@ -19,9 +19,16 @@
  * Was in den Antworten NICHT steht
  * ══════════════════════════════════════════════════════════════
  *
- * Keine Preise: Es gibt keine freigegebenen Tarife. Die Frage danach
- * bleibt trotzdem stehen, weil sie gestellt wird — sie wird nur
- * ehrlich beantwortet.
+ * Die Preise stehen jetzt da, weil es sie gibt: 0, 9 und 19 Euro sind
+ * dieselben Zahlen wie in `PLAENE` und gelten im Produkt bereits.
+ * Vorher stand hier „keine veröffentlichten Tarife" — richtig, solange
+ * sie nur hinter der Anmeldung standen, und falsch, sobald sie eine
+ * Bildschirmhöhe weiter oben stehen.
+ *
+ * Die Zahlen sind hier ausgeschrieben und kommen nicht aus `PLAENE`:
+ * Ein Fliesstext, der sich selbst aus Konstanten zusammensetzt, liest
+ * sich nach der dritten Einsetzung wie ein Formular. Wer die Preise
+ * ändert, ändert diese Antwort mit — dafür steht der Hinweis hier.
  *
  * Keine Partnerschaften, keine Verfügbarkeitszusagen, keine
  * Datenschutzversprechen über das hinaus, was die Anwendung heute
@@ -51,8 +58,10 @@ const FRAGEN: { frage: string; antwort: string }[] = [
   {
     frage: "Was kostet Velvova?",
     antwort:
-      "Es gibt derzeit keine veröffentlichten Tarife. Sobald Preise feststehen, stehen sie hier und auf " +
-      "der Preisseite. Bis dahin geben wir keine Zusage über künftige Kosten ab.",
+      "Free ist dauerhaft kostenlos: Gespräch, Profil, begründete Jobempfehlungen und die Vorbereitung " +
+      "einer Bewerbung. Premium kostet 9 € im Monat, Max 19 € — beide monatlich kündbar. Die drei " +
+      "Pläne stehen weiter oben auf dieser Seite; was jeder genau enthält, steht in den Einstellungen " +
+      "unter \u201ePlan & Abrechnung\u201c. Über künftige Preise geben wir keine Zusage ab.",
   },
   {
     frage: "Wie kann ich Velvova als Unternehmen nutzen?",
