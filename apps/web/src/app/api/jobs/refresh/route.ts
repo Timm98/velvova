@@ -42,6 +42,53 @@ export async function POST(request: Request) {
   const authorisedBySecret = !!secret && header === `Bearer ${secret}`;
 
   if (!authorisedBySecret && !(await currentUser())) {
+    /*
+     * ══════════════════════════════════════════════════════════════
+     * Warum ein 401 hier mehr sagen darf als sonst
+     * ══════════════════════════════════════════════════════════════
+     *
+     * Ein Zeitplan, der abgewiesen wird, meldet `401` — und damit
+     * genau eine Information: „nein". Ob das Geheimnis auf dem Server
+     * fehlt, ob es sich unterscheidet oder ob die Kopfzeile gar nicht
+     * ankam, ist von aussen nicht zu trennen. Genau daran ist der
+     * erste Einrichtungsversuch am 8. September 2026 hängen
+     * geblieben.
+     *
+     * Deshalb steht hier eine Auskunft — aber nur aus WAHRHEITSWERTEN.
+     * Kein Wert, kein Ausschnitt, keine Länge. Wer die Antwort liest,
+     * erfährt, WELCHE der drei Ursachen vorliegt, und nichts sonst:
+     *
+     *   serverKennt=false    die Variable fehlt in der Laufzeit
+     *   kopfzeileDa=false    die Kopfzeile kam nicht an
+     *   formStimmt=false     kein `Bearer `-Präfix
+     *   laengeGleich=false   beide da, aber verschiedene Werte
+     *
+     * `laengeGleich` vergleicht nur, es nennt keine Zahl. Damit lässt
+     * sich ein angehängter Zeilenumbruch finden — der häufigste
+     * Fehler beim Einfügen — ohne über den Wert etwas zu verraten.
+     *
+     * Die Auskunft gibt es nur, wenn überhaupt eine Kopfzeile
+     * geschickt wurde. Ein zufälliger Besucher sieht weiterhin nur
+     * „Nicht angemeldet."
+     */
+    if (header !== null) {
+      const uebergeben = header.startsWith("Bearer ") ? header.slice(7) : null;
+      return NextResponse.json(
+        {
+          error: "Nicht angemeldet.",
+          diagnose: {
+            serverKennt: !!secret,
+            kopfzeileDa: true,
+            formStimmt: uebergeben !== null,
+            laengeGleich:
+              secret !== undefined && uebergeben !== null
+                ? secret.length === uebergeben.length
+                : null,
+          },
+        },
+        { status: 401 },
+      );
+    }
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
