@@ -7,6 +7,7 @@ import { suchbegriffeAusProfilen } from "@/lib/jobs/suchbegriffe";
 import { currentUser } from "@/lib/auth";
 import { decideForProvider } from "@paycheck/sources";
 import { ATS_BOARDS, loadRegistrations, setBoardRegistrations } from "@paycheck/jobs";
+import { laenderNachzaehlen } from "@/lib/jobs/laenderNachzaehlen";
 
 export const dynamic = "force-dynamic";
 /*
@@ -403,6 +404,26 @@ export async function POST(request: Request) {
     )
   ).flat();
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Zum Schluss die Länderzahlen im Fuss nachziehen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Nach dem Abruf, nicht davor: Erst dann sind die neuen Stellen
+   * drin, und was hier gezählt wird, stimmt mit dem überein, was eine
+   * Suche findet.
+   *
+   * Mit dem Rest des Budgets, höchstens aber 45 Sekunden. Der Abruf
+   * ist die Hauptsache; eine Zahl im Fuss darf ihn nicht verdrängen.
+   * Bleibt nichts übrig, entfällt der Schritt und ist beim nächsten
+   * Lauf wieder dran — der Zeiger wandert ohnehin weiter.
+   */
+  const restMs = Math.max(0, BUDGET_MS - (Date.now() - beginn));
+  const laenderzaehlung =
+    restMs < 5_000
+      ? { gezaehlt: [], fehler: [], abgebrochen: true, dauerMs: 0 }
+      : await laenderNachzaehlen({ takt, budgetMs: Math.min(restMs, 45_000) });
+
   const total = results.reduce(
     (acc, r) => ({
       fetched: acc.fetched + r.fetched,
@@ -420,6 +441,16 @@ export async function POST(request: Request) {
     // Antwort wie das, was abgerufen wurde.
     skipped,
     total,
+    /* Auch die Länderzählung meldet sich, gerade wenn sie nichts
+       getan hat: Ein Schritt, der still ausfällt, ist genau der
+       Fehler, wegen dem der Fuss eine Million Stellen zu wenig
+       zeigte. */
+    laender: {
+      gezaehlt: laenderzaehlung.gezaehlt,
+      fehler: laenderzaehlung.fehler,
+      abgebrochen: laenderzaehlung.abgebrochen,
+      dauerMs: laenderzaehlung.dauerMs,
+    },
     sources: results.map((r) => ({
       key: r.sourceKey,
       fetched: r.fetched,
