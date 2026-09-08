@@ -6,6 +6,8 @@ import { brand } from "@paycheck/config";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { LebendeZahl } from "@/components/marketing/LebendeZahl";
 import { NinaVisual } from "@/components/nina/NinaVisual";
+import { Einstieg } from "@/components/marketing/Einstieg";
+import { HaeufigeFragen } from "@/components/marketing/HaeufigeFragen";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { NachtsWeiter } from "@/components/jobs/NachtsWeiter";
 import { TopNav } from "@/components/shell/TopNav";
@@ -172,21 +174,24 @@ export default async function LandingPage() {
       />
       <Landeshinweis lage={lage} quelle={herkunft.quelle} />
 
+      {/*
+        ══════════════════════════════════════════════════════════════
+        Vierzehn Abschnitte wurden zwei
+        ══════════════════════════════════════════════════════════════
+
+        Die Startseite erklärte in vierzehn Abschnitten, warum sich
+        Velvova lohnt — und bot nirgends an, es zu versuchen. Wer sich
+        anmelden wollte, musste erst eine Navigationsentscheidung
+        treffen.
+
+        Jetzt steht der Einstieg dort, wo der Blick zuerst hinfällt.
+        Die Erklärungen sind nicht gelöscht: Sie stehen weiter unten in
+        dieser Datei und werden über die Navigation erreichbar gemacht.
+        Eine Startseite ist kein Ort, an dem man alles sagt.
+      */}
       <main id="inhalt">
-        <Hero bestand={bestand} anrede={sitzung.anrede} />
-        <ZuerstDerMensch />
-        <Entdeckung />
-        <NichtNachSchlagwoertern />
-        <JobIntelligenz />
-        <NachtsAbschnitt />
-        <LifeFit lage={lage} />
-        <FitScore />
-        <Bewerbung />
-        <NachDerBewerbung />
-        <ZweiSeiten />
-        <FuerUnternehmen />
-          <StimmenAbschnitt />
-        <Abschluss />
+        <Einstiegshero angemeldet={sitzung.angemeldet} anrede={sitzung.anrede} />
+        <HaeufigeFragen assistentName={brand.assistantName} />
       </main>
 
       {/* Auch der Fuss ist derselbe: Märkte, Zahlungsarten, Region,
@@ -628,6 +633,81 @@ function Nebenknopf({ href, children }: { href: string; children: React.ReactNod
 /* ══════════════════════════════════════════════════════════════
    1 · Hero
    ══════════════════════════════════════════════════════════════ */
+
+/**
+ * Der Einstieg: links was es ist und wie man anfängt, rechts der Core.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum 45 zu 55 und nicht die Hälfte
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die linke Spalte trägt Text und Knöpfe — beides bricht um und
+ * braucht eine Zeilenlänge, die man noch lesen kann. Die rechte trägt
+ * ein rundes Objekt, das seinen Platz füllt, egal wie viel er misst.
+ *
+ * Bei genau der Hälfte wirkt der Core klein und die Textspalte zu
+ * breit. Fünf Prozent nach rechts verschoben stimmt beides.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Der Core lädt, die Anmeldung nicht
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `NinaVisual` bringt seine eigene Ersatzdarstellung mit und hängt in
+ * einer eigenen Spalte. Wer sich anmelden will, wartet nicht auf ein
+ * 3D-Modell — die linke Spalte steht sofort und vollständig.
+ */
+function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: string | null }) {
+  return (
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 md:px-8 md:pb-28 md:pt-16 lg:grid-cols-[0.45fr_0.55fr] lg:gap-16">
+      <div className="grid max-w-[30rem] gap-7">
+        <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
+          {anrede ? (
+            <>
+              Willkommen zurück,
+              <br />
+              <span style={{ color: "var(--ed-violet-text)" }}>{anrede}.</span>
+            </>
+          ) : (
+            <>
+              Dein nächster Job.
+              <br />
+              Mit mehr Klarheit.
+            </>
+          )}
+        </h1>
+
+        {/*
+          Ein Satz, keine Liste.
+
+          Er nennt nur, was die Anwendung heute tut: Anzeigen einordnen,
+          vergleichen, den nächsten Schritt vorbereiten. Kein
+          Versprechen über Passgenauigkeit, kein „findet den richtigen".
+        */}
+        <p className="text-[17px] leading-relaxed" style={{ color: "var(--ed-ink-2)" }}>
+          {brand.assistantName} hilft dir, Stellen zu verstehen, Möglichkeiten zu vergleichen und
+          deinen nächsten Schritt vorzubereiten.
+        </p>
+
+        <Einstieg angemeldet={angemeldet} />
+      </div>
+
+      {/*
+        Der Core in einer ruhigen Karte.
+
+        `aspect-square` statt einer festen Höhe: Die Karte behält ihr
+        Verhältnis über alle Breiten, und beim Laden springt nichts.
+        Eine feste Höhe hätte auf schmalen Geräten entweder Luft
+        verschenkt oder den Core angeschnitten.
+      */}
+      <div
+        className="relative mx-auto flex aspect-square w-full max-w-[560px] items-center justify-center rounded-(--radius-lg) border border-line"
+        style={{ background: "var(--ed-surface)" }}
+      >
+        <NinaVisual size="xl" strategie="sichtbar" grund="keiner" zyklus />
+      </div>
+    </section>
+  );
+}
 
 function Hero({ bestand, anrede }: { bestand: Bestandszahl; anrede: string | null }) {
   return (
