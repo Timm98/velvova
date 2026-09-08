@@ -759,13 +759,27 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              `justify-self-end` sagt dasselbe über die Ausrichtung, ohne
              die Breite anzufassen.
           */
-          className="relative flex aspect-square w-full items-center justify-center justify-self-end rounded-(--radius-lg) border border-line"
+          /*
+             Kein festes Seitenverhältnis mehr.
+
+             Die Karte trägt jetzt zwei Dinge: den Core und darunter,
+             innerhalb desselben Rahmens, die Partnerzeile. Ein
+             `aspect-square` würde beides in eine feste Höhe zwängen
+             und entweder den Core stauchen oder unter den Kacheln
+             Leerraum lassen.
+
+             Stattdessen bestimmt der Inhalt die Höhe: Der Core ist
+             quadratisch und so breit wie die Karte innen, die Zeile
+             darunter ist so hoch, wie ihre Kacheln sind. Beides
+             zusammen ergibt die Karte — und keine Zahl muss dazu
+             passen.
+          */
+          className="relative flex w-full flex-col gap-6 justify-self-end rounded-(--radius-lg) border border-line p-5 md:p-6"
           style={{ background: "var(--ed-surface)" }}
         >
           <NinaVisual size="hero" strategie="sichtbar" grund="keiner" zyklus />
+          <Partnerleiste />
         </div>
-
-        <Partnerleiste />
       </div>
     </section>
   );
