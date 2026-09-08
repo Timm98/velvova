@@ -100,7 +100,7 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
     );
   }
   const { Pool } = await import("pg");
-  const pool = new Pool({ connectionString: cfg.db.url, max: 10 });
+  const pool = new Pool({ connectionString: libpqSemantik(cfg.db.url), max: 10 });
   const db = drizzleNode(pool, { schema }) as unknown as Database;
   const handle: Handle = {
     db,
@@ -111,6 +111,71 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
   };
   writeCache(handle);
   return handle;
+}
+
+/**
+ * TLS für Postgres — und warum hier überhaupt etwas stehen muss.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * `sslmode=require` heisst nicht mehr, was es immer hiess
+ * ══════════════════════════════════════════════════════════════
+ *
+ * In libpq — und damit in jeder Dokumentation, aus der jemand einen
+ * Verbindungsstring kopiert — bedeutet `require`: verschlüsseln, aber
+ * das Zertifikat NICHT prüfen. Wer prüfen will, schreibt `verify-ca`
+ * oder `verify-full`.
+ *
+ * `pg` 8.23 hat das geändert und prüft bei `require` mit. Gegen
+ * Supabases Pooler scheitert das:
+ *
+ *     self-signed certificate in certificate chain
+ *
+ * Gemessen am 8. September 2026 gegen
+ * `aws-1-eu-west-1.pooler.supabase.com`: mit `sslmode=require` allein
+ * kam keine Verbindung zustande, mit libpq-Semantik sofort — und
+ * dahinter standen die erwarteten 3.482.474 Stellen.
+ *
+ * ── Warum das so teuer war ──────────────────────────────────
+ *
+ * Weil nichts danach aussah. Der Bau lief durch, die Seite lud, und
+ * die Stellenzahl stand auf null — die Abfrage fing ihren Fehler ab.
+ * Ein Verbindungsfehler, den niemand sieht, kostet mehr Zeit als
+ * einer, der laut ist.
+ *
+ * ── Was hier NICHT passiert ─────────────────────────────────
+ *
+ * Kein pauschales Abschalten der Prüfung. Wer `verify-ca` oder
+ * `verify-full` in den String schreibt, hat sich ausdrücklich für die
+ * Prüfung entschieden, und die bleibt unangetastet. Angeglichen wird
+ * nur `require` — auf genau die Bedeutung, die es in libpq hat.
+ */
+function libpqSemantik(url: string): string {
+  let u: URL;
+  try {
+    u = new URL(url);
+  } catch {
+    /* Kein zerlegbarer String: unverändert durchreichen, `pg` meldet
+       den Fehler dann selbst und deutlicher als wir es könnten. */
+    return url;
+  }
+
+  const modus = u.searchParams.get("sslmode");
+
+  /* Wer ausdrücklich prüfen will, bekommt seine Prüfung. */
+  if (modus === "verify-ca" || modus === "verify-full" || modus === "disable") return url;
+
+  /*
+   * `require`, `prefer`, `allow` und der Fall ohne Angabe.
+   *
+   * Der Schalter kommt aus `pg`s eigener Warnung — er stellt genau die
+   * Bedeutung wieder her, die `sslmode` in libpq immer hatte. Das ist
+   * keine Lockerung, sondern die Auflösung einer Abweichung.
+   */
+  if (!u.searchParams.has("uselibpqcompat")) {
+    u.searchParams.set("uselibpqcompat", "true");
+    if (!modus) u.searchParams.set("sslmode", "require");
+  }
+  return u.toString();
 }
 
 /** Für Tests: eine frische Datenbank im Arbeitsspeicher, ohne Datei. */

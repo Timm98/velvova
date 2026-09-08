@@ -39,6 +39,35 @@ export type Bestandszahl = {
   proSekunde: number;
 };
 
+/**
+ * Ein Datenbankfehler wird abgefangen — aber nicht verschwiegen.
+ *
+ * ══════════════════════════════════════════════════════════════
+ * Warum beides nötig ist
+ * ══════════════════════════════════════════════════════════════
+ *
+ * Die Startseite darf an einer Zahl nicht scheitern; deshalb gibt es
+ * die Rückfälle. Nur haben sie am 8. September 2026 einen Ausfall
+ * VOLLSTÄNDIG verdeckt: Die Anwendung lief auf Vercel gegen eine
+ * Datenbank, die sie nicht erreichte, und zeigte „Finde 0 Jobs" —
+ * während 3.482.474 Stellen darin standen.
+ *
+ * Der Bau war grün, die Seite lud, nichts protokollierte etwas. Der
+ * Fehler war erst zu finden, als jemand die Zahl mit der Datenbank
+ * verglich.
+ *
+ * Ein abgefangener Fehler ohne Protokolleintrag ist kein
+ * Fehlerschutz, sondern eine Falle. Ab hier wird jeder gemeldet.
+ */
+function dbFehler(stelle: string): (e: unknown) => never[] {
+  return (e: unknown) => {
+    console.error(
+      `[bestandszahl] ${stelle} fehlgeschlagen: ${e instanceof Error ? e.message : String(e)}`,
+    );
+    return [];
+  };
+}
+
 export async function bestandszahl(): Promise<Bestandszahl> {
   const db = await getDb();
 
@@ -47,7 +76,7 @@ export async function bestandszahl(): Promise<Bestandszahl> {
     .from(schema.bestandskennzahlen)
     .where(eq(schema.bestandskennzahlen.quelle, ""))
     .limit(1)
-    .catch(() => []);
+    .catch(dbFehler("Abfrage der Bestandskennzahlen"));
 
   let genau = Number(vorberechnet?.aktiv ?? 0);
   let stand = vorberechnet?.berechnetAm ? vorberechnet.berechnetAm.toISOString() : null;
@@ -58,7 +87,10 @@ export async function bestandszahl(): Promise<Bestandszahl> {
        die um ein Prozent danebenliegt. */
     const r = (await db
       .execute(sql`select reltuples::bigint n from pg_class where relname = 'jobs'`)
-      .catch(() => ({ rows: [] }))) as { rows?: { n?: number | string }[] };
+      .catch((e: unknown) => {
+        dbFehler("Schätzwert aus pg_class")(e);
+        return { rows: [] };
+      })) as { rows?: { n?: number | string }[] };
     genau = Number(r.rows?.[0]?.n ?? 0);
     stand = null;
   }
@@ -87,7 +119,10 @@ export async function bestandszahl(): Promise<Bestandszahl> {
       sql`select coalesce(sum(created), 0)::int n from job_ingestion_runs
           where started_at > now() - interval '24 hours'`,
     )
-    .catch(() => ({ rows: [{ n: 0 }] }))) as { rows?: { n?: number }[] };
+    .catch((e: unknown) => {
+      dbFehler("Zuwachsrate aus job_ingestion_runs")(e);
+      return { rows: [{ n: 0 }] };
+    })) as { rows?: { n?: number }[] };
   const proSekunde = Math.max(0, Number(rate.rows?.[0]?.n ?? 0) / 86_400);
 
   return {
