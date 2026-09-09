@@ -102,6 +102,22 @@ export function AppHolen({ className = "" }: { className?: string }) {
 
   const zeichen = wo === "unbekannt" ? null : ZEICHEN[wo];
 
+  /*
+   * Beide Zustände tragen dieselbe Form.
+   *
+   * Vorher war der Hinweis eine nackte Textzeile und der Knopf ein
+   * umrandetes Feld. Das sind zwei verschiedene Dinge auf derselben
+   * Stelle — und solange keine Adresse hinterlegt ist, sieht jeder
+   * Besucher die nackte Variante und damit einen Einstieg, der wie
+   * eine Fussnote aussieht.
+   *
+   * Gleiche Umrandung, gleiche Höhe, gleiche Breite. Der Unterschied
+   * liegt in der Schriftfarbe und darin, dass das eine anklickbar ist
+   * und das andere nicht — nicht in der Form.
+   */
+  const FORM =
+    "mx-auto inline-flex min-h-12 w-fit items-center justify-center gap-2.5 rounded-(--radius-control) border border-line-3 px-5 text-sm";
+
   const inhalt = (
     <>
       {zeichen ? (
@@ -140,7 +156,7 @@ export function AppHolen({ className = "" }: { className?: string }) {
 
   if (!ziel) {
     return (
-      <p className={`flex items-center justify-center gap-2.5 text-sm text-ink-3 ${className}`}>
+      <p className={`${FORM} font-medium text-ink-3 ${className}`}>
         {zeichen ? (
           <span className="plattformzeichen inline-flex shrink-0 items-center opacity-70">
             <Image
@@ -169,7 +185,7 @@ export function AppHolen({ className = "" }: { className?: string }) {
   return (
     <a
       href={ziel}
-      className={`mx-auto inline-flex min-h-12 w-fit items-center justify-center gap-2.5 rounded-(--radius-control) border border-line-3 px-5 text-sm font-medium text-ink transition-colors hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${className}`}
+      className={`${FORM} font-medium text-ink transition-colors hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${className}`}
     >
       {inhalt}
     </a>
