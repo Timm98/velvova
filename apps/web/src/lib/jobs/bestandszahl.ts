@@ -16,6 +16,14 @@ import { getDb, schema } from "@paycheck/db";
  * Ein `count(*)` über `jobs` steht hier bewusst nicht: bei 2,4 Mio.
  * Zeilen läuft er in die Zeitgrenze und nimmt die Startseite mit.
  */
+/**
+ * Stellen je Sekunde, die der Zähler im Kopf hochzählt.
+ *
+ * Gesetzt, nicht gemessen — siehe die ausführliche Begründung unten
+ * an der Stelle, an der er die gemessene Rate ersetzt.
+ */
+const ANZEIGE_TAKT = 12;
+
 export type Bestandszahl = {
   /** Genau, für `aria-label` und Datenauszeichnung. */
   genau: number;
@@ -123,7 +131,32 @@ export async function bestandszahl(): Promise<Bestandszahl> {
       dbFehler("Zuwachsrate aus job_ingestion_runs")(e);
       return { rows: [{ n: 0 }] };
     })) as { rows?: { n?: number }[] };
-  const proSekunde = Math.max(0, Number(rate.rows?.[0]?.n ?? 0) / 86_400);
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Der angezeigte Takt ist gesetzt, nicht gemessen
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Darüber steht die tatsächliche Zuwachsrate aus den Ernteläufen.
+   * Sie lag am 9. September 2026 bei 24.657 Stellen am Tag, also
+   * 0,29 je Sekunde — der Zähler stand damit rund alle dreieinhalb
+   * Sekunden einmal still.
+   *
+   * Auf Ansage läuft er jetzt mit 12. Das ist eine Entscheidung über
+   * die Anzeige und keine Messung, und deshalb steht sie hier als
+   * eigener Wert und nicht als Faktor an der Rechnung darüber:
+   *
+   *   - Die Zahl wächst um 720 je Minute. Nach zehn Minuten auf der
+   *     Seite zeigt sie rund 7.200 Stellen mehr an, als es gibt.
+   *   - Beim nächsten Seitenaufruf fängt sie wieder beim wahren
+   *     Bestand an und springt um genau diesen Betrag zurück.
+   *
+   * `gemessenProSekunde` bleibt berechnet und ist absichtlich nicht
+   * entfernt: Sobald der Zähler wieder dem Bestand folgen soll, ist
+   * das die eine Zeile, die zurückgetauscht wird.
+   */
+  const gemessenProSekunde = Math.max(0, Number(rate.rows?.[0]?.n ?? 0) / 86_400);
+  void gemessenProSekunde;
+  const proSekunde = ANZEIGE_TAKT;
 
   return {
     genau,

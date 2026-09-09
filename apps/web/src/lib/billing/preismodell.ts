@@ -67,6 +67,16 @@ export interface Angebot {
   aktion: { text: string; ziel: string };
   /** Der Halbsatz direkt unter dem Knopf. */
   knopffussnote?: string;
+  /**
+   * Hervorgehoben — höchstens eines je Ansicht.
+   *
+   * Steht auf der obersten Stufe, nicht auf der mittleren. Die
+   * mittlere hervorzuheben ist der übliche Griff: Sie soll als
+   * „vernünftige Wahl" erscheinen. Genau deshalb ist sie hier nicht
+   * gemeint — was hervorgehoben wird, ist eine Empfehlung, und
+   * empfohlen wird der grösste Umfang, nicht der bequemste
+   * Mittelweg.
+   */
   betont?: boolean;
   /**
    * Noch nicht freigegeben.
@@ -131,7 +141,6 @@ export const PERSONEN: readonly Angebot[] = [
     ],
     aktion: { text: "Plus wählen", ziel: "/app/settings/abo" },
     knopffussnote: "Keine Bindung · Jederzeit kündbar",
-    betont: true,
     nochNicht: true,
   },
   {
@@ -152,6 +161,7 @@ export const PERSONEN: readonly Angebot[] = [
     ],
     aktion: { text: "Pro wählen", ziel: "/app/settings/abo" },
     knopffussnote: "Keine Bindung · Jederzeit kündbar",
+    betont: true,
     nochNicht: true,
   },
 ] as const;
@@ -198,7 +208,6 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     ],
     aktion: { text: "Pilot anfragen", ziel: "/for-business" },
     knopffussnote: "Keine Bindung · Monatlich kündbar",
-    betont: true,
     nochNicht: true,
   },
   {
@@ -218,6 +227,7 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     ],
     aktion: { text: "Bedarf besprechen", ziel: "/for-business" },
     knopffussnote: "Keine Bindung · Monatlich kündbar",
+    betont: true,
     nochNicht: true,
   },
 ] as const;

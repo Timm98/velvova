@@ -216,9 +216,21 @@ export function AccountMenu({
             liegt 22 von der rechten Kante des Behälters. Ein 12er
             Quadrat trifft sie mit 16 Pixeln Abstand.
           */}
+          {/*
+            Dieselbe Füllung wie das Feld, und zwar über dasselbe Token.
+
+            Hier stand `#10141d` fest — derselbe Wert, den das Feld
+            darüber einmal hatte und der dort schon gegen
+            `--surface-kontofeld` getauscht wurde. Die Spitze blieb
+            zurück: Im hellen Theme sass ein fast schwarzes Quadrat an
+            einer Fläche in #f4ede2.
+
+            Sie darf nie eine eigene Farbe haben. Sie ist kein Schmuck
+            neben dem Feld, sie ist dessen Ecke.
+          */}
           <span
             aria-hidden
-            style={{ background: "#10141d" }}
+            style={{ background: "var(--surface-kontofeld, var(--surface-1, #141a28))" }}
             className="absolute -top-[7px] right-4 size-3 rotate-45 rounded-tl-[2px] border-l border-t border-line-3"
           />
 

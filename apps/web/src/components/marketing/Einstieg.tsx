@@ -77,11 +77,20 @@ export function Einstieg({
   if (angemeldet) {
     return (
       <div className="grid gap-3">
+        {/*
+          Zu Monday, nicht zur Liste.
+          
+          „Zu meinen Jobs" führte auf `/app/jobs` — eine Trefferliste.
+          Das ist das Ergebnis der Suche und nicht das, was Velvova
+          anbietet: Der Satz darüber sagt, dass Monday hilft, Stellen zu
+          verstehen und zu vergleichen. Der Knopf darunter führte dann
+          an Monday vorbei.
+        */}
         <Link
-          href="/app/jobs"
+          href="/app/monday"
           className={KNOPF_HAUPT}
         >
-          Zu meinen Jobs
+          Sprich mit Monday
           <ArrowRight aria-hidden className="size-4" strokeWidth={2} />
         </Link>
         <Link href="/business" className={`${KNOPF_RAND} text-sm`}>

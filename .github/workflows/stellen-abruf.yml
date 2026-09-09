@@ -67,7 +67,24 @@ on:
     #
     # Die krumme Minute bleibt mit Absicht: zur vollen Stunde starten
     # sehr viele Zeitpläne gleichzeitig, und die Anbieter merken das.
-    - cron: "15 * * * *"
+    # Zweimal je Stunde, auf krummen Minuten.
+    #
+    # Vorher „15 * * * *". Der Zeitplan lief, aber unzuverlässig:
+    # Gemessen am 9.9.2026 fanden die Läufe um 21:1x und 23:2x statt —
+    # 22:15, 00:15, 01:15 und 02:15 fielen aus. Drei Stunden ohne
+    # Aufnahme, und der Zähler auf der Startseite stand entsprechend
+    # still.
+    #
+    # GitHub führt geplante Läufe nach Verfügbarkeit aus und lässt sie
+    # unter Last aus. Die volle Stunde und runde Minuten wie :00, :15
+    # und :30 sind die am stärksten belegten — deshalb :07 und :37.
+    #
+    # Und zweimal statt einmal: Fällt ein Lauf aus, ist der nächste in
+    # dreissig Minuten da statt in einer Stunde. Der Endpunkt hat ein
+    # eigenes Zeitbudget und einen Rotationszeiger; zwei Läufe je
+    # Stunde bedeuten nicht doppelte Arbeit, sondern dass der Zeiger
+    # doppelt so schnell durch die Quellen wandert.
+    - cron: "7,37 * * * *"
   workflow_dispatch:
     inputs:
       limit:

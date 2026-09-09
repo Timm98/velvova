@@ -307,7 +307,7 @@ export async function POST(request: Request) {
    * sie folgt. Wer den Zeitplan ändert, ändert sie mit — und wer es
    * vergisst, liest hier, warum das nicht folgenlos bleibt.
    */
-  const ZEITPLAN_ABSTAND_MS = 60 * 60 * 1000; // .github/workflows/stellen-abruf.yml: "15 * * * *"
+  const ZEITPLAN_ABSTAND_MS = 30 * 60 * 1000; // .github/workflows/stellen-abruf.yml: "7,37 * * * *"
   const takt = Math.floor(beginn / ZEITPLAN_ABSTAND_MS);
 
   /*

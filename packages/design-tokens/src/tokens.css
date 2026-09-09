@@ -314,10 +314,20 @@
  */
 :root[data-theme="dark"],
 [data-theme="dark"] {
-  /* Siehe `--surface-kontofeld` im hellen Block. `--surface-1`
-     (#141a28) war zu hell und der Seitengrund (#0c0f18) zu dunkel —
-     #10141d liegt dazwischen. */
-  --surface-kontofeld: #10141d;
+  /* Siehe `--surface-kontofeld` im hellen Block.
+
+     Hier stand #10141d, begründet gegen einen Seitengrund von #0c0f18
+     und ein `--surface-1` von #141a28. Beide Werte gibt es nicht mehr:
+     Das dunkle Theme ist auf neutrales Grau umgestellt, der Grund ist
+     #131316. Übrig blieb ein blaustichiges Fast-Schwarz, dunkler als
+     alles um es herum — ein schwebendes Menü, das tiefer wirkte als
+     die Seite darunter.
+
+     #232327 ist die angehobene Fläche des dunklen Themes, dieselbe,
+     die `--ed-surface-raised` trägt. Ausgeschrieben und nicht per
+     `var()` verwiesen, weil die `--ed-*`-Tokens unter
+     `[data-surface="editorial"]` liegen und hier nicht gälten. */
+  --surface-kontofeld: #232327;
   color-scheme: dark;
 
   /*
@@ -435,7 +445,7 @@
   :root[data-theme-mode="system"] {
     color-scheme: dark;
 
-    --surface-kontofeld: #10141d;
+    --surface-kontofeld: #232327;
     --background: #17171a;
     --background-subtle: #2e2e34;
     --surface-1: #202023;

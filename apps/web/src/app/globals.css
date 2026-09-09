@@ -732,33 +732,44 @@
   animation: velvova-atmen-rand 8s ease-in-out infinite;
 }
 /*
- * Der Sprung der Zahl — ein kurzes Aufhellen, kein Blinken.
+ * Der Sprung der Zahl — der Rand, nicht die Schrift.
  *
- * Die Zahl steht im Platzhalter, und ein Platzhalter ist ein Attribut:
- * Eine einzelne Ziffer lässt sich darin nicht auszeichnen. Was geht,
- * ist die Farbe des ganzen Platzhalters, und `::placeholder` nimmt
- * eine Übergabe an.
+ * Zuerst hellte der Platzhalter auf und der Rand nur schwach mit. Das
+ * war die falsche Gewichtung: Der Text ist das, was man liest, und ihn
+ * beim Lesen heller werden zu lassen, stört genau dort. Der Rand liegt
+ * am Rand des Blickfelds — dort fällt Bewegung auf, ohne sich
+ * dazwischenzudrängen.
  *
- * Hell hinein, langsam zurück: 120 Millisekunden auf die volle
- * Schriftfarbe, 700 wieder heraus. Andersherum — gleich schnell in
- * beide Richtungen — läse sich derselbe Wechsel als Blinken. Der
- * Unterschied zwischen „etwas hat sich geändert" und „hier blinkt
- * etwas" liegt fast nur in dieser Asymmetrie.
+ * Jetzt trägt ihn der Rand allein, in der Akzentfarbe: im Dunkeln
+ * blau, im Hellen orange, weil `--color-accent` dem Thema folgt. Dazu
+ * ein Ring von drei Pixeln in derselben Farbe bei 18 Prozent — er
+ * macht aus einer Linie eine kurze Aufhellung, ohne dass das Feld
+ * springt.
  *
- * Der Rahmen bekommt denselben Anstoss, sehr schwach. Er trägt die
- * Bewegung über die Breite des Feldes, wo der Text sie nur in der
- * Mitte zeigt.
+ * Hinein in 60 Millisekunden, heraus in 260, gehalten 260.
+ *
+ * Vorher waren es 120 und 700 — bei 0,29 Stellen je Sekunde war das
+ * richtig, weil zwischen zwei Sprüngen dreieinhalb Sekunden lagen und
+ * ein langsames Abklingen dort ruhig wirkte. Der Zähler läuft jetzt
+ * mit 12 je Sekunde; ein Abklingen über 700 Millisekunden wäre nie zu
+ * Ende, bevor der nächste Sprung kommt, und der Rand stünde dauerhaft
+ * in der Akzentfarbe.
+ *
+ * Die Asymmetrie bleibt: schnell hinein, langsamer heraus. Sie ist der
+ * ganze Unterschied zwischen „etwas hat sich geändert" und „hier
+ * blinkt etwas".
  */
-.kopfsuche input::placeholder {
-  transition: color 700ms ease-out;
-}
-.kopfsuche[data-springt="an"] input::placeholder {
-  color: var(--color-ink);
-  transition: color 120ms ease-out;
+.kopfsuche input {
+  transition:
+    border-color 260ms ease-out,
+    box-shadow 260ms ease-out;
 }
 .kopfsuche[data-springt="an"] input {
-  border-color: rgb(from var(--color-accent) r g b / 0.38);
-  transition: border-color 120ms ease-out;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(from var(--color-accent) r g b / 0.18);
+  transition:
+    border-color 60ms ease-out,
+    box-shadow 60ms ease-out;
 }
 
 /* Beim Tippen hört das Atmen auf: Wer das Feld benutzt, muss nicht
@@ -780,9 +791,8 @@
 @media (prefers-reduced-motion: reduce) {
   .kopfsuche input,
   .nina-streifen__knopf { animation: none; }
-  /* Auch das Aufhellen beim Sprung der Zahl ist Bewegung. */
-  .kopfsuche input::placeholder,
-  .kopfsuche[data-springt="an"] input::placeholder,
+  /* Auch das Aufleuchten des Randes beim Sprung der Zahl ist Bewegung. */
+  .kopfsuche input,
   .kopfsuche[data-springt="an"] input { transition: none; }
 }
 

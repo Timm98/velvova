@@ -133,17 +133,23 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
               "grid h-full content-start gap-6 rounded-(--radius-lg) border p-7",
               "md:row-span-4 md:grid-rows-subgrid",
               /*
-               * Die hervorgehobene Stufe bekommt den Akzentrand und
-               * einen sehr schwachen Schein darum — im hellen Modus
-               * orange, im dunklen blau, weil `--color-accent` dem
-               * Thema folgt.
+               * Die hervorgehobene Stufe bekommt eine Linie in der
+               * Akzentfarbe — im Dunkeln blau, im Hellen orange, weil
+               * `--color-accent` dem Thema folgt.
                *
-               * Ein zweiter Rahmen statt einer gefüllten Fläche: Eine
-               * eingefärbte Karte zieht den Blick so stark, dass die
-               * beiden anderen wie Restposten wirken.
+               * Zwei Anläufe, und der Wert steht zwischen ihnen. Voll
+               * gedeckt mit einem Schein dahinter sah die Karte aus
+               * wie ausgewählt statt wie empfohlen, und die beiden
+               * anderen wirkten daneben wie Restposten. Bei 55 Prozent
+               * war sie dann nicht mehr zu sehen — gemessen war die
+               * Linie da, gemeldet wurde „die Umrandung ist weg".
+               *
+               * 85 Prozent ohne Schein: deutlich genug, um eine
+               * Empfehlung zu sein, ruhig genug, um die Nachbarn nicht
+               * zu entwerten.
                */
               a.betont
-                ? "border-accent shadow-[0_0_0_1px_rgb(from_var(--color-accent)_r_g_b_/_0.35),0_0_28px_-8px_rgb(from_var(--color-accent)_r_g_b_/_0.45)]"
+                ? "border-[rgb(from_var(--color-accent)_r_g_b_/_0.85)]"
                 : "border-line",
             ].join(" ")}
             style={{ background: "var(--ed-surface)" }}

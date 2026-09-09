@@ -5,101 +5,106 @@ import { AUSSENVERWEISE } from "@paycheck/config";
  * Die sozialen Kanäle ganz unten im Fuss.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum nur die echten
+ * Zeichen statt Kacheln — der dritte Anlauf
  * ══════════════════════════════════════════════════════════════
  *
- * Gezeigt wird ein Abzeichen nur, wenn in `AUSSENVERWEISE.social` eine
- * Adresse steht. Sechs Abzeichen, von denen vier ins Leere führen,
- * sind die billigste Art, grösser auszusehen als man ist — und wer
- * einmal darauf geklickt hat, rechnet danach damit, dass auch der Rest
- * der Seite so gemeint ist.
+ * Zuerst standen hier fünf selbstgezeichnete Pfade, nötig, weil die
+ * Symbolsammlung des Projekts ihre Markenzeichen entfernt hat. Dann
+ * Abzeichen mit Zeichen und Wortmarke in einer schwarzen Kachel — die
+ * waren lesbar, brachten aber ihre eigene Fläche mit und sassen als
+ * Reihe von Kästen in einer Zeile mit Kleingedrucktem.
  *
- * Steht nirgends eine Adresse, erscheint die Leiste gar nicht. Genau
- * das ist heute der Fall: Die Abzeichen liegen im Projekt, alle sechs
- * `url` stehen auf `null`. Es fehlt nicht das Bild, es fehlt die
- * Adresse — und die Liste in `maerkte.ts` ist der einzige Ort, an dem
- * sich das ändert.
+ * Jetzt liegen die Zeichen frei vor, weiss auf durchsichtigem Grund.
+ * Das passt zum Fuss, der ohnehin dunkel ist, und ordnet sich neben
+ * „Impressum" und „Datenschutz" ein, statt sie zu überstimmen.
+ *
+ * Alle sechs sind auf ihren Inhalt zugeschnitten und auf 96 Pixel Höhe
+ * gebracht. Die Breiten unterscheiden sich dadurch — 83 bei TikTok,
+ * 141 bei YouTube —, und das ist richtig: Ein liegendes Rechteck
+ * braucht mehr Platz als ein stehendes. Gesetzt wird die Höhe.
  *
  * ══════════════════════════════════════════════════════════════
- * Warum jetzt Bilder statt gezeichneter Zeichen
+ * Warum sie auch ohne Adresse erscheinen
  * ══════════════════════════════════════════════════════════════
  *
- * Vorher standen hier fünf selbstgezeichnete Pfade — nötig, weil die
- * Symbolsammlung des Projekts ihre Markenzeichen entfernt hat. Sie
- * waren reine Zeichen ohne Namen.
+ * Die Regel war: kein Abzeichen ohne hinterlegte Adresse. Sie ist
+ * richtig für einen Verweis — ein Klick, der ins Leere führt, ist eine
+ * gebrochene Zusage.
  *
- * Die neuen Abzeichen tragen Zeichen und Wortmarke in einer Kachel und
- * kommen als Datei. Das nimmt der Oberfläche die Aufgabe, fremde
- * Marken nachzuzeichnen — und macht die Leiste lesbar statt
- * rätselhaft: „Discord" erkennt am Symbol allein kaum jemand, der es
- * nicht ohnehin benutzt.
+ * Ein Zeichen ohne Verweis ist etwas anderes: Es sagt „hier sind wir
+ * zu finden", nicht „klick hier". Deshalb erscheinen die Zeichen
+ * jetzt immer, und nur der Verweis hängt an der Adresse. Solange in
+ * `maerkte.ts` `url: null` steht, ist es ein Bild ohne Klick — kein
+ * toter Link.
  *
- * Die Dateien kamen mit grosszügigem durchsichtigem Rand — bei 32
- * Pixeln Höhe blieb von der Kachel selbst ein Streifen von dreizehn.
- * Sie sind deshalb auf ihren Inhalt zugeschnitten; aus 420 × 140 wurde
- * je nach Wortmarke 110 × 48 bis 185 × 62.
- *
- * Damit unterscheiden sich die Seitenverhältnisse leicht — 2,29 bei
- * „X", 3,11 bei „Instagram" —, und das ist richtig so: Ein kurzes Wort
- * braucht weniger Platz als ein langes. Gesetzt wird nur die Höhe;
- * gleich hoch ist die Achse, an der das Auge eine Reihe misst.
- *
- * Der Zusatz `-badge` im Namen ist nötig, weil Next optimierte Bilder
- * unter Pfad und Breite ablegt: Nach dem Zuschneiden lagen unter den
- * alten Pfaden noch die ungeschnittenen Fassungen.
+ * Sobald die Adressen eingetragen sind, wird aus demselben Zeichen ein
+ * Verweis. Eine Zeile in `maerkte.ts`, nichts hier.
  */
 
-/** Höhe jedes Abzeichens. Die Breite ergibt sich aus dem Verhältnis. */
-const HOEHE = 34;
+/** Höhe jedes Zeichens. Die Breite ergibt sich aus dem Verhältnis. */
+const HOEHE = 18;
 
 /**
- * Zu welchem Netz welche Datei gehört.
+ * Zu welchem Netz welches Zeichen gehört.
  *
- * Ein Netz ohne Eintrag erscheint nicht — auch dann nicht, wenn eine
- * Adresse hinterlegt ist. Lieber ein Kanal weniger als eine Lücke in
- * der Reihe.
+ * Ein Netz ohne Eintrag erscheint nicht — lieber ein Kanal weniger als
+ * eine Lücke in der Reihe.
  */
-const ABZEICHEN: Partial<Record<string, string>> = {
-  instagram: "/sozial/instagram-badge.png",
-  linkedin: "/sozial/linkedin-badge.png",
-  youtube: "/sozial/youtube-badge.png",
-  tiktok: "/sozial/tiktok-badge.png",
-  x: "/sozial/x-badge.png",
-  discord: "/sozial/discord-badge.png",
+const ZEICHEN: Partial<Record<string, string>> = {
+  instagram: "/sozial/instagram-zeichen.png",
+  linkedin: "/sozial/linkedin-zeichen.png",
+  youtube: "/sozial/youtube-zeichen.png",
+  tiktok: "/sozial/tiktok-zeichen.png",
+  x: "/sozial/x-zeichen.png",
+  discord: "/sozial/discord-zeichen.png",
 };
 
 export function SozialeKanaele() {
-  const kanaele = AUSSENVERWEISE.social.filter((k) => Boolean(k.url) && ABZEICHEN[k.netz]);
+  const kanaele = AUSSENVERWEISE.social.filter((k) => ZEICHEN[k.netz]);
   if (kanaele.length === 0) return null;
 
   return (
-    <ul className="flex flex-wrap items-center gap-2">
-      {kanaele.map((k) => (
-        <li key={k.netz}>
-          <a
-            href={k.url as string}
-            /*
-              `noopener` gegen den Zugriff der Zielseite auf unser
-              Fenster, `noreferrer` weil ein fremdes Netzwerk nicht
-              erfahren muss, von welcher Unterseite jemand kam.
-            */
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${k.name} — öffnet in neuem Tab`}
-            className="block rounded-(--radius-md) opacity-85 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-          >
-            <Image
-              src={ABZEICHEN[k.netz] as string}
-              alt=""
-              aria-hidden
-              width={HOEHE * 3}
-              height={HOEHE}
-              style={{ height: HOEHE, width: "auto" }}
-              className="object-contain"
-            />
-          </a>
-        </li>
-      ))}
+    <ul className="flex flex-wrap items-center gap-4">
+      {kanaele.map((k) => {
+        const bild = (
+          <Image
+            src={ZEICHEN[k.netz] as string}
+            alt=""
+            aria-hidden
+            width={HOEHE * 2}
+            height={HOEHE}
+            style={{ height: HOEHE, width: "auto" }}
+            className="object-contain"
+          />
+        );
+        return (
+          <li key={k.netz} className="flex items-center">
+            {k.url ? (
+              <a
+                href={k.url}
+                /*
+                  `noopener` gegen den Zugriff der Zielseite auf unser
+                  Fenster, `noreferrer` weil ein fremdes Netzwerk nicht
+                  erfahren muss, von welcher Unterseite jemand kam.
+                */
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${k.name} — öffnet in neuem Tab`}
+                className="flex min-h-9 items-center opacity-70 transition-opacity hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                {bild}
+              </a>
+            ) : (
+              /* Ohne Adresse kein Verweis: ein Zeichen, das man nicht
+                 anklicken kann, statt eines Klicks, der nirgends
+                 ankommt. `title` nennt trotzdem den Namen. */
+              <span title={k.name} className="flex min-h-9 items-center opacity-55">
+                {bild}
+              </span>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

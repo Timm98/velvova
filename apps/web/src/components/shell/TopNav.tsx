@@ -281,7 +281,27 @@ export function TopNav({
          Und es ist auch ohne Übergang das Richtige: Suche und Wege
          gehören zu den Dingen, die man mitten im Lesen braucht.
       */
-      className="uebergang-kopf border-b border-line bg-page"
+      /*
+       * `relative z-40` — sonst bleibt das Kontomenü unsichtbar.
+       *
+       * `view-transition-name` oben macht die Kopfzeile zu einem
+       * eigenen Stapelkontext. Solange sie dabei *statisch* steht,
+       * wird ihr gesamter Inhalt in den Ebenen für nicht positionierte
+       * Elemente gemalt — also unter jedem `relative` im Seiteninhalt,
+       * ganz gleich, welches `z-index` darin steht.
+       *
+       * Das Kontomenü hat `z-50` und kam trotzdem nicht heraus: Es
+       * öffnete sich, war aber ab der Unterkante der Kopfzeile von der
+       * Seite verdeckt. Von aussen sah das aus, als klappe es nicht auf.
+       *
+       * Gemessen: 40 Pixel unter der Kopfzeile lag nicht ein dort
+       * eingesetztes `z-50`-Feld obenauf, sondern das `canvas` des Cores.
+       *
+       * Positioniert ist die Kopfzeile ein Stapelkontext *mit* Ebene.
+       * 40 lässt die Befehlspalette (`z-[60]`) darüber — die legt sich
+       * absichtlich über alles.
+       */
+      className="uebergang-kopf relative z-40 border-b border-line bg-page"
     >
       {/* ── Reihe 1: Marke · Suche · Konto ─────────────────── */}
       {/*
@@ -291,7 +311,30 @@ export function TopNav({
         breit. Ein Suchfeld, das um dreissig Pixel danebensteht, sieht
         nicht nach Zufall aus, sondern nach Nachlässigkeit.
       */}
+            {/*
+        ── Warum die Aussenhalter `min-w-fit` tragen ────────────────
+
+        Das Feld sass rechts der Seitenmitte: „Velvova" ist breiter als
+        Glocke und Kontobild zusammen, und was nur den Rest zwischen
+        beiden nimmt, landet um die halbe Differenz daneben. `flex-1
+        basis-0` an beiden Seiten teilt den freien Platz zu gleichen
+        Teilen — damit liegt die Mitte dazwischen in der Seitenmitte.
+
+        `min-w-fit` ist dabei die tragende Angabe: Ohne sie fielen die
+        Halter unter die Breite ihres Inhalts (gemessen 92 Pixel bei
+        einer Knopfgruppe von 250), und die Knöpfe liefen aus ihrem
+        Kasten heraus über das Feld. Mit ihr hört jeder Halter bei
+        seinem Inhalt auf, und was zu eng wird, gibt das Feld nach.
+
+        Hier stand kurz ein Raster mit `minmax(max-content,1fr)`. In
+        Chromium sass es auf den Pixel genau — Safari verwirft die
+        Regel, das Raster wurde einspaltig, und Feld und Knöpfe
+        rutschten untereinander. Gemeldet aus Safari, gemessen war es
+        in Chromium richtig. Deshalb Flexbox: Sie kann hier dasselbe
+        und wird überall gleich gelesen.
+      */}
       <div className="relative mx-auto flex h-[88px] w-full max-w-(--breite-inhalt) items-center gap-4 px-5 md:px-8">
+        <div className="flex min-w-fit flex-1 basis-0 items-center">
         <Link
           href="/"
           /* Auf schmalen Geräten fällt die Wortmarke weg — dann bliebe
@@ -335,11 +378,12 @@ export function TopNav({
             {brandName}
           </span>
         </Link>
+        </div>
 
         {/* ── Suche, mittig ─────────────────────────────────── */}
         <Kopfsuche stellenzahl={stellenzahl} genau={stellenGenau} proSekunde={proSekunde} />
 
-        <div className="ml-auto flex shrink-0 items-center gap-1">
+        <div className="flex min-w-fit flex-1 basis-0 items-center justify-end gap-1">
           {!angemeldet ? (
             <>
               {/* Unter 640 Pixeln fällt „Anmelden" weg und der zweite
@@ -628,7 +672,7 @@ function Kopfsuche({
     if (lebend === null) return;
     if (vorher.current !== null && lebend !== vorher.current) {
       setSpringt(true);
-      const uhr = setTimeout(() => setSpringt(false), 700);
+      const uhr = setTimeout(() => setSpringt(false), 260);
       vorher.current = lebend;
       return () => clearTimeout(uhr);
     }
@@ -664,7 +708,7 @@ function Kopfsuche({
        * nichts mehr überlagern kann, und er ist niedriger als der
        * Fehler.
        */
-      className="kopfsuche relative mx-auto hidden w-full max-w-[620px] min-w-0 flex-1 md:block"
+      className="kopfsuche relative hidden w-full min-w-0 max-w-[620px] shrink grow basis-[620px] md:block"
     >
       <label htmlFor="kopf-stellensuche" className="sr-only">
         {beschriftung}

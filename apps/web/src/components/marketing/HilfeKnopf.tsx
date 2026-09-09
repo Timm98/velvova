@@ -120,7 +120,7 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
           auf jeder Seite etwas anderes als „Hilfe". Zwei blaue Knöpfe
           streiten um dieselbe Bedeutung.
         */
-        style={{ background: "#56565f" }}
+        style={{ background: "#43434b" }}
         className="ml-auto flex h-16 items-center gap-3 rounded-full border border-line-3 py-2 pl-2 pr-7 text-[15px] text-ink shadow-lg transition-colors hover:bg-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {/*
@@ -144,7 +144,7 @@ export function HilfeKnopf({ assistantName }: { assistantName: string }) {
         */}
         <span
           aria-hidden
-          style={{ background: "#6e6e78" }}
+          style={{ background: "#5c5c65" }}
           className="grid size-12 shrink-0 place-items-center rounded-full text-ink"
         >
           {offen ? (
