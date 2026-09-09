@@ -5,6 +5,7 @@ import { ArrowUp, Check, Mic, Square, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { DokumentKnopf } from "./DokumentKnopf";
 import { Modellwahl } from "./Modellwahl";
+import { Jobzaehler } from "./Jobzaehler";
 
 /**
  * Der Composer.
@@ -456,6 +457,10 @@ export function Composer({
             onFertig={(zusammenfassung) => onSend(zusammenfassung)}
           />
         )}
+
+        {/* Der Bestand steht links, bei den Anhängen — beides sind
+            Angaben zum Material, nicht Handlungen. */}
+        {modellwahl && <Jobzaehler />}
 
         {/* Alles Weitere nach rechts. Die Modellwahl zuerst: Sie ist
             eine Einstellung, die man liest, bevor man handelt. */}

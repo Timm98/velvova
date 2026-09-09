@@ -68,6 +68,7 @@ const SPEICHER = "velvova.seitenleiste.eng";
 
 export function Seitenleiste({
   brandName,
+  assistentName,
   userName,
   userEmail,
   bildKennung,
@@ -81,6 +82,8 @@ export function Seitenleiste({
   gespraeche = [],
 }: {
   brandName: string;
+  /** Mondays Name — steht oben in der Leiste. */
+  assistentName: string;
   userName: string | null;
   userEmail: string;
   bildKennung: string | null;
@@ -225,11 +228,23 @@ export function Seitenleiste({
       {/* ── Kopf: Marke und Breite ──────────────────────────────── */}
       <div className={cn("flex items-center gap-1 px-3 pt-3 pb-1", eng && "justify-center px-2")}>
         {!eng && (
+          /*
+            „Monday", nicht „Velvova".
+
+            Die Marke steht oben rechts im Kopf. Hier oben steht, WER
+            in dieser Leiste arbeitet — und das ist Monday. Zweimal
+            derselbe Name auf einem Bildschirm sagt nichts zweimal, er
+            nimmt nur einer der beiden Stellen ihre Aussage.
+
+            Block- statt JSX-Kommentar: Direkt nach der öffnenden
+            Klammer stünden sonst zwei Kinder nebeneinander, und die
+            Datei bricht.
+          */
           <Link
-            href="/app"
-            className="truncate rounded-(--radius-sm) px-1.5 py-1 text-[15px] font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            href="/app/monday"
+            className="truncate rounded-(--radius-sm) px-1.5 py-1 text-[15px] font-semibold tracking-tight text-(--app-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)"
           >
-            {brandName}
+            {assistentName}
           </Link>
         )}
         <button

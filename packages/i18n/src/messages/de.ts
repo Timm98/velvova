@@ -207,7 +207,7 @@ export const de = {
       "gibt und welche Bedingungen du brauchst. Du kannst jederzeit etwas korrigieren oder " +
       "überspringen.",
     progress: "{done} von {total} Themen verstanden",
-    yourAnswer: "Wie kann ich dir bei deinem nächsten Schritt helfen?",
+    yourAnswer: "Beschreibe deinen Wunsch. Monday kümmert sich um die nächsten Schritte.",
     send: "Senden",
     voiceMode: "Sprechen",
     textMode: "Schreiben",

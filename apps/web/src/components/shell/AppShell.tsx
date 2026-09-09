@@ -265,6 +265,7 @@ export function AppShell({
 
       <Seitenleiste
         brandName={brandName}
+        assistentName={brand.assistantName}
         userName={userName}
         userEmail={userEmail}
         bildKennung={bildKennung ?? null}

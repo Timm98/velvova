@@ -215,7 +215,7 @@ export const nl: Messages = {
       "van krijgt en welke voorwaarden je nodig hebt. Je kunt alles op elk moment corrigeren " +
       "of overslaan.",
     progress: "{done} van {total} onderwerpen begrepen",
-    yourAnswer: "Hoe kan ik je helpen met je volgende stap?",
+    yourAnswer: "Beschrijf je wens. Monday regelt de volgende stappen.",
     send: "Versturen",
     voiceMode: "Spreken",
     textMode: "Typen",

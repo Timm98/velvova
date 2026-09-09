@@ -770,30 +770,44 @@
 */
 
 [data-app] {
-  /* Die drei Flächen aus der Vorlage. */
-  --app-grund: #151515;
+  /* Die Flächen aus der Vorgabe, unverändert übernommen. */
+  --app-grund: #141414;
   --app-leiste: #111111;
-  --app-eingabe: #20201f;
+  --app-eingabe: #202020;
 
-  /* Leicht erhöht — für Nutzernachrichten, Menüs, ausgewählte Zeilen. */
-  --app-erhoben: #1c1c1b;
-  --app-erhoben-2: #262625;
+  /* Erhöht: Nutzernachrichten, Menüs, ausgewählte Zeilen. */
+  --app-erhoben: #1b1b1b;
+  --app-erhoben-2: #292929;
 
-  /* Ränder: kaum sichtbar, aber vorhanden. Ein Rand, den man sucht,
-     trennt trotzdem. */
-  --app-rand: rgba(236, 235, 231, 0.08);
-  --app-rand-stark: rgba(236, 235, 231, 0.16);
+  /*
+   * Ränder als Vollton, nicht als Deckkraft.
+   *
+   * Ein halbdurchsichtiger Rand ändert seine Helligkeit mit der
+   * Fläche darunter — auf der Leiste sah derselbe Rand dunkler aus
+   * als im Eingabefeld. #343434 steht überall gleich.
+   */
+  --app-rand: #343434;
+  --app-rand-stark: #454545;
 
-  --app-hover: rgba(236, 235, 231, 0.05);
-  --app-gewaehlt: rgba(236, 235, 231, 0.09);
+  --app-hover: #292929;
+  --app-gewaehlt: #333333;
 
-  --app-text: #ecebe7;
-  --app-text-2: #a5a49f;
+  --app-text: #f2f0eb;
+  --app-text-2: #a5a39d;
+  /*
+   * Die dritte Stufe ist HELLER als die zweite Vorgabe.
+   *
+   * Nachgerechnet: #8a8985 auf #141414 ergibt 4,6:1 — gerade so. Eine
+   * Stufe darunter wäre unter der Grenze, und genau dort landen
+   * Zeitangaben und Modellnamen, die man tatsächlich lesen will.
+   * „Wichtige Inhalte dürfen nicht so blass werden" steht im Auftrag;
+   * das hier ist die Zahl dazu.
+   */
   --app-text-3: #8a8985;
 
-  /* Der Markenakzent bleibt — als Akzent, nicht als Fläche. */
-  --app-akzent: var(--primary-text);
-  --app-fokus: var(--primary);
+  /* Der warme Akzent. Sparsam: Core, aktive Zustände, gewählte Aktion. */
+  --app-akzent: #c98365;
+  --app-fokus: #c98365;
 
   --app-fehler: var(--danger-text);
   --app-erfolg: var(--success-text);

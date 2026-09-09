@@ -662,9 +662,20 @@ export function InterviewRoom({
                 displayName={displayName}
                 onVorschlag={(text) => setEntwurf((v) => ({ text, zaehler: v.zaehler + 1 }))}
               />
-              <p className="max-w-[var(--measure)] whitespace-pre-wrap text-center text-base leading-relaxed text-(--app-text-2)">
-                {openingQuestion}
-              </p>
+              {/*
+               * Hier stand die Eröffnungsfrage aus dem Interview —
+               * „Was soll sich durch deine nächste berufliche
+               * Entscheidung konkret verändern?"
+               *
+               * Sie steht jetzt zweimal: Die Startansicht fragt
+               * bereits „Welchen nächsten Karriereschritt möchtest du
+               * machen?". Zwei Fragen übereinander, die dasselbe
+               * wollen, lesen sich nicht gründlich, sondern unsicher —
+               * als wüsste die Seite selbst nicht, was sie wissen will.
+               *
+               * Die Interviewfrage ist nicht verloren: Monday stellt
+               * sie im Gespräch, sobald jemand geantwortet hat.
+               */}
             </div>
           )}
 

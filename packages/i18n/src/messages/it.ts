@@ -215,7 +215,7 @@ export const it: Messages = {
       "dà energia e di quali condizioni hai bisogno. Puoi correggere o saltare qualsiasi cosa " +
       "in qualsiasi momento.",
     progress: "{done} argomenti su {total} compresi",
-    yourAnswer: "Come posso aiutarti con il tuo prossimo passo?",
+    yourAnswer: "Descrivi il tuo obiettivo. Monday si occupa dei passi successivi.",
     send: "Invia",
     voiceMode: "Parla",
     textMode: "Scrivi",

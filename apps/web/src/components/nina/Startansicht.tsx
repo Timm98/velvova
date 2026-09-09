@@ -44,12 +44,28 @@ const Core = dynamic(() => import("./NinaScene").then((m) => m.NinaScene), {
   loading: () => <span aria-hidden className="block size-full rounded-full bg-(--app-erhoben)" />,
 });
 
-/** Vier Anfänge. Nicht acht — eine Liste, die man liest, statt sie zu überfliegen. */
+/**
+ * Drei Anfänge, nicht acht.
+ *
+ * Der Text endet mit einem Leerzeichen: Er ist der ANFANG eines
+ * Satzes, nicht der ganze. Wer „Finde einen besseren Job für mich"
+ * antippt, steht mit dem Cursor dahinter und schreibt weiter — wo,
+ * wie viel, ab wann. Ein fertiger Satz lädt dazu ein, ihn abzuschicken
+ * und nichts zu sagen.
+ */
 const VORSCHLAEGE = [
-  { text: "Jobs finden", eingabe: "Ich suche einen neuen Job. Wo fange ich an?" },
-  { text: "Stellenanzeige prüfen", eingabe: "Ich habe eine Stellenanzeige gefunden. Kannst du sie einordnen?" },
-  { text: "Bewerbung vorbereiten", eingabe: "Ich möchte mich bewerben. Was brauche ich dafür?" },
-  { text: "Karriere planen", eingabe: "Ich überlege, wie es beruflich weitergehen soll." },
+  {
+    text: "Finde einen besseren Job für mich",
+    eingabe: "Ich suche einen besseren Job. ",
+  },
+  {
+    text: "Ich möchte mich beruflich verändern",
+    eingabe: "Ich möchte mich beruflich verändern. ",
+  },
+  {
+    text: "Hilf mir bei einer Bewerbung",
+    eingabe: "Ich möchte mich bewerben und brauche Hilfe dabei. ",
+  },
 ] as const;
 
 export function Startansicht({
@@ -82,18 +98,47 @@ export function Startansicht({
 
   return (
     <div className={cn("grid justify-items-center gap-7 px-4 text-center", className)}>
-      <div className="flex items-center gap-4">
-        <span aria-hidden className="block size-[52px] shrink-0">
-          <Core state="idle" reducedMotion={ruhig} />
-        </span>
-        {/*
-          Kein `font-bold`. Die Vorlage trägt hier ein normales bis
-          mittleres Gewicht — eine Begrüssung, die schreit, wirkt wie
-          eine Überschrift auf einer Verkaufsseite.
-        */}
-        <h1 className="font-titel text-[26px] leading-tight font-medium tracking-tight text-(--app-text) sm:text-[38px]">
-          {name ? `Hallo ${name}` : "Hallo"}
-        </h1>
+      {/*
+        ── Markenzeile, Begrüssung, Frage ────────────────────────
+        
+        Drei Zeilen, absteigend nach Gewicht: Wer spricht, wen es
+        anspricht, worum es geht.
+        
+        Vorher standen Core und Begrüssung nebeneinander, und der Core
+        war damit so gross wie eine Überschrift. Er ist ein
+        Markenzeichen, kein Titel — er gehört über den Namen, klein,
+        neben das Wort „Monday".
+      */}
+      <div className="grid justify-items-center gap-5">
+        <div className="flex items-center gap-2">
+          <span aria-hidden className="block size-7 shrink-0">
+            <Core state="idle" reducedMotion={ruhig} />
+          </span>
+          <span className="font-titel text-[15px] font-medium tracking-tight text-(--app-text-2)">
+            Monday
+          </span>
+        </div>
+
+        <div className="grid justify-items-center gap-2.5">
+          {/*
+            Kein `font-bold`. Eine Begrüssung, die schreit, wirkt wie
+            eine Überschrift auf einer Verkaufsseite.
+          */}
+          <h1 className="font-titel text-[27px] leading-tight font-medium tracking-tight text-(--app-text) sm:text-[36px]">
+            {name ? `Hallo ${name}` : "Hallo"}
+          </h1>
+          {/*
+            Die Frage steht unter dem Namen und nicht darin.
+            
+            „Hallo Tim, welchen Schritt willst du machen?" wäre ein
+            Satz und läse sich wie eine Floskel. Getrennt ist das eine
+            eine Ansprache und das andere eine Frage, auf die man
+            antwortet — und darunter steht das Feld dafür.
+          */}
+          <p className="text-[15px] leading-relaxed text-(--app-text-2) sm:text-[17px]">
+            Welchen nächsten Karriereschritt möchtest du machen?
+          </p>
+        </div>
       </div>
 
       <ul className="flex flex-wrap justify-center gap-2">
