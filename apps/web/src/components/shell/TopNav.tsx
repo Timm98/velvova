@@ -726,11 +726,36 @@ export function TopNav({
           ref={menueRef}
           onMouseEnter={() => oeffne(menue)}
           onMouseLeave={schliesseBald}
-          className="absolute inset-x-0 top-full z-10 hidden border-b border-line bg-page shadow-lg md:block"
+          /*
+            Ein schwebendes Feld, nicht eine Bank über die ganze Breite.
+            
+            Randlos sah es aus wie ein zweiter Kopfbereich, der sich
+            über die Seite schiebt — bei drei Spalten stand rechts die
+            halbe Breite leer und war trotzdem eingefärbt.
+            
+            `w-max` macht es so breit wie sein Inhalt und nicht
+            breiter; `max-w` fängt den Fall ab, dass eine Spalte
+            wächst. Mittig unter der Zeile, weil die Zeile selbst
+            mittig steht.
+            
+            Oben keine Ecken und keine Kante: Dort schliesst es an die
+            Kopfzeile an und soll aussehen, als hinge es an ihr.
+          */
+          className="absolute left-1/2 top-full z-10 hidden w-max max-w-[min(1120px,calc(100vw-3rem))] -translate-x-1/2 rounded-b-(--radius-lg) border border-t-0 border-line shadow-xl md:block"
+          style={{ background: "var(--surface-1)" }}
         >
-          <div className="mx-auto grid w-full max-w-(--breite-inhalt) gap-x-10 gap-y-8 px-5 py-8 md:grid-cols-2 md:px-8 lg:grid-cols-4">
+          <div className="grid grid-flow-col auto-cols-max">
             {BEREICHSMENUE[menue].map((spalte) => (
-              <div key={spalte.titel} className="grid content-start gap-1">
+              /*
+                Haarlinie zwischen den Spalten, wie in der Vorlage —
+                aber nicht vor der ersten. `first:border-l-0` statt
+                eines Index-Vergleichs: Die Regel steht dort, wo sie
+                gilt.
+              */
+              <div
+                key={spalte.titel}
+                className="grid content-start gap-1 border-l border-line px-6 py-7 first:border-l-0"
+              >
                 <h2 className="mb-2 text-2xs font-semibold uppercase tracking-[0.12em] text-ink-3">
                   {spalte.titel}
                 </h2>
