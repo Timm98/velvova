@@ -37,3 +37,7 @@ export * from "./registry/registry.ts";
 export * from "./registry/anbieter.ts";
 export * from "./team/aufstellung.ts";
 export * from "./team/lauf.ts";
+export * from "./team/pruefung.ts";
+export * from "./team/lagebild.ts";
+export * from "./team/richter.ts";
+export * from "./team/synthese.ts";

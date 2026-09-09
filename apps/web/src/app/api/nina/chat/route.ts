@@ -553,6 +553,25 @@ export async function POST(request: Request) {
       let antwort = "";
       const werkzeuge: { name: string; ok: boolean; summary?: string }[] = [];
       let modell: string | null = null;
+      /*
+       * Der Anbieter kommt aus demselben Ereignis wie das Modell.
+       *
+       * Hier stand `provider: "openai"` fest im Protokolleintrag,
+       * während `model` echt war. Seit die Registry auch zu Anthropic
+       * und Google routet, wurde damit JEDER Lauf als OpenAI
+       * verbucht — inklusive der Läufe, die nachweislich woanders
+       * liefen.
+       *
+       * Das ist nicht bloss ein falsches Feld. Kosten je Anbieter,
+       * Ausfallraten und jeder spätere Vergleich zwischen Modellen
+       * lesen genau diese Spalte. Eine Auswertung darauf wäre nicht
+       * ungenau gewesen, sondern verkehrt.
+       *
+       * `event.usage.provider` setzt der Adapter, der tatsächlich
+       * geantwortet hat — nicht der, den wir ausgewählt zu haben
+       * glauben. Bei einem Ausweichmodell ist das der Unterschied.
+       */
+      let anbieter: string | null = null;
       let inputTokens: number | null = null;
       let outputTokens: number | null = null;
       let latenz: number | null = null;
@@ -641,6 +660,7 @@ export async function POST(request: Request) {
 
             if (event.type === "done") {
               modell = event.usage.model;
+              anbieter = event.usage.provider ?? anbieter;
               // Tokens summieren sich über die Runden. Nur die letzte zu
               // zählen würde die Kosten kleinrechnen.
               inputTokens = (inputTokens ?? 0) + (event.usage.inputTokens ?? 0);
@@ -683,6 +703,7 @@ export async function POST(request: Request) {
             }
             if (event.type === "done") {
               modell = event.usage.model;
+              anbieter = event.usage.provider ?? anbieter;
               inputTokens = (inputTokens ?? 0) + (event.usage.inputTokens ?? 0);
               outputTokens = (outputTokens ?? 0) + (event.usage.outputTokens ?? 0);
               latenz = (latenz ?? 0) + (event.usage.latencyMs ?? 0);
@@ -715,7 +736,7 @@ export async function POST(request: Request) {
                 tiefe.merkmale.length > 0
                   ? `${tiefe.tiefe}: ${tiefe.merkmale.join(", ")}`
                   : tiefe.tiefe,
-              provider: "openai",
+              provider: anbieter ?? provider.name,
               model: modell,
               promptKey: NINA_PROMPT_KEY,
               promptVersion: NINA_PROMPT_VERSION,
