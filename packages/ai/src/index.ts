@@ -34,3 +34,4 @@ export * from "./prompts/karriereanalyse.ts";
 /* Der Modellkatalog und seine Freigabelogik. */
 export * from "./registry/katalog.ts";
 export * from "./registry/registry.ts";
+export * from "./registry/anbieter.ts";
