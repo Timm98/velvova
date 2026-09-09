@@ -45,18 +45,24 @@ import {
 /**
  * Anbieter, für die es tatsächlich einen Adapter gibt.
  *
- * Google fehlt, und das ist keine Nachlässigkeit, sondern der Stand:
- * `providers/` enthält `openai.ts`, `anthropic.ts` und `mock.ts`.
- * Solange kein Gemini-Adapter existiert, darf kein Gemini-Modell
- * angeboten werden — ein Schlüssel in der Umgebung ändert daran
- * nichts.
+ * Seit dem 9. September 2026 alle drei: `providers/` enthält
+ * `openai.ts`, `anthropic.ts` und `gemini.ts`.
  *
- * Diese Menge ist die einzige Stelle, an der das steht. Wer den
- * Adapter baut, trägt hier `"google"` ein, und die Modelle erscheinen.
+ * ── Was ein Eintrag hier heisst und was nicht ───────────────────
+ *
+ * Er heisst: Es gibt Code, der diesen Anbieter ansprechen kann. Er
+ * heisst NICHT, dass je ein Aufruf funktioniert hat. `gemini.ts` ist
+ * gegen die dokumentierte Form der Schnittstelle geschrieben und von
+ * hier aus gegen keine laufende API geprüft worden.
+ *
+ * Diese Trennung trägt die Freigabe: MONDAY_GOOGLE_PRODUCTION_APPROVED
+ * bleibt `false`, bis jemand einen echten Aufruf gemacht hat. Adapter
+ * und Freigabe sind zwei Türen, und beide müssen auf sein.
  */
 export const ANBIETER_MIT_ADAPTER: ReadonlySet<Anbieter> = new Set<Anbieter>([
   "openai",
   "anthropic",
+  "google",
 ]);
 
 /** Wie sicher wir sind, dass dieses Modell antwortet. */

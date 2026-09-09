@@ -161,6 +161,9 @@ export async function anbieterFuerModell(
   if (plan.anbieter === "anthropic") {
     const { AnthropicProvider } = await import("../providers/anthropic.ts");
     adapter = new AnthropicProvider({ apiKey: plan.schluessel, ...gebunden });
+  } else if (plan.anbieter === "google") {
+    const { GeminiProvider } = await import("../providers/gemini.ts");
+    adapter = new GeminiProvider({ apiKey: plan.schluessel, ...gebunden });
   } else {
     const { OpenAiProvider } = await import("../providers/openai.ts");
     adapter = new OpenAiProvider({

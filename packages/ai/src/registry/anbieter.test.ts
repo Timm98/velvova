@@ -32,10 +32,23 @@ describe("Der Adapterplan", () => {
 });
 
 describe("Was schiefgehen kann, geht laut schief", () => {
-  it("verweigert einen Anbieter ohne Adapter", () => {
-    expect(() =>
-      adapterplan(gemini, { GEMINI_API_KEY: "gm", ANTHROPIC_API_KEY: "sk-ant" }),
-    ).toThrow(ModellNichtVerfuegbarError);
+  it("plant auch für Google, seit es dort einen Adapter gibt", () => {
+    const plan = adapterplan(gemini, { GEMINI_API_KEY: "gm" });
+    expect(plan.anbieter).toBe("google");
+    expect(plan.apiModellId).toBe(gemini.apiModellId);
+  });
+
+  it("verweigert einen Anbieter, für den es keinen Adapter gibt", () => {
+    /*
+     * `Anbieter` ist eine geschlossene Aufzählung, ein vierter
+     * Anbieter also nur über die Typgrenze hinweg zu bauen. Genau so
+     * käme er aber auch in echt an: als Katalogeintrag, den jemand
+     * geschrieben hat, bevor der Adapter da war.
+     */
+    const erfunden = { ...openai, internId: "x", anbieter: "cohere" } as unknown as typeof openai;
+    expect(() => adapterplan(erfunden, { OPENAI_API_KEY: "sk" })).toThrow(
+      ModellNichtVerfuegbarError,
+    );
   });
 
   it("nennt bei fehlendem Adapter nicht den Schlüssel als Ursache", () => {
@@ -43,8 +56,9 @@ describe("Was schiefgehen kann, geht laut schief", () => {
      * Sonst besorgt jemand einen Schlüssel, der nichts nützt — der
      * Adapter fehlt ja weiterhin.
      */
+    const erfunden = { ...openai, anbieter: "cohere" } as unknown as typeof openai;
     try {
-      adapterplan(gemini, { GEMINI_API_KEY: "gm" });
+      adapterplan(erfunden, {});
       expect.unreachable("hätte werfen müssen");
     } catch (e) {
       expect((e as Error).message).toMatch(/Adapter/);
@@ -68,11 +82,12 @@ describe("Was schiefgehen kann, geht laut schief", () => {
      * Diese Meldungen landen in Protokollen. Der Name der Variablen
      * gehört hinein, ihr Wert nie.
      */
+    const erfunden = { ...openai, anbieter: "cohere" } as unknown as typeof openai;
     try {
-      adapterplan(gemini, { GEMINI_API_KEY: "gm-geheim-123" });
+      adapterplan(erfunden, { OPENAI_API_KEY: "sk-geheim-123" });
       expect.unreachable("hätte werfen müssen");
     } catch (e) {
-      expect((e as Error).message).not.toContain("gm-geheim-123");
+      expect((e as Error).message).not.toContain("sk-geheim-123");
     }
     try {
       adapterplan(openai, {});

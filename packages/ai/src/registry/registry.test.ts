@@ -75,35 +75,45 @@ describe("Nichts ist offen, solange es niemand geöffnet hat", () => {
   });
 });
 
-describe("Ein Anbieter ohne Adapter bleibt draussen", () => {
-  it("bietet kein Gemini-Modell an, auch mit Schlüssel und Freigabe", () => {
+describe("Adapter und Freigabe sind zwei Türen", () => {
+  it("bietet ein Gemini-Modell ohne Freigabe nicht an, obwohl der Adapter da ist", () => {
     /*
-     * Der Fall, der ohne diese Prüfung ein Modell in die Auswahl
-     * stellt, das beim Anklicken in einen Importfehler läuft.
+     * Der Adapter existiert seit dem 9.9.2026, wurde aber gegen keine
+     * laufende API geprüft. Genau dafür ist die zweite Tür da.
      */
     const namen = anbietbareModelle({
-      ...ALLES_DA,
-      GEMINI_API_KEY: "gm-test",
-      MONDAY_GOOGLE_PRODUCTION_APPROVED: "true",
+      ...ALLES_DA, GEMINI_API_KEY: "gm-test",
     }).map((m) => m.internId);
     expect(namen.some((n) => n.startsWith("google-"))).toBe(false);
   });
 
-  it("nennt den fehlenden Adapter als Grund und nicht den Schlüssel", () => {
-    const google = modellzustaende({
-      GEMINI_API_KEY: "gm-test",
-      MONDAY_GOOGLE_PRODUCTION_APPROVED: "true",
-    }).find((z) => z.definition.anbieter === "google");
-    expect(google?.grund).toMatch(/Adapter/);
+  it("nennt die fehlende Freigabe als Grund, nicht den Adapter", () => {
+    const google = modellzustaende({ ...ALLES_DA, GEMINI_API_KEY: "gm" })
+      .find((z) => z.definition.anbieter === "google");
+    expect(google?.grund).toMatch(/Nicht freigegeben/);
   });
 
-  it("hält fest, dass es heute genau zwei Adapter gibt", () => {
+  it("bietet ein Gemini-Modell an, sobald Schlüssel UND Freigabe stehen", () => {
+    const namen = anbietbareModelle({
+      ...ALLES_DA, GEMINI_API_KEY: "gm",
+      MONDAY_GOOGLE_PRODUCTION_APPROVED: "true",
+    }).map((m) => m.internId);
+    expect(namen).toContain("google-flash");
+  });
+
+  it("nennt bei fehlendem Schlüssel den Schlüssel", () => {
+    const google = modellzustaende({
+      ...ALLES_DA, MONDAY_GOOGLE_PRODUCTION_APPROVED: "true",
+    }).find((z) => z.definition.anbieter === "google");
+    expect(google?.grund).toMatch(/GEMINI_API_KEY/);
+  });
+
+  it("hält fest, welche Anbieter einen Adapter haben", () => {
     /*
-     * Diese Zeile wird rot, sobald jemand den Gemini-Adapter baut —
-     * und das ist die Absicht: Dann muss auch der Katalog geprüft
-     * werden, nicht nur die Menge hier.
+     * Wird rot, sobald jemand einen vierten Adapter baut — dann muss
+     * auch der Katalog geprüft werden, nicht nur die Menge hier.
      */
-    expect([...ANBIETER_MIT_ADAPTER].sort()).toEqual(["anthropic", "openai"]);
+    expect([...ANBIETER_MIT_ADAPTER].sort()).toEqual(["anthropic", "google", "openai"]);
   });
 });
 
@@ -116,14 +126,21 @@ describe("Vorschaumodelle", () => {
     expect(anbietbareModelle(mitGoogle).some((m) => m.lebenszyklus === "vorschau")).toBe(false);
   });
 
-  it("werden auch mit Schalter nicht angeboten, solange der Adapter fehlt", () => {
+  it("kommen erst mit dem Schalter dazu", () => {
+    const namen = anbietbareModelle({
+      ...mitGoogle, MONDAY_PREVIEW_MODELS_ENABLED: "true",
+    }).map((m) => m.internId);
+    expect(namen).toContain("google-pro-vorschau");
+  });
+
+  it("brauchen trotz Schalter die Freigabe des Anbieters", () => {
     /*
      * Zwei Sperren hintereinander. Die zweite darf die erste nicht
      * aufheben — ein Schalter für Vorschaumodelle ist keine Freigabe
-     * für einen Anbieter, den wir nicht ansprechen können.
+     * für einen Anbieter, den niemand geprüft hat.
      */
     const namen = anbietbareModelle({
-      ...mitGoogle, MONDAY_PREVIEW_MODELS_ENABLED: "true",
+      ...ALLES_DA, GEMINI_API_KEY: "gm", MONDAY_PREVIEW_MODELS_ENABLED: "true",
     }).map((m) => m.internId);
     expect(namen).not.toContain("google-pro-vorschau");
   });
