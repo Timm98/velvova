@@ -109,7 +109,24 @@ function isRetryable(error: unknown): boolean {
  * hier schon einmal verloren ging.
  */
 function unterstütztTemperature(model: string): boolean {
-  return !/^(gpt-[5-9]|gpt-[1-9][0-9]|o[1-9])/.test(model);
+  return !istDenkmodell(model);
+}
+
+/**
+ * Ist das ein Modell, das vor der Antwort nachdenkt?
+ *
+ * ── Warum diese Regel exportiert wird ───────────────────────────
+ *
+ * Weil die Oberfläche eine Denkintensität nur anbieten darf, wo sie
+ * ankommt. Die Frage „unterstützt dieses Modell das?" muss dieselbe
+ * Antwort geben wie die Stelle, die den Parameter tatsächlich setzt
+ * — sonst steht irgendwann ein Schalter da, der nichts tut.
+ *
+ * Deshalb keine zweite Liste im Katalog, sondern genau dieser
+ * Ausdruck, an einer Stelle.
+ */
+export function istDenkmodell(model: string): boolean {
+  return /^(gpt-[5-9]|gpt-[1-9][0-9]|o[1-9])/.test(model);
 }
 
 /**
@@ -485,7 +502,28 @@ export async function* streamOpenAiConversation(
        */
       ...(unterstütztTemperature(model)
         ? {}
-        : { reasoning: { effort: options.tier === "deep" ? "medium" : "low" } as never }),
+        : {
+            reasoning: {
+              /*
+               * Die ausdrückliche Wahl gewinnt.
+               *
+               * Ohne sie bleibt es beim Standard aus der Stufe: Bei
+               * einem Reasoning-Modell zählen die inneren Schritte in
+               * die Antwortzeit, und für eine Rückfrage im Gespräch
+               * wären einundzwanzig Sekunden keine Rückfrage mehr.
+               */
+              effort:
+                options.denktiefe === "hoch"
+                  ? "high"
+                  : options.denktiefe === "mittel"
+                    ? "medium"
+                    : options.denktiefe === "niedrig"
+                      ? "low"
+                      : options.tier === "deep"
+                        ? "medium"
+                        : "low",
+            } as never,
+          }),
       tools: (options.tools ?? []).map((tool) => ({
         type: "function" as const,
         name: tool.name,

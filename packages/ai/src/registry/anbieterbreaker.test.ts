@@ -165,3 +165,49 @@ describe("Wirkung auf die Auswahl", () => {
     expect(modellAuswaehlen(eines!.internId, env)).not.toBeNull();
   });
 });
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * Denkintensität nur, wo sie ankommt
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * `denktiefeMoeglich` entscheidet, ob die Oberfläche ein Bedienelement
+ * zeigt. Ein Schalter, der nichts tut, ist schlimmer als ein
+ * fehlender: Man stellt ihn ein, glaubt an eine Wirkung und erklärt
+ * sich damit jede spätere Antwort.
+ *
+ * Der Test hängt deshalb an derselben Regel wie der Adapter — und
+ * schlägt an, wenn jemand die Prüfung durch eine eigene Liste ersetzt.
+ */
+describe("denktiefeMoeglich", () => {
+  const openai = (apiModellId: string) =>
+    ({ anbieter: "openai", apiModellId }) as never;
+
+  it("erkennt die Denkmodelle von OpenAI", async () => {
+    const { denktiefeMoeglich } = await import("./registry.ts");
+    expect(denktiefeMoeglich(openai("gpt-5"))).toBe(true);
+    expect(denktiefeMoeglich(openai("gpt-6-astra"))).toBe(true);
+    expect(denktiefeMoeglich(openai("o3"))).toBe(true);
+  });
+
+  it("verneint bei älteren OpenAI-Modellen", async () => {
+    const { denktiefeMoeglich } = await import("./registry.ts");
+    expect(denktiefeMoeglich(openai("gpt-4o"))).toBe(false);
+  });
+
+  it("verneint bei Anbietern, deren Adapter den Parameter nicht setzt", async () => {
+    /*
+     * Anthropic und Google kennen Denkbudgets — unsere Adapter setzen
+     * sie nicht. Solange das so ist, wäre ein Schalter dort eine
+     * Zusage ohne Gegenstück. Bekommen sie es, ändert sich EINE
+     * Zeile in `denktiefeMoeglich` und nicht eine Liste an fünf Orten.
+     */
+    const { denktiefeMoeglich } = await import("./registry.ts");
+    expect(
+      denktiefeMoeglich({ anbieter: "anthropic", apiModellId: "claude-opus-5" } as never),
+    ).toBe(false);
+    expect(
+      denktiefeMoeglich({ anbieter: "google", apiModellId: "gemini-3.8-flash" } as never),
+    ).toBe(false);
+  });
+});

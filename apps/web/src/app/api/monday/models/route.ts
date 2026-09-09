@@ -1,4 +1,4 @@
-import { anbietbareModelle, type Anbieter } from "@paycheck/ai";
+import { anbietbareModelle, denktiefeMoeglich, type Anbieter } from "@paycheck/ai";
 import { requireUser } from "@/lib/auth";
 
 /**
@@ -60,6 +60,10 @@ export async function GET(): Promise<Response> {
         name: m.anzeigename,
         beschreibung: m.beschreibung,
         vorschau: m.lebenszyklus === "vorschau",
+        /* Ob die Oberfläche eine Denkintensität anbieten darf. Die
+           Antwort kommt aus der Stelle, die den Parameter setzt —
+           nicht aus einer zweiten Liste. */
+        denktiefe: denktiefeMoeglich(m),
         kosten: m.kostenklasse,
         tempo: m.tempoklasse,
       })),

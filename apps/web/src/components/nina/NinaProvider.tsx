@@ -179,6 +179,8 @@ interface NinaState {
   sendezaehler: number;
   /** Die aktuelle Wahl. Gilt für dieses Gespräch, nicht für einen Aufruf. */
   modell: string;
+  denktiefe: "niedrig" | "mittel" | "hoch" | null;
+  setDenktiefe: (wert: "niedrig" | "mittel" | "hoch" | null) => void;
   /**
    * Welches Modell zuletzt TATSÄCHLICH geantwortet hat.
    *
@@ -325,6 +327,15 @@ export function NinaProvider({
    * getroffen hat und nicht mehr sieht, ist keine Wahl mehr.
    */
   const [modell, setModell] = useState("auto");
+  /*
+   * Wie gründlich nachgedacht werden soll.
+   *
+   * `null` heisst: nichts mitschicken, es gilt der Standard aus der
+   * Stufe. Nicht „niedrig" als Vorgabe — das wäre eine Entscheidung,
+   * die niemand getroffen hat, und sie fiele bei jedem Modellwechsel
+   * still anders aus.
+   */
+  const [denktiefe, setDenktiefe] = useState<"niedrig" | "mittel" | "hoch" | null>(null);
   const [zuletztesModell, setZuletztesModell] = useState<string | null>(null);
 
   /*
@@ -584,6 +595,10 @@ export function NinaProvider({
             fromVoice: options.fromVoice ?? false,
             agreeToSeeJobs: zustimmung.current,
             modell,
+            /* Nur mitschicken, wenn ausdrücklich gewählt. Ein fester
+               Vorgabewert wäre eine Entscheidung, die niemand
+               getroffen hat. */
+            ...(denktiefe ? { denktiefe } : {}),
           }),
         });
 
@@ -904,7 +919,11 @@ export function NinaProvider({
         abbruch.current = null;
       }
     },
-    [busy, art, kennungen, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak, modell],
+    /* `denktiefe` gehört in die Liste: Ohne sie hielte der Rückruf den
+       Wert vom ersten Zeichnen fest und schickte nach jedem Wechsel
+       weiter den alten — ein Schalter, der beim ersten Mal wirkt und
+       danach nicht mehr. */
+    [busy, art, kennungen, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak, modell, denktiefe],
   );
 
   const loadConversation = useCallback(async (id: string) => {
@@ -1019,6 +1038,8 @@ export function NinaProvider({
       puls,
       sendezaehler,
       modell,
+      denktiefe,
+      setDenktiefe,
       zuletztesModell,
       voiceError: stimme.fehler,
       /*
@@ -1045,6 +1066,8 @@ export function NinaProvider({
       art,
       kennungen,
       modell,
+      denktiefe,
+      setDenktiefe,
       zuletztesModell,
       scopeLabel,
       suggestions,

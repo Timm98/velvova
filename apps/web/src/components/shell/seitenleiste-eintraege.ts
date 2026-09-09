@@ -54,17 +54,23 @@ export interface Seitenleisteneintrag {
  * zweite sieht aus, als führte er woandershin, und man probiert ihn
  * einmal, um es herauszufinden.
  *
- * ── Plugins zeigt auf die vorhandene Verwaltung ─────────────────
+ * ── Plugins ist eine eigene Seite ───────────────────────────────
  *
- * `/app/settings/integrations` gibt es, mit Verbindungszuständen und
- * Aktionen. Eine zweite Seite daneben wäre ein Parallelsystem, das
- * beim ersten neuen Anbieter auseinanderläuft.
+ * Zuerst zeigte der Eintrag auf `/app/settings/integrations`. Die
+ * gibt es — sie ist aber eine Betreiber-Sicht auf Supabase, den
+ * KI-Anbieter und den Mailversand, mit den Namen der
+ * Umgebungsvariablen daneben. Wer wissen will, ob sein Postfach
+ * verbunden ist, fand dort seinen Schlüsselnamen und keine Antwort.
+ *
+ * `/app/plugins` liest dieselbe Tabelle `integrations`, die das
+ * Datenmodell dafür vorsieht — kein Parallelsystem, nur die Sicht,
+ * die zu der Person gehört, die davorsitzt.
  */
 export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
   { href: "/app/jobs", text: "Jobs & Checks", icon: Briefcase },
   { href: "/app/applications", text: "Bewerbungen", icon: FileText },
   { href: "/app/documents", text: "Dokumente", icon: FolderOpen },
-  { href: "/app/settings/integrations", text: "Plugins", icon: Plug },
+  { href: "/app/plugins", text: "Plugins", icon: Plug },
   /*
    * Benachrichtigungen stehen NICHT hier.
    *

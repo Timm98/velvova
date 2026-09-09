@@ -1,5 +1,6 @@
 import type { AiTask } from "../router.ts";
 import { anbieterGestoert } from "./anbieterbreaker.ts";
+import { istDenkmodell } from "../providers/openai.ts";
 import {
   KATALOG,
   eignungFuer,
@@ -199,6 +200,26 @@ export function modellzustaende(
       grund,
     };
   });
+}
+
+/**
+ * Kennt dieses Modell eine Denkintensität?
+ *
+ * ── Warum das keine Katalogeigenschaft ist ──────────────────────
+ *
+ * Weil der Katalog Vermutungen trägt — Eignung, Tempo, Kosten — und
+ * diese Frage keine Vermutung verträgt. Sie entscheidet, ob ein
+ * Bedienelement erscheint, und ein Schalter, der nichts tut, ist
+ * schlimmer als ein fehlender.
+ *
+ * Die Antwort kommt deshalb von der Stelle, die den Parameter
+ * tatsächlich setzt: `istDenkmodell` im OpenAI-Adapter. Nur dort ist
+ * er verdrahtet — Anthropic und Google haben in ihren Adaptern
+ * nichts, worauf er abbilden könnte. Bekommen sie es, ändert sich
+ * hier eine Zeile und nicht eine Liste an fünf Orten.
+ */
+export function denktiefeMoeglich(definition: Modelldefinition): boolean {
+  return definition.anbieter === "openai" && istDenkmodell(definition.apiModellId);
 }
 
 /** Was einem Menschen in der Auswahl gezeigt werden darf. */

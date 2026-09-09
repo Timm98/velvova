@@ -29,6 +29,16 @@ export interface ChatOptions {
    */
   tier?: "interactive" | "deep" | "fast";
   /**
+   * Wie gründlich das Modell nachdenken soll.
+   *
+   * Nur Reasoning-Modelle kennen das; bei allen anderen wird die
+   * Angabe ignoriert, weil es keinen Parameter gibt, auf den sie
+   * abbilden könnte. Die Oberfläche darf sie deshalb nur dort
+   * anbieten, wo `istDenkmodell` wahr ist — sonst stünde ein Schalter
+   * da, der nichts tut.
+   */
+  denktiefe?: "niedrig" | "mittel" | "hoch";
+  /**
    * Wie lange dieser eine Aufruf dauern darf.
    *
    * Ohne Angabe gilt der Wert der Stufe. Ein Stapelaufruf, der fünf

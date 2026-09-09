@@ -41,6 +41,8 @@ interface Modelleintrag {
   name: string;
   beschreibung: string;
   vorschau: boolean;
+  /** Ob dieses Modell eine Denkintensität kennt. Vom Server. */
+  denktiefe?: boolean;
 }
 
 interface Gruppe {
@@ -103,7 +105,7 @@ export function Modellwahl({ className }: { className?: string }) {
    * React ab.
    */
   if (!nina) return null;
-  const { modell, zuletztesModell, setModell } = nina;
+  const { modell, zuletztesModell, setModell, denktiefe, setDenktiefe } = nina;
 
   const alle = auskunft?.gruppen.flatMap((g) => g.modelle) ?? [];
   const gewaehlt = alle.find((m) => m.id === modell);
@@ -185,6 +187,62 @@ export function Modellwahl({ className }: { className?: string }) {
             "max-sm:fixed max-sm:inset-x-3 max-sm:bottom-[6.5rem] max-sm:w-auto",
           )}
         >
+          {/*
+            ── Die Denkintensität ────────────────────────────────
+            
+            Sie steht hier und nicht als eigener Knopf in der
+            Bedienzeile — aus zwei Gründen.
+            
+            Sie ist eine Eigenschaft des gewählten Modells, nicht der
+            Nachricht: Wechselt man das Modell, kann sie verschwinden.
+            Ein Knopf, der je nach Nachbarauswahl da ist oder nicht,
+            lässt die Zeile springen.
+            
+            Und: Die Liste hier weiss bereits, welches Modell sie
+            kennt. Ein eigenes Bauteil müsste dieselbe Auskunft ein
+            zweites Mal holen.
+            
+            Bei „Automatisch" erscheint sie nicht. Dann steht erst
+            nach der Auswahl fest, wer antwortet — eine Intensität für
+            ein unbekanntes Modell wäre eine Zusage, die niemand
+            einhalten kann.
+          */}
+          {gewaehlt?.denktiefe && (
+            <div className="mb-1.5 border-b border-(--app-rand) px-3 pt-1 pb-2.5">
+              <p className="pb-1.5 text-2xs uppercase tracking-[0.08em] text-(--app-text-3)">
+                Wie gründlich
+              </p>
+              <div className="flex gap-1">
+                {(
+                  [
+                    ["niedrig", "Kurz"],
+                    ["mittel", "Normal"],
+                    ["hoch", "Gründlich"],
+                  ] as const
+                ).map(([wert, wort]) => (
+                  <button
+                    key={wert}
+                    type="button"
+                    onClick={() => setDenktiefe(denktiefe === wert ? null : wert)}
+                    aria-pressed={denktiefe === wert}
+                    className={cn(
+                      "min-h-8 flex-1 rounded-(--radius-sm) px-2 text-xs transition-colors",
+                      "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)",
+                      denktiefe === wert
+                        ? "bg-(--app-gewaehlt) text-(--app-text)"
+                        : "text-(--app-text-2) hover:bg-(--app-hover) hover:text-(--app-text)",
+                    )}
+                  >
+                    {wort}
+                  </button>
+                ))}
+              </div>
+              <p className="pt-1.5 text-2xs leading-relaxed text-(--app-text-3)">
+                Gründlicher heisst langsamer. Ohne Wahl entscheidet die Aufgabe.
+              </p>
+            </div>
+          )}
+
           <Zeile
             name="Automatisch"
             beschreibung="Monday wählt passend zur Aufgabe."

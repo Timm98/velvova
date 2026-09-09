@@ -11,6 +11,7 @@ import {
   anbieterFuerModell,
   buildNinaSystemPrompt,
   modellAuswaehlen,
+  denktiefeMoeglich,
   anbieterMelden,
   type Anbieter,
   ModellNichtVerfuegbarError,
@@ -119,6 +120,9 @@ const BodySchema = z.object({
    * Komponente.
    */
   modell: z.string().max(64).optional(),
+  /* Wie gründlich nachgedacht werden soll. Wird unten verworfen,
+     wenn das gewählte Modell damit nichts anfangen kann. */
+  denktiefe: z.enum(["niedrig", "mittel", "hoch"]).optional(),
 });
 
 /**
@@ -194,6 +198,11 @@ export async function POST(request: Request) {
   const gewaehlt =
     eingabe.modell && eingabe.modell !== "auto" ? eingabe.modell : null;
 
+  /* Bleibt undefiniert, solange kein Modell ausdrücklich gewählt
+     wurde: Bei Automatik steht erst nach der Auswahl fest, wer
+     antwortet — und die Oberfläche bietet den Schalter dort deshalb
+     gar nicht erst an. */
+  let erlaubteDenktiefe: "niedrig" | "mittel" | "hoch" | undefined;
   let provider;
   try {
     if (gewaehlt) {
@@ -210,6 +219,21 @@ export async function POST(request: Request) {
         );
       }
       const cfg = loadRuntimeConfig();
+      /*
+       * ── Die Denktiefe wird SERVERSEITIG geprüft ────────────────
+       *
+       * Die Oberfläche zeigt den Schalter nur, wo er wirkt — aber
+       * darauf darf sich nichts verlassen. Ein Aufruf kommt aus dem
+       * Netz und kann alles behaupten; hier wird entschieden, ob die
+       * Angabe an den Adapter geht.
+       *
+       * Verworfen und nicht abgelehnt: Eine Denktiefe für ein Modell,
+       * das keine kennt, ist kein Angriff und kein Fehler — es ist
+       * eine Angabe zu viel. Die Anfrage deswegen abzuweisen wäre
+       * Strenge ohne Zweck.
+       */
+      erlaubteDenktiefe = denktiefeMoeglich(definition) ? eingabe.denktiefe : undefined;
+
       provider = await anbieterFuerModell(definition, {
         maxTokens: cfg.ai.maxTokensPerRun,
         timeoutMs: cfg.ai.timeoutMs,
@@ -652,6 +676,7 @@ export async function POST(request: Request) {
           for await (const event of provider.streamConversation({
             system: systemMitTeam,
             messages,
+            denktiefe: erlaubteDenktiefe,
             tier: routing.providerTier,
             tools,
             toolResults: offeneErgebnisse,
@@ -738,6 +763,7 @@ export async function POST(request: Request) {
           for await (const event of provider.streamConversation({
             system: systemMitTeam,
             messages,
+            denktiefe: erlaubteDenktiefe,
             tier: routing.providerTier,
             tools: [],
             toolResults: offeneErgebnisse,
