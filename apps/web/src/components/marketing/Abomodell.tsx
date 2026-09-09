@@ -61,7 +61,7 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
         </h2>
         <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-2">
           Einzelpersonen bezahlen für die Begleitung ihrer eigenen Wechselentscheidung. Unternehmen
-          für klare Stelleninformationen und gemeinsame Abläufe. Niemand kauft Einfluss auf Ninas
+          für klare Stelleninformationen und gemeinsame Abläufe. Niemand kauft Einfluss auf Mondays
           Rat.
         </p>
 

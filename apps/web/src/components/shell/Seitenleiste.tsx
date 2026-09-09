@@ -66,6 +66,84 @@ const BREITE_ENG = "3.75rem";
 /** Der Schlüssel überlebt Neuladen — die Breite ist eine Gewohnheit, keine Sitzung. */
 const SPEICHER = "velvova.seitenleiste.eng";
 
+/**
+ * Ein Vorhaben mit seinen drei Bereichen.
+ *
+ * ── Warum die Reihenfolge feststeht ─────────────────────────────
+ *
+ * Wunsch, dann Jobs, dann Bewerbungen — das ist der Weg, den die
+ * Arbeit nimmt. Ein Vorhaben ohne geklärten Wunsch hat keine
+ * passenden Stellen, und ohne Stellen gibt es nichts zu bewerben.
+ * Eine andere Reihenfolge würde eine andere Arbeitsweise nahelegen.
+ *
+ * ── Warum aufklappbar und zu ────────────────────────────────────
+ *
+ * Drei offene Vorhaben mit je drei Zeilen sind zwölf Einträge. Die
+ * Leiste soll zeigen, WAS man vorhat, nicht alles, was man darin tun
+ * könnte. Offen ist, woran man gerade arbeitet.
+ */
+function Projektzeile({
+  projekt,
+  offen,
+}: {
+  projekt: { id: string; titel: string; href: string };
+  offen: boolean;
+}) {
+  const [auf, setAuf] = useState(offen);
+  const pfad = usePathname();
+  const hier = pfad === projekt.href;
+
+  const BEREICHE = [
+    { text: "Wunsch", anker: "" },
+    { text: "Jobs", anker: "#jobs" },
+    { text: "Bewerbungen", anker: "#bewerbungen" },
+  ] as const;
+
+  return (
+    <div className="grid gap-0.5">
+      <div className="flex items-center gap-0.5">
+        <button
+          type="button"
+          onClick={() => setAuf((a) => !a)}
+          aria-expanded={auf}
+          aria-label={auf ? `${projekt.titel} zuklappen` : `${projekt.titel} aufklappen`}
+          className="flex size-6 shrink-0 items-center justify-center rounded-(--radius-sm) text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text)"
+        >
+          <ChevronDown
+            className={cn("size-3.5 transition-transform", !auf && "-rotate-90")}
+            strokeWidth={2}
+          />
+        </button>
+        <Link
+          href={projekt.href}
+          className={cn(
+            "flex min-h-8 flex-1 items-center gap-2 truncate rounded-(--radius-sm) px-1.5 text-[13px] transition-colors",
+            hier
+              ? "bg-(--app-gewaehlt) text-(--app-text)"
+              : "text-(--app-text-2) hover:bg-(--app-hover) hover:text-(--app-text)",
+          )}
+        >
+          <span className="truncate">{projekt.titel}</span>
+        </Link>
+      </div>
+
+      {auf && (
+        <div className="grid gap-0.5 pl-7">
+          {BEREICHE.map((b) => (
+            <Link
+              key={b.text}
+              href={`${projekt.href}${b.anker}`}
+              className="flex min-h-7 items-center rounded-(--radius-sm) px-1.5 text-2xs text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text-2)"
+            >
+              {b.text}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Seitenleiste({
   brandName,
   assistentName,
@@ -346,21 +424,17 @@ export function Seitenleiste({
           <Ueberschrift text="Projekte" />
           <div className="grid gap-0.5">
             {projekte.map((p) => (
-              <Zeile
-                key={p.id}
-                href={p.href}
-                text={p.titel}
-                Icon={FolderKanban}
-                aktiv={pfad === p.href}
-              />
+              <Projektzeile key={p.id} projekt={p} offen={pfad === p.href} />
             ))}
           </div>
         </div>
       )}
 
+      {/* „Weitere Chats", nicht „Letzte Gespräche": Was zu einem
+          Vorhaben gehört, steht dort — hier steht der Rest. */}
       {gespraeche.length > 0 && (
         <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 pb-2", eng && "px-2")}>
-          <Ueberschrift text="Letzte Gespräche" />
+          <Ueberschrift text="Weitere Chats" />
           <div className="grid gap-0.5">
             {gespraeche.map((g) => (
               <Zeile

@@ -59,18 +59,25 @@ export default async function ProjektSeite({
         title={projekt.name}
       />
 
-      {projekt.ziel && (
-        <p className="max-w-[var(--measure)] text-[17px] leading-relaxed text-ink-2">
-          {projekt.ziel}
-        </p>
-      )}
-
       <Abschnitt
+        id="wunsch"
         icon={MessagesSquare}
-        titel="Gespräch"
+        titel="Wunsch"
         zahl={projekt.gespraeche}
         leer="Zu diesem Vorhaben läuft noch kein Gespräch."
       >
+        {/*
+          Das Ziel steht IM Wunsch, nicht darüber.
+
+          Vorher lag es als Absatz unter der Überschrift und gehörte
+          zu nichts. Der Wunsch ist der Ort, an dem steht, worum es
+          geht — und was Monday davon bisher verstanden hat.
+        */}
+        {projekt.ziel && (
+          <p className="max-w-[var(--measure)] pb-3 text-[15px] leading-relaxed text-(--app-text)">
+            {projekt.ziel}
+          </p>
+        )}
         {projekt.gespraeche > 0 && (
           <Link
             href="/app/monday"
@@ -83,6 +90,7 @@ export default async function ProjektSeite({
 
       <Abschnitt
         icon={Briefcase}
+        id="jobs"
         titel="Gemerkte Stellen"
         zahl={projekt.stellen.length}
         leer="Noch keine Stelle in diesem Vorhaben gemerkt."
@@ -99,6 +107,7 @@ export default async function ProjektSeite({
 
       <Abschnitt
         icon={FileText}
+        id="bewerbungen"
         titel="Bewerbungen"
         zahl={projekt.bewerbungen.length}
         leer="Noch keine Bewerbung aus diesem Vorhaben."
@@ -125,12 +134,15 @@ export default async function ProjektSeite({
  * baut sich das Vorhaben auf.
  */
 function Abschnitt({
+  id,
   icon: Icon,
   titel,
   zahl,
   leer,
   children,
 }: {
+  /* Sprungziel für die Verweise aus der Seitenleiste. */
+  id?: string;
   icon: typeof Briefcase;
   titel: string;
   zahl: number;
@@ -138,8 +150,8 @@ function Abschnitt({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-3">
-      <div className="flex items-baseline gap-2.5 border-b border-line pb-2">
+    <section id={id} className="grid scroll-mt-8 gap-3">
+      <div className="flex items-baseline gap-2.5 border-b border-(--app-rand) pb-2">
         <Icon className="size-[18px] shrink-0 translate-y-[3px] text-ink-3" strokeWidth={1.8} />
         <h2 className="text-[15px] font-semibold text-ink">{titel}</h2>
         <span className="font-mono text-2xs tabular-nums text-ink-3">{zahl}</span>
