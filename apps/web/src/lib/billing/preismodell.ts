@@ -56,6 +56,11 @@ export interface Angebot {
    * zu wiederholen — und sagt zugleich, dass sie enthalten ist. Ohne
    * diesen Satz liest sich eine kürzere Liste wie ein kleinerer
    * Umfang.
+   *
+   * Die unterste Stufe hat nichts, worauf sie aufbauen könnte, und
+   * trägt trotzdem eine: „Enthalten:". Nicht als Füllsel — ohne sie
+   * begänne ihre Liste eine Zeilenhöhe weiter oben als die der beiden
+   * anderen, und die Karten stünden wieder versetzt.
    */
   ueberleitung?: string;
   punkte: readonly string[];
@@ -96,6 +101,7 @@ export const PERSONEN: readonly Angebot[] = [
     nutzen: "Eine Stelle prüfen, bevor du dich entscheidest.",
     preis: "0 €",
     taktzeile: "Kostenlos für alle",
+    ueberleitung: "Enthalten:",
     punkte: [
       "Vollständiger erster Fall ohne Konto und ohne Zahlungsdaten",
       "Einzelcheck, Vergleich zweier Stellen, Vergleich mit heute",
@@ -165,6 +171,7 @@ export const UNTERNEHMEN: readonly Angebot[] = [
     nutzen: "Sehen, was in der eigenen Anzeige offen bleibt.",
     preis: "0 €",
     taktzeile: "Kostenlos, je Organisation",
+    ueberleitung: "Enthalten:",
     punkte: [
       "1 aktiv verwaltete Stelle, 1 Bearbeiter",
       "2 Anzeigenprüfungen und 10 Entwürfe je Monat",

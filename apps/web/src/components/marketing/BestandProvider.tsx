@@ -69,11 +69,15 @@ export function BestandProvider({
   const [wert, setWert] = useState(Math.max(0, genau - ANLAUF));
   const [fertig, setFertig] = useState(false);
 
-  /* Der Anlauf: zwei Sekunden von unten auf den echten Stand. */
+  /* Der Anlauf: von unten auf den echten Stand. */
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setWert(genau);
+      /* Kein Anlauf — aber `fertig`, damit der Takt unten trotzdem
+         läuft. Ohne das stand die Zahl für den Rest des Besuchs
+         still: eine Angabe, die behauptet, laufend zu sein, und es
+         nicht ist. */
+      setWert(standJetzt(genau, proSekunde));
       setFertig(true);
       return;
     }
@@ -94,10 +98,30 @@ export function BestandProvider({
     return () => clearInterval(uhr);
   }, [genau]);
 
-  /* Danach mit der gemessenen Rate weiter. */
+  /*
+   * Danach mit der gemessenen Rate weiter.
+   *
+   * ── Warum das auch bei abbestellter Bewegung läuft ──────────
+   *
+   * Hier stand ein `return` für `prefers-reduced-motion`. Das war die
+   * naheliegende Lesart und die falsche: Abbestellt wird Bewegung, die
+   * ablenkt oder Übelkeit auslöst — nicht die Richtigkeit einer
+   * Angabe. Wer die Einstellung gesetzt hatte, sah eine Zahl, die den
+   * ganzen Besuch über stillstand und trotzdem behauptete, der
+   * aktuelle Bestand zu sein.
+   *
+   * Jetzt läuft der Takt in beiden Fällen. Was die Einstellung
+   * abschaltet, ist der Anlauf oben — die einzige Stelle, an der
+   * wirklich animiert wird.
+   *
+   * Ein zweiter Grund für dieselbe Änderung: Ein Bildschirm im
+   * Hintergrund drosselt `setInterval`. Deshalb rechnet jeder Tick den
+   * Stand aus der Zeit statt hochzuzählen — nach dem Zurückkommen
+   * stimmt die Zahl sofort, statt die verpassten Schritte
+   * nachzuholen.
+   */
   useEffect(() => {
     if (!fertig || proSekunde <= 0) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const takt = Math.max(35, Math.round(1000 / proSekunde));
     const uhr = setInterval(() => setWert(standJetzt(genau, proSekunde)), takt);
     return () => clearInterval(uhr);

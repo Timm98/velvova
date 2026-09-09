@@ -27,12 +27,18 @@ import { updateSettings } from "@/lib/privacy";
  * derselben Quelle wie die Angaben im Fussbereich; ein viertes Land
  * erscheint hier automatisch, sobald wir dort etwas anzubieten haben.
  */
-export function RegionAuswahl({ aktuellesLand }: { aktuellesLand: string }) {
+export function RegionAuswahl({ aktuellesLand,
+  className,
+}: { aktuellesLand: string;
+  className?: string;
+}) {
   const router = useRouter();
   const [laeuft, starten] = useTransition();
 
   return (
-    <div className="grid gap-1.5">
+    /* `className` von aussen: Der Fuss richtet die drei Spalten über
+       `subgrid` aus und braucht dafür einen Griff an dieser Wurzel. */
+    <div className={["grid gap-1.5", className].filter(Boolean).join(" ")}>
       <label htmlFor="region" className="text-sm font-semibold text-ink">
         Region &amp; Sprache
       </label>
@@ -54,6 +60,18 @@ export function RegionAuswahl({ aktuellesLand }: { aktuellesLand: string }) {
         Jetzt beide gleich: `appearance-none`, durchsichtig, ein
         Zeichen links, ein eigener Pfeil rechts.
       */}
+      {/*
+        Feld und Erklärung in einem Block.
+
+        Der Fuss richtet seine drei Spalten über `subgrid` aus und legt
+        dafür zwei Zeilen an: Überschrift, Bedienelement. Diese Spalte
+        hatte drei Kinder — und das dritte landete in derselben Zeile
+        wie das zweite und legte sich über das Auswahlfeld.
+
+        Zusammengefasst hat jede Spalte genau zwei Kinder, und die
+        Erklärung steht wieder unter dem Feld statt darauf.
+      */}
+      <div className="grid gap-1.5">
       <div className="relative w-full max-w-[22rem]">
         <Globe
           aria-hidden
@@ -95,6 +113,7 @@ export function RegionAuswahl({ aktuellesLand }: { aktuellesLand: string }) {
         Bestimmt, in welchem Land gesucht wird, in welcher Währung Gehälter erscheinen und wie
         Datum und Zahlen geschrieben werden.
       </p>
+      </div>
     </div>
   );
 }

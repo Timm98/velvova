@@ -142,8 +142,38 @@ export function VelvovaFooter({
           beiden rechten sind Felder derselben Höhe; links steht ein
           umrandeter Knopf über die volle Spaltenbreite.
         */}
-        <div className="grid gap-8 md:grid-cols-3 md:gap-10">
-          <div className="grid content-start gap-3">
+        {/*
+          ══════════════════════════════════════════════════════════
+          Warum hier `subgrid` steht
+          ══════════════════════════════════════════════════════════
+
+          Drei Spalten, in jeder eine Überschrift und darunter ein
+          Bedienelement. Sie sahen nur fast gleich aus: Der Knopf links
+          stand tiefer als das Feld daneben, weil seine Spalte `gap-3`
+          hatte und die beiden anderen `gap-1.5`. Sechs Pixel, aber bei
+          drei nebeneinanderstehenden Elementen sieht man sie.
+
+          Statt die Abstände von Hand gleichzuziehen — und beim
+          nächsten längeren Titel wieder ungleich zu haben — legt das
+          äussere Raster zwei Zeilen an: eine für die Überschriften,
+          eine für die Bedienelemente. Jede Spalte hängt sich mit
+          `grid-rows-subgrid` ein. Damit stehen sie auf derselben Höhe,
+          auch wenn eine Überschrift einmal umbricht.
+
+          Dazu `items-start` an jeder Spalte, und das ist kein Beiwerk:
+          Ohne die Angabe streckt das Raster jedes Kind auf die volle
+          Zeilenhöhe. Die Darstellungswahl ist ein `relative` Kasten mit
+          zwei absolut gesetzten Zeichen darin — gestreckt rutschten
+          Mondsymbol und Pfeil unter das Feld, an dem sie sitzen
+          sollten.
+
+          An der Spalte, nicht am äusseren Raster: Dort gälte die
+          Angabe für die Spalten selbst, die ohnehin zwei Zeilen
+          überspannen. Wie deren Kinder in den Zeilen sitzen,
+          entscheidet die Spalte.
+        */}
+        <div className="grid gap-8 md:grid-cols-3 md:grid-rows-[auto_auto] md:gap-x-10 md:gap-y-1.5">
+          <div className="grid content-start gap-1.5 md:row-span-2 md:grid-rows-subgrid md:items-start">
             <h2 className="text-sm font-semibold text-ink">Monday sucht über Nacht</h2>
             {/*
               Beide Wege enden am selben Kasten auf der Jobseite.
@@ -163,9 +193,9 @@ export function VelvovaFooter({
             </Link>
           </div>
 
-          <RegionAuswahl aktuellesLand={land} />
+          <RegionAuswahl aktuellesLand={land} className="md:row-span-2 md:grid-rows-subgrid md:items-start" />
 
-          <div className="grid content-start gap-1.5">
+          <div className="grid content-start gap-1.5 md:row-span-2 md:grid-rows-subgrid md:items-start">
             <span className="text-sm font-semibold text-ink">Darstellung</span>
             <ThemeToggle
               feld

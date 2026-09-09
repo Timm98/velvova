@@ -57,7 +57,7 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
           id="preise"
           className="font-display text-[clamp(1.8rem,3.4vw,2.6rem)] font-normal leading-tight tracking-[-0.02em]"
         >
-          Was Velvova kostet
+          Pläne erkunden
         </h2>
         <p className="max-w-[58ch] text-[15px] leading-relaxed text-ink-2">
           Einzelpersonen bezahlen für die Begleitung ihrer eigenen Wechselentscheidung. Unternehmen
@@ -104,12 +104,34 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
           so hoch wie ihr Inhalt, und drei verschieden lange Listen
           ergeben drei verschieden hohe Kästen mit versetzten
           Unterkanten. */}
-      <ul className="mt-12 grid items-stretch gap-4 md:grid-cols-3">
+      {/*
+        ══════════════════════════════════════════════════════════
+        Warum hier `subgrid` steht und keine festen Höhen
+        ══════════════════════════════════════════════════════════
+
+        Die vier Blöcke jeder Karte — Kopf, Preis, Knopf, Merkmale —
+        sollen über alle drei Karten auf derselben Höhe beginnen. Vorher
+        taten sie das nicht: „Wenn mehrere Entscheidungen gleichzeitig
+        laufen." bricht auf zwei Zeilen, „Kostenlos für alle" nicht, und
+        schon standen Preis und Knopf um eine Zeilenhöhe versetzt.
+
+        Der übliche Notbehelf wäre eine Mindesthöhe je Block — geraten,
+        und beim nächsten längeren Satz wieder falsch. `subgrid` dreht
+        das um: Das äussere Raster legt vier Zeilen an, jede so hoch wie
+        ihr höchster Inhalt, und die Karten hängen sich mit
+        `grid-rows-subgrid` genau dort ein. Keine Zahl, die jemand
+        pflegen muss.
+
+        Nur ab `md`: Untereinander gibt es nichts auszurichten, und die
+        Karten sollen dort so hoch sein wie ihr Inhalt.
+      */}
+      <ul className="mt-12 grid items-stretch gap-4 md:grid-cols-3 md:grid-rows-[auto_auto_auto_1fr]">
         {angebote.map((a) => (
           <li
             key={a.key}
             className={[
               "grid h-full content-start gap-6 rounded-(--radius-lg) border p-7",
+              "md:row-span-4 md:grid-rows-subgrid",
               /*
                * Die hervorgehobene Stufe bekommt den Akzentrand und
                * einen sehr schwachen Schein darum — im hellen Modus

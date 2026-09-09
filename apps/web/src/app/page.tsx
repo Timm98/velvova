@@ -737,7 +737,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
         Position auf dem Telefon; wer sie ändern will, dreht die
         beiden Blöcke, nicht das Spaltenmass.
       */
-    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-10 min-[520px]:grid-cols-[0.46fr_0.54fr] min-[520px]:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] md:px-8 md:pb-28 md:pt-16 lg:gap-12">
+    <section className="mx-auto grid w-full max-w-[1240px] items-center gap-12 px-5 pb-20 pt-4 min-[520px]:grid-cols-[0.46fr_0.54fr] min-[520px]:gap-6 md:gap-8 lg:grid-cols-[minmax(0,27rem)_1fr] md:px-8 md:pb-28 md:pt-8 lg:gap-12">
       <div className="grid max-w-[30rem] gap-7">
         <h1 className="font-display text-[clamp(2.1rem,4.2vw,3.2rem)] font-normal leading-[1.06] tracking-[-0.02em]">
           {anrede ? (
