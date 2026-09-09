@@ -67,7 +67,9 @@ const SPALTEN: Spalte[] = [
     titel: "Über Velvova",
     links: [
       { href: "/about", label: "Über uns" },
+      { href: "/product", label: "Lösungen" },
       { href: "/how-it-works", label: "So funktioniert es" },
+      { href: "/pricing", label: "Preise" },
       { href: "/reviews", label: "Bewertungen" },
       { href: "/imprint", label: "Impressum" },
     ],

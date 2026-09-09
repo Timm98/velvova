@@ -707,8 +707,29 @@ test.describe("Responsives Verhalten", () => {
     });
   }
 
-  test("Auf schmalen Geräten steht die Navigation unten", async ({ page, isMobile }) => {
-    test.skip(!isMobile, "Nur auf mobilen Geräten relevant");
+  test("Auf schmalen Geräten steht die Navigation unten", async ({ page }, testInfo) => {
+    /*
+     * ── Der Fall lief auf einem von zwei schmalen Projekten ─────
+     *
+     * Die Bedingung hing an `isMobile`. Das ist bei `mobile-390`
+     * wahr (die Voreinstellung „iPhone 14" setzt es) und bei
+     * `mobile-360` ausdrücklich falsch. Derselbe Fall lief also im
+     * einen Projekt und wurde im anderen still übersprungen — für
+     * dieselbe Leiste, die in beiden sichtbar ist.
+     *
+     * `isMobile` beschreibt auch nicht, was die Leiste ein- und
+     * ausblendet: Das tut `md:hidden`, also die FENSTERBREITE.
+     * Daran hängt die Bedingung jetzt, und damit läuft der Fall in
+     * beiden schmalen Projekten.
+     *
+     * Die erwartete Zahl 5 stimmte zwischenzeitlich nicht: `BEREICHE`
+     * war auf sieben gewachsen, weil „Für Unternehmen" und
+     * „Sicherheit" dazukamen. Beide sind jetzt heraus — sie waren
+     * Marketingseiten in der Arbeitsnavigation —, und damit stimmt
+     * die Zahl wieder.
+     */
+    const breite = testInfo.project.use.viewport?.width ?? 1440;
+    test.skip(breite >= 768, "Die untere Leiste gibt es nur unter 768 px");
     await page.goto("/app");
     const bottomNav = page.locator("nav.app-nav-bottom");
     await expect(bottomNav).toBeVisible();

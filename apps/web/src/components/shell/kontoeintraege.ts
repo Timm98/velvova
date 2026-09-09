@@ -100,25 +100,21 @@ export function kontoGruppen(labels: KontoBeschriftungen, assistent: string): Ko
       ],
     },
     /*
-     * Neu: die öffentlichen Seiten.
+     * ── Die Gruppe „Entdecken" stand hier ──────────────────────
      *
-     * Im Arbeitsbereich wechselt die Hauptzeile auf Monday, Jobs,
-     * Bewerbungen und Ausprobieren — Lösungen, „So funktioniert es"
-     * und Preise sind von dort aus nicht mehr erreichbar. Wer
-     * angemeldet ist, kam an die neuen Unterseiten nur über den
-     * Zurück-Knopf oder die Fusszeile.
+     * Lösungen, „So funktioniert es" und Preise — drei öffentliche
+     * Seiten in einem Menü, das „Konto" heisst. Sie waren einmal
+     * nötig, weil die Arbeitsnavigation sie nicht mehr führte.
      *
-     * Sicherheit steht bewusst nicht hier: Die Hauptzeile des
-     * Arbeitsbereichs führt sie bereits.
+     * Jetzt führt der Fussbereich alle drei, und die Seitenleiste
+     * hat den Platz, den das Menü nicht mehr verbraucht. Ein
+     * Kontomenü mit dreizehn Einträgen ist kein Menü, sondern eine
+     * Liste, in der man sucht.
+     *
+     * Erst in den Fuss, dann hier heraus — in dieser Reihenfolge.
+     * Andersherum wären `/product` und `/pricing` für Angemeldete
+     * von keiner Stelle mehr erreichbar gewesen.
      */
-    {
-      titel: "Entdecken",
-      eintraege: [
-        { href: "/product", label: "Lösungen", icon: Compass },
-        { href: "/how-it-works", label: "So funktioniert es", icon: Route },
-        { href: "/pricing", label: "Preise", icon: Tag },
-      ],
-    },
     {
       titel: "Konto",
       eintraege: [

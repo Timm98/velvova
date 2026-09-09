@@ -92,13 +92,19 @@ const BEREICHE: {
    */
   { href: "/app/faq", label: "FAQ", icon: CircleQuestionMark },
   /*
-   * Der Weg auf die Arbeitgeberseite gehört in den Kopf, nicht nur in
-   * den Fuss. Wer Mitarbeiter sucht, kommt auf dieselbe Seite wie wer
-   * Arbeit sucht — und soll nicht erst scrollen müssen, um zu merken,
-   * dass es für ihn auch etwas gibt.
+   * ── „Für Unternehmen" und „Sicherheit" standen hier ────────────
+   *
+   * Beides sind öffentliche Marketingseiten, und sie standen in der
+   * ARBEITSnavigation — gleichrangig neben Bewerbungen. Wer angemeldet
+   * ist, benutzt das Produkt bereits; ihm dabei zu erklären, was es
+   * kann, ist die Sorte Werbung, die man wegklickt und danach auch
+   * die nützlichen Hinweise.
+   *
+   * Sie sind nicht verschwunden: `BESUCHER` führt sie weiterhin für
+   * alle ohne Konto, und der Fussbereich führt beide. Geprüft, bevor
+   * sie hier herauskamen — ein Ziel, das nirgends mehr steht, ist
+   * gelöscht und nicht aufgeräumt.
    */
-  { href: "/for-business", label: "Für Unternehmen", icon: Building2 },
-  { href: "/security", label: "Sicherheit", icon: ShieldCheck },
 ] as const;
 
 /**
