@@ -828,6 +828,46 @@ export function InterviewRoom({
                      * §15 verlangt kompakt gruppierte Antwortaktionen
                      * und keine Werkzeugleiste unter jedem Absatz.
                      */
+                    <>
+                    {/*
+                      ── Was aus dieser Nachricht geworden ist ───────
+                      
+                      Eine Zeile, kein Kasten. Ein angelegtes Vorhaben
+                      ist eine Nebenwirkung des Gesprächs, nicht sein
+                      Ergebnis — es soll ablesbar sein und nicht die
+                      Antwort überstrahlen.
+                      
+                      Der Verweis geht in die Leiste, nicht auf eine
+                      neue Seite: Wer gerade schreibt, will nicht
+                      weggeschickt werden. Er sieht, dass es da ist,
+                      und geht hin, wenn er soweit ist.
+                    */}
+                    {m.vorhaben && (
+                      <p className="mt-2 text-2xs leading-relaxed text-(--app-text-3)">
+                        {m.vorhaben.art === "neues_projekt" && m.vorhaben.name && (
+                          <>
+                            Vorhaben angelegt:{" "}
+                            <span className="text-(--app-akzent)">{m.vorhaben.name}</span>. Du
+                            findest es links in der Leiste.
+                          </>
+                        )}
+                        {m.vorhaben.art === "verfeinern" && m.vorhaben.name && (
+                          <>
+                            Zu <span className="text-(--app-text-2)">{m.vorhaben.name}</span>{" "}
+                            ergänzt.
+                          </>
+                        )}
+                        {m.vorhaben.art === "vorhandenes" && m.vorhaben.name && (
+                          <>
+                            Gehört zu <span className="text-(--app-text-2)">{m.vorhaben.name}</span>.
+                          </>
+                        )}
+                        {m.vorhaben.art === "rueckfrage" && m.vorhaben.frage && (
+                          <>{m.vorhaben.frage}</>
+                        )}
+                      </p>
+                    )}
+
                     <div className="mt-1.5 flex items-center gap-3">
                       <SpeakButton messageId={m.id} className="-ml-3" />
                       {m.modell && (
@@ -850,6 +890,7 @@ export function InterviewRoom({
                         </span>
                       )}
                     </div>
+                    </>
                   )}
                 </li>
               );

@@ -101,8 +101,30 @@ export default async function NinaPage({
        * Leere. Das ist die richtige Antwort auf eine geratene Adresse.
        */
       const gewuenscht = (await searchParams).g?.trim();
+
+      /*
+       * ── Ohne `?g=` beginnt ein neues Gespräch ────────────────────
+       *
+       * Hier wurde bisher IMMER das Karrieregespräch geladen — für
+       * jeden, der die App öffnete, mit allem, was je darin stand.
+       * Die Startansicht bekam damit niemand zu sehen, sobald er
+       * einmal geschrieben hatte: Statt Core, Name und Frage stand
+       * dort ein Verlauf von letzter Woche.
+       *
+       * Jetzt entscheidet die Adresse. Mit `?g=` das gemeinte
+       * Gespräch, ohne sie ein leeres.
+       *
+       * Kein Gespräch anzulegen, solange niemand etwas gesagt hat:
+       * Jeder Aufruf legte sonst eine Zeile an, die nie einen Inhalt
+       * bekommt. Die Kennung entsteht beim ersten Senden — die Route
+       * nimmt `null` entgegen und schickt sie zurück.
+       */
+      if (!gewuenscht || gewuenscht.length >= 64) {
+        return { gespräch: null, nachrichten: [] };
+      }
+
       const g = await ensureConversation(user.id, {
-        conversationId: gewuenscht && gewuenscht.length < 64 ? gewuenscht : null,
+        conversationId: gewuenscht,
         kind: "career_interview",
         locale: user.locale,
         route: "/app/monday",
@@ -122,7 +144,7 @@ export default async function NinaPage({
          Platzhalter und ehrlicher als ein erfundener Vorname. */
       displayName={user.displayName?.trim() || null}
       openingQuestion={view.step.text}
-      conversationId={gespräch.id}
+      conversationId={gespräch?.id ?? null}
       initialMessages={nachrichten
         .filter((m) => m.role === "user" || m.role === "assistant")
         .map((m) => ({

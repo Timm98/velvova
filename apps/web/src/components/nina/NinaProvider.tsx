@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { JobVorschlag } from "./JobSuggestions";
 import { useNinaVoice } from "./useNinaVoice";
 
@@ -91,6 +91,17 @@ export interface NinaMessage {
   modell?: string | null;
   /** Ob die Wahl automatisch getroffen wurde. Ändert nur den Satz. */
   modellAuto?: boolean;
+  /**
+   * Ein Vorhaben, das aus dieser Nachricht entstanden ist.
+   *
+   * ── Warum das an der Nachricht hängt ────────────────────────────
+   *
+   * Weil es aus ihr folgt. Ein Hinweis oben in der Leiste — „Vorhaben
+   * angelegt" — stünde ohne Zusammenhang da; man müsste raten, welcher
+   * Satz ihn ausgelöst hat. Hier steht er unter dem Satz, der ihn
+   * verursacht hat, und ist damit selbst die Begründung.
+   */
+  vorhaben?: { art: string; name: string | null; frage: string | null };
 }
 
 /** Was die aktuelle Seite über sich sagt. Seiten melden das selbst an. */
@@ -316,6 +327,7 @@ export function NinaProvider({
   autoSpeak?: boolean;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [puls, setPuls] = useState(false);
@@ -751,6 +763,36 @@ export function NinaProvider({
                     : n,
                 ),
               );
+              continue;
+            }
+
+            if (ereignis.type === "projekt") {
+              const p = ereignis.projekt as { id: string; name: string } | null;
+              const art = String(ereignis.art);
+              setMessages((m) =>
+                m.map((n) =>
+                  n.id === antwortId
+                    ? {
+                        ...n,
+                        vorhaben: {
+                          art,
+                          name: p?.name ?? null,
+                          frage: typeof ereignis.frage === "string" ? ereignis.frage : null,
+                        },
+                      }
+                    : n,
+                ),
+              );
+              /*
+               * Die Leiste neu laden, aber nur wenn sich dort etwas
+               * geändert hat.
+               *
+               * `router.refresh()` holt die Serverkomponenten neu —
+               * bei jedem Ereignis wäre das eine Runde für nichts.
+               * Ein angelegtes oder verfeinertes Vorhaben ändert die
+               * Liste; eine Rückfrage nicht.
+               */
+              if (art === "neues_projekt" || art === "verfeinern") router.refresh();
               continue;
             }
 
