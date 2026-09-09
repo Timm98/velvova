@@ -148,12 +148,25 @@ export const REGISTER: readonly Funktion[] = [
   {
     key: "arbeitgeber-freigabe",
     name: "Freigabe von Bewerberangaben an Arbeitgeber",
-    stand: "geplant",
-    route: null,
+    stand: "pilot",
+    route: "/business/matches",
+    /*
+     * Berichtigt am 9. September 2026.
+     *
+     * Hier stand „geplant — kein Freigabemodell im Code gefunden".
+     * Das war falsch, und der Fehler lag in der Suche: gesucht wurde
+     * nach „Klarheits" und „Freigabe" in apps/web/src/app/(public)
+     * und in den Marketingbauteilen. Der Arbeitgeberbereich liegt
+     * unter apps/web/src/app/business und war damit ausserhalb.
+     *
+     * Ein Register, das eine vorhandene Funktion für nicht vorhanden
+     * erklärt, ist genauso falsch wie eines, das eine fehlende
+     * behauptet — es führt nur in die andere Richtung.
+     */
     nachweis:
-      "Kein Freigabemodell im Code gefunden. Die Trennung der Kandidatendaten liegt auf Schemaebene.",
+      "apps/web/src/app/business/matches mit MatchKarte, Rollenprüfung über lib/arbeitgeber/zugang und darf(); Freigabemodell in lib/arbeitgeber/bewerbungen.ts mit eigener Schnittstelle `Freigabe` und Tests. Vorschläge entstehen laut matches/page.tsx nur zu Menschen, die der Auffindbarkeit ausdrücklich zugestimmt haben.",
     grenze:
-      "„Was Unternehmen sehen“ ist damit eine Regel für den geplanten Pilot und keine Beschreibung des heutigen Zustands. Genau so muss es auf der Seite stehen.",
+      "Zwei Punkte sind offen. Erstens zeigt MatchKarte einen Gesamtwert und die Teilwerte „Fachlich“ und „Persönlich“, während die Freigabe daneben festhält, es solle „nur das Band, nie die Faktoren“ herausgehen — das gehört geklärt und nicht auf einer Marketingseite beschrieben. Zweitens ist die Kennung „Vorschlag …“ eine Pseudonymisierung, keine Anonymität; sie darf nicht als solche zugesagt werden.",
   },
   {
     key: "bewerbung-versenden",

@@ -208,7 +208,7 @@ export default async function FuerUnternehmenSeite() {
         */}
         <Abschnitt
           titel="Was ihr seht — und was nicht"
-          text="Diese Regel gilt für den geplanten Arbeitgeber-Pilot. Ein Arbeitgeberzugang zu Bewerberangaben existiert heute nicht; es gibt nichts freizugeben und nichts einzusehen."
+          text="Vorschläge entstehen nur zu Menschen, die der Auffindbarkeit ausdrücklich zugestimmt haben. Ohne diese Einwilligung wird niemand geprüft, und der Zugang ist auf den Pilot begrenzt."
           kinder={
             <div className="grid gap-6 md:grid-cols-2 md:gap-10">
               <div className="grid content-start gap-3 border-t border-line pt-5">
@@ -216,7 +216,11 @@ export default async function FuerUnternehmenSeite() {
                   Nach ausdrücklicher Freigabe für diese Stelle
                 </h3>
                 <ul className="grid gap-2 text-[15px] leading-[1.6] text-ink-2">
-                  {["Für diesen Zweck freigegebene Profilangaben", "Ausgewählte Unterlagen", "Freigegebene Kontaktdaten"].map((z) => (
+                  {[
+                    "Name und Kontakt — erst, wenn der Kontakt geöffnet ist",
+                    "Angaben, die für diese Stelle freigegeben wurden",
+                    "Eine Einschätzung zur Passung, wenn die Person das ausdrücklich angekreuzt hat (Voreinstellung: nein)",
+                  ].map((z) => (
                     <li key={z}>{z}</li>
                   ))}
                 </ul>
@@ -226,14 +230,20 @@ export default async function FuerUnternehmenSeite() {
                   Nicht Bestandteil eines Arbeitgeberzugangs
                 </h3>
                 <ul className="grid gap-2 text-[15px] leading-[1.6] text-ink-2">
-                  {["Private Gespräche mit der Assistenz", "Aktuelles Gehalt und private Finanzüberlegungen", "Andere Bewerbungen und Suchverläufe"].map((z) => (
+                  {[
+                    "Private Gespräche mit der Assistenz",
+                    "Aktuelles Gehalt und private Finanzüberlegungen",
+                    "Andere Bewerbungen und Suchverläufe",
+                    "Die Gründe hinter einer Passung — Belege und Bedingungen bleiben im privaten Profil",
+                  ].map((z) => (
                     <li key={z}>{z}</li>
                   ))}
                 </ul>
               </div>
               <p className="text-[13px] leading-[1.6] text-ink-3 md:col-span-2">
-                Eine Vorschlagsnummer ist nicht automatisch anonym. Solange das Datenmodell
-                Anonymität nicht sicherstellt, wird sie hier nicht zugesagt.
+                Bis jemand den Kontakt öffnet, steht in der Übersicht eine Vorschlagsnummer statt
+                eines Namens. Das ist eine Pseudonymisierung und keine Anonymität — sie gehört zum
+                Vorschlag, nicht zur Person, und wir sagen deshalb keine Anonymität zu.
               </p>
             </div>
           }

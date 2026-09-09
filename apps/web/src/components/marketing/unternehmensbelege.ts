@@ -59,7 +59,21 @@ export const KENNZAHLEN: { zahl: number; einheit: string; text: string; quelle: 
   {
     zahl: 28,
     einheit: " %",
-    text: "der eingegangenen Bewerbungen galten als grundsätzlich geeignet — vier von sechzehn.",
+    /*
+     * Hier stand „— vier von sechzehn." als Erläuterung.
+     *
+     * Vier von sechzehn sind 25 Prozent, nicht 28. Der Zusatz war
+     * eine gerundete Nacherzählung: 28 Prozent von 16 sind 4,48, und
+     * daraus wurde „vier". Als Erläuterung gelesen behauptet sie
+     * jedoch eine Gleichung, und die ist falsch.
+     *
+     * Welche der beiden Zahlen die Erhebung nennt, lässt sich ohne
+     * die Primärquelle nicht entscheiden. Also bleibt die Zahl
+     * stehen, unter der die Quelle geführt wird, und die abgeleitete
+     * fällt weg. Eine Zahl, die sich selbst widerspricht, belegt
+     * nichts — auch nicht die Hälfte davon.
+     */
+    text: "der eingegangenen Bewerbungen galten als grundsätzlich geeignet.",
     quelle: "IAB-Stellenerhebung 2025",
   },
   {
@@ -83,19 +97,18 @@ export const FELDER: Belegfeld[] = [
     problem:
       "Es kommen genug Bewerbungen an. Passen tut ein Bruchteil — und die Lücke liegt zwischen Qualifikation, Beruf und Region, nicht in der Menge.",
     antwort: [
-      "Monday sucht dauerhaft in neuen und aktualisierten Profilen, nicht nur beim Eingang einer Bewerbung.",
       "Sie trennt echte Muss-Kriterien von Fähigkeiten, die erlernbar sind.",
-      "Der Fit Score zeigt passende Fähigkeiten, Lücken, unbekannte Angaben und die Datengrundlage — nicht nur eine Zahl.",
+      "Muss-Kriterien, erfüllte Angaben und offene Punkte stehen getrennt — ohne Gesamtwert, der sie zusammenzieht.",
       "Arbeitszeit, Gehalt, Standort, Remote-Modell, Sprache, Reisebereitschaft und Verfügbarkeit gehen mit ein.",
-      "Mit Einwilligung verbindet sie passende Menschen auch ohne vorliegende Bewerbung.",
     ],
     belege: [
       {
         quelle: "IAB-Stellenerhebung",
         jahr: "2025",
         erkenntnis:
-          "Unternehmen erhielten durchschnittlich 16 Bewerbungen je Einstellung, hielten aber nur vier — 28 % — für grundsätzlich geeignet.",
-        grenze: "Eignung ist eine Selbsteinschätzung der Betriebe, keine geprüfte Passung.",
+          "Unternehmen erhielten durchschnittlich 16 Bewerbungen je Einstellung; 28 % davon galten als grundsätzlich geeignet.",
+        grenze:
+          "Eignung ist eine Selbsteinschätzung der Betriebe, keine geprüfte Passung. Die absolute Zahl geeigneter Bewerbungen stand hier als „vier“ und ergäbe 25 %; sie ist entfernt, bis die Primärquelle vorliegt.",
       },
       {
         quelle: "IAB: Wege der Stellenbesetzung",

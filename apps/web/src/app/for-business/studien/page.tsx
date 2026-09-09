@@ -73,6 +73,29 @@ export default async function StudienSeite() {
             </Link>
           </div>
 
+          {/*
+            Der Satz, der über allem stehen muss.
+
+            Die Befunde darunter stammen von IAB, KOFA, DIHK und der
+            Bundesagentur. Sie beschreiben den Arbeitsmarkt, nicht
+            Velvova. Ohne diesen Hinweis liest man eine Seite mit
+            Zahlen unter dem Logo eines Anbieters als dessen
+            Leistungsnachweis — und genau das sind sie nicht.
+
+            Wirkungszahlen zu Velvova gibt es hier keine, weil es
+            keine Messung gibt.
+          */}
+          <div className="mx-auto w-full max-w-[1240px] px-5 pt-8 md:px-8">
+            <p
+              className="max-w-[64ch] rounded-(--radius-md) border border-line p-4 text-[14px] leading-[1.6]"
+              style={{ color: "var(--ed-ink-2)" }}
+            >
+              Alle Befunde auf dieser Seite stammen von Dritten und beschreiben den Arbeitsmarkt.
+              Sie sind kein Nachweis für die Wirkung von {brand.name} — eine eigene Messung dazu
+              liegt nicht vor.
+            </p>
+          </div>
+
           <Methodik />
         </main>
 

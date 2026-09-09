@@ -116,7 +116,7 @@ export default function SicherheitSeite() {
             punkte={[
               {
                 titel: "Zugriff auf deine Angaben",
-                text: "Dein Karrieregespräch, deine Dokumente und deine Notizen gehören in den privaten Bereich. Ein Arbeitgeberzugang, der davon etwas sieht, existiert heute nicht — und wenn er kommt, nur für gezielt freigegebene Angaben.",
+                text: "Dein Karrieregespräch, deine Dokumente und deine Notizen gehören in den privaten Bereich. Für Arbeitgeber gibt es einen begrenzten Pilotzugang — er zeigt nur, was du für eine Stelle freigegeben hast, und Vorschläge entstehen ausschliesslich, wenn du der Auffindbarkeit zugestimmt hast.",
               },
               {
                 titel: "Verarbeitung durch KI",
