@@ -2,13 +2,15 @@ import {
   Bell,
   BadgeCheck,
   Bookmark,
+  Compass,
   CreditCard,
-  FileText,
   FolderOpen,
   LifeBuoy,
   Radar,
+  Route,
   ShieldCheck,
   Sparkles,
+  Tag,
   User,
   type LucideIcon,
 } from "lucide-react";
@@ -84,10 +86,37 @@ export function kontoGruppen(labels: KontoBeschriftungen, assistent: string): Ko
          */
         { href: "/app/jobs?gespeichert=1", label: "Gespeicherte Jobs", icon: Bookmark },
         { href: "/app/suchauftraege", label: "Suchaufträge", icon: Radar },
-        { href: "/app/applications", label: "Bewerbungen", icon: FileText },
+        /*
+         * „Bewerbungen" stand hier und ist entfernt.
+         *
+         * Nach der Regel drei Zeilen weiter oben gehört es nicht
+         * hierher: Die Hauptzeile im Kopf führt es bereits, auf jeder
+         * Seite des Arbeitsbereichs. Es war der einzige Eintrag, der
+         * gegen die eigene Regel verstiess.
+         */
         { href: "/app/career", label: "Karriereprofil", icon: Sparkles },
         { href: "/app/documents", label: "Dokumente", icon: FolderOpen },
         { href: "/app/belege", label: "Deine Belege", icon: BadgeCheck },
+      ],
+    },
+    /*
+     * Neu: die öffentlichen Seiten.
+     *
+     * Im Arbeitsbereich wechselt die Hauptzeile auf Monday, Jobs,
+     * Bewerbungen und Ausprobieren — Lösungen, „So funktioniert es"
+     * und Preise sind von dort aus nicht mehr erreichbar. Wer
+     * angemeldet ist, kam an die neuen Unterseiten nur über den
+     * Zurück-Knopf oder die Fusszeile.
+     *
+     * Sicherheit steht bewusst nicht hier: Die Hauptzeile des
+     * Arbeitsbereichs führt sie bereits.
+     */
+    {
+      titel: "Entdecken",
+      eintraege: [
+        { href: "/product", label: "Lösungen", icon: Compass },
+        { href: "/how-it-works", label: "So funktioniert es", icon: Route },
+        { href: "/pricing", label: "Preise", icon: Tag },
       ],
     },
     {

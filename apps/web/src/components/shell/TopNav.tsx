@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BEREICHSMENUE, hatMenue } from "./bereichsmenue";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Bell, Briefcase, Building2, CircleQuestionMark, FileText, MessagesSquare, Mic, Puzzle, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { useBestand } from "@/components/marketing/BestandProvider";
@@ -222,7 +222,20 @@ export function TopNav({
    * verschiebt sich nichts, wenn die Liste sich ändert.
    */
   const [menue, setMenue] = useState<string | null>(null);
+  /*
+   * Wo das Feld ansetzt — gemessen am Knopf, der es geöffnet hat.
+   *
+   * Mittig unter der Zeile war der erste Versuch und sah falsch aus:
+   * Man klickt rechts auf „Ressourcen" und es klappt in der Mitte auf,
+   * ohne sichtbaren Zusammenhang zum Wort. Das Feld gehört unter sein
+   * Wort.
+   *
+   * `null` heisst „noch nicht gemessen"; solange bleibt es unsichtbar,
+   * damit es nicht einen Bildschirm lang an der falschen Stelle steht.
+   */
+  const [ankerX, setAnkerX] = useState<number | null>(null);
   const menueRef = useRef<HTMLDivElement | null>(null);
+  const kopfRef = useRef<HTMLElement | null>(null);
   /*
    * Eine kurze Frist beim Verlassen mit der Maus.
    *
@@ -232,13 +245,19 @@ export function TopNav({
    */
   const zuUhr = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function oeffne(href: string) {
+  function oeffne(href: string, knopf?: HTMLElement | null) {
     if (zuUhr.current) clearTimeout(zuUhr.current);
+    if (knopf && kopfRef.current) {
+      const k = knopf.getBoundingClientRect();
+      const h = kopfRef.current.getBoundingClientRect();
+      setAnkerX(k.left - h.left);
+    }
     setMenue(href);
   }
   function schliesseGleich() {
     if (zuUhr.current) clearTimeout(zuUhr.current);
     setMenue(null);
+    setAnkerX(null);
   }
   function schliesseBald() {
     if (zuUhr.current) clearTimeout(zuUhr.current);
@@ -259,6 +278,28 @@ export function TopNav({
    * durch erneuten Klick auf dasselbe Wort zugeht, ist eine Falle für
    * jeden, der es versehentlich geöffnet hat.
    */
+  /*
+   * Nach dem Zeichnen prüfen, ob das Feld rechts hinausragt.
+   *
+   * Die Breite steht erst fest, wenn der Inhalt da ist — sie hängt an
+   * der Zahl der Spalten und am längsten Eintrag darin. Vorher zu
+   * rechnen hiesse raten.
+   *
+   * `useLayoutEffect` und nicht `useEffect`: Die Korrektur muss vor
+   * dem ersten Anzeigen sitzen, sonst springt das Feld sichtbar.
+   */
+  useLayoutEffect(() => {
+    if (!menue || ankerX === null) return;
+    const feld = menueRef.current;
+    const kopf = kopfRef.current;
+    if (!feld || !kopf) return;
+    const rand = 16;
+    const platz = kopf.clientWidth - rand;
+    const breite = feld.offsetWidth;
+    const korrigiert = Math.max(rand, Math.min(ankerX, platz - breite));
+    if (Math.abs(korrigiert - ankerX) > 0.5) setAnkerX(korrigiert);
+  }, [menue, ankerX]);
+
   useEffect(() => {
     if (!menue) return;
     function taste(e: KeyboardEvent) {
@@ -296,6 +337,7 @@ export function TopNav({
 
   return (
     <header
+      ref={kopfRef}
       /*
        * Zwei Reihen statt einer.
        *
@@ -658,10 +700,12 @@ export function TopNav({
                     type="button"
                     aria-expanded={menue === b.href}
                     aria-controls="bereichsfeld"
-                    onClick={() => (menue === b.href ? schliesseGleich() : oeffne(b.href))}
-                    onMouseEnter={() => oeffne(b.href)}
+                    onClick={(e) =>
+                      menue === b.href ? schliesseGleich() : oeffne(b.href, e.currentTarget)
+                    }
+                    onMouseEnter={(e) => oeffne(b.href, e.currentTarget)}
                     onMouseLeave={schliesseBald}
-                    onFocus={() => oeffne(b.href)}
+                    onFocus={(e) => oeffne(b.href, e.currentTarget)}
                     className={cn(klasse, "gap-1.5")}
                   >
                     <span>{b.label}</span>
@@ -725,6 +769,21 @@ export function TopNav({
           id="bereichsfeld"
           ref={menueRef}
           onMouseEnter={() => oeffne(menue)}
+          style={{
+            left: ankerX ?? 0,
+            visibility: ankerX === null ? "hidden" : "visible",
+            /*
+              Dunkler als `--surface-1`.
+              
+              Das Feld soll sich vom Seitengrund abheben, nicht
+              leuchten. `--surface-1` allein war dafür zu hell — es sah
+              aus wie ein aufgeklappter Kasten aus einem helleren
+              Thema. 78 Prozent davon auf Schwarz liegt zwischen
+              Seitengrund und Fläche: sichtbar abgesetzt, ohne die
+              Kopfzeile darüber blass wirken zu lassen.
+            */
+            background: "color-mix(in srgb, var(--surface-1) 78%, #000)",
+          }}
           onMouseLeave={schliesseBald}
           /*
             Ein schwebendes Feld, nicht eine Bank über die ganze Breite.
@@ -741,8 +800,20 @@ export function TopNav({
             Oben keine Ecken und keine Kante: Dort schliesst es an die
             Kopfzeile an und soll aussehen, als hinge es an ihr.
           */
-          className="absolute left-1/2 top-full z-10 hidden w-max max-w-[min(1120px,calc(100vw-3rem))] -translate-x-1/2 rounded-b-(--radius-lg) border border-t-0 border-line shadow-xl md:block"
-          style={{ background: "var(--surface-1)" }}
+          /*
+            Rundum abgerundet und ein Stück unter der Kopfzeile.
+            
+            Vorher sass es bündig an ihrer Unterkante, mit geraden
+            Ecken oben — dann sieht es aus wie eine Verlängerung der
+            Leiste. Mit Abstand und Rundung ist es ein eigenes Feld,
+            das darunter hängt.
+            
+            Die sechs Pixel Abstand sind zugleich die Strecke, die die
+            Maus überqueren muss. Deshalb hält `onMouseLeave` mit einer
+            kurzen Frist offen — ohne sie schliesst es genau in dieser
+            Lücke.
+          */
+          className="absolute top-[calc(100%+6px)] z-10 hidden w-max max-w-[min(1120px,calc(100vw-3rem))] rounded-(--radius-lg) border border-line shadow-xl md:block"
         >
           <div className="grid grid-flow-col auto-cols-max">
             {BEREICHSMENUE[menue].map((spalte) => (

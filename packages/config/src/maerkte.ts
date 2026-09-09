@@ -97,6 +97,18 @@ export function marktFuer(code: string | null | undefined): Markt {
 export interface Aussenverweise {
   iosUrl: string | null;
   androidUrl: string | null;
+  /**
+   * Die Desktop-Anwendung zum Herunterladen.
+   *
+   * Wie `iosUrl` und `androidUrl`: `null` heisst nicht „ausgeblendet",
+   * sondern „kommt noch". Die Oberfläche zeigt den Einstieg trotzdem
+   * — mit dem Hinweis statt mit einem Verweis, der eine Datei
+   * verspricht, die es nicht gibt.
+   *
+   * Sobald hier eine Adresse steht, wird aus dem Hinweis ein
+   * Herunterladen. Es ist keine Zeile Code dafür nötig.
+   */
+  desktopUrl: string | null;
   /** Seite mit Informationen zur App, solange es keine App gibt. */
   appInfoUrl: string | null;
   /**
@@ -122,6 +134,7 @@ export type SozialesNetz =
 export const AUSSENVERWEISE: Aussenverweise = {
   iosUrl: null,
   androidUrl: null,
+  desktopUrl: null,
   appInfoUrl: null,
   /*
    * TODO(Velvova): Die sechs Adressen eintragen, sobald die Konten

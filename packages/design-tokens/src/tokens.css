@@ -323,11 +323,19 @@
      alles um es herum — ein schwebendes Menü, das tiefer wirkte als
      die Seite darunter.
 
-     #232327 ist die angehobene Fläche des dunklen Themes, dieselbe,
-     die `--ed-surface-raised` trägt. Ausgeschrieben und nicht per
-     `var()` verwiesen, weil die `--ed-*`-Tokens unter
-     `[data-surface="editorial"]` liegen und hier nicht gälten. */
-  --surface-kontofeld: #232327;
+     Zuerst stand hier #232327, die angehobene Fläche des dunklen
+     Themes. Die war zu hell: Seit die Bereichsmenüs daneben existieren
+     — dieselbe Kopfzeile, dieselbe Art Feld —, standen zwei
+     Klappfelder mit verschiedener Helligkeit nebeneinander.
+
+     #19191b ist der Wert, den die Bereichsmenüs tragen: `--surface-1`
+     zu 78 Prozent auf Schwarz. Er liegt eine Spur über dem
+     Seitengrund, also abgesetzt, aber nicht angehoben.
+
+     Ausgeschrieben und nicht per `var()` verwiesen, weil die
+     `--ed-*`-Tokens unter `[data-surface="editorial"]` liegen und hier
+     nicht gälten. */
+  --surface-kontofeld: #19191b;
   color-scheme: dark;
 
   /*
@@ -445,7 +453,7 @@
   :root[data-theme-mode="system"] {
     color-scheme: dark;
 
-    --surface-kontofeld: #232327;
+    --surface-kontofeld: #19191b;
     --background: #17171a;
     --background-subtle: #2e2e34;
     --surface-1: #202023;
