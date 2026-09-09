@@ -1119,6 +1119,7 @@ export function InterviewRoom({
             onListeningChange={nina.setListening}
             placeholder={labels.yourAnswer}
             dokumenteFür={assistantName}
+            modellwahl
             autoFocus
           />
 

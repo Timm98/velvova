@@ -88,6 +88,14 @@ interface NinaActions {
   stopSpeaking: () => void;
   /** Meldet, dass das Mikrofon zuhört. Aus dem Composer. */
   setListening: (listening: boolean) => void;
+  /**
+   * Welches Modell antworten soll.
+   *
+   * `"auto"` oder eine interne Kennung aus /api/monday/models. Nie
+   * eine API-Kennung des Anbieters — der Browser soll gar nicht
+   * wissen, wie die Modelle dort heissen.
+   */
+  setModell: (id: string) => void;
 }
 
 /** Ändert sich oft — beim Streamen bei jedem Zeichen. */
@@ -107,6 +115,16 @@ interface NinaState {
    * Der Zähler steht deshalb hier, wo jedes `send` vorbeikommt.
    */
   sendezaehler: number;
+  /** Die aktuelle Wahl. Gilt für dieses Gespräch, nicht für einen Aufruf. */
+  modell: string;
+  /**
+   * Welches Modell zuletzt TATSÄCHLICH geantwortet hat.
+   *
+   * Kommt aus den Nutzungsdaten des Anbieters, nicht aus unserer
+   * Konfiguration. Der Unterschied ist der ganze Punkt: Der Chip soll
+   * zeigen, was war, und nicht, was vorgesehen war.
+   */
+  zuletztesModell: string | null;
   messages: NinaMessage[];
   busy: boolean;
   error: string | null;
@@ -238,6 +256,14 @@ export function NinaProvider({
   const [open, setOpen] = useState(false);
   const [puls, setPuls] = useState(false);
   const [sendezaehler, setSendezaehler] = useState(0);
+  /*
+   * Die Modellwahl gilt für das Gespräch und überlebt den
+   * Seitenwechsel — der Provider sitzt im Layout. Sie überlebt kein
+   * Neuladen, und das ist Absicht: Eine Wahl, die man vor drei Tagen
+   * getroffen hat und nicht mehr sieht, ist keine Wahl mehr.
+   */
+  const [modell, setModell] = useState("auto");
+  const [zuletztesModell, setZuletztesModell] = useState<string | null>(null);
 
   /*
    * Der Puls läuft 2,4 Sekunden und schaltet sich selbst ab.
@@ -495,6 +521,7 @@ export function NinaProvider({
             applicationId: scope.applicationId ?? null,
             fromVoice: options.fromVoice ?? false,
             agreeToSeeJobs: zustimmung.current,
+            modell,
           }),
         });
 
@@ -727,6 +754,15 @@ export function NinaProvider({
                * die letzten Zeichen noch unterwegs sind — und der
                * Vorlese-Knopf erschiene über einem halben Satz.
                */
+              /*
+               * Was wirklich geantwortet hat.
+               *
+               * Der Server schickt hier den Namen aus den
+               * Nutzungsdaten des Anbieters. Ihn aus unserer Auswahl
+               * abzuleiten wäre eine Vermutung — und bei einem
+               * Ausweichmodell die falsche.
+               */
+              if (typeof ereignis.model === "string") setZuletztesModell(ereignis.model);
               takt.fertig = true;
               /*
                * Mit Zeitgrenze warten, nie unbegrenzt.
@@ -779,7 +815,7 @@ export function NinaProvider({
         abbruch.current = null;
       }
     },
-    [busy, art, kennungen, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak],
+    [busy, art, kennungen, pathname, scope.jobId, scope.applicationId, stimme, autoSpeak, modell],
   );
 
   const loadConversation = useCallback(async (id: string) => {
@@ -854,6 +890,7 @@ export function NinaProvider({
       speak: stimme.vorlesen,
       stopSpeaking: stimme.stoppen,
       setListening,
+      setModell,
     }),
     [
       pulsAnstossen,
@@ -892,6 +929,8 @@ export function NinaProvider({
       isListening,
       puls,
       sendezaehler,
+      modell,
+      zuletztesModell,
       voiceError: stimme.fehler,
       /*
        * Die Reihenfolge ist die Rangfolge.
@@ -916,6 +955,8 @@ export function NinaProvider({
       error,
       art,
       kennungen,
+      modell,
+      zuletztesModell,
       scopeLabel,
       suggestions,
       stage,

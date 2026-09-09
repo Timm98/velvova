@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, Check, Mic, Square, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { DokumentKnopf } from "./DokumentKnopf";
+import { Modellwahl } from "./Modellwahl";
 
 /**
  * Der Composer.
@@ -70,6 +71,7 @@ export function Composer({
   className,
   onListeningChange,
   dokumenteFür,
+  modellwahl = false,
 }: {
   onSend: (text: string, options?: { fromVoice?: boolean }) => void;
   busy: boolean;
@@ -89,6 +91,15 @@ export function Composer({
   dokumenteFür?: string;
   /** Meldet, ob das Mikrofon gerade zuhört. */
   onListeningChange?: (listening: boolean) => void;
+  /**
+   * Ob die Modellwahl unter dem Feld steht.
+   *
+   * Nicht überall: Im Interview beantwortet jemand eine bestimmte
+   * Frage, und die Wahl der Intelligenz gehört nicht neben eine
+   * Antwort, die zwei Sätze lang ist. Sie steht dort, wo ein Gespräch
+   * geführt wird.
+   */
+  modellwahl?: boolean;
 }) {
   const [text, setText] = useState("");
   const [hört, setHört] = useState(false);
@@ -394,6 +405,20 @@ export function Composer({
           <ArrowUp className="size-[18px]" strokeWidth={2.2} />
         </button>
       </div>
+
+      {/*
+        Die Modellwahl steht UNTER der Eingabezeile, rechts.
+
+        Nicht darin: Sie gehört nicht in die Reihe mit Mikrofon und
+        Senden — das sind Handlungen, und dies ist eine Einstellung.
+        Und nicht links: Dort beginnt der Text, und der Blick soll
+        zuerst dorthin.
+      */}
+      {modellwahl && (
+        <div className="flex justify-end px-1.5 pb-1">
+          <Modellwahl />
+        </div>
+      )}
     </div>
   );
 }

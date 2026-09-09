@@ -288,6 +288,7 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
              braucht es nichts weiter. */
           onSend={(text, options) => void nina.send(text, options)}
           busy={nina.busy}
+          modellwahl
           onListeningChange={nina.setListening}
           placeholder={`${assistantName} fragen …`}
           dokumenteFür={assistantName}
