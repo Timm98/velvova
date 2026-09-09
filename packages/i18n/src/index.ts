@@ -111,3 +111,30 @@ export {
   zeitzonen,
   type Land,
 } from "./regionen.ts";
+
+/*
+ * Die Sprachauflösung.
+ *
+ * Eigene Datei, weil sie nichts über den Bestand dieses Pakets weiss:
+ * Sie bekommt Signale und eine Liste nutzbarer Sprachen und gibt eine
+ * zurück. Wer sie prüft, braucht weder Browser noch Server.
+ */
+export {
+  accepteSprachen,
+  istSprachcode,
+  LAND_ZU_SPRACHE,
+  spracheAufloesen,
+  VORBEREITETE_SPRACHEN,
+  type Sprachcode,
+  type Sprachsignale,
+} from "./aufloesen.ts";
+
+/**
+ * Die Sprachen, für die es tatsächlich Texte gibt.
+ *
+ * Abgeleitet aus dem Katalog, nicht aufgeschrieben. Eine gepflegte
+ * Liste daneben wäre die erste, die veraltet — und der Fehler daraus
+ * ist stumm: `getTranslator` zeigt bei fehlendem Katalog die
+ * Standardsprache, ohne sich zu beschweren.
+ */
+export const SPRACHEN_MIT_TEXTEN: readonly string[] = LOCALES;

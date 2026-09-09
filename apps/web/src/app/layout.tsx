@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { besucherSprache } from "@/lib/herkunft";
 import { cookies } from "next/headers";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Manrope, Chivo_Mono, Instrument_Sans } from "next/font/google";
 import { brand } from "@paycheck/config";
-import { isLocale } from "@paycheck/i18n";
+import { getLocale } from "@/lib/locale";
 import { ServiceWorker } from "@/components/ServiceWorker";
 import "./globals.css";
 
@@ -215,12 +214,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
    * Wurzellayout liegt vor jeder Seite. Wer angemeldet ist und eine
    * Sprache gewählt hat, bekommt den Keks beim Speichern gesetzt.
    */
-  const localeCookie = store.get("paycheck_locale")?.value;
-  const locale = isLocale(localeCookie)
-    ? localeCookie
-    : await besucherSprache()
-        .then((s) => s.sprache)
-        .catch(() => "de" as const);
+  /*
+   * Eine Sprachentscheidung, nicht zwei.
+   *
+   * Hier stand eine eigene Kette: Cookie, sonst `besucherSprache()`,
+   * sonst „de". Daneben entschied `getLocale()` dasselbe noch einmal,
+   * mit einer anderen Rangfolge und einem anderen Rückfall. Zwei
+   * Stellen, die dieselbe Frage beantworten, geben irgendwann
+   * verschiedene Antworten — und dann steht `lang="de"` an einer
+   * Seite mit englischen Texten.
+   *
+   * `getLocale()` liest Cookie, `Accept-Language` und den Ländercode
+   * des CDN und gibt das an `spracheAufloesen` weiter. Diese Zeile
+   * bekommt das Ergebnis.
+   */
+  const locale = await getLocale();
 
   return (
     <html

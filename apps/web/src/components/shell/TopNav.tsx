@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BEREICHSMENUE, hatMenue } from "./bereichsmenue";
+import { Sprachwahl } from "./Sprachwahl";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Bell, Briefcase, Building2, CircleQuestionMark, FileText, MessagesSquare, Mic, Puzzle, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -162,6 +163,7 @@ export function TopNav({
   stellenzahl,
   stellenGenau,
   proSekunde = 0,
+  sprache,
   angemeldet = true,
 }: {
   brandName: string;
@@ -186,6 +188,8 @@ export function TopNav({
   stellenGenau?: number;
   /** Gemessener Zuwachs je Sekunde. Null hält den Platzhalter an. */
   proSekunde?: number;
+  /** Die aufgelöste Sprache. Fehlt sie, erscheint keine Auswahl. */
+  sprache?: string;
 }) {
   const pathname = usePathname();
 
@@ -493,6 +497,18 @@ export function TopNav({
         <Kopfsuche stellenzahl={stellenzahl} genau={stellenGenau} proSekunde={proSekunde} />
 
         <div className="flex min-w-fit flex-1 basis-0 items-center justify-end gap-1">
+          {/*
+            Die Sprachauswahl vor Glocke und Profil.
+
+            Sie gehört zu den Einstellungen, nicht zum Konto — und
+            links der beiden runden Knöpfe fällt sie weniger auf als
+            zwischen ihnen. Ohne `sprache` erscheint sie gar nicht:
+            `sprache` ist wahlfrei: Wo eine Seite die aufgelöste
+            Sprache zur Hand hat, spart sie damit einen
+            Zeichenwechsel. Sonst liest die Auswahl sie vom `lang` der
+            Seite — derselben Quelle, aus der auch die Texte kommen.
+          */}
+          <Sprachwahl aktuell={sprache} />
           {!angemeldet ? (
             <>
               {/* Unter 640 Pixeln fällt „Anmelden" weg und der zweite
