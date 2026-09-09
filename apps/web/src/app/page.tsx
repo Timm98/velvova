@@ -17,6 +17,7 @@ import { bestandszahl } from "@/lib/jobs/bestandszahl";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { lageFuer } from "@/lib/landeslage";
 import { Abomodell } from "@/components/marketing/Abomodell";
+import { mondayZiel } from "@/lib/mondayziel";
 
 /*
  * Kein `revalidate` — diese Seite wird ohnehin bei jedem Aufruf
@@ -186,7 +187,11 @@ export default async function LandingPage() {
         Eine Startseite ist kein Ort, an dem man alles sagt.
       */}
       <main id="inhalt">
-        <Einstiegshero angemeldet={sitzung.angemeldet} anrede={sitzung.anrede} />
+        <Einstiegshero
+          angemeldet={sitzung.angemeldet}
+          anrede={sitzung.anrede}
+          mondayHref={await mondayZiel()}
+        />
         {/*
           Preise vor die Fragen.
 
@@ -267,7 +272,16 @@ const NAV = [
  * einer eigenen Spalte. Wer sich anmelden will, wartet nicht auf ein
  * 3D-Modell — die linke Spalte steht sofort und vollständig.
  */
-function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: string | null }) {
+function Einstiegshero({
+  angemeldet,
+  anrede,
+  mondayHref,
+}: {
+  angemeldet: boolean;
+  anrede: string | null;
+  /* Von der Seite gereicht, weil nur sie den Host der Anfrage kennt. */
+  mondayHref: string;
+}) {
   return (
     /*
         Nebeneinander ab 768, nicht erst ab 1024.
@@ -367,7 +381,16 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
           deinen nächsten Schritt vorzubereiten.
         </p>
 
-        <Einstieg angemeldet={angemeldet} />
+        {/*
+          Auf der öffentlichen Seite absolut, überall sonst relativ.
+
+          `mondayZiel()` liest den Host der Anfrage. Steht sie auf
+          velvova.com und ist die Trennung eingerichtet, führt der
+          Knopf direkt auf die Anwendungsdomain — ein Sprung weniger
+          als über die Weiche in der Middleware. Auf jedem anderen
+          Host bleibt der Pfad relativ, und dort ist er richtig.
+        */}
+        <Einstieg angemeldet={angemeldet} mondayZiel={mondayHref} />
       </div>
 
       {/*

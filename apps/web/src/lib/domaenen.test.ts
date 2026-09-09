@@ -22,7 +22,7 @@ describe("Ohne eingerichtete Trennung ändert sich nichts", () => {
 
   it("gibt einen relativen Link statt eines Sprungs über das Netz", () => {
     delete process.env.NEXT_PUBLIC_MONDAY_HOST;
-    expect(mondayLink()).toBe("/app/monday");
+    expect(mondayLink("/app/monday", "velvova.com")).toBe("/app/monday");
   });
 
   it("bleibt aus, wenn nur eine der beiden Adressen gesetzt ist", () => {
@@ -104,16 +104,45 @@ describe("Mit eingerichteter Trennung", () => {
     expect(umleitungFuer("monday.ai:3021", "/app/monday")).toBeNull();
   });
 
-  it("baut den Link auf die Anwendung absolut", () => {
+  it("baut den Link absolut, wenn wir auf der öffentlichen Seite stehen", () => {
     trennungEinrichten();
-    expect(mondayLink()).toBe("https://monday.ai/app/monday");
-    expect(mondayLink("/app/jobs")).toBe("https://monday.ai/app/jobs");
+    expect(mondayLink("/app/monday", "velvova.com")).toBe("https://monday.ai/app/monday");
+    expect(mondayLink("/app/jobs", "www.velvova.com")).toBe("https://monday.ai/app/jobs");
+  });
+
+  it("bleibt INNERHALB der Anwendung relativ", () => {
+    /*
+     * Der wichtigere Fall. Ein absoluter Link auf derselben Domain
+     * macht aus jeder Navigation im Browser einen vollen
+     * Seitenwechsel — gleicher Server, nur langsamer und mit weissem
+     * Blitz dazwischen.
+     */
+    trennungEinrichten();
+    expect(mondayLink("/app/jobs", "monday.ai")).toBe("/app/jobs");
+  });
+
+  it("bleibt relativ, wenn der Host unbekannt ist", () => {
+    /*
+     * Der sichere Vorgabewert. Ein relativer Pfad ist nie falsch: Die
+     * Weiche in der Middleware leitet ihn ohnehin an die richtige
+     * Adresse. Der absolute Link spart nur einen Sprung — und ihn zu
+     * raten wäre der teurere Fehler.
+     */
+    trennungEinrichten();
+    expect(mondayLink("/app/monday")).toBe("/app/monday");
+    expect(mondayLink("/app/monday", null)).toBe("/app/monday");
+  });
+
+  it("bleibt auf localhost relativ", () => {
+    /* Sonst verlässt in der Entwicklung jeder Klick den Rechner. */
+    trennungEinrichten();
+    expect(mondayLink("/app/monday", "localhost:3021")).toBe("/app/monday");
   });
 
   it("kommt mit einer Adresse mit Schema zurecht", () => {
     process.env.NEXT_PUBLIC_SEITEN_HOST = "https://velvova.com/";
     process.env.NEXT_PUBLIC_MONDAY_HOST = "https://monday.ai";
-    expect(mondayLink()).toBe("https://monday.ai/app/monday");
+    expect(mondayLink("/app/monday", "velvova.com")).toBe("https://monday.ai/app/monday");
     expect(umleitungFuer("velvova.com", "/app")).toBe("https://monday.ai/app");
   });
 });

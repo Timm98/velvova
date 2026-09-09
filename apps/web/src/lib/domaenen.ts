@@ -123,13 +123,30 @@ export function umleitungFuer(host: string, pfad: string): string | null {
 }
 
 /**
- * Die Adresse der Anwendung für einen Link von der öffentlichen Seite.
+ * Die Adresse der Anwendung für einen Link.
  *
- * Ohne eingerichtete Trennung ein gewöhnlicher relativer Pfad — dann
- * ist es dieselbe Seite, und ein absoluter Link wäre ein unnötiger
- * Sprung über das Netz.
+ * ── Warum der aktuelle Host dazugehört ──────────────────────────
+ *
+ * Ein absoluter Link ist nur DRAUSSEN richtig. Innerhalb der
+ * Anwendung wäre er schädlich: Aus jedem Klick würde ein voller
+ * Seitenwechsel statt einer Navigation im Browser — dieselbe Domain,
+ * derselbe Server, nur langsamer und mit weissem Blitz dazwischen.
+ *
+ * Dasselbe gilt für die Entwicklung. Auf `localhost` einen Link auf
+ * die Testdomain zu setzen hiesse, dass jeder Klick den Rechner
+ * verlässt.
+ *
+ * Deshalb: absolut nur, wenn wir nachweislich auf der öffentlichen
+ * Seite stehen. In allen anderen Fällen relativ — und das ist nie
+ * falsch, denn die Weiche in der Middleware leitet einen relativen
+ * Pfad ohnehin an die richtige Adresse weiter. Der absolute Link
+ * spart nur den einen Sprung.
  */
-export function mondayLink(pfad = "/app/monday"): string {
+export function mondayLink(pfad = "/app/monday", aktuellerHost?: string | null): string {
   const app = mondayHost();
-  return app ? `https://${app}${pfad}` : pfad;
+  const seite = seitenHost();
+  if (!app || !seite || !aktuellerHost) return pfad;
+
+  const kurz = (h: string) => h.toLowerCase().replace(/:\d+$/, "").replace(/^www\./, "");
+  return kurz(aktuellerHost) === kurz(seite) ? `https://${app}${pfad}` : pfad;
 }

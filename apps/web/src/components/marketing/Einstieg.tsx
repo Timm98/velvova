@@ -64,10 +64,27 @@ const KNOPF_RAND = `${KNOPF} border border-line-3 bg-transparent text-ink hover:
 export function Einstieg({
   angemeldet,
   weiter,
+  mondayZiel = "/app/monday",
 }: {
   angemeldet: boolean;
   /** Wohin nach der Anmeldung. Leer heisst: dorthin, wo man herkam. */
   weiter?: string;
+  /**
+   * Wohin „Sprich mit Monday" führt.
+   *
+   * ── Warum das von aussen kommt ──────────────────────────────
+   *
+   * Dieses Bauteil steht auf der öffentlichen Startseite UND in der
+   * Anwendung. Auf der Startseite gehört ein absoluter Link auf die
+   * Anwendungsdomain hin; in der Anwendung wäre derselbe Link
+   * schädlich — aus einer Navigation im Browser würde ein voller
+   * Seitenwechsel, gleiche Domain, gleicher Server, nur langsamer.
+   *
+   * Das Bauteil kann das nicht entscheiden, weil es seinen Host nicht
+   * kennt. Die Seite kennt ihn. Deshalb kommt das Ziel von dort, und
+   * der Vorgabewert ist der relative Pfad — der überall stimmt.
+   */
+  mondayZiel?: string;
 }) {
   /*
    * Wer angemeldet ist, braucht keine Anmeldung.
@@ -88,7 +105,7 @@ export function Einstieg({
           an Monday vorbei.
         */}
         <Link
-          href="/app/monday"
+          href={mondayZiel}
           className={KNOPF_HAUPT}
         >
           Sprich mit Monday
