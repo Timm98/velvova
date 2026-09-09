@@ -20,3 +20,4 @@ export * from "./berufsfeld.ts";
 export * from "./suchauftrag.ts";
 export * from "./proaktiv.ts";
 export * from "./intelligenz.ts";
+export * from "./chancen.ts";

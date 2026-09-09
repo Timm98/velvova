@@ -131,6 +131,17 @@ DECLARE
     -- Ohne diesen Filter koennte ein Angemeldeter nachsehen, welcher
     -- Mitarbeiter seinem Arbeitgeber widersprochen hat.
     'rollen_bestaetigungen',
+    -- Stille Chancen und was daraus hinausging. Die Zeile sagt, welchen
+    -- Arbeitgeber jemand interessant fand und ob er ihn angeschrieben
+    -- hat -- eine Aussage ueber die Person, nicht ueber die Firma. Ohne
+    -- Richtlinie liesse sich die Wechselabsicht eines Fremden ablesen.
+    --
+    -- `arbeitgeber_kontaktsperre` steht hier NICHT und darf es nicht:
+    -- Sie traegt keine Nutzerkennung, weil eine Sperre dem Arbeitgeber
+    -- gegenueber gilt und nicht gegenueber einer Person. Sie muss fuer
+    -- jeden Lauf lesbar sein, sonst schreibt der naechste Mensch
+    -- morgen wieder.
+    'arbeitgeber_chancen','arbeitgeber_kontakte',
     -- Was jemand bei einer Arbeitsprobe geantwortet hat und wie es sich
     -- angefuehlt hat. Die Aufgaben selbst (`aufgabenproben`) sind fuer
     -- alle sichtbar; die Versuche gehoeren dem Menschen.
