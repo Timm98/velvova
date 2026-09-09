@@ -262,7 +262,10 @@ async function protokollieren(
       purpose: "nina_extraction",
       taskType,
       tier,
-      provider: usage?.provider ?? "openai",
+      /* Nicht "openai": Ein Fehlschlag ohne Nutzungsdaten weiss den
+         Anbieter nicht, und ihn zu raten verfälscht genau die Spalte,
+         aus der Ausfallraten je Anbieter gelesen werden. */
+      provider: usage?.provider ?? "unbekannt",
       model: usage?.model ?? "unbekannt",
       promptKey: NINA_PROMPT_KEY,
       promptVersion: NINA_PROMPT_VERSION,

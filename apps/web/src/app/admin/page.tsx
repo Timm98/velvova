@@ -75,6 +75,7 @@ export default async function AdminPage() {
               [
                 ["/admin/organisationen", "Arbeitgeberkonten"],
                 ["/admin/providers", "Job-Anbieter"],
+                ["/admin/modelle", "Modelle und Anbieter"],
                 ["/admin/sources", "Quellen"],
                 ["/admin/reviews", "Bewertungen"],
               ] as const

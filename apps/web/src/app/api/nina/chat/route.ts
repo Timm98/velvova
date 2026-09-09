@@ -782,6 +782,47 @@ export async function POST(request: Request) {
          */
         anbieterMelden((anbieter ?? provider.name) as Anbieter, false, grund);
 
+        /*
+         * ── Und den Fehlschlag ins Protokoll ──────────────────────
+         *
+         * Hier stand nichts. Eingetragen wurde nur der Erfolgsfall,
+         * mit `status: "ok"` — `ai_runs` zeigte also 100 Prozent
+         * Erfolg, gleichgültig was tatsächlich geschah.
+         *
+         * Das ist schlimmer als eine Lücke. Kosten je Anbieter,
+         * Ausfallraten, jeder Modellvergleich und jede
+         * Gesundheitsanzeige lesen genau diese Tabelle. Sie hätten
+         * nicht wenig gezeigt, sondern durchweg das Beste — und
+         * niemand hätte einen Grund gehabt, daran zu zweifeln.
+         *
+         * `failed` und `timeout` stehen seit jeher im Enum. Sie
+         * wurden nur nie geschrieben.
+         *
+         * `model: "unbekannt"`, wenn der Aufruf scheiterte, bevor ein
+         * Modell antwortete. Die Spalte lässt nichts anderes zu, und
+         * ein erfundener Modellname wäre in einem Vergleich schlimmer
+         * als ein ehrliches Eingeständnis.
+         */
+        await db
+          .insert(schema.aiRuns)
+          .values({
+            userId: user.id,
+            purpose: eingabe.kind,
+            taskType: routing.task,
+            tier: routing.tier,
+            provider: (anbieter ?? provider.name) as string,
+            model: modell ?? "unbekannt",
+            promptKey: NINA_PROMPT_KEY,
+            promptVersion: NINA_PROMPT_VERSION,
+            inputTokens,
+            outputTokens,
+            latencyMs: latenz,
+            status: /abort|timeout|frist/i.test(grund) ? "timeout" : "failed",
+            /* Nur die Ursache, nie der Inhalt der Anfrage. */
+            errorMessage: grund.slice(0, 400),
+          })
+          .catch(() => undefined);
+
         send({
           type: "error",
           message:
