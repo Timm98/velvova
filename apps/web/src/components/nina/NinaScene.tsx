@@ -109,7 +109,7 @@ import type { NinaVisualState } from "./NinaProvider";
  *
  * ── Warum nicht stärker gepackt ─────────────────────────────
  *
- * Mit `meshopt` wären es 3,9 MB statt 7,6 — ein Drittel. Der
+ * Mit `meshopt` wären es noch einmal weniger. Der
  * Entpacker dafür bringt WebAssembly mit, und unsere CSP erlaubt kein
  * `unsafe-eval`. Genau daran ist eine Vorgängerfassung schon einmal
  * gescheitert: Verstoss in der Konsole, leere Fläche auf dem
@@ -122,6 +122,32 @@ import type { NinaVisualState } from "./NinaProvider";
  *
  *   npx @gltf-transform/cli optimize nina.glb nina.opt.glb \
  *     --compress quantize --texture-compress webp
+ *   npx @gltf-transform/cli simplify nina.opt.glb nina.opt.glb \
+ *     --ratio 0.5 --error 0.001
+ *
+ * ── Der zweite Schritt, und warum er hier steht ─────────────
+ *
+ * Vereinfachen halbiert die Netzdichte, und zwar BEIM PACKEN, nicht
+ * im Browser: Herauskommt gewöhnliche Geometrie, die three.js ohne
+ * Entpacker liest. Das ist der Unterschied zu meshopt — dort steckt
+ * die Ersparnis in einem Format, das jemand zur Laufzeit auflösen
+ * muss, und dieser Jemand bringt WebAssembly mit.
+ *
+ * Gemessen:
+ *
+ *   vorher        7,61 MB   223.246 Dreiecke
+ *   vereinfacht   4,93 MB   123.849 Dreiecke
+ *
+ * Zwölf Netze, drei Animationen, dieselben Erweiterungen — vorher wie
+ * nachher. Im Bildvergleich bei 632 Pixeln ist kein Detailverlust
+ * auszumachen; was sich zwischen zwei Aufnahmen unterscheidet, ist die
+ * Phase der Animation.
+ *
+ * Warum das überhaupt geht: 223.000 Dreiecke sind die Dichte einer
+ * Nahaufnahme. Dargestellt wird das Modell mit 632 Pixeln Kantenlänge
+ * — auf dieser Fläche fällt rechnerisch weniger als ein Pixel auf drei
+ * Dreiecke. Die Hälfte davon zu entfernen kostet nichts, was man sehen
+ * könnte.
  */
 const MODELL = "/models/nina.opt.glb";
 
