@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { mondayLink, trennungAktiv, umleitungFuer, zustaendigFuer } from "./domaenen.ts";
 
@@ -170,5 +172,61 @@ describe("Mit eingerichteter Trennung", () => {
     process.env.NEXT_PUBLIC_MONDAY_HOST = "https://monday.ai";
     expect(mondayLink("/app/monday", "velvova.com")).toBe("https://monday.ai/app/monday");
     expect(umleitungFuer("velvova.com", "/app")).toBe("https://monday.ai/app");
+  });
+});
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * Die Liste gegen den Dateibaum
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * `ANWENDUNG` ist eine von Hand gepflegte Liste, und von Hand
+ * gepflegte Listen laufen dem Code davon. Genau das war passiert:
+ * `/magic`, `/bestaetigen`, `/forgot-password` und `/admin` fehlten,
+ * und die Weiche schickte sie gemessen auf die öffentliche Seite —
+ * Anmeldewege, die eine Sitzung anlegen, auf der Domain ohne
+ * Anwendung.
+ *
+ * Der Fehler fällt nicht auf, weil nichts abstürzt. Man kommt an,
+ * die Seite lädt, sie ist nur die falsche.
+ *
+ * Deshalb prüft dieser Test nicht die Liste, sondern den Dateibaum:
+ * Jede Route in der Anmeldegruppe und unter `/admin` MUSS zur
+ * Anwendung gehören. Wer morgen `(auth)/neuer-weg` anlegt und die
+ * Liste vergisst, bekommt hier ein rotes Ergebnis statt in drei
+ * Wochen eine Sitzung auf der Marketingdomain.
+ */
+describe("Einordnung gegen den tatsächlichen Dateibaum", () => {
+  const wurzel = new URL("../app/", import.meta.url).pathname;
+
+  /** Der Pfad, unter dem eine Datei im Browser erreichbar ist. */
+  function routen(verzeichnis: string, praefix = ""): string[] {
+    const gefunden: string[] = [];
+    for (const eintrag of readdirSync(verzeichnis, { withFileTypes: true })) {
+      if (eintrag.isDirectory()) {
+        /* Klammergruppen sind Ordnung im Code, kein Teil der Adresse. */
+        const teil = /^\(.*\)$/.test(eintrag.name) ? praefix : `${praefix}/${eintrag.name}`;
+        gefunden.push(...routen(join(verzeichnis, eintrag.name), teil));
+      } else if (eintrag.name === "page.tsx" || eintrag.name === "route.ts") {
+        gefunden.push(praefix === "" ? "/" : praefix);
+      }
+    }
+    return gefunden;
+  }
+
+  it("ordnet jede Route der Anmeldegruppe der Anwendung zu", () => {
+    const pfade = routen(join(wurzel, "(auth)"));
+    expect(pfade.length).toBeGreaterThan(4);
+    for (const pfad of pfade) {
+      expect(zustaendigFuer(pfad), `${pfad} gehört zur Anwendung`).not.toBe("seite");
+    }
+  });
+
+  it("ordnet jede Verwaltungsroute der Anwendung zu", () => {
+    const pfade = routen(join(wurzel, "admin"), "/admin");
+    expect(pfade.length).toBeGreaterThan(0);
+    for (const pfad of pfade) {
+      expect(zustaendigFuer(pfad), `${pfad} gehört zur Anwendung`).not.toBe("seite");
+    }
   });
 });

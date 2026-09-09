@@ -69,6 +69,24 @@ const ANWENDUNG = [
   "/monday-einrichten",
   "/nina-einrichten",
   /*
+   * Der Rest der Anmeldung.
+   *
+   * `/login` und `/register` standen hier von Anfang an, die vier
+   * hier nicht — und sie leiteten gemessen auf die öffentliche Seite:
+   * `app.velvovatest.com/magic` → `velvova.vercel.app/magic`. Ein
+   * Anmeldelink hätte damit die Sitzung auf der Domain angelegt, auf
+   * der es keine Anwendung gibt.
+   *
+   * Alles, was eine Sitzung anlegt, gehört auf die Anwendungsdomain,
+   * weil das Cookie an den Host gebunden ist. Das ist kein Geschmack,
+   * sondern die Regel, aus der die ganze Trennung folgt.
+   */
+  "/magic",
+  "/bestaetigen",
+  "/forgot-password",
+  /* Verwaltung ist Anwendung, auch wenn sie nicht unter /app liegt. */
+  "/admin",
+  /*
    * `/pricing` sieht öffentlich aus und ist es nicht.
    *
    * Es gibt keine Preisseite mehr; die Adresse leitet auf
