@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { brand } from "@paycheck/config";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { NinaVisual } from "@/components/nina/NinaVisual";
+import { NinaVorladen } from "@/components/nina/NinaVorladen";
 import { Einstieg } from "@/components/marketing/Einstieg";
 import { HaeufigeFragen } from "@/components/marketing/HaeufigeFragen";
 import { Partnerleiste } from "@/components/marketing/Partnerleiste";
@@ -147,6 +148,15 @@ export default async function LandingPage() {
        * anmeldete, dem wechselte im selben Moment die ganze Umgebung —
        * und die Startseite ist für die meisten die erste Seite.
        */}
+      {/*
+        Das Modell parallel zum HTML anfordern.
+
+        Steht bewusst vor der Kopfzeile: Der Browser liest von oben und
+        soll die 7,6 MB anstossen, bevor er sich um irgendetwas anderes
+        kümmert. Begründung und Messwerte stehen im Bauteil.
+      */}
+      <NinaVorladen />
+
       <TopNav
         brandName={brand.name}
         userName={sitzung.userName}
