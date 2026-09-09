@@ -14,6 +14,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { localeEnum } from "./enums.ts";
 import { users } from "./identity.ts";
+import { projekte } from "./projekte.ts";
 import { jobs, jobMatches } from "./jobs.ts";
 import { applications } from "./applications.ts";
 import { documents } from "./applications.ts";
@@ -128,6 +129,13 @@ export const ninaConversations = pgTable(
     summarisedThroughIndex: integer("summarised_through_index").notNull().default(0),
     messageCount: integer("message_count").notNull().default(0),
 
+    /**
+     * Zu welchem Vorhaben das gehört. `null` heisst: zu keinem.
+     *
+     * `set null` beim Löschen und NICHT cascade: Wer ein Projekt
+     * löscht, will das Vorhaben loswerden — nicht seine Bewerbungen.
+     */
+    projektId: uuid("projekt_id").references(() => projekte.id, { onDelete: "set null" }),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

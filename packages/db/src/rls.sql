@@ -142,6 +142,10 @@ DECLARE
     -- jeden Lauf lesbar sein, sonst schreibt der naechste Mensch
     -- morgen wieder.
     'arbeitgeber_chancen','arbeitgeber_kontakte',
+    -- Projekte. Der Name eines Vorhabens sagt, wonach jemand sucht --
+    -- "Wechsel aus der Pflege", "Zurueck nach Zuerich". Das ist eine
+    -- Aussage ueber seine Lage, und sie geht niemanden sonst etwas an.
+    'projekte',
     -- Was jemand bei einer Arbeitsprobe geantwortet hat und wie es sich
     -- angefuehlt hat. Die Aufgaben selbst (`aufgabenproben`) sind fuer
     -- alle sichtbar; die Versuche gehoeren dem Menschen.

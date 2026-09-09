@@ -21,3 +21,4 @@ export * from "./suchauftrag.ts";
 export * from "./proaktiv.ts";
 export * from "./intelligenz.ts";
 export * from "./chancen.ts";
+export * from "./projekte.ts";

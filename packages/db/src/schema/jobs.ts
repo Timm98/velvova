@@ -6,6 +6,7 @@ import { applyMethodEnum, contractTypeEnum, experienceLevelEnum, jobSourceKindEn
   salaryProvenanceEnum,
   sentimentEnum, workModelEnum } from "./enums.ts";
 import { users } from "./identity.ts";
+import { projekte } from "./projekte.ts";
 
 /** Stellen, Unternehmen, Quellen und Bewertungen. */
 
@@ -418,6 +419,13 @@ export const savedJobs = pgTable("saved_jobs", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
   note: text("note"),
+  /**
+   * Zu welchem Vorhaben das gehört. `null` heisst: zu keinem.
+   *
+   * `set null` beim Löschen und NICHT cascade: Wer ein Projekt
+   * löscht, will das Vorhaben loswerden — nicht seine Bewerbungen.
+   */
+  projektId: uuid("projekt_id").references(() => projekte.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("saved_jobs_unique").on(t.userId, t.jobId)]);
 

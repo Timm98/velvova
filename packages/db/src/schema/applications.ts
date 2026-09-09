@@ -2,6 +2,7 @@ import { boolean, doublePrecision, index, integer, jsonb, pgTable, text, timesta
 import { applicationEventTypeEnum, applicationStageEnum, artifactKindEnum,
   claimStatusEnum, localeEnum } from "./enums.ts";
 import { users } from "./identity.ts";
+import { projekte } from "./projekte.ts";
 import { jobs } from "./jobs.ts";
 import { evidenceItems, roleClusters } from "./profile.ts";
 
@@ -15,6 +16,13 @@ export const applications = pgTable("applications", {
   lastContactAt: timestamp("last_contact_at", { withTimezone: true }),
   nextStepAt: timestamp("next_step_at", { withTimezone: true }),
   nextStepLabel: text("next_step_label"),
+  /**
+   * Zu welchem Vorhaben das gehört. `null` heisst: zu keinem.
+   *
+   * `set null` beim Löschen und NICHT cascade: Wer ein Projekt
+   * löscht, will das Vorhaben loswerden — nicht seine Bewerbungen.
+   */
+  projektId: uuid("projekt_id").references(() => projekte.id, { onDelete: "set null" }),
   notes: text("notes").notNull().default(""),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

@@ -39,6 +39,13 @@ export interface NinaPromptContext {
   };
   /** Der Vorname, sparsam zu verwenden. */
   userName?: string | null;
+  /**
+   * Das Vorhaben, in dem dieses Gespräch steht.
+   *
+   * `null` heisst: keins. Das ist der Normalfall und bleibt es —
+   * ein Projekt ist etwas, das dazukommt.
+   */
+  projekt?: { name: string; ziel: string | null } | null;
   /** Kontext der aktuellen Seite. */
   pageBriefing?: string;
   externalProviderActive: boolean;
@@ -353,6 +360,41 @@ export function buildNinaSystemPrompt(ctx: NinaPromptContext): string {
       de
         ? `NAME DES NUTZERS: ${ctx.userName} — sparsam verwenden.`
         : `USER'S NAME: ${ctx.userName} — use sparingly.`,
+    );
+  }
+
+  if (ctx.projekt) {
+    /*
+     * ══════════════════════════════════════════════════════════
+     * Welches Vorhaben offen ist — und was trotzdem gilt
+     * ══════════════════════════════════════════════════════════
+     *
+     * Der zweite Satz ist der wichtigere. Ohne ihn liest ein Modell
+     * „anderes Projekt" als „anderer Mensch" und fängt an, Dinge neu
+     * zu erfragen, die längst bestätigt sind. Für den Menschen sieht
+     * das aus wie Vergesslichkeit — dabei weiss Monday alles noch,
+     * sie hält es nur für unzuständig.
+     *
+     * Technisch ist die Trennung ohnehin nur eine des Verlaufs:
+     * Bestätigte Fakten und harte Bedingungen hängen an der Person
+     * und stehen weiter unten in diesem Prompt. Der Satz sagt dem
+     * Modell, dass es sie benutzen soll.
+     */
+    sections.push(
+      "",
+      de ? "OFFENES VORHABEN" : "CURRENT PROJECT",
+      ctx.projekt.ziel
+        ? `${ctx.projekt.name} — ${ctx.projekt.ziel}`
+        : ctx.projekt.name,
+      de
+        ? "Dieses Gespräch gehört zu diesem Vorhaben. Ein anderes Vorhaben " +
+          "hat einen eigenen Verlauf — aber ALLES, was du über diesen Menschen " +
+          "weisst, gilt weiter. Frage nichts erneut, was unten schon bestätigt " +
+          "steht, nur weil es in einem anderen Vorhaben gesagt wurde."
+        : "This conversation belongs to that project. Another project has its " +
+          "own history — but EVERYTHING you know about this person still " +
+          "applies. Do not re-ask what is already confirmed below just because " +
+          "it was said in a different project.",
     );
   }
 
