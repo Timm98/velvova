@@ -114,6 +114,24 @@
       "outputs": [
         "coverage/**"
       ]
+    },
+    "@paycheck/api#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@paycheck/mobile#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
+    },
+    "@paycheck/worker#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": []
     }
   }
 }
