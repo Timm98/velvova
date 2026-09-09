@@ -178,6 +178,37 @@ export async function POST(request: Request) {
    * über ihre Kontingente, und die Adapter halten sich daran.
    */
   const limit = Math.min(500, Number(new URL(request.url).searchParams.get("limit") ?? 100));
+
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Eine einzelne Quelle abfragen — `?quelle=careerjet_de`
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Wozu: Um zu sehen, was EINE Quelle antwortet, musste man bisher
+   * den ganzen Lauf anstossen — zwei bis vier Minuten für eine
+   * Auskunft, die in fünf Sekunden zu haben wäre. Careerjet antwortet
+   * gerade mit 403 und nennt dabei die aufrufende IP; ob das aus
+   * Vercel genauso ist, liess sich nicht anders herausfinden, als
+   * alles laufen zu lassen und hinterher eine Zeile zu suchen.
+   *
+   * Mehrere durch Komma getrennt. Ein Präfix genügt: `careerjet`
+   * trifft alle zweiunddreissig Länder, `careerjet_de` nur eines.
+   *
+   * ── Was der Parameter NICHT tut ─────────────────────────────
+   *
+   * Er hebt keine Sperre auf. Die Freigabeprüfung darunter läuft
+   * unverändert; wer nicht abgerufen werden darf, wird auch mit
+   * diesem Parameter nicht abgerufen. Er wählt aus, was ohnehin
+   * erlaubt ist, und schaltet nichts frei.
+   *
+   * Und er ändert den normalen Lauf nicht: Ohne Angabe bleibt alles,
+   * wie es war.
+   */
+  const nurRoh = new URL(request.url).searchParams.get("quelle")?.trim();
+  const nur = nurRoh
+    ? nurRoh.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean)
+    : null;
+
   const skipped: { key: string; reason: string }[] = [];
 
   /*
@@ -207,6 +238,12 @@ export async function POST(request: Request) {
    */
   const familien = new Map<string, typeof adapters>();
   for (const adapter of adapters) {
+    /* Auswahl vor der Freigabeprüfung: Was gar nicht gemeint ist,
+       braucht auch keinen Eintrag im Bericht darüber, warum es
+       übersprungen wurde. Sonst stünden bei `?quelle=careerjet_de`
+       einundsechzig Zeilen „nicht gemeint" in der Antwort. */
+    if (nur && !nur.some((t) => adapter.key.toLowerCase().startsWith(t))) continue;
+
     // Jede Quelle einzeln. Eine gesperrte blockiert nicht die anderen —
     // und eine freigegebene deckt keine gesperrte mit ab.
     const policy = decideForProvider(adapter.key);
@@ -549,6 +586,10 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     status,
+    /* Damit eine gefilterte Antwort nicht wie ein vollständiger Lauf
+       aussieht. Ohne diese Zeile hielte man 1 von 62 Quellen für
+       „alle" — und einen Teilerfolg für einen Totalausfall. */
+    ...(nur ? { nurQuellen: nur } : {}),
     /* Je Quelle ein Wort, damit man den Ausgang lesen kann, ohne die
        Zahlen darunter zu deuten. */
     quellen: Object.fromEntries(

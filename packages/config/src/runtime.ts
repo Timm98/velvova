@@ -238,6 +238,63 @@ function list(raw: string | undefined, fallback: string[]): string[] {
   return parts.length > 0 ? parts : fallback;
 }
 
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Welcher Datenbanktreiber gilt
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Hier stand `env.DATABASE_DRIVER ?? "pglite"`, und das war die
+ * Ursache eines Produktionsfehlers:
+ *
+ *   Error: ENOENT: no such file or directory,
+ *   mkdir '/var/task/.data/pglite'
+ *
+ * Auf Vercel war `DATABASE_DRIVER` nicht gesetzt. Der Standard griff,
+ * PGlite versuchte ein Verzeichnis in einem schreibgeschützten
+ * Dateisystem anzulegen — und `DATABASE_URL` wurde dabei nie
+ * angesehen, obwohl eine echte Datenbank vorhanden gewesen sein mag.
+ *
+ * ── Warum der Standard falsch herum war ─────────────────────────
+ *
+ * Er machte die Entwicklungsdatenbank zur Vorgabe und die echte zur
+ * Ausnahme. Wer eine Umgebung neu aufsetzt und eine Variable vergisst,
+ * bekommt dann nicht „es fehlt etwas", sondern eine andere Datenbank —
+ * still, mit leerem Bestand, und der Fehler zeigt sich erst dort, wo
+ * Daten fehlen.
+ *
+ * ── Die neue Regel ──────────────────────────────────────────────
+ *
+ *   1. `DATABASE_DRIVER` gesetzt   → das gilt, ohne Diskussion
+ *   2. `DATABASE_URL` vorhanden    → `pg`
+ *   3. sonst                       → `pglite`
+ *
+ * Schritt 2 ist der Punkt: Wer eine Datenbankadresse hinterlegt, will
+ * sie benutzen. Sie zu hinterlegen und dann eine andere Datenbank zu
+ * bekommen, ist kein Standardverhalten, das man erwarten könnte.
+ *
+ * Schritt 1 bleibt, weil es den umgekehrten Fall gibt: eine gesetzte
+ * `DATABASE_URL` und trotzdem PGlite, etwa in einem Test.
+ */
+function waehleTreiber(env: Env): string {
+  /*
+   * Ein gesetzter Wert wird durchgereicht, auch ein falscher.
+   *
+   * Der erste Anlauf prüfte hier auf „pg" oder „pglite" und fiel sonst
+   * auf die Ableitung zurück. Damit wurde aus `DATABASE_DRIVER=mysql`
+   * still PGlite — ein Tippfehler, der keine Fehlermeldung erzeugt,
+   * sondern eine andere Datenbank. Ein vorhandener Test hat das
+   * gefangen.
+   *
+   * Die Prüfung gehört ins Schema darunter, nicht hierher: Dort steht
+   * die Aufzählung, dort entsteht die Fehlermeldung, und dort bleibt
+   * sie richtig, wenn einmal ein dritter Treiber dazukommt.
+   */
+  if (env.DATABASE_DRIVER !== undefined && env.DATABASE_DRIVER.trim() !== "") {
+    return env.DATABASE_DRIVER;
+  }
+  return env.DATABASE_URL && env.DATABASE_URL.trim() !== "" ? "pg" : "pglite";
+}
+
 export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
   return RuntimeSchema.parse({
     mode: env.PAYCHECK_DEMO_MODE === "live" ? "live" : "demo",
@@ -245,7 +302,7 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
     appUrl: env.APP_URL ?? "http://localhost:3000",
     appEnv: env.APP_ENV ?? env.NODE_ENV ?? "development",
     db: {
-      driver: env.DATABASE_DRIVER ?? "pglite",
+      driver: waehleTreiber(env),
       url: env.DATABASE_URL,
       pgliteDataDir: env.PGLITE_DATA_DIR ?? ".data/pglite",
     },

@@ -62,6 +62,47 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
   if (cached) return cached;
 
   if (cfg.db.driver === "pglite") {
+    /*
+     * ══════════════════════════════════════════════════════════
+     * In Produktion gibt es kein PGlite
+     * ══════════════════════════════════════════════════════════
+     *
+     * PGlite legt ein Verzeichnis an. Auf einer serverlosen Plattform
+     * ist das Dateisystem schreibgeschützt, und heraus kam in
+     * Produktion:
+     *
+     *   Error: ENOENT: no such file or directory,
+     *   mkdir '/var/task/.data/pglite'
+     *
+     * Der Fehler ist unangenehm, aber nicht das Schlimmste. Das
+     * Schlimmere wäre gewesen, wenn er NICHT gekommen wäre: Dann
+     * liefe die Produktion auf einer leeren Datenbank, die bei jedem
+     * Kaltstart neu entsteht — Anmeldungen ins Leere, Stellenbestand
+     * null, und niemand sähe eine Fehlermeldung.
+     *
+     * Deshalb hier ein Riegel und keine Ausweichlösung. Ein
+     * Verzeichnis unter `/tmp` wäre genau diese stille Variante: Es
+     * funktionierte, und es wäre falsch.
+     *
+     * Der Satz nennt die fehlende Variable beim Namen. Wer ihn in
+     * einem Protokoll liest, soll wissen, was zu tun ist, ohne den
+     * Code zu öffnen.
+     */
+    const inProduktion =
+      process.env.VERCEL === "1" ||
+      process.env.NODE_ENV === "production" ||
+      cfg.appEnv === "production";
+    if (inProduktion) {
+      throw new Error(
+        "In Produktion ist keine Datenbank konfiguriert. " +
+          "DATABASE_URL fehlt oder ist leer, deshalb fiel die Auswahl auf PGlite — " +
+          "eine eingebettete Datenbank, die hier weder schreiben kann noch soll. " +
+          "Setze DATABASE_URL in der Umgebung (bei Vercel: Project Settings → " +
+          "Environment Variables, Scope Production). " +
+          "Ausdrücklich `DATABASE_DRIVER=pglite` zu setzen hebt diesen Riegel nicht auf.",
+      );
+    }
+
     const dataDir = resolveDataDir(cfg.db.pgliteDataDir);
 
     /*
