@@ -172,13 +172,13 @@ export function Partnerleiste({
         bei 1024 nicht — die Karte ist dort schmaler, und die Rechnung
         hätte je Haltepunkt anders ausgehen müssen.
 
-        Sechs Spalten ab `sm`, drei darunter. Damit steht nie eine
-        Kachel allein, die Breiten sind gleich, weil das Raster sie
-        gleich macht, und es gibt keine Zahl, die jemand nachrechnen
-        muss.
+        Vier je Zeile ab `sm`, die beiden übrigen mittig darunter;
+        auf dem Telefon drei und drei. Damit steht nie eine Kachel
+        allein, die Breiten sind gleich, weil das Raster sie gleich
+        macht, und es gibt keine Zahl, die jemand nachrechnen muss.
       */}
-      <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
-        {MARKEN.map((m) => (
+      <ul className="mt-4 grid grid-cols-6 gap-2 sm:grid-cols-8">
+        {MARKEN.map((m, i) => (
           <li
             key={m.name}
             title={m.name}
@@ -209,7 +209,23 @@ export function Partnerleiste({
              * zweite Zeile. Acht Pixel weniger je Kachel und vier
              * weniger je Lücke bringen alle sechs auf eine.
              */
-            className="markenbadge flex items-center justify-center rounded-(--radius-md) border border-line px-3 py-3"
+            className={[
+              "markenbadge flex items-center justify-center rounded-(--radius-md) border border-line px-3 py-3",
+              /*
+                Acht Spuren, jede Kachel über zwei — vier je Zeile.
+                
+                Warum nicht einfach vier Spalten: Die beiden letzten
+                stünden dann links in der zweiten Zeile und nicht
+                mittig. Mit vier Spuren gibt es keine halbe Spalte, an
+                der man sie ausrichten könnte.
+                
+                Bei acht schon: Die fünfte Kachel beginnt bei Spur
+                drei, die sechste schliesst bei acht an — zusammen
+                Spur 3 bis 6, und das ist die Mitte von acht.
+              */
+              "col-span-2",
+              i === 4 ? "sm:col-start-3" : "",
+            ].join(" ")}
             style={{ background: "var(--ed-canvas)" }}
           >
             {/*

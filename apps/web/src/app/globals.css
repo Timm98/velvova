@@ -1886,13 +1886,24 @@ input[type="number"] {
    * breiten, weichen Band — man sieht ein Glühen, aber keine Kante
    * mehr.
    *
-   * Jetzt: Kante auf 62 Prozent Akzent mit Schwarz gemischt, der
-   * Schein in voller Akzentfarbe. So liegt die dunkle Linie IM
-   * Leuchten statt darin unterzugehen — dasselbe Verhältnis wie bei
+   * Jetzt zwei Mischungen hintereinander, und jede tut etwas anderes:
+   *
+   *   innen   45 % Akzent auf Schwarz   macht das Blau dunkler
+   *   aussen  72 % davon auf Transparent macht es durchscheinend
+   *
+   * Das ist nicht dasselbe wie einmal mit weniger Deckung. Nur
+   * durchscheinend lässt die Fläche darunter durch und wird dadurch
+   * heller, nicht dunkler — die Linie wäre blasser, aber nicht tiefer.
+   * Erst das Abdunkeln davor gibt ihr die Tiefe, die zweite Mischung
+   * nimmt ihr danach die Härte.
+   *
+   * Der Schein bleibt in voller Akzentfarbe. So liegt die dunkle Linie
+   * IM Leuchten statt darin unterzugehen — dasselbe Verhältnis wie bei
    * einer Leuchtröhre, deren Fassung dunkler ist als ihr Licht.
    */
   box-shadow:
-    0 0 0 1.5px color-mix(in srgb, var(--color-accent) 62%, #000),
+    0 0 0 1.5px
+      color-mix(in srgb, color-mix(in srgb, var(--color-accent) 45%, #000) 72%, transparent),
     0 0 9px 0 rgb(from var(--color-accent) r g b / 0.55),
     0 0 24px -6px rgb(from var(--color-accent) r g b / 0.3);
 }
