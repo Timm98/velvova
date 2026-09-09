@@ -141,7 +141,61 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
     );
   }
   const { Pool } = await import("pg");
-  const pool = new Pool({ connectionString: libpqSemantik(cfg.db.url), max: 10 });
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein Pool ohne Wartefrist wartet ewig
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `new Pool({ connectionString, max: 10 })` — sonst
+   * nichts. Der Standardwert von `connectionTimeoutMillis` ist 0, und
+   * 0 heisst bei `pg` nicht „sofort", sondern „unbegrenzt". Sind alle
+   * zehn Verbindungen belegt, wartet die elfte Anfrage. Ohne Fehler,
+   * ohne Protokolleintrag, ohne Ende.
+   *
+   * Gemessen am 9. September 2026: `POST /api/jobs/refresh` hing lokal
+   * 240 Sekunden und antwortete nie. Dieselbe Funktion, direkt in
+   * einem frischen Prozess aufgerufen: 174 Millisekunden. Der
+   * Unterschied war nicht die Abfrage — es war ein Pool, der keine
+   * Verbindung mehr hergab und niemandem davon erzählte.
+   *
+   * Genau so sieht ein Verbindungsleck von aussen aus: Es passiert
+   * nichts. Kein Absturz, keine Meldung, nur eine Anfrage, die steht.
+   * In Produktion wird daraus ein 504, und der zeigt auf den Abruf
+   * statt auf die Ursache.
+   *
+   * ── Was die drei Werte tun ─────────────────────────────────────
+   *
+   * `connectionTimeoutMillis` macht aus dem Warten einen Fehler. Zehn
+   * Sekunden sind grosszügig für eine freie Verbindung; wer länger
+   * wartet, wartet auf eine, die nicht zurückkommt.
+   *
+   * `idleTimeoutMillis` gibt ungenutzte Verbindungen zurück. Der
+   * Supabase-Pooler zählt sie, und eine Funktion, die zwischen zwei
+   * Aufrufen zehn Minuten schläft, soll ihren Platz nicht behalten.
+   *
+   * `maxUses` tauscht eine Verbindung nach 7500 Abfragen aus. Das ist
+   * die übliche Vorsorge gegen Verbindungen, die über Stunden
+   * Speicher ansammeln — bei einem Server, der wie hier stundenlang
+   * läuft, lohnt sie sich.
+   */
+  const pool = new Pool({
+    connectionString: libpqSemantik(cfg.db.url),
+    max: 10,
+    connectionTimeoutMillis: 10_000,
+    idleTimeoutMillis: 30_000,
+    maxUses: 7_500,
+  });
+
+  /*
+   * Ein Fehler an einer ruhenden Verbindung beendet sonst den Prozess.
+   *
+   * `pg` gibt ihn als `error`-Ereignis am Pool aus. Hört niemand zu,
+   * ist es ein unbehandeltes Ereignis, und Node beendet sich — wegen
+   * einer Verbindung, die gerade gar nichts tat.
+   */
+  pool.on("error", (fehler) => {
+    console.error("[db] Fehler an einer ruhenden Verbindung:", fehler.message);
+  });
   const db = drizzleNode(pool, { schema }) as unknown as Database;
   const handle: Handle = {
     db,

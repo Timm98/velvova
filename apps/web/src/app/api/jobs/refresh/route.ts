@@ -533,7 +533,21 @@ export async function POST(request: Request) {
   const laenderzaehlung =
     restMs < 5_000
       ? { gezaehlt: [], fehler: [], abgebrochen: true, dauerMs: 0 }
-      : await laenderNachzaehlen({ takt, budgetMs: Math.min(restMs, 45_000) });
+      : await laenderNachzaehlen({
+          takt,
+          budgetMs: Math.min(restMs, 45_000),
+          /*
+           * Die Länder der Adapter, die gerade gelaufen sind.
+           *
+           * `adzuna_de`, `careerjet_fr`, `jooble_pl` — das Land steht
+           * im Namen. Ohne diese Zeile zählte der Lauf nur Länder, die
+           * schon einmal gezählt wurden, und ein neu hereinkommendes
+           * bliebe unsichtbar. Mit ihr kostet die Entdeckung nichts.
+           */
+          zusaetzlicheLaender: adapters
+            .map((a) => a.key.split("_")[1]?.toUpperCase())
+            .filter((l): l is string => l !== undefined && l.length === 2),
+        });
 
   const total = results.reduce(
     (acc, r) => ({

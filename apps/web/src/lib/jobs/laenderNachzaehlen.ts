@@ -65,11 +65,29 @@ export interface Zaehlergebnis {
 /** So viele Länder höchstens je Lauf. */
 export const LAENDER_JE_LAUF = 4;
 
+/**
+ * Wie lange eine einzelne Zählung höchstens laufen darf.
+ *
+ * Auch wenn das Budget mehr hergibt. Eine Zählung über ein Land mit
+ * Millionen Zeilen bringt keine bessere Zahl, wenn sie eine Minute
+ * dauert — sie bringt dieselbe Zahl später, und in der Zwischenzeit
+ * hängt der ganze Abruf daran.
+ */
+export const MAX_ABFRAGE_MS = 20_000;
+
 export async function laenderNachzaehlen(opt: {
   /** Der Rotationszeiger des Laufs — dieselbe Zahl wie bei den Quellen. */
   takt: number;
   /** Was an Zeit übrig ist. Darunter wird gar nicht erst begonnen. */
   budgetMs: number;
+  /**
+   * Länder, die dazukommen könnten — aus den Namen der Adapter, die
+   * gerade gelaufen sind.
+   *
+   * Ohne sie zählt diese Funktion nur, was schon einmal gezählt
+   * wurde, und ein neues Land bliebe unsichtbar. Siehe unten.
+   */
+  zusaetzlicheLaender?: readonly string[];
 }): Promise<Zaehlergebnis> {
   const beginn = Date.now();
   const gezaehlt: Zaehlergebnis["gezaehlt"] = [];
@@ -79,20 +97,84 @@ export async function laenderNachzaehlen(opt: {
   const db = await getDb();
 
   /*
-   * Welche Länder es gibt, kommt aus dem Bestand — nicht aus einer
-   * Liste im Code und nicht nur aus der Tabelle, die gefüllt werden
-   * soll. Sonst kann ein Land, das über eine Quelle hereinkommt, nie
-   * hinzukommen: Es steht ja noch nicht drin.
+   * ══════════════════════════════════════════════════════════════
+   * Welche Länder es gibt — und warum nicht mehr aus `jobs`
+   * ══════════════════════════════════════════════════════════════
    *
-   * `distinct country` läuft über den Index und ist billig.
+   * Hier stand `select distinct country from jobs` mit dem Kommentar
+   * „läuft über den Index und ist billig". Beides war falsch.
+   *
+   * Gemessen am 9. September 2026 gegen die Produktionsdatenbank:
+   *
+   *     count(*) jobs                 Abbruch nach 40 s
+   *     distinct country              33.100 ms  → 22 Länder
+   *     Sprunglauf über den Index     Abbruch nach 40 s
+   *     select land from laenderbestand   277 ms  → 22 Länder
+   *
+   * Dieselben zweiundzwanzig Länder, in einem Hundertzwanzigstel der
+   * Zeit. `DISTINCT` liest den Index VOLLSTÄNDIG — Millionen Einträge,
+   * um zweiundzwanzig Werte zu finden. Ein Index hilft beim Suchen,
+   * nicht beim Durchzählen.
+   *
+   * ── Der Einwand, der dagegen stand ─────────────────────────────
+   *
+   * „Sonst kann ein Land, das über eine Quelle hereinkommt, nie
+   * hinzukommen: Es steht ja noch nicht drin." Der Einwand ist
+   * richtig, und deshalb wird er beantwortet statt übergangen.
+   *
+   * Nicht mit einem Suchlauf über die Stellen — auch ein Zeitfenster
+   * von zwei Stunden brach nach 30 Sekunden ab. Sondern mit dem, was
+   * der Aufrufer ohnehin weiss: Die Adapter, die gerade gelaufen
+   * sind, heissen `adzuna_de`, `careerjet_fr`, `jooble_pl`. Ihr Land
+   * steht im Namen und kostet nichts.
+   *
+   * Ein neu hinzugekommenes Land taucht damit im selben Lauf auf, in
+   * dem seine erste Stelle hereinkommt — und nicht erst, wenn jemand
+   * eine halbe Minute lang die ganze Tabelle liest.
    */
-  const vorhanden = await db
-    .execute(sql`select distinct country from jobs where country is not null`)
-    .then((r) => (r as Ergebnis<{ country: string }>).rows.map((z) => z.country).sort())
-    .catch((e: unknown) => {
+  let bekannteLaender: string[] = [];
+  try {
+    const zeilen = (await db.execute(
+      sql`select land from laenderbestand`,
+    )) as Ergebnis<{ land: string }>;
+    bekannteLaender = zeilen.rows.map((z) => z.land);
+  } catch (e) {
+    /*
+     * Die Liste fehlt, die Adapterländer nicht.
+     *
+     * Steht `laenderbestand` nicht zur Verfügung, zählt der Lauf
+     * wenigstens die Länder, aus denen gerade etwas hereinkam — statt
+     * gar nichts zu tun.
+     */
+    fehler.push({ land: "*", grund: e instanceof Error ? e.message : String(e) });
+  }
+
+  let vorhanden = [...new Set([...bekannteLaender, ...(opt.zusaetzlicheLaender ?? [])])]
+    .filter((l) => typeof l === "string" && l.length === 2)
+    .sort();
+
+  /*
+   * Der erste Lauf einer frischen Installation.
+   *
+   * Dann ist `laenderbestand` leer, und wenn die laufenden Adapter kein
+   * Land im Namen tragen — `arbeitnow`, `bundesagentur` —, bliebe die
+   * Liste leer und die Tabelle für immer ungefüllt. Ein Henne-Ei-Fall,
+   * den der schnelle Weg allein nicht auflöst.
+   *
+   * Nur dann, und nur dann, der teure Suchlauf. Er kostet auf einem
+   * gewachsenen Bestand über dreissig Sekunden — auf einem leeren
+   * kostet er nichts, und genau dort wird er gebraucht.
+   */
+  if (vorhanden.length === 0) {
+    try {
+      const alle = (await db.execute(
+        sql`select distinct country from jobs where country is not null`,
+      )) as Ergebnis<{ country: string }>;
+      vorhanden = alle.rows.map((z) => z.country).filter(Boolean).sort();
+    } catch (e) {
       fehler.push({ land: "*", grund: e instanceof Error ? e.message : String(e) });
-      return [] as string[];
-    });
+    }
+  }
 
   if (vorhanden.length === 0) {
     return { gezaehlt, fehler, abgebrochen: false, dauerMs: Date.now() - beginn };
@@ -106,6 +188,34 @@ export async function laenderNachzaehlen(opt: {
       break;
     }
     const land = vorhanden[(versatz + n) % vorhanden.length]!;
+
+    /*
+     * Die Frist gehört in die Datenbank, nicht in die Schleife.
+     *
+     * Die Prüfung oben steht ZWISCHEN zwei Ländern. Eine laufende
+     * Abfrage bricht sie nicht ab — ein JS-Zeitgeber kann eine
+     * Postgres-Abfrage nicht abbrechen, er kann nur aufhören, auf sie
+     * zu warten. Und das tut hier niemand: `await` wartet, bis die
+     * Antwort da ist, egal was die Uhr sagt.
+     *
+     * Gemessen am 9. September 2026: Der Aufruf hing volle 240
+     * Sekunden, obwohl das Budget der Route bei 200 liegt. Der
+     * Kommentar zwei Zeilen weiter unten misst den Grund selbst — 91
+     * Sekunden für EINE Zählung, bevor der Filter dazukam.
+     *
+     * `statement_timeout` sagt es dem Server. Der bricht die eigene
+     * Abfrage ab und antwortet mit einem Fehler, und daraus wird ein
+     * sauberer Abbruch statt einer Blockade.
+     *
+     * `set local` und damit in einer Transaktion: Ohne `local` bliebe
+     * die Einstellung an der Verbindung hängen, und die kommt aus
+     * einem Pool — die nächste Abfrage eines ganz anderen Aufrufers
+     * hätte plötzlich dieselbe Frist.
+     */
+    const frist = Math.round(
+      Math.max(2_000, Math.min(opt.budgetMs - (Date.now() - beginn), MAX_ABFRAGE_MS)),
+    );
+
     try {
       /*
        * Der Ablauf-Filter steht mit im `where`, und das ist kein
@@ -113,10 +223,13 @@ export async function laenderNachzaehlen(opt: {
        * Sekunden — er schränkt früher ein. Inhaltlich gehört er ohnehin
        * dazu, weil der Fuss zu einer Trefferliste führt.
        */
-      const antwort = (await db.execute(sql`
-        select count(*)::bigint n from jobs
-        where is_demo = false and country = ${land}
-          and (expires_at is null or expires_at > now())`)) as Ergebnis<{ n: string | number }>;
+      const antwort = (await db.transaction(async (tx) => {
+        await tx.execute(sql.raw(`set local statement_timeout = ${frist}`));
+        return await tx.execute(sql`
+          select count(*)::bigint n from jobs
+          where is_demo = false and country = ${land}
+            and (expires_at is null or expires_at > now())`);
+      })) as Ergebnis<{ n: string | number }>;
       const stellen = Number(antwort.rows[0]?.n ?? 0);
 
       if (stellen > 0) {
@@ -132,7 +245,20 @@ export async function laenderNachzaehlen(opt: {
         await db.execute(sql`delete from laenderbestand where land = ${land}`);
       }
     } catch (e) {
-      fehler.push({ land, grund: e instanceof Error ? e.message : String(e) });
+      /*
+       * Eine abgelaufene Frist ist kein Fehler der Zählung.
+       *
+       * Postgres meldet sie mit 57014. Sie als Fehler dieses Landes zu
+       * führen hiesse, beim nächsten Lauf dasselbe Land als kaputt zu
+       * behandeln — dabei ist es nur gross.
+       */
+      const nachrichtRoh = e instanceof Error ? e.message : String(e);
+      const abgelaufen = istFristfehler(e);
+      if (abgelaufen) {
+        abgebrochen = true;
+        break;
+      }
+      fehler.push({ land, grund: nachrichtRoh });
     }
   }
 
@@ -150,4 +276,33 @@ export async function laenderNachzaehlen(opt: {
 export function takterVersatz(takt: number, anzahl: number): number {
   if (anzahl <= 0) return 0;
   return ((takt * LAENDER_JE_LAUF) % anzahl + anzahl) % anzahl;
+}
+
+/**
+ * War das eine abgelaufene Frist?
+ *
+ * ── Warum die Ursachenkette abgelaufen wird ─────────────────────
+ *
+ * Drizzle verpackt den Treiberfehler: Nach aussen heisst er nur
+ * "Failed query: select count(*) …", und der Postgres-Code steht eine
+ * Ebene tiefer unter `cause`.
+ *
+ * Genau daran ist die erste Fassung dieser Prüfung gescheitert. Sie
+ * sah auf `e.code` und den Text, fand nichts, und die überschrittene
+ * Frist landete als Fehler des Landes im Protokoll — als wäre `DE`
+ * kaputt. Es ist nur gross.
+ */
+function istFristfehler(e: unknown): boolean {
+  /* Höchstens fünf Ebenen. Eine Kette, die sich im Kreis dreht, ist
+     selten, aber eine Endlosschleife im Fehlerpfad wäre besonders
+     ärgerlich. */
+  for (let tiefe = 0, aktuell: unknown = e; tiefe < 5 && aktuell; tiefe += 1) {
+    const o = aktuell as { code?: unknown; message?: unknown; cause?: unknown };
+    if (o.code === "57014") return true;
+    if (typeof o.message === "string" && /statement timeout|canceling statement/i.test(o.message)) {
+      return true;
+    }
+    aktuell = o.cause;
+  }
+  return false;
 }
