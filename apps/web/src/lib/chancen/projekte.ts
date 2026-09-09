@@ -37,8 +37,14 @@ export async function projekteFuerLeiste(
       titel: z.name,
       href: `/app/projekte/${z.id}`,
     }));
-  } catch {
-    /* Siehe oben: kein Abschnitt ist besser als keine Anwendung. */
+  } catch (fehler) {
+    /* Kein Abschnitt ist besser als keine Anwendung — aber nicht
+       stumm. Ein Abschnitt, der bei einem Fehler verschwindet, sieht
+       aus wie „du hast noch keine Vorhaben". */
+    console.warn(
+      "[projekte] Leiste konnte nicht geladen werden:",
+      fehler instanceof Error ? fehler.message : String(fehler),
+    );
     return [];
   }
 }

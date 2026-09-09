@@ -107,9 +107,24 @@ export async function gespraecheFuerLeiste(
       })
       .filter((e): e is Leistengespraech => e !== null)
       .slice(0, anzahl);
-  } catch {
-    /* Kein Abschnitt ist besser als keine Anwendung — dieselbe Regel
-       wie bei den Projekten. */
+  } catch (fehler) {
+    /*
+     * Kein Abschnitt ist besser als keine Anwendung — aber nicht
+     * stumm.
+     *
+     * Ein Abschnitt, der bei einem Fehler einfach verschwindet, sieht
+     * aus wie „du hast noch keine Gespräche". Für den, der davorsitzt,
+     * ist das dieselbe Verwechslung wie ein 404 für eine Zeile, die
+     * es gibt: eine Aussage über seine Daten statt über unsere
+     * Technik.
+     *
+     * Sichtbar bleibt es trotzdem nicht — dafür ist die Liste zu
+     * beiläufig. Aber im Protokoll steht es.
+     */
+    console.warn(
+      "[leistengespraeche] konnten nicht geladen werden:",
+      fehler instanceof Error ? fehler.message : String(fehler),
+    );
     return [];
   }
 }
