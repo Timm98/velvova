@@ -159,13 +159,39 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
                * liest niemand als Auszeichnung; sie sieht aus wie die
                * Kante daneben, nur minimal anders getönt.
                *
-               * Die Stärke trägt hier, nicht die Farbe. Deshalb kein
-               * Schein und keine volle Deckung — das sah aus wie
-               * ausgewählt statt wie empfohlen.
+               * Die Stärke trägt hier, nicht die Farbe — und das ist
+               * der ganze Trick. Drei Anläufe:
+               *
+               *   1 px / 55 %   gemessen vorhanden, gemeldet als „weg"
+               *   1 px / 85 %   dasselbe noch einmal
+               *   2 px / 85 %   gemeldet als „zu stark"
+               *   2 px / 45 %   deutlich, ohne zu schreien
+               *
+               * Bei einem Pixel entscheidet die Deckung darüber, ob
+               * man die Linie überhaupt sieht; bei zweien darüber, wie
+               * laut sie ist. Deshalb dick und blass statt dünn und
+               * satt. Kein Schein dahinter — der liess die Karte
+               * aussehen wie ausgewählt statt wie empfohlen.
+               *
+               * ── Und warum die anderen zwei auch eine bekommen ──
+               *
+               * Weil eine einzelne farbige Kontur zwischen zwei
+               * beinahe unsichtbaren Kanten (`--line` liegt bei zehn
+               * Prozent Deckung) nicht wie eine Empfehlung aussieht,
+               * sondern wie ein Fehler an genau dieser Karte.
+               *
+               * Alle drei tragen jetzt dieselbe Kontur in der
+               * Akzentfarbe, die oberste nur deutlicher. Damit ist der
+               * Unterschied ein Unterschied im Grad und nicht in der
+               * Art — und die Reihe liest sich als eine Reihe.
+               *
+               * `--color-accent` folgt dem Thema: im Dunkeln blau, im
+               * Hellen orange. Hier steht deshalb keine Farbe,
+               * sondern nur, wie viel davon.
                */
               a.betont
-                ? "border-2 border-[rgb(from_var(--color-accent)_r_g_b_/_0.85)]"
-                : "border border-line",
+                ? "border-2 border-[rgb(from_var(--color-accent)_r_g_b_/_0.45)]"
+                : "border border-[rgb(from_var(--color-accent)_r_g_b_/_0.28)]",
             ].join(" ")}
             style={{ background: "var(--ed-surface)" }}
           >
