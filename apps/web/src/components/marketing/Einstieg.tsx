@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { GoogleKnopf, Trenner } from "@/app/(auth)/formstuecke";
+import { AUSSENVERWEISE } from "@paycheck/config";
+import { ArrowRight, Monitor } from "lucide-react";
+import { AppleKnopf, GoogleKnopf, Trenner } from "@/app/(auth)/formstuecke";
 
 /**
  * Die Knopfstile stehen hier, nicht als Import.
@@ -125,10 +126,36 @@ export function Einstieg({
           auch für uns richtig: Google ist ein Angebot für die, die es
           wollen; E-Mail ist der Weg, der bei jedem funktioniert.
         */}
-        <GoogleKnopf weiter={weiter} />
+        {/*
+          Google und Apple als Paar, eng gesetzt.
+
+          Beide sind dieselbe Sache in zwei Ausführungen — fremder
+          Ausweis statt eigenem Passwort. Der Abstand des Kastens
+          machte daraus zwei Angebote, zwischen denen man abwägen
+          soll; zehn Pixel lesen sich als Paar.
+
+          `AppleKnopf` gab es schon in `formstuecke.tsx`, benutzt von
+          den Anmelde- und Registrierformularen — nur hier nicht. Es
+          war kein fehlendes Bauteil, sondern ein nicht benutztes.
+        */}
+        <div className="grid gap-2.5">
+          <GoogleKnopf weiter={weiter} />
+          <AppleKnopf weiter={weiter} />
+        </div>
         <Trenner />
         <Link href="/register" className={KNOPF_HAUPT}>
           Mit E-Mail fortfahren
+        </Link>
+        {/*
+          Der Unternehmensweg steht im Kasten, nicht als Zeile darunter.
+
+          Er ist kein Nebensatz: Wer für eine Firma kommt, hat mit den
+          drei Knöpfen darüber nichts zu tun — die legen ein privates
+          Konto an. Als Textzeile unter dem Kasten sah es aus wie
+          derselbe Einstieg mit einem Zusatz.
+        */}
+        <Link href="/firma" className={`${KNOPF_RAND} text-sm`}>
+          Unternehmen registrieren
         </Link>
 
         {/*
@@ -139,7 +166,7 @@ export function Einstieg({
           Anmeldung ist keine Einwilligung in Werbung, und eine
           stillschweigende schon gar nicht.
         */}
-        <p className="text-xs leading-relaxed text-ink-3">
+        <p className="text-center text-xs leading-relaxed text-ink-3">
           Mit dem Fortfahren stimmst du unseren{" "}
           <Link href="/terms" className="underline underline-offset-2 hover:opacity-80">
             Nutzungsbedingungen
@@ -163,20 +190,54 @@ export function Einstieg({
         Sie stehen ausserhalb des Kastens: Der Kasten ist der Einstieg,
         diese beiden sind Abzweigungen davon.
       */}
-      <div className="grid gap-1.5 text-sm text-ink-3">
-        <p>
-          Bereits ein Konto?{" "}
-          <Link href="/login" className="text-accent-text underline underline-offset-4 hover:opacity-80">
-            Einloggen
-          </Link>
+      {/*
+        ══════════════════════════════════════════════════════════
+        Die Desktop-Anwendung
+        ══════════════════════════════════════════════════════════
+
+        Hier standen „Bereits ein Konto? Einloggen" und „Für
+        Unternehmen: …". Beide sind weg: Der Unternehmensweg steht
+        jetzt als Knopf im Kasten, und für ein vorhandenes Konto
+        braucht es keine eigene Zeile — „Weiter mit Google" und „Mit
+        E-Mail fortfahren" führen Bestandskonten in dieselbe Anmeldung.
+
+        An ihrer Stelle die Desktop-App, wie in der Vorlage unter dem
+        Einstieg.
+
+        ── Warum das kein toter Knopf ist ────────────────────────
+
+        `desktopUrl` steht in der Konfiguration auf `null`, weil es
+        noch keine Datei gibt. Ein Knopf, der dann „herunterladen"
+        verspricht, wäre ein Betrug am ersten Klick — deshalb steht
+        dort so lange der Hinweis, genau wie bei `iosUrl` und
+        `androidUrl` im Fuss.
+
+        Sobald eine Adresse eingetragen ist, wird daraus ein echtes
+        Herunterladen, ohne eine Zeile Code. Die Funktion ist gebaut;
+        was fehlt, ist die Datei.
+      */}
+      {AUSSENVERWEISE.desktopUrl ? (
+        /*
+          Mittig und nur so breit wie sein Text — wie in der Vorlage.
+
+          Über die volle Breite sähe er aus wie ein vierter
+          Anmeldeweg. Er ist aber keiner: Man lädt etwas herunter und
+          meldet sich nicht an. Deshalb steht er ausserhalb des
+          Kastens und nimmt nicht dessen Breite.
+        */
+        <a
+          href={AUSSENVERWEISE.desktopUrl}
+          className={`${KNOPF_RAND} mx-auto w-fit px-5 text-sm`}
+        >
+          <Monitor aria-hidden className="size-4" strokeWidth={2} />
+          Desktop-App herunterladen
+        </a>
+      ) : (
+        <p className="flex items-center justify-center gap-2 text-sm text-ink-3">
+          <Monitor aria-hidden className="size-4 shrink-0" strokeWidth={2} />
+          Desktop-App: kommt bald
         </p>
-        <p>
-          Für Unternehmen:{" "}
-          <Link href="/firma" className="text-accent-text underline underline-offset-4 hover:opacity-80">
-            Unternehmen registrieren
-          </Link>
-        </p>
-      </div>
+      )}
     </div>
   );
 }
