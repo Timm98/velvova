@@ -8,6 +8,7 @@ import { CommandPalette } from "./CommandPalette.tsx";
 import { AccountMenu } from "./AccountMenu.tsx";
 import { kontoGruppen } from "./kontoeintraege.ts";
 import { BottomNav, TopNav } from "./TopNav.tsx";
+import { Seitenleiste } from "./Seitenleiste.tsx";
 import { AppHinweisleiste } from "./AppHinweisleiste.tsx";
 import { VelvovaFooter } from "./VelvovaFooter.tsx";
 import type { Landzeile } from "@/lib/jobs/laenderbestand";
@@ -207,6 +208,16 @@ export function AppShell({
       className={cn(
         "flex flex-col bg-page",
         /*
+         * Ab `md` wird aus der Spalte eine Zeile: links die Leiste,
+         * rechts der Inhalt. Beide bekommen die volle Fensterhoehe,
+         * damit die Leiste stehenbleibt, waehrend daneben gescrollt
+         * wird — genau wie in den Vorlagen.
+         *
+         * Darunter aendert sich nichts: Dort traegt die untere Leiste
+         * die Navigation, und die Seite scrollt wie bisher als Ganzes.
+         */
+        "md:h-dvh md:flex-row md:overflow-hidden",
+        /*
          * `h-dvh` statt `min-h-dvh`, wenn die Seite das Fenster füllt.
          *
          * `min-h` erlaubt, dass der Inhalt höher wird — und genau das
@@ -227,6 +238,33 @@ export function AppShell({
       <a href="#inhalt" className="skip-link">
         {labels.skipToContent}
       </a>
+
+      <Seitenleiste
+        brandName={brandName}
+        userName={userName}
+        userEmail={userEmail}
+        bildKennung={bildKennung ?? null}
+        unreadCount={unreadCount}
+        gruppen={accountGruppen}
+        onLogout={onLogout}
+        onSuche={() => setPaletteOpen(true)}
+      />
+
+      {/*
+        Die Inhaltsspalte.
+
+        Sie rollt ab `md` selbst, nicht das Dokument. Das ist der
+        Grund, warum die Seitenleiste stehenbleibt — und `min-w-0` der
+        Grund, warum eine breite Tabelle sie nicht auseinanderdrueckt:
+        Ein Flex-Kind weigert sich sonst, unter seinen Inhalt zu
+        schrumpfen.
+      */}
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-col",
+          fülltFenster ? "md:h-dvh md:overflow-hidden" : "md:h-dvh md:overflow-y-auto",
+        )}
+      >
 
       {/*
         * Die App-Leiste über der Navigation — ausser dort, wo das
@@ -279,6 +317,7 @@ export function AppShell({
       <div ref={kopfRef} className="sticky top-0 z-40">
         <AppHinweisleiste nachtsZiel={nachtsZiel} />
 
+        <div className="md:hidden">
         <TopNav
           brandName={brandName}
           userName={userName}
@@ -299,6 +338,7 @@ export function AppShell({
             />
           }
         />
+        </div>
       </div>
 
       {/*
@@ -401,6 +441,7 @@ export function AppShell({
         /* `angemeldet`: Die Hülle läuft nur unter einer Sitzung. */
         <VelvovaFooter angemeldet land={land} laender={laender} />
       )}
+      </div>
 
       <BottomNav />
 
