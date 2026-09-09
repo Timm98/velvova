@@ -68,6 +68,20 @@ const ANWENDUNG = [
   "/setup",
   "/monday-einrichten",
   "/nina-einrichten",
+  /*
+   * `/pricing` sieht öffentlich aus und ist es nicht.
+   *
+   * Es gibt keine Preisseite mehr; die Adresse leitet auf
+   * `/app/settings/abo`, weil Preise dort stehen, wo auch das eigene
+   * Konto steht. Alte Lesezeichen und Suchergebnisse zeigen weiter
+   * hierher — deshalb bleibt sie.
+   *
+   * Als „Seite" eingeordnet ergab das unter der Trennung einen
+   * Umweg über beide Domains: app → seite/pricing →
+   * seite/app/settings/abo → app. Drei Sprünge, zwei Domainwechsel,
+   * und es endet dort, wo es anfing. Gemessen, nicht vermutet.
+   */
+  "/pricing",
 ];
 
 /** Pfade, die überall gelten müssen. */

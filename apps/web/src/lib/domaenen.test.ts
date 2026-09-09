@@ -53,9 +53,18 @@ describe("Wohin ein Pfad gehört", () => {
   });
 
   it("lässt das Marketing auf der öffentlichen Seite", () => {
-    for (const p of ["/", "/pricing", "/product", "/for-business", "/security", "/about"]) {
+    for (const p of ["/", "/product", "/for-business", "/security", "/about"]) {
       expect(zustaendigFuer(p), p).toBe("seite");
     }
+  });
+
+  it("zählt /pricing zur Anwendung, obwohl es öffentlich aussieht", () => {
+    /*
+     * Es gibt keine Preisseite mehr — die Adresse leitet auf
+     * /app/settings/abo. Als „Seite" eingeordnet ergäbe das einen
+     * Umweg über beide Domains, der dort endet, wo er anfing.
+     */
+    expect(zustaendigFuer("/pricing")).toBe("anwendung");
   });
 
   it("lässt Rechtliches und Schnittstellen auf beiden", () => {
@@ -82,14 +91,16 @@ describe("Mit eingerichteter Trennung", () => {
 
   it("schickt das Marketing von der Anwendung weg", () => {
     trennungEinrichten();
-    expect(umleitungFuer("monday.ai", "/pricing")).toBe("https://velvova.com/pricing");
+    expect(umleitungFuer("monday.ai", "/product")).toBe("https://velvova.com/product");
     expect(umleitungFuer("monday.ai", "/")).toBe("https://velvova.com/");
   });
 
   it("lässt jeden Pfad dort, wo er hingehört", () => {
     trennungEinrichten();
     expect(umleitungFuer("monday.ai", "/app/monday")).toBeNull();
-    expect(umleitungFuer("velvova.com", "/pricing")).toBeNull();
+    expect(umleitungFuer("velvova.com", "/product")).toBeNull();
+    /* `/pricing` gehört zur Anwendung — von dort weg wäre der Umweg. */
+    expect(umleitungFuer("monday.ai", "/pricing")).toBeNull();
   });
 
   it("leitet Rechtliches auf keiner der beiden um", () => {
