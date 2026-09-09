@@ -46,6 +46,7 @@ import {
   zustimmungVermerken,
 } from "@/lib/nina/engine";
 import { alsMaterial, mondayTeam } from "@/lib/nina/teamlauf";
+import { projektZuordnen } from "@/lib/nina/projektzuordnung";
 import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
 import { listJobsForUser, loadProfileContext } from "@/lib/matching";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
@@ -123,6 +124,10 @@ const BodySchema = z.object({
   /* Wie gründlich nachgedacht werden soll. Wird unten verworfen,
      wenn das gewählte Modell damit nichts anfangen kann. */
   denktiefe: z.enum(["niedrig", "mittel", "hoch"]).optional(),
+  /* Welches Vorhaben gerade offen ist — Zusammenhang für die
+     Einordnung, nicht mehr. Die Prüfung akzeptiert nur Kennungen,
+     die der Person tatsächlich gehören. */
+  projektId: z.string().uuid().optional(),
 });
 
 /**
@@ -540,6 +545,30 @@ export async function POST(request: Request) {
    * Antwort. Sie als Aussage über die eigene Arbeitszeit abzulegen
    * wäre ein erfundener Beleg.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Gehört diese Nachricht zu einem Vorhaben?
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Läuft NEBEN der Antwort, aus demselben Grund wie die
+   * Klärungsantwort darunter: Wer schreibt „ich suche einen
+   * Remote-Vertriebsjob", will eine Antwort — nicht erst eine
+   * Einordnung, die klärt, wie das intern abgelegt wird.
+   *
+   * In den weitaus meisten Fällen kommt `null` oder „Gespräch"
+   * zurück und es passiert nichts. Ein Vorhaben entsteht nur, wenn
+   * die Prüfung in `zuordnungPruefen` es zulässt — das Modell
+   * schlägt vor, die Anwendung entscheidet.
+   */
+  const projektLaeuft = projektZuordnen(
+    user.id,
+    eingabe.message ?? "",
+    eingabe.projektId ?? null,
+  ).catch((fehler) => {
+    console.warn("[monday/projekt] Einordnung fehlgeschlagen:", fehler);
+    return null;
+  });
+
   const antwortLaeuft = antwortVerbuchen(user.id, eingabe.message ?? "", {
     istBedienfrage: tiefe.merkmale.includes("Bedienfrage"),
   }).catch((fehler) => {
@@ -624,6 +653,23 @@ export async function POST(request: Request) {
        * — und für die Person ist eine Antwort ohne Voranalyse
        * unendlich viel besser als eine Fehlermeldung.
        */
+      /*
+       * Das Ergebnis der Einordnung, sobald es da ist.
+       *
+       * Nach dem Team und vor dem Antwortstrom: Es soll die Antwort
+       * nicht aufhalten, aber die Oberfläche soll das neue Vorhaben
+       * kennen, bevor der Text darüber spricht.
+       */
+      void projektLaeuft.then((z) => {
+        if (!z || z.art === "gespraech") return;
+        send({
+          type: "projekt",
+          art: z.art,
+          projekt: z.projekt,
+          frage: z.frage,
+        });
+      });
+
       let teamMaterial: string | null = null;
       try {
         const team = await mondayTeam({
