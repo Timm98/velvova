@@ -30,3 +30,7 @@ export * from "./gespraechstiefe.ts";
 export * from "./prompts/profilsynthese.ts";
 export * from "./prompts/suchdeutung.ts";
 export * from "./prompts/karriereanalyse.ts";
+
+/* Der Modellkatalog und seine Freigabelogik. */
+export * from "./registry/katalog.ts";
+export * from "./registry/registry.ts";
