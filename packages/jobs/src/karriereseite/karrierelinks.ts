@@ -178,6 +178,32 @@ function grundform(text: string): string {
     .replaceAll("ß", "ss");
 }
 
+/**
+ * Fremde Ziele, die NIE der Karrierebereich eines Arbeitgebers sind.
+ *
+ * „Karriere bei uns auf Facebook" ist eine Beschriftung, die alle
+ * Merkmale eines Treffers hat und trotzdem keiner ist. Ohne diese
+ * Liste führte die Lockerung für Kampagnendomains geradewegs in
+ * soziale Netzwerke — ein Test hat es sofort gefunden.
+ *
+ * Bewertungsportale stehen mit drauf: Was dort über einen Arbeitgeber
+ * steht, ist nicht das, was er selbst sagt. Und Jobbörsen, weil das
+ * Produkt sie ohnehin über eigene Anbindungen liest — sie hier ein
+ * zweites Mal zu holen brächte dieselben Anzeigen mit schlechterer
+ * Herkunft.
+ */
+const NIE_KARRIERESEITE = [
+  "facebook.com", "instagram.com", "linkedin.com", "xing.com",
+  "youtube.com", "twitter.com", "x.com", "tiktok.com", "threads.net",
+  "kununu.com", "glassdoor.de", "glassdoor.com",
+  "stepstone.de", "indeed.com", "indeed.de", "monster.de", "jobware.de",
+];
+
+function istAusgeschlossenesZiel(host: string): boolean {
+  const h = host.toLowerCase().replace(/^www\./, "");
+  return NIE_KARRIERESEITE.some((n) => h === n || h.endsWith(`.${n}`));
+}
+
 /** Kleinschreibung, Umlaute aufgelöst, Zeichen zu Leerraum. */
 function vereinfachen(text: string): string {
   return grundform(text).replace(/[^a-z0-9]+/g, " ").trim();
@@ -195,24 +221,68 @@ function verdichten(text: string): string {
   return grundform(text).replace(/[^a-z0-9]+/g, "");
 }
 
-/** Alle `<a href>` mit ihrem sichtbaren Text. */
+/**
+ * Alle `<a href>` mit dem, was ein Mensch daran liest.
+ *
+ * ── Warum nicht nur der Text zwischen den Marken ────────────────
+ *
+ * Weil er oft leer ist. Der Karrierelink des Landratsamts Reutlingen
+ * sieht so aus:
+ *
+ *     <a href="https://ganzesachemachen.de/" title="Karriere"
+ *        data-hover-heading="Zu den Karriereseiten">
+ *
+ * Dazwischen steht ein Symbol. Das Wort steht im `title` — und der
+ * ist kein Beiwerk: Er erscheint beim Zeigen mit der Maus, und ein
+ * Vorleseprogramm liest ihn als Beschriftung des Links. Er ist
+ * ebenso für Menschen geschrieben wie der sichtbare Text.
+ *
+ * Dasselbe gilt für `aria-label`. Wer beides übergeht, übersieht
+ * jeden Link, dessen Beschriftung ein Symbol ist — und das sind auf
+ * Behördenseiten viele.
+ */
 function verweise(html: string): { href: string; text: string }[] {
   const raus: { href: string; text: string }[] = [];
-  const muster = /<a\b[^>]*?href\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a>/gi;
+  const muster = /<a\b([^>]*?)href\s*=\s*(["'])(.*?)\2([^>]*)>([\s\S]*?)<\/a>/gi;
+
+  const attribut = (roh: string, name: string): string => {
+    const t = roh.match(new RegExp(`${name}\\s*=\\s*("|')(.*?)\\1`, "i"));
+    return t?.[2] ?? "";
+  };
 
   for (const treffer of html.matchAll(muster)) {
-    const href = treffer[2]?.trim();
+    const href = treffer[3]?.trim();
     if (!href) continue;
+    const attribute = `${treffer[1] ?? ""} ${treffer[4] ?? ""}`;
+
     /*
-     * Der Text kann Markierungen enthalten — ein Symbol im `<span>`,
-     * eine versteckte Beschriftung. Sie werden entfernt, nicht
-     * ausgewertet: Was ein Mensch liest, ist der Text dazwischen.
+     * Markierungen im Text werden entfernt, nicht ausgewertet: Was ein
+     * Mensch liest, ist der Text dazwischen — plus das, was ihm die
+     * Beschriftungsattribute sagen.
      */
-    const text = (treffer[3] ?? "")
+    const sichtbar = (treffer[5] ?? "")
       .replace(/<[^>]*>/g, " ")
-      .replace(/&nbsp;/gi, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+      .replace(/&nbsp;/gi, " ");
+
+    /*
+     * Doppeltes weglassen.
+     *
+     * Sehr oft steht im `title` dasselbe wie im Text — dann kam beim
+     * Landratsamt Reutlingen „Karriere Karriere" heraus. Der Wert
+     * landet in der Chance und wird gelesen; er soll aussehen wie
+     * eine Beschriftung und nicht wie ein Zusammenschnitt.
+     */
+    const teile: string[] = [];
+    for (const roh of [sichtbar, attribut(attribute, "title"), attribut(attribute, "aria-label")]) {
+      const teil = roh.replace(/\s+/g, " ").trim();
+      if (!teil) continue;
+      const schon = teile.some(
+        (v) => v.toLowerCase().includes(teil.toLowerCase()) || teil.toLowerCase().includes(v.toLowerCase()),
+      );
+      if (!schon) teile.push(teil);
+    }
+    const text = teile.join(" · ");
+
     raus.push({ href, text });
   }
   return raus;
@@ -272,7 +342,7 @@ export function karrierelinks(html: string, basis: string): Karrierefund[] {
     if (url.protocol !== "http:" && url.protocol !== "https:") continue;
 
     const fremd = !gleicheSeite(url, basisUrl);
-    if (fremd && !istBewerbersystem(url.hostname)) continue;
+    if (fremd && istAusgeschlossenesZiel(url.hostname)) continue;
 
     const beschriftung = vereinfachen(text);
     const beschriftungDicht = verdichten(text);
@@ -304,6 +374,28 @@ export function karrierelinks(html: string, basis: string): Karrierefund[] {
         const imText = beschriftung.includes(wort) || beschriftungDicht.includes(wortDicht);
         const imPfad = pfad.includes(wort) || pfadDicht.includes(wortDicht);
         if (!imText && !imPfad) continue;
+
+        /*
+         * ── Wann ein Link die Domain verlassen darf ─────────────
+         *
+         * Hier stand: fremde Domains nur, wenn sie ein bekanntes
+         * Bewerbersystem sind. Damit fiel der Karrierebereich des
+         * Landratsamts Reutlingen heraus — er liegt auf
+         * `ganzesachemachen.de`, einer eigenen Kampagnendomain.
+         *
+         * Das ist kein Sonderfall. Öffentliche Arbeitgeber führen
+         * ihre Arbeitgebermarke regelmässig auf einer eigenen
+         * Adresse; wer nur Unterbereiche und ATS-Anbieter zulässt,
+         * übersieht genau die.
+         *
+         * Die Grenze verläuft deshalb nicht am Ziel, sondern an der
+         * BESCHRIFTUNG: Ein fremdes Ziel zählt nur, wenn der
+         * Arbeitgeber es selbst als Karriereweg bezeichnet hat. Ein
+         * Pfad, der zufällig „jobs" enthält, genügt dafür nicht — und
+         * genau so kommt man nicht auf einer Werbeseite heraus, die
+         * `/karriere-tipps` im Pfad trägt.
+         */
+        if (fremd && !imText && !istBewerbersystem(url.hostname)) continue;
 
         const punkte = gruppe.gewicht * (imText ? 1 : 0.6) * (fremd ? 0.9 : 1);
         if (bester && bester.punkte >= punkte) continue;

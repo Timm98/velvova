@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { MAX_BYTES, MAX_WEITERLEITUNGEN, seiteHolen } from "./abruf.ts";
+import { beforeEach, describe, expect, it } from "vitest";
+import { MAX_BYTES, MAX_WEITERLEITUNGEN, abrufspeicherLeeren, seiteHolen } from "./abruf.ts";
 import { alsDatenBlock, auffaelligkeiten, fremdinhalt, htmlZuText } from "./fremdinhalt.ts";
 
 /** Ein Netz, das nur das antwortet, was der Test hinterlegt. */
@@ -22,7 +22,13 @@ function netz(seiten: Record<string, { status?: number; typ?: string; koerper?: 
 }
 
 const OEFFENTLICH = async () => ["93.184.216.34"];
-const werkzeuge = (holen: typeof fetch) => ({ holen, aufloesen: OEFFENTLICH });
+const werkzeuge = (holen: typeof fetch) => ({
+  holen,
+  aufloesen: OEFFENTLICH,
+  /* Diese Fälle prüfen Weiterleitung, Grösse und Typ — nicht robots. */
+  robotsIgnorieren: true,
+  warte: async () => {},
+});
 
 describe("Die Weiterleitung ist der eigentliche Angriff", () => {
   it("folgt einer Weiterleitung nicht auf eine interne Adresse", async () => {
@@ -283,5 +289,104 @@ describe("Der Datenblock", () => {
     ]) {
       expect(auffaelligkeiten(satz), satz).toEqual([]);
     }
+  });
+});
+
+
+describe("robots.txt wird tatsächlich gefragt", () => {
+  /*
+   * Die Regeln standen von Anfang an in `abrufregeln.ts` — nur rief
+   * sie niemand auf. `seiteHolen` holte die Seite und fragte nicht,
+   * und die Fehlerart `robots` stand im Typ, ohne je erzeugt zu
+   * werden. Das ist die Sorte Fehler, die man nicht sieht: Es
+   * funktioniert ja alles, nur eben unhöflich.
+   */
+  const geduldig = (holen: typeof fetch) => ({
+    holen, aufloesen: OEFFENTLICH, warte: async () => {},
+  });
+
+  function netzMitRobots(robots: string, seiten: Record<string, string>) {
+    const gerufen: string[] = [];
+    const holen = (async (eingabe: string | URL) => {
+      const url = String(eingabe);
+      gerufen.push(url);
+      if (url.endsWith("/robots.txt")) {
+        return new Response(robots, { headers: { "content-type": "text/plain" } });
+      }
+      const k = seiten[url];
+      if (k === undefined) return new Response("weg", { status: 404 });
+      return new Response(k, { headers: { "content-type": "text/html" } });
+    }) as unknown as typeof fetch;
+    return { holen, gerufen };
+  }
+
+  beforeEach(() => abrufspeicherLeeren());
+
+  it("holt eine verbotene Seite gar nicht erst", async () => {
+    const { holen, gerufen } = netzMitRobots("User-agent: *\nDisallow: /karriere", {
+      "https://amt.example/karriere": "<p>geheim</p>",
+    });
+    const e = await seiteHolen("https://amt.example/karriere", geduldig(holen));
+
+    expect(e.ok).toBe(false);
+    if (e.ok) return;
+    expect(e.grund).toBe("robots");
+    /* Nur robots.txt wurde geholt — die Seite selbst nie. */
+    expect(gerufen).toEqual(["https://amt.example/robots.txt"]);
+  });
+
+  it("holt eine erlaubte Seite", async () => {
+    const { holen } = netzMitRobots("User-agent: *\nDisallow: /intern", {
+      "https://amt.example/karriere": "<p>Stellenangebote</p>",
+    });
+    const e = await seiteHolen("https://amt.example/karriere", geduldig(holen));
+    expect(e.ok).toBe(true);
+  });
+
+  it("fragt robots.txt je Server nur einmal", async () => {
+    const { holen, gerufen } = netzMitRobots("User-agent: *\nDisallow:", {
+      "https://amt.example/a": "<p>a</p>",
+      "https://amt.example/b": "<p>b</p>",
+    });
+    await seiteHolen("https://amt.example/a", geduldig(holen));
+    await seiteHolen("https://amt.example/b", geduldig(holen));
+    expect(gerufen.filter((u) => u.endsWith("robots.txt"))).toHaveLength(1);
+  });
+
+  it("hält eine eigene Gruppe für uns ein", async () => {
+    const { holen } = netzMitRobots(
+      ["User-agent: *", "Disallow:", "", "User-agent: VelvovaBot", "Disallow: /karriere"].join("\n"),
+      { "https://amt.example/karriere": "<p>x</p>" },
+    );
+    const e = await seiteHolen("https://amt.example/karriere", geduldig(holen));
+    expect(e.ok).toBe(false);
+  });
+
+  it("behandelt eine fehlende robots.txt als 'nichts verboten'", async () => {
+    /* Wer keine Datei hinterlegt, hat nichts verboten. */
+    const holen = (async (eingabe: string | URL) => {
+      const url = String(eingabe);
+      if (url.endsWith("/robots.txt")) return new Response("nicht da", { status: 404 });
+      return new Response("<p>ok</p>", { headers: { "content-type": "text/html" } });
+    }) as unknown as typeof fetch;
+    const e = await seiteHolen("https://amt.example/karriere", geduldig(holen));
+    expect(e.ok).toBe(true);
+  });
+
+  it("wartet zwischen zwei Abrufen an denselben Server", async () => {
+    const gewartet: number[] = [];
+    const { holen } = netzMitRobots("User-agent: *\nCrawl-delay: 3", {
+      "https://amt.example/a": "<p>a</p>",
+      "https://amt.example/b": "<p>b</p>",
+    });
+    const w = { holen, aufloesen: OEFFENTLICH, warte: async (ms: number) => { gewartet.push(ms); } };
+
+    abrufspeicherLeeren();
+    await seiteHolen("https://amt.example/a", w);
+    await seiteHolen("https://amt.example/b", w);
+
+    /* Der erste Abruf wartet nicht, der zweite schon. */
+    expect(gewartet.filter((ms) => ms > 0)).toHaveLength(1);
+    expect(gewartet.find((ms) => ms > 0)).toBeLessThanOrEqual(3000);
   });
 });

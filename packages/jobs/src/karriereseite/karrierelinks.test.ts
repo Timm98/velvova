@@ -122,12 +122,60 @@ describe("Was nicht in den Karrierebereich führt", () => {
     ).toHaveLength(0);
   });
 
-  it("verwirft fremde Ziele, die kein Bewerbersystem sind", () => {
+  it("verwirft soziale Netzwerke, auch wenn die Beschriftung passt", () => {
+    /*
+     * „Karriere bei uns auf Facebook" hat alle Merkmale eines
+     * Treffers und ist keiner. Ohne die Ausschlussliste führte die
+     * Lockerung für Kampagnendomains geradewegs dorthin.
+     */
+    for (const ziel of [
+      "https://www.facebook.com/landkreis",
+      "https://www.kununu.com/de/landkreis",
+      "https://www.stepstone.de/cmp/de/landkreis",
+    ]) {
+      expect(karrierelinks(seite(a(ziel, "Karriere bei uns")), BASIS), ziel).toHaveLength(0);
+    }
+  });
+
+  it("verwirft ein fremdes Ziel, das nur im Pfad passt", () => {
+    /* Ein Pfad, der zufällig „karriere" enthält, ist keine Aussage
+       des Arbeitgebers — die Beschriftung wäre eine. */
+    expect(
+      karrierelinks(seite(a("https://ratgeber.example/karriere-tipps", "Mehr erfahren")), BASIS),
+    ).toHaveLength(0);
+  });
+
+  it("folgt einer eigenen Kampagnendomain, wenn die Beschriftung es sagt", () => {
+    /*
+     * Der Fall aus der Wirklichkeit: Das Landratsamt Reutlingen führt
+     * seinen Karrierebereich auf `ganzesachemachen.de`. Öffentliche
+     * Arbeitgeber tun das regelmässig — wer nur Unterbereiche und
+     * ATS-Anbieter zulässt, übersieht genau sie.
+     */
     const funde = karrierelinks(
-      seite(a("https://facebook.example/landkreis", "Karriere bei uns auf Facebook")),
+      seite('<a href="https://ganzesachemachen.de/" title="Karriere"></a>'),
       BASIS,
     );
-    expect(funde).toHaveLength(0);
+    expect(funde).toHaveLength(1);
+    expect(funde[0]?.art).toBe("karriere");
+  });
+
+  it("wiederholt nicht, was in Text und title gleich steht", () => {
+    /* Beim Landratsamt Reutlingen kam sonst „Karriere Karriere" heraus. */
+    const funde = karrierelinks(seite('<a href="/x" title="Karriere">Karriere</a>'), BASIS);
+    expect(funde[0]?.text).toBe("Karriere");
+  });
+
+  it("liest die Beschriftung aus title und aria-label", () => {
+    /*
+     * Der sichtbare Text ist bei Symbol-Links leer. Der `title`
+     * erscheint beim Zeigen, und ein Vorleseprogramm liest ihn als
+     * Beschriftung — er ist ebenso für Menschen geschrieben.
+     */
+    expect(karrierelinks(seite('<a href="/x" title="Stellenangebote"><i></i></a>'), BASIS)[0]?.art)
+      .toBe("stellenliste");
+    expect(karrierelinks(seite('<a href="/y" aria-label="Offene Stellen"><i></i></a>'), BASIS)[0]?.art)
+      .toBe("stellenliste");
   });
 
   it("verwirft alles, was keine Webseite ist", () => {

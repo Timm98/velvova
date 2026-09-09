@@ -1,5 +1,14 @@
 import { lookup } from "node:dns/promises";
-import { adressePruefen, type Abrufverbot } from "./abrufregeln.ts";
+import {
+  KEINE_REGELN,
+  Taktgeber,
+  adressePruefen,
+  darfAbrufen,
+  robotsLesen,
+  wartezeitMs,
+  type Abrufverbot,
+  type Robotsregeln,
+} from "./abrufregeln.ts";
 import { fremdinhalt, htmlZuText, type Fremdinhalt } from "./fremdinhalt.ts";
 
 /**
@@ -89,6 +98,95 @@ export interface Abrufwerkzeuge {
   holen?: typeof fetch;
   aufloesen?: (name: string) => Promise<string[]>;
   jetzt?: () => Date;
+  /** Warten. In Tests eine leere Zusage, damit sie nicht real warten. */
+  warte?: (ms: number) => Promise<void>;
+  /**
+   * robots.txt ausser Kraft setzen — ausschliesslich für Tests.
+   *
+   * Es gibt keinen Betriebsfall dafür. Wer eine Sperre umgeht, tut es
+   * gegen den ausdrücklichen Willen eines Betreibers, und dieser Wille
+   * ist der ganze Sinn der Datei.
+   */
+  robotsIgnorieren?: boolean;
+}
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * Die Höflichkeitsschicht — jetzt tatsächlich angeschlossen
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * `abrufregeln.ts` konnte robots.txt lesen und den Takt halten, seit
+ * dem ersten Tag. Nur rief es niemand auf: `seiteHolen` holte die
+ * Seite und fragte nicht. Die Fehlerart `robots` stand im Typ und
+ * wurde nie erzeugt.
+ *
+ * Das ist die Sorte Fehler, die man nicht sieht — es funktioniert ja
+ * alles, nur eben unhöflich. Aufgefallen ist es beim Blick darauf, ob
+ * man den Abruf auf ein echtes Landratsamt richten darf.
+ *
+ * Beides steht prozessweit, nicht je Aufruf: Eine Wartezeit, die bei
+ * jedem Abruf neu beginnt, ist keine.
+ */
+const robotsJeHost = new Map<string, Robotsregeln>();
+let takt = new Taktgeber();
+
+/**
+ * Beides zurücksetzen — für Tests und einen Neustart im laufenden Prozess.
+ *
+ * BEIDES. Die erste Fassung leerte nur die Regeln und liess den Takt
+ * stehen; danach wartete der erste Abruf eines Tests auf einen
+ * Zeitpunkt, den ein anderer Test gesetzt hatte. Ein Speicher, der
+ * halb geleert wird, ist schlimmer als keiner: Er sieht sauber aus.
+ */
+export function abrufspeicherLeeren(): void {
+  robotsJeHost.clear();
+  takt = new Taktgeber();
+}
+
+async function regelnFuer(
+  url: URL,
+  holen: typeof fetch,
+  aufloesen: (n: string) => Promise<string[]>,
+): Promise<Robotsregeln> {
+  const bekannt = robotsJeHost.get(url.host);
+  if (bekannt) return bekannt;
+
+  let regeln = KEINE_REGELN;
+  try {
+    /*
+     * robots.txt selbst wird nicht von robots.txt geregelt — das wäre
+     * zirkulär. Die Adressprüfung gilt trotzdem: Auch diese Datei
+     * könnte hinter einer Weiterleitung nach innen zeigen.
+     */
+    const ziel = `${url.origin}/robots.txt`;
+    if (adressePruefen(ziel).erlaubt && (await aufloesungIstSicher(url.hostname, aufloesen))) {
+      const antwort = await holen(ziel, {
+        redirect: "follow",
+        signal: AbortSignal.timeout(8_000),
+        headers: { "user-agent": KENNUNG, accept: "text/plain" },
+      });
+      if (antwort.ok) {
+        /*
+         * Höchstens 512 KB. Eine robots.txt, die grösser ist, ist
+         * keine — und sie ungelesen zu lassen ist besser, als den
+         * Speicher eines Servers an sie zu hängen.
+         */
+        const text = (await antwort.text()).slice(0, 512 * 1024);
+        regeln = robotsLesen(text, KENNUNG);
+      }
+      /*
+       * Ein 404 heisst: keine Regeln. Das ist die Auslegung des
+       * Verfahrens und nicht Bequemlichkeit — wer keine Datei
+       * hinterlegt, hat nichts verboten.
+       */
+    }
+  } catch {
+    /* Nicht erreichbar heisst nicht verboten. Aber auch nicht erlaubt,
+       schneller zu sein: die Standardwartezeit gilt weiter. */
+  }
+
+  robotsJeHost.set(url.host, regeln);
+  return regeln;
 }
 
 async function echteAufloesung(name: string): Promise<string[]> {
@@ -137,6 +235,8 @@ export async function seiteHolen(
   const holen = werkzeuge.holen ?? fetch;
   const aufloesen = werkzeuge.aufloesen ?? echteAufloesung;
   const jetzt = werkzeuge.jetzt ?? (() => new Date());
+  const warte =
+    werkzeuge.warte ?? ((ms: number) => new Promise<void>((w) => setTimeout(w, ms)));
 
   let ziel = adresse;
 
@@ -158,6 +258,36 @@ export async function seiteHolen(
         grund: "zeigt_nach_innen",
         nachricht: "Der Name löst auf eine interne Adresse auf.",
       };
+    }
+
+    /*
+     * Erst fragen, dann holen.
+     *
+     * In dieser Reihenfolge, und nicht andersherum: Eine Seite, die
+     * wir nicht abrufen dürfen, darf auch nicht abgerufen werden, um
+     * festzustellen, dass wir sie nicht abrufen dürfen.
+     */
+    if (!werkzeuge.robotsIgnorieren) {
+      const regeln = await regelnFuer(url, holen, aufloesen);
+      if (!darfAbrufen(url.pathname, regeln)) {
+        return {
+          ok: false,
+          grund: "robots",
+          nachricht: `robots.txt von ${url.host} verbietet ${url.pathname}.`,
+        };
+      }
+
+      /*
+       * Der Takt gilt je Server, über alle Abrufe hinweg.
+       *
+       * Zwanzig Arbeitgeber nacheinander sind kein Problem; zwanzig
+       * Seiten desselben Arbeitgebers in zwei Sekunden sind eine
+       * Belastung, die er nicht bestellt hat.
+       */
+      const wartezeit = wartezeitMs(regeln);
+      const rest = takt.wartetNoch(url.host, wartezeit);
+      if (rest > 0) await warte(rest);
+      takt.vermerkeAbruf(url.host);
     }
 
     let antwort: Response;
