@@ -1,15 +1,20 @@
 import { brand, type BrandConfig } from "@paycheck/config";
 import { de } from "./messages/de.ts";
 import { en } from "./messages/en.ts";
+import { es } from "./messages/es.ts";
+import { fr } from "./messages/fr.ts";
+import { it } from "./messages/it.ts";
+import { nl } from "./messages/nl.ts";
+import { pl } from "./messages/pl.ts";
 import type { Messages } from "./messages/de.ts";
 
-export type Locale = "de" | "en";
+export type Locale = "de" | "en" | "fr" | "es" | "it" | "nl" | "pl";
 export type { Messages };
 
-export const LOCALES: readonly Locale[] = ["de", "en"] as const;
+export const LOCALES: readonly Locale[] = ["de", "en", "fr", "es", "it", "nl", "pl"] as const;
 export const DEFAULT_LOCALE: Locale = "de";
 
-const CATALOGUE: Record<Locale, Messages> = { de, en };
+const CATALOGUE: Record<Locale, Messages> = { de, en, fr, es, it, nl, pl };
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
@@ -77,7 +82,7 @@ export function formatters(locale: Locale, currency = "EUR") {
   };
 }
 
-export { de, en };
+export { de, en, es, fr, it, nl, pl };
 
 /*
  * Das Sprach- und Regionsregister (V7 §20).
