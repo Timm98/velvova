@@ -108,10 +108,22 @@ export interface Modelldefinition {
  * angeboten werden darf, entscheiden Schlüssel, Freigabe und ein
  * echter Testaufruf — nicht seine Anwesenheit in dieser Liste.
  *
- * Die API-Kennungen stammen aus der Anbieterdokumentation und der
- * bestehenden Konfiguration dieses Projekts. Keine davon wurde von
- * hier aus gegen eine laufende API geprüft; genau dafür gibt es
- * `verfuegbarkeitPruefen()`.
+ * ── Was geprüft ist und was nicht ──────────────────────────────
+ *
+ * Am 9. September 2026 gegen `GET /v1/models` des Produktionskontos
+ * geprüft (`scripts/modell-diagnose.mjs`): 124 Modelle sichtbar,
+ * darunter `gpt-6-astra`, `gpt-5` und `gpt-5-mini` — alle drei
+ * OpenAI-Einträge dieses Katalogs.
+ *
+ * Die Anthropic- und Google-Kennungen stammen aus der
+ * Anbieterdokumentation und sind NICHT geprüft: Für Anthropic lag kein
+ * Schlüssel vor, für Google keiner und kein Adapter mit echtem Aufruf.
+ *
+ * Und auch die geprüften sind nur GELISTET. Dass ein Modell in der
+ * Liste steht, heisst nicht, dass ein Aufruf mit Werkzeugen,
+ * strukturierter Ausgabe und unserer Frist durchgeht. Deshalb steht
+ * `Modellzustand.verfuegbarkeit` weiterhin auf `ungeprueft`, und die
+ * Freigabe bleibt eine zweite, eigene Tür.
  */
 export const KATALOG: readonly Modelldefinition[] = [
   /* ── OpenAI ─────────────────────────────────────────────────── */

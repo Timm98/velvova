@@ -37,3 +37,4 @@ export * from "./checkzugriff.ts";
 
 export * from "./stillechancen.ts";
 export * from "./arbeitgeberpassung.ts";
+export * from "./anfragetext.ts";
