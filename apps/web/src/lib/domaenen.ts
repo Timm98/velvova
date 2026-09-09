@@ -81,6 +81,20 @@ const ANWENDUNG = [
    * weil das Cookie an den Host gebunden ist. Das ist kein Geschmack,
    * sondern die Regel, aus der die ganze Trennung folgt.
    */
+  /*
+   * Der Rückweg vom Anmeldeanbieter.
+   *
+   * Stand unter „überall". Das war falsch: `/auth/callback` legt die
+   * Sitzung an, und eine Sitzung auf der Marketingdomain nützt
+   * niemandem — dort gibt es keine Anwendung. Ausserdem liegt der
+   * PKCE-Prüfwert als Cookie auf dem Host, auf dem die Anmeldung
+   * begann; auf der falschen Domain findet der Austausch ihn gar
+   * nicht und scheitert lautlos.
+   *
+   * Unter `/auth` liegt genau eine Route, der Callback. Es geht hier
+   * also nichts anderes mit.
+   */
+  "/auth",
   "/magic",
   "/bestaetigen",
   "/forgot-password",
@@ -106,7 +120,6 @@ const ANWENDUNG = [
 const UEBERALL = [
   "/api",
   "/_next",
-  "/auth",
   /* Rechtliches gehört auf beide: Wer auf der Anwendung ein Impressum
      sucht, soll es dort finden und nicht die Domain wechseln müssen. */
   "/imprint",
@@ -130,7 +143,11 @@ export function zustaendigFuer(pfad: string): Zustaendig {
  * `null` heisst: hier ist er richtig. Das ist der Normalfall und
  * bleibt es, solange die Trennung nicht eingerichtet ist.
  */
-export function umleitungFuer(host: string, pfad: string): string | null {
+export function umleitungFuer(
+  host: string,
+  pfad: string,
+  abfrage?: URLSearchParams,
+): string | null {
   const app = mondayHost();
   const seite = seitenHost();
   if (!app || !seite) return null;
@@ -167,6 +184,40 @@ export function umleitungFuer(host: string, pfad: string): string | null {
    * er danach ankommt, wo er hinwollte.
    */
   if (pfad === "/" && hier === kurz(app)) return `https://${app}/app/monday`;
+
+  /*
+   * ── Der Anmeldecode, der auf der falschen Domain ankommt ────────
+   *
+   * Gemessen am 9. September 2026: Supabase ist auf die Site-URL
+   * `https://velvova.vercel.app` eingestellt, und JEDES Ziel, das
+   * nicht in seiner Freigabeliste steht, wird durch diese Site-URL
+   * ersetzt — geprüft mit drei Zielen, darunter eines, das sicher
+   * nicht freigegeben ist. Alle drei landeten dort.
+   *
+   * Für den Google-Login heisst das: Der Browser kommt mit `?code=`
+   * auf der ÖFFENTLICHEN Wurzel an statt auf `/auth/callback` der
+   * Anwendung. Niemand löst den Code ein, es entsteht keine Sitzung,
+   * und die Person steht wieder auf der Startseite — als hätte das
+   * Anmelden nichts getan. Danach führt jeder Weg in die Anwendung
+   * folgerichtig zurück auf die Anmeldung.
+   *
+   * Hier wird der Code an die richtige Stelle weitergereicht. Die
+   * Abfrage bleibt dabei erhalten (die Middleware überträgt sie), und
+   * der PKCE-Prüfwert liegt als Cookie auf der Anwendungsdomain —
+   * also genau dort, wo der Austausch ihn braucht.
+   *
+   * Das ist ein Fangnetz, keine Reparatur. Richtig behoben ist es
+   * erst, wenn in Supabase unter „Redirect URLs" auch die Adresse der
+   * Anwendung steht; dann kommt der Browser gleich richtig an und
+   * dieser Zweig greift nie. Er schadet auch dann nicht.
+   *
+   * Eng gefasst: nur die Wurzel, nur die öffentliche Seite, nur mit
+   * `code`. Ein Marketingverweis mit `?code=` als Kampagnenkennung
+   * würde sonst in der Anmeldung landen.
+   */
+  if (pfad === "/" && hier === kurz(seite) && abfrage?.get("code")) {
+    return `https://${app}/auth/callback`;
+  }
 
   const zustaendig = zustaendigFuer(pfad);
   if (zustaendig === "beide") return null;

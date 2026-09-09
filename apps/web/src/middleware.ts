@@ -53,6 +53,7 @@ export function middleware(request: NextRequest): NextResponse {
   const woanders = umleitungFuer(
     request.headers.get("host") ?? request.nextUrl.host,
     request.nextUrl.pathname,
+    request.nextUrl.searchParams,
   );
   if (woanders) {
     const ziel = new URL(woanders);

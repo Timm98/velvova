@@ -96,6 +96,50 @@ describe("Mit eingerichteter Trennung", () => {
     expect(umleitungFuer("monday.ai", "/product")).toBe("https://velvova.com/product");
   });
 
+  it("holt den Anmeldecode von der öffentlichen Wurzel zur Anwendung", () => {
+    /*
+     * Der gemessene Fall: Supabase ersetzt jedes nicht freigegebene
+     * Ziel durch seine Site-URL — hier die öffentliche Seite. Der
+     * Google-Code kam damit auf der Startseite an, niemand löste ihn
+     * ein, und das Anmelden sah aus, als hätte es nichts getan.
+     */
+    trennungEinrichten();
+    expect(
+      umleitungFuer("velvova.com", "/", new URLSearchParams("code=abc123")),
+    ).toBe("https://monday.ai/auth/callback");
+  });
+
+  it("lässt die öffentliche Wurzel ohne Code in Ruhe", () => {
+    /* Sonst landete jeder gewöhnliche Besuch in der Anmeldung. */
+    trennungEinrichten();
+    expect(umleitungFuer("velvova.com", "/", new URLSearchParams("utm=x"))).toBeNull();
+    expect(umleitungFuer("velvova.com", "/")).toBeNull();
+  });
+
+  it("greift nur auf der Wurzel, nicht auf jeder Marketingseite", () => {
+    /* Ein Kampagnenverweis mit ?code= darf nicht in der Anmeldung
+       enden. */
+    trennungEinrichten();
+    /* `null` heisst: bleibt, wo es ist. Die Rettung greift nicht. */
+    expect(
+      umleitungFuer("velvova.com", "/product", new URLSearchParams("code=abc")),
+    ).toBeNull();
+  });
+
+  it("führt den Rückweg des Anmeldeanbieters auf die Anwendungsdomain", () => {
+    /*
+     * `/auth` stand unter „überall". Der Callback legt aber die
+     * Sitzung an, und der PKCE-Prüfwert liegt als Cookie auf dem
+     * Host, auf dem die Anmeldung begann — auf der falschen Domain
+     * scheitert der Austausch lautlos.
+     */
+    trennungEinrichten();
+    expect(zustaendigFuer("/auth/callback")).toBe("anwendung");
+    expect(umleitungFuer("velvova.com", "/auth/callback")).toBe(
+      "https://monday.ai/auth/callback",
+    );
+  });
+
   it("führt die Wurzel der Anwendung in die Anwendung, nicht ins Marketing", () => {
     /*
      * Der Fehler, den ein Blick in den Browser gefunden hat: `/` lag
