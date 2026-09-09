@@ -201,7 +201,7 @@ export const nl: Messages = {
       "Je tekst wordt voor analyse naar een externe AI-aanbieder gestuurd. Directe " +
       "identificatoren zoals e-mailadres en telefoonnummer worden er vooraf uit gehaald.",
     externalAiBodyInactive:
-      "Er is op dit moment geen AI-aanbieder ingesteld. Monday zal niet antwoorden — we maken " +
+      "Er is op dit moment geen AI-aanbieder ingesteld. {assistant} zal niet antwoorden — we maken " +
       "bewust geen voorbeeldantwoord, want dat zou niet van een echt antwoord te " +
       "onderscheiden zijn.",
     privacyCenter: "Naar het privacycentrum",
@@ -457,7 +457,7 @@ export const nl: Messages = {
     aiProvider: "Verwerking door AI",
     aiProviderNone:
       "Er is op dit moment geen AI-aanbieder ingesteld. Er wordt geen tekst verstuurd — en " +
-      "Monday antwoordt ook niet.",
+      "{assistant} antwoordt ook niet.",
     aiProviderExternal:
       "Verwerking door een externe aanbieder. Doel, regio en aanbieder staan hieronder.",
   },

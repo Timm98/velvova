@@ -201,7 +201,7 @@ export const fr: Messages = {
       "Votre texte est transmis à un prestataire d'IA externe pour analyse. Les identifiants " +
       "directs comme l'adresse e-mail et le numéro de téléphone sont retirés au préalable.",
     externalAiBodyInactive:
-      "Aucun prestataire d'IA n'est configuré pour le moment. Monday ne répondra pas — nous " +
+      "Aucun prestataire d'IA n'est configuré pour le moment. {assistant} ne répondra pas — nous " +
       "ne produisons délibérément aucune réponse d'exemple, car elle serait indiscernable " +
       "d'une vraie.",
     privacyCenter: "Aller au centre de confidentialité",
@@ -458,7 +458,7 @@ export const fr: Messages = {
     aiProvider: "Traitement par IA",
     aiProviderNone:
       "Aucun prestataire d'IA n'est configuré pour le moment. Aucun texte n'est transmis — et " +
-      "Monday ne répond pas non plus.",
+      "{assistant} ne répond pas non plus.",
     aiProviderExternal:
       "Traitement par un prestataire externe. La finalité, la région et le prestataire sont " +
       "indiqués ci-dessous.",

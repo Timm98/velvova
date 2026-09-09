@@ -188,7 +188,7 @@ export const en: Messages = {
       "Your text is sent to an external AI provider for analysis. Direct identifiers such as " +
       "email address and phone number are removed first.",
     externalAiBodyInactive:
-      "No AI provider is configured at the moment. Monday will not answer — we deliberately " +
+      "No AI provider is configured at the moment. {assistant} will not answer — we deliberately " +
       "produce no sample answer, because it would be indistinguishable from a real one.",
     privacyCenter: "Go to the Privacy Center",
     start: "Start the conversation",
@@ -437,7 +437,7 @@ export const en: Messages = {
     currentSession: "This device",
     aiProvider: "AI processing",
     aiProviderNone:
-      "No AI provider is configured at the moment. No text is transmitted — and Monday does " +
+      "No AI provider is configured at the moment. No text is transmitted — and {assistant} does " +
       "not answer either.",
     aiProviderExternal:
       "Processing by an external provider. Purpose, region and provider are listed below.",

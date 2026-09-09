@@ -143,3 +143,18 @@ export {
  * Standardsprache, ohne sich zu beschweren.
  */
 export const SPRACHEN_MIT_TEXTEN: readonly string[] = LOCALES;
+
+/*
+ * Der Prüfstand der Übersetzungen.
+ *
+ * Trennt „es gibt Texte" von „jemand hat sie gelesen". Ohne dieses
+ * Register sehen alle sieben Kataloge im Code gleich aus — und was
+ * man nicht sieht, prüft irgendwann niemand mehr.
+ */
+export {
+  darfEinwilligungEinholen,
+  istOberflaecheAnbietbar,
+  UEBERSETZUNGSSTAND,
+  type Prüfeintrag,
+  type Uebersetzungsstand,
+} from "./pruefstand.ts";

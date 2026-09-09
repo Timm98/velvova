@@ -208,7 +208,7 @@ export const pl: Messages = {
       "Twój tekst jest przekazywany do zewnętrznego dostawcy AI w celu analizy. Bezpośrednie " +
       "identyfikatory, takie jak adres e-mail i numer telefonu, są wcześniej usuwane.",
     externalAiBodyInactive:
-      "W tej chwili nie skonfigurowano żadnego dostawcy AI. Monday nie odpowie — celowo nie " +
+      "W tej chwili nie skonfigurowano żadnego dostawcy AI. {assistant} nie odpowie — celowo nie " +
       "tworzymy odpowiedzi przykładowej, ponieważ nie dałoby się jej odróżnić od prawdziwej.",
     privacyCenter: "Przejdź do centrum prywatności",
     start: "Rozpocznij rozmowę",
@@ -461,7 +461,7 @@ export const pl: Messages = {
     aiProvider: "Przetwarzanie przez AI",
     aiProviderNone:
       "W tej chwili nie skonfigurowano żadnego dostawcy AI. Żaden tekst nie jest przesyłany — " +
-      "i Monday też nie odpowiada.",
+      "i {assistant} też nie odpowiada.",
     aiProviderExternal:
       "Przetwarzanie przez dostawcę zewnętrznego. Cel, region i dostawca są podane poniżej.",
   },

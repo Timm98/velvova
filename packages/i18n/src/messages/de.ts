@@ -193,7 +193,7 @@ export const de = {
       "Deine Texte werden zur Analyse an einen externen KI-Anbieter übermittelt. Direkte " +
       "Identifikatoren wie E-Mail-Adresse und Telefonnummer werden vorher entfernt.",
     externalAiBodyInactive:
-      "Zurzeit ist kein KI-Anbieter eingerichtet. Monday antwortet dann nicht — " +
+      "Zurzeit ist kein KI-Anbieter eingerichtet. {assistant} antwortet dann nicht — " +
       "es wird bewusst keine Beispielantwort erzeugt, weil sie von einer echten " +
       "nicht zu unterscheiden wäre.",
     privacyCenter: "Zum Privacy Center",
@@ -260,7 +260,7 @@ export const de = {
   },
 
   jobs: {
-    title: "Mondays Auswahl für dich",
+    title: "{assistant}s Auswahl für dich",
     titleGeneric: "Auswahl für dich",
     locked: "Noch gesperrt",
     lockedBody:
@@ -378,7 +378,7 @@ export const de = {
     requirements: "Anforderungen der Stelle",
     yourEvidence: "Deine belegten Erfahrungen",
     document: "Dokument",
-    checks: "Mondays Prüfung",
+    checks: "{assistant}s Prüfung",
     openPoints: "Offene Punkte",
     generateCv: "Lebenslauf erstellen",
     generateCvAts: "ATS-freundliche Fassung",
@@ -454,7 +454,7 @@ export const de = {
     aiProvider: "KI-Verarbeitung",
     aiProviderNone:
       "Zurzeit ist kein KI-Anbieter eingerichtet. Es werden keine Texte übermittelt — " +
-      "und Monday antwortet auch nicht.",
+      "und {assistant} antwortet auch nicht.",
     aiProviderExternal:
       "Verarbeitung durch einen externen Anbieter. Zweck, Region und Anbieter stehen unten.",
   },
