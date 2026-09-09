@@ -5,6 +5,7 @@ import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { TopNav } from "@/components/shell/TopNav";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
+import { mondayZiel } from "@/lib/mondayziel";
 import { laenderbestand } from "@/lib/jobs/laenderbestand";
 import { bestandszahl } from "@/lib/jobs/bestandszahl";
 
@@ -126,7 +127,7 @@ export default async function PublicLayout({ children }: { children: React.React
 
       {/* Auch der Fuss ist derselbe wie in der Anwendung — mit
           Märkten, Zahlungsarten, Region und Rechtlichem. */}
-      <VelvovaFooter laender={laender} />
+      <VelvovaFooter laender={laender} mondayHref={await mondayZiel()} />
     </div>
     </BestandProvider>
   );

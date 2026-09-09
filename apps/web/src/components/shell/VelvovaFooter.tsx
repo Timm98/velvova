@@ -34,7 +34,21 @@ interface Spalte {
   links: { href: string; label: string }[];
 }
 
-const SPALTEN: Spalte[] = [
+/**
+ * Die Verweisspalten.
+ *
+ * Eine Funktion und keine Konstante, weil ein Ziel vom Host abhängt:
+ * „Mit Monday sprechen" ist auf der öffentlichen Seite ein Sprung auf
+ * die Anwendungsdomain und innerhalb der Anwendung eine gewöhnliche
+ * Navigation.
+ *
+ * Nur dieses eine. Die übrigen `/app/…`-Verweise stehen weiterhin
+ * relativ da und kommen über die Weiche in der Middleware an — einen
+ * Umweg, aber nie im Leeren. Sie alle umzustellen wäre ein Umbau der
+ * ganzen Tabelle für einen ersparten Sprung; das steht in keinem
+ * Verhältnis.
+ */
+const SPALTEN = (mondayHref: string): Spalte[] => [
   {
     titel: "Velvova",
     links: [
@@ -48,7 +62,7 @@ const SPALTEN: Spalte[] = [
   {
     titel: "Für Bewerber",
     links: [
-      { href: "/app/monday", label: "Mit Monday sprechen" },
+      { href: mondayHref, label: "Mit Monday sprechen" },
       { href: "/app/career", label: "Profil" },
       { href: "/app/applications", label: "Bewerbungen" },
       { href: "/app/jobs?gespeichert=1", label: "Gespeicherte Jobs" },
@@ -89,8 +103,27 @@ export function VelvovaFooter({
   land = "DE",
   laender = [],
   angemeldet = false,
+  mondayHref = "/app/monday",
 }: {
   land?: string;
+  /**
+   * Wohin „Mit Monday sprechen" führt.
+   *
+   * Vorbelegt mit dem relativen Pfad, und das ist INNERHALB der
+   * Anwendung die richtige Antwort: Dort wäre ein absoluter Link auf
+   * dieselbe Domain ein voller Seitenwechsel statt einer Navigation
+   * — derselbe Server, nur langsamer und mit weissem Blitz.
+   *
+   * Die öffentlichen Seiten reichen `mondayZiel()` herein. Nur dort
+   * spart der absolute Link etwas, nämlich den Sprung über die
+   * Middleware. Ohne ihn kommt man auch an, bloss über eine
+   * Umleitung mehr.
+   *
+   * Als Angabe und nicht selbst gelesen, weil diese Fusszeile auch
+   * unter `AppShell` steht — und die ist ein Client-Bauteil, das
+   * `headers()` nicht aufrufen kann.
+   */
+  mondayHref?: string;
   /** Märkte mit Stellenzahl. Leer heisst: das Raster entfällt. */
   laender?: Landzeile[];
   /**
@@ -225,7 +258,7 @@ export function VelvovaFooter({
           Blöcke zu je drei Spalten.
         */}
         <div className="mt-12 grid gap-x-10 gap-y-12 border-t border-line pt-12 sm:grid-cols-2 md:grid-cols-3">
-          {SPALTEN.map((s) => (
+          {SPALTEN(mondayHref).map((s) => (
             <nav key={s.titel} aria-label={s.titel} className="grid content-start gap-3">
               <h2 className="text-sm font-semibold text-ink">{s.titel}</h2>
               {/*

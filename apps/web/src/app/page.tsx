@@ -206,7 +206,7 @@ export default async function LandingPage() {
 
       {/* Auch der Fuss ist derselbe: Märkte, Zahlungsarten, Region,
           Rechtliches. */}
-      <VelvovaFooter laender={laender} />
+      <VelvovaFooter laender={laender} mondayHref={await mondayZiel()} />
 
       {/* Unten rechts, auf jeder Bildschirmhöhe erreichbar: Wer nicht
           weiterweiss, soll nicht erst zum Fuss scrollen müssen. */}
