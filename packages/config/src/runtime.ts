@@ -203,7 +203,7 @@ const RuntimeSchema = z.object({
   }),
 
   storage: z.object({
-    driver: z.enum(["local", "s3"]).default("local"),
+    driver: z.enum(["local", "s3", "supabase"]).default("local"),
     dir: z.string().default(".storage"),
     encryptionKey: z.string().optional(),
     s3: z
@@ -295,6 +295,40 @@ function waehleTreiber(env: Env): string {
   return env.DATABASE_URL && env.DATABASE_URL.trim() !== "" ? "pg" : "pglite";
 }
 
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Welche Dateiablage gilt
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Dasselbe Muster wie beim Datenbanktreiber, und derselbe Fehler:
+ * `env.STORAGE_DRIVER ?? "local"` machte die Entwicklungsablage zur
+ * Vorgabe. `local` schreibt mit `mkdir` und `writeFile` in ein
+ * Verzeichnis — auf einer serverlosen Plattform ist das Dateisystem
+ * schreibgeschützt, und das Hochladen eines Profilbilds scheitert.
+ *
+ * Der zweite Ausweg war keiner: `s3` warf „Die S3-Ablage ist noch
+ * nicht angeschlossen." Es gab also gar keine Ablage, die in
+ * Produktion funktioniert.
+ *
+ * Die Regel:
+ *
+ *   1. STORAGE_DRIVER gesetzt        → das gilt
+ *   2. Supabase-Zugang vorhanden     → supabase
+ *   3. sonst                         → local
+ *
+ * Schritt 2 benutzt, was ohnehin da ist: Dieselbe Supabase, die schon
+ * die Datenbank trägt, hat eine Dateiablage. Ein neuer Dienst wäre
+ * dafür nicht nötig und ist nicht vorgesehen.
+ */
+function waehleAblage(env: Env): string {
+  if (env.STORAGE_DRIVER !== undefined && env.STORAGE_DRIVER.trim() !== "") {
+    return env.STORAGE_DRIVER;
+  }
+  const url = env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const schluessel = (env.SUPABASE_SECRET_KEY ?? env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
+  return url && schluessel ? "supabase" : "local";
+}
+
 export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
   return RuntimeSchema.parse({
     mode: env.PAYCHECK_DEMO_MODE === "live" ? "live" : "demo",
@@ -381,7 +415,7 @@ export function loadRuntimeConfig(env: Env = currentEnv()): RuntimeConfig {
       webhookSecret: env.MAIL_WEBHOOK_SECRET,
     },
     storage: {
-      driver: env.STORAGE_DRIVER ?? "local",
+      driver: waehleAblage(env),
       dir: env.STORAGE_DIR ?? ".storage",
       encryptionKey: env.STORAGE_ENCRYPTION_KEY,
       s3: { endpoint: env.S3_ENDPOINT, bucket: env.S3_BUCKET, region: env.S3_REGION ?? "eu-central-1" },
