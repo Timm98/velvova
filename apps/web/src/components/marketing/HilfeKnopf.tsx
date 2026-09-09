@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { brand } from "@paycheck/config";
-import { SupportChat } from "@/app/(public)/help/SupportChat";
+import { SupportChat } from "@/app/(redaktion)/help/SupportChat";
 
 /**
  * Der Chatknopf unten rechts — für Besucher ohne Konto.

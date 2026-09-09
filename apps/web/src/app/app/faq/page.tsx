@@ -3,8 +3,8 @@ import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { getPageContext } from "@/lib/locale";
 import { HILFE, HILFE_BEREICHE, sucheHilfe } from "@/lib/content/hilfe";
-import { HilfeSuche } from "../../(public)/help/HilfeSuche";
-import { SupportChat } from "../../(public)/help/SupportChat";
+import { HilfeSuche } from "../../(redaktion)/help/HilfeSuche";
+import { SupportChat } from "../../(redaktion)/help/SupportChat";
 
 /*
  * Das FAQ innerhalb der Anwendung.
