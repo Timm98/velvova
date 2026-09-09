@@ -36,7 +36,28 @@ import { fremdinhalt, htmlZuText, type Fremdinhalt } from "./fremdinhalt.ts";
  */
 
 export type Abrufergebnis =
-  | { ok: true; inhalt: Fremdinhalt; endgueltigeUrl: string; status: number }
+  | {
+      ok: true;
+      /** Der lesbare Text, gekennzeichnet als Text von Fremden. */
+      inhalt: Fremdinhalt;
+      /**
+       * Das rohe HTML — ausschliesslich für STRUKTUR.
+       *
+       * Verweise und `mailto:`-Adressen stecken in den Tags und
+       * überleben `htmlZuText` nicht. Deshalb kommt es mit.
+       *
+       * ── Was damit nicht geschehen darf ─────────────────────────
+       *
+       * Es darf nie in einen Modellkontext. Dafür ist `inhalt` da,
+       * und nur der trägt die Kennzeichnung, ohne die ein Satz auf
+       * der Seite zur Anweisung wird. Wer HTML an ein Modell gibt,
+       * gibt ihm zusätzlich alles, was in Attributen und
+       * ausgeblendeten Elementen steht.
+       */
+      rohHtml: string;
+      endgueltigeUrl: string;
+      status: number;
+    }
   | { ok: false; grund: Abruffehler; nachricht: string };
 
 export type Abruffehler =
@@ -207,6 +228,7 @@ export async function seiteHolen(
       ok: true,
       status: antwort.status,
       endgueltigeUrl: ziel,
+      rohHtml: roh,
       inhalt: fremdinhalt(ziel, htmlZuText(roh), jetzt()),
     };
   }
