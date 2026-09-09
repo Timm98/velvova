@@ -11,6 +11,8 @@ import {
   anbieterFuerModell,
   buildNinaSystemPrompt,
   modellAuswaehlen,
+  anbieterMelden,
+  type Anbieter,
   ModellNichtVerfuegbarError,
   route as routeTask,
   selectProvider,
@@ -747,6 +749,16 @@ export async function POST(request: Request) {
             })
             .catch(() => undefined);
         }
+
+        /*
+         * Dem Schutzschalter sagen, dass es geklappt hat.
+         *
+         * Erst hier, nicht beim ersten Zeichen: Ein Strom, der nach
+         * der Hälfte abreisst, ist kein gelungener Aufruf, und ihn
+         * als solchen zu melden würde einen Schalter offen halten,
+         * der zumachen sollte.
+         */
+        anbieterMelden((anbieter ?? provider.name) as Anbieter, true);
       } catch (error) {
         /*
          * Der echte Grund gehört ins Serverprotokoll.
@@ -757,10 +769,18 @@ export async function POST(request: Request) {
          * nirgends ankommt, macht aus einem behebbaren Problem ein
          * unsichtbares. Kein Gesprächsinhalt, nur die Ursache.
          */
-        console.error(
-          "[nina/chat] Modellaufruf fehlgeschlagen:",
-          error instanceof Error ? `${error.name}: ${error.message}` : String(error),
-        );
+        const grund = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+        console.error("[nina/chat] Modellaufruf fehlgeschlagen:", grund);
+
+        /*
+         * Und dem Schutzschalter, dass es nicht geklappt hat.
+         *
+         * Er sortiert selbst, ob das dem Anbieter anzulasten ist:
+         * Ein abgelehntes Dokument darf einen gesunden Anbieter nicht
+         * aus dem Betrieb nehmen. Deshalb geht der Text mit und nicht
+         * nur ein Zähler.
+         */
+        anbieterMelden((anbieter ?? provider.name) as Anbieter, false, grund);
 
         send({
           type: "error",

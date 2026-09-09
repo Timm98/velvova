@@ -1,4 +1,5 @@
 import type { AiTask } from "../router.ts";
+import { anbieterGestoert } from "./anbieterbreaker.ts";
 import {
   KATALOG,
   eignungFuer,
@@ -289,12 +290,32 @@ export function rangfolge(
   anforderung: Anforderung,
   env: Umgebung = process.env as Umgebung,
   katalog: readonly Modelldefinition[] = KATALOG,
+  /*
+   * Der Schutzschalter, vorbelegt mit dem echten.
+   *
+   * Vorbelegt und nicht als Pflichtangabe: Ein Aufrufer, der ihn
+   * vergisst, bekäme sonst stillschweigend den alten Zustand — der
+   * Schalter zählte weiter, ohne dass ihn jemand liest. Genau das ist
+   * die Sorte Bauteil, die vorhanden aussieht und nichts tut.
+   *
+   * Als Angabe überschreibbar, damit Tests die Lage herstellen
+   * können, ohne einen Anbieter tatsächlich ausfallen zu lassen.
+   */
+  istGestoert: (anbieter: Anbieter) => boolean = anbieterGestoert,
 ): Rangeintrag[] {
   const gewicht = Math.min(1, Math.max(0, anforderung.qualitaetVorKosten ?? 0.6));
   const erlaubt = anforderung.erlaubteAnbieter;
 
   return anbietbareModelle(env, katalog)
     .filter((m) => !erlaubt?.length || erlaubt.includes(m.anbieter))
+    /*
+     * Gestörte Anbieter fallen aus der automatischen Auswahl.
+     *
+     * Nicht aus der ausdrücklichen: `modellAuswaehlen` fragt hier
+     * nicht. Wer ein Modell selbst wählt, bekommt seinen Versuch —
+     * siehe anbieterbreaker.ts.
+     */
+    .filter((m) => !istGestoert(m.anbieter))
     .filter((m) => (anforderung.benoetigt ?? []).every((f) => m.faehigkeiten[f]))
     .filter((m) => (anforderung.eingaben ?? []).every((e) => m.eingaben.includes(e)))
     .map((modell) => {
@@ -326,6 +347,7 @@ export function bestesModell(
   anforderung: Anforderung,
   env: Umgebung = process.env as Umgebung,
   katalog: readonly Modelldefinition[] = KATALOG,
+  istGestoert: (anbieter: Anbieter) => boolean = anbieterGestoert,
 ): Rangeintrag | null {
-  return rangfolge(anforderung, env, katalog)[0] ?? null;
+  return rangfolge(anforderung, env, katalog, istGestoert)[0] ?? null;
 }

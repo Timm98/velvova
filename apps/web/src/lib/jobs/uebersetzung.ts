@@ -132,10 +132,24 @@ export async function uebersetzungErzeugen(
    */
   if (job.description.length > 12_000) return;
 
-  const provider = await selectProvider();
   const routing = route("job_normalisation");
 
   try {
+    /*
+     * Der Anbieter wird INNERHALB des `try` geholt.
+     *
+     * Diese Zeile stand darüber, und damit war der Vorsatz im
+     * `catch` — „ein Fehlschlag ist kein Grund, die Seite zu
+     * verweigern" — für den häufigsten Fehlschlag ausser Kraft:
+     * `selectProvider()` wirft, wenn kein Anbieter eingerichtet oder
+     * erreichbar ist, und die Stellendetailseite antwortete dann mit
+     * 500 statt mit der Anzeige im Original.
+     *
+     * Auffallen konnte das nie, solange ein Anbieter lief. Es hätte
+     * sich an dem Tag gezeigt, an dem ohnehin schon etwas kaputt ist.
+     */
+    const provider = await selectProvider();
+
     const ergebnis = await provider.structuredGenerate({
       system: SYSTEM,
       messages: [
