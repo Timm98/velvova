@@ -45,12 +45,15 @@ export function Einstieg({
   text,
   aktionen,
   vorschau,
+  unter,
 }: {
   oberzeile: string;
   titel: string;
   text: string;
   aktionen?: ReactNode;
   vorschau?: ReactNode;
+  /** Unter dem Text, über der Kante — für ein Suchfeld, das die Spalte braucht. */
+  unter?: ReactNode;
 }) {
   return (
     <section className={`${AUSSEN} pb-14 pt-10 md:pb-20 md:pt-16`}>
@@ -86,6 +89,7 @@ export function Einstieg({
           </h1>
           <p className={`${LESEBREITE} text-[17px] leading-[1.6] text-ink-2`}>{text}</p>
           {aktionen ? <div className="mt-2 flex flex-wrap gap-3">{aktionen}</div> : null}
+          {unter ? <div className="mt-3 w-full max-w-[36rem]">{unter}</div> : null}
         </div>
         {vorschau ? <div className="min-w-0">{vorschau}</div> : null}
       </div>

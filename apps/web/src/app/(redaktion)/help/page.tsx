@@ -1,33 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronDown } from "lucide-react";
 import { getPageContext } from "@/lib/locale";
 import { currentUser } from "@/lib/auth";
 import { HILFE, HILFE_BEREICHE, sucheHilfe } from "@/lib/content/hilfe";
+import {
+  Abschluss,
+  Abschnitt,
+  Aufklapper,
+  Einstieg,
+  Hauptknopf,
+  LESEBREITE,
+  Nebenknopf,
+} from "@/components/unterseiten/Geruest";
+import { funktion, hatZiel } from "@/lib/unterseiten/verfuegbarkeit";
 import { HilfeSuche } from "./HilfeSuche";
 import { SupportChat } from "./SupportChat";
 
-export const metadata: Metadata = { title: "Hilfe" };
+export const metadata: Metadata = {
+  title: "Hilfe",
+  description:
+    "Antworten zu Konto, Jobsuche und Stellenchecks — durchsuchbar, mit Kontaktweg für alles andere.",
+};
 export const dynamic = "force-dynamic";
 
 /**
- * Die Hilfeseite.
+ * ══════════════════════════════════════════════════════════════════
+ * Hilfe — ein Anliegen lösen, nicht die Produktgeschichte lesen
+ * ══════════════════════════════════════════════════════════════════
  *
- * Sie liegt im öffentlichen Bereich und ist genau deshalb der Ort, an
- * dem der gemeldete Fehler entstand: „Die Hilfe loggt mich aus."
+ * Diese Seite war schon vor dem Umbau die ehrlichste der fünf: echte
+ * Volltextsuche über echte Einträge, ein Nulltrefferzustand, ein
+ * Support-Faden, der ausdrücklich vom Karrieregespräch getrennt ist.
+ * Das bleibt alles.
  *
- * Sie tat es nie. Die Sitzung blieb gültig, das Cookie unberührt — aber
- * der öffentliche Rahmen bot jedem Besucher „Anmelden / Konto anlegen"
- * an, ohne nachzusehen, ob schon jemand angemeldet ist. Wer aus der
- * Anwendung auf Hilfe klickte, sah den Anmeldeknopf und zog den einzig
- * naheliegenden Schluss.
+ * ── Was sich ändert ────────────────────────────────────────────
  *
- * Behoben ist das im Rahmen selbst (`(public)/layout.tsx`), nicht hier:
- * es betraf jede öffentliche Seite, nicht nur diese. Hier steht nur der
- * sichtbare Beweis — wer angemeldet ist, bekommt einen Weg zurück
- * statt einer Aufforderung, sich anzumelden.
+ * Erstens die Form: Die sechs Bereiche waren nur Zwischenüberschriften
+ * in einer langen Liste. Wer mit einem bestimmten Anliegen kommt,
+ * scrollt daran vorbei. Jetzt stehen sie oben als Übersicht mit der
+ * Zahl ihrer Antworten und führen an die Stelle.
+ *
+ * Zweitens ein Satz, der nicht belegt war. Unter „Lieber ein Mensch?"
+ * stand: „Wir antworten selbst — es gibt keine Warteschleife und kein
+ * Ticketsystem, das dich verwaltet." Das ist eine Aussage über die
+ * eigene Organisation, für die es keinen Nachweis gibt. Sie ist
+ * ersetzt durch das, was nachprüfbar stimmt: wohin die Nachricht
+ * geht.
+ *
+ * ── Warum die Bereiche heissen, wie sie heissen ────────────────
+ *
+ * Das Konzept schlägt „Stellen & Wechsel-Check", „Preise & Käufe" und
+ * „Technische Probleme" vor. Zu allen dreien gibt es keinen einzigen
+ * Hilfeeintrag — und „Wechsel-Check" gibt es als Funktion überhaupt
+ * nicht. Drei leere Kacheln wären schlechter als sechs volle.
+ *
+ * Deshalb stehen hier die Bereiche, zu denen es Antworten gibt. Sie
+ * kommen aus `lib/content/hilfe.ts` und nicht aus dieser Datei; wächst
+ * die Hilfe, wächst die Übersicht mit.
  */
-export default async function HelpPage({
+export default async function HilfeSeite({
   searchParams,
 }: {
   searchParams: Promise<{ q?: string }>;
@@ -38,98 +69,140 @@ export default async function HelpPage({
 
   const treffer = q ? sucheHilfe(q) : HILFE;
   const gefiltert = Boolean(q?.trim());
+  const kontakt = funktion("kontakt");
 
   return (
-    <div className="grid gap-14">
-      <header className="grid gap-4">
-        <p className="text-2xs font-medium uppercase tracking-[0.14em] text-ink-3">Hilfe</p>
-        <h1 className="font-display text-4xl font-normal tracking-[-0.02em]">
-          Wobei können wir helfen?
-        </h1>
-        <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
-          Such nach einem Stichwort, lies die häufigen Fragen, oder frag {brand.assistantName}{" "}
-          direkt. Sie antwortet hier aus der Produktdokumentation — nicht aus deinem
-          Karriereprofil.
-        </p>
-      </header>
+    <>
+      <Einstieg
+        oberzeile="Hilfe"
+        titel="Wobei brauchst du Hilfe?"
+        text={`Finde Antworten zu deinem Konto, zur Jobsuche und zu Stellenchecks. Für alles andere erreichst du uns direkt. ${brand.assistantName} antwortet hier aus der Produktdokumentation — nicht aus deinem Karriereprofil.`}
+        unter={<HilfeSuche defaultValue={q ?? ""} />}
+      />
 
-      <HilfeSuche defaultValue={q ?? ""} />
-
-      {gefiltert && (
-        <p className="-mt-8 text-sm text-ink-2" aria-live="polite">
-          {treffer.length === 0
-            ? `Zu „${q}“ steht hier nichts. Frag ${brand.assistantName} unten — oder schreib uns.`
-            : `${treffer.length} ${treffer.length === 1 ? "Antwort" : "Antworten"} zu „${q}“.`}
-        </p>
+      {/*
+        Die Trefferzeile ist `aria-live`, damit ein Vorleseprogramm
+        nach dem Absenden erfährt, wie viele Antworten es gibt. Ohne
+        sie ändert sich nur der Bildschirm.
+      */}
+      {gefiltert ? (
+        <Abschnitt
+          kinder={
+            <p className="text-[16px] text-ink-2" aria-live="polite">
+              {treffer.length === 0
+                ? `Zu „${q}“ steht hier nichts. Frag ${brand.assistantName} weiter unten — oder schreib uns.`
+                : `${treffer.length} ${treffer.length === 1 ? "Antwort" : "Antworten"} zu „${q}“.`}
+            </p>
+          }
+        />
+      ) : (
+        <Abschnitt
+          titel="Sechs Bereiche"
+          text="Jede Kachel führt an die Stelle mit den Antworten dazu. Was hier steht, gibt es auch — leere Bereiche sind keine dabei."
+          kinder={
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {HILFE_BEREICHE.map((bereich) => {
+                const anzahl = HILFE.filter((e) => e.bereich === bereich).length;
+                if (anzahl === 0) return null;
+                return (
+                  <li key={bereich}>
+                    <a
+                      href={`#${anker(bereich)}`}
+                      className="grid min-h-[6.5rem] content-between gap-3 rounded-(--radius-lg) border border-line p-5 transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      style={{ background: "var(--ed-surface)" }}
+                    >
+                      <span className="text-[16px] font-medium text-ink">{bereich}</span>
+                      <span className="text-[13px] text-ink-3">
+                        {anzahl} {anzahl === 1 ? "Antwort" : "Antworten"}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          }
+        />
       )}
 
-      {/* ── FAQ ─────────────────────────────────────────────── */}
-      <section className="grid gap-10">
-        {HILFE_BEREICHE.map((bereich) => {
-          const eintraege = treffer.filter((e) => e.bereich === bereich);
-          if (eintraege.length === 0) return null;
-          return (
-            <div key={bereich} className="grid gap-2">
-              <h2 className="font-display text-xl font-normal tracking-[-0.02em]">{bereich}</h2>
-              {/*
-                Zeilen mit Haarlinie, keine Kästen — dieselbe Form wie
-                im FAQ innerhalb der Anwendung. Zwanzig gefüllte Kästen
-                untereinander liest man ab; Zeilen an einer Kante
-                überfliegt man.
-              */}
-              <ul className="grid">
-                {eintraege.map((e) => (
-                  <li key={e.id} className="border-b border-line">
-                    {/*
-                      `<details>` statt eines eigenen Aufklappers.
-                      Es ist von Haus aus tastaturbedienbar, wird von
-                      Vorlesegeräten korrekt angesagt, funktioniert ohne
-                      Javascript und lässt sich vom Browser durchsuchen.
-                      Ein nachgebauter Aufklapper kann all das auch —
-                      aber nur, wenn man an alles denkt.
-                    */}
-                    <details className="group">
-                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base transition-colors marker:content-none hover:text-accent-text">
-                        {e.frage}
-                        <ChevronDown
-                          aria-hidden
-                          className="size-4 shrink-0 text-ink-3 transition-transform group-open:rotate-180"
-                          strokeWidth={1.8}
-                        />
-                      </summary>
-                      <p className="max-w-[var(--measure)] pb-5 text-base leading-relaxed text-ink-2">
-                        {e.antwort}
-                      </p>
-                    </details>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </section>
+      {HILFE_BEREICHE.map((bereich) => {
+        const eintraege = treffer.filter((e) => e.bereich === bereich);
+        if (eintraege.length === 0) return null;
+        return (
+          <Abschnitt
+            key={bereich}
+            id={anker(bereich)}
+            titel={bereich}
+            kinder={
+              <Aufklapper
+                fragen={eintraege.map((e) => ({
+                  frage: e.frage,
+                  antwort: <p>{e.antwort}</p>,
+                }))}
+              />
+            }
+          />
+        );
+      })}
 
-      {/* ── Monday ────────────────────────────────────────────── */}
-      <SupportChat assistantName={brand.assistantName} angemeldet={Boolean(user)} />
+      <Abschnitt
+        titel="Eine Frage zur Bedienung?"
+        text={`${brand.assistantName} beantwortet hier Fragen anhand der Produktinformationen. Dein Karrieregespräch ist ein eigener Bereich — es wird in diese Antworten nicht geladen.`}
+        kinder={<SupportChat assistantName={brand.assistantName} angemeldet={Boolean(user)} />}
+      />
 
-      {/* ── Mensch ──────────────────────────────────────────── */}
-      <section className="grid gap-3 rounded-(--radius-lg) bg-ice px-6 py-6">
-        <h2 className="font-display text-xl font-normal tracking-[-0.02em]">
-          Lieber ein Mensch?
-        </h2>
-        <p className="max-w-[var(--measure)] text-base leading-relaxed text-ink-2">
-          Wenn {brand.assistantName} nicht weiterhilft, schreib uns. Wir antworten selbst — es
-          gibt keine Warteschleife und kein Ticketsystem, das dich verwaltet.
-        </p>
-        <p>
-          <Link
-            href="/contact"
-            className="inline-flex h-11 items-center rounded-(--radius-pill) bg-accent px-5 text-sm font-medium text-accent-on transition-colors hover:bg-accent-hover"
-          >
-            Zum Kontakt
+      <Abschluss
+        titel="Lieber direkt mit uns sprechen?"
+        text="Beschreibe kurz, wobei du Unterstützung brauchst. Bitte schicke keine Passwörter oder Zugangsschlüssel — wir fragen nie danach."
+        aktionen={
+          <>
+            {hatZiel(kontakt) ? (
+              <Hauptknopf href={kontakt.route}>Support kontaktieren</Hauptknopf>
+            ) : null}
+            <Nebenknopf href="/security">Wie wir mit Daten umgehen</Nebenknopf>
+          </>
+        }
+      />
+
+      {/*
+        Der Hinweis darauf, was der Kontaktweg ist — und was nicht.
+
+        Hier stand „es gibt keine Warteschleife und kein Ticketsystem,
+        das dich verwaltet". Im Register steht bei `kontakt`: Die
+        Kontaktseite besteht aus Mailto-Verweisen, es gibt kein
+        Formular und keine Eingangsbestätigung. Über Bearbeitungszeiten
+        sagt der Code nichts, also sagt die Seite nichts darüber.
+      */}
+      <section className="mx-auto w-full max-w-[1120px] px-5 pb-16 md:px-8">
+        <p className={`${LESEBREITE} text-[13px] leading-[1.6] text-ink-3`}>
+          Der Kontakt läuft über E-Mail an die Adressen auf der{" "}
+          <Link href="/contact" className="underline underline-offset-[3px]">
+            Kontaktseite
           </Link>
+          . Es gibt kein Formular auf dieser Seite, das dir den Eingang bestätigen könnte — und
+          deshalb behaupten wir ihn auch nicht.
         </p>
       </section>
-    </div>
+    </>
+  );
+}
+
+/**
+ * Aus einem Bereichsnamen einen Anker machen.
+ *
+ * Umlaute und Kaufmanns-Und gehören nicht in eine Fragment-Kennung:
+ * Sie funktionieren zwar meist, überleben aber Kopieren, Verkürzen und
+ * fremde Programme nicht zuverlässig.
+ */
+function anker(bereich: string): string {
+  return (
+    "hilfe-" +
+    bereich
+      .toLowerCase()
+      .replace(/ä/g, "ae")
+      .replace(/ö/g, "oe")
+      .replace(/ü/g, "ue")
+      .replace(/ß/g, "ss")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
   );
 }

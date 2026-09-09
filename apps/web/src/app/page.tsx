@@ -839,7 +839,7 @@ function Einstiegshero({ angemeldet, anrede }: { angemeldet: boolean; anrede: st
              Core steht mittig; seine Grösse hält der Deckel in
              `NinaVisual`, nicht der Innenabstand.
           */
-          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mt-10 md:mr-[calc(-1*min(3.5rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6"
+          className="relative flex w-full max-w-[712px] flex-col gap-5 justify-self-end rounded-(--radius-lg) border border-line p-5 md:mt-24 md:mr-[calc(-1*min(3.5rem,max(2rem,(100vw-1240px)/2+2rem)))] md:p-6"
           style={{ background: "var(--ed-surface)" }}
         >
           {/*

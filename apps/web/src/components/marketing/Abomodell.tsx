@@ -130,7 +130,7 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
           <li
             key={a.key}
             className={[
-              "grid h-full content-start gap-6 rounded-(--radius-lg) border p-7",
+              "grid h-full content-start gap-6 rounded-(--radius-lg) p-7",
               "md:row-span-4 md:grid-rows-subgrid",
               /*
                * Die hervorgehobene Stufe bekommt eine Linie in der
@@ -148,9 +148,24 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
                * Empfehlung zu sein, ruhig genug, um die Nachbarn nicht
                * zu entwerten.
                */
+              /*
+               * Zwei Pixel bei der hervorgehobenen, einer bei den
+               * anderen — und das ist der eigentliche Unterschied.
+               *
+               * Bei einem Pixel war die Linie gemessen vorhanden
+               * (`color(srgb … / 0.85)` am Rand der Karte) und wurde
+               * trotzdem zweimal als „die Umrandung ist weg" gemeldet.
+               * Eine Haarlinie in gedecktem Blau auf dunklem Grund
+               * liest niemand als Auszeichnung; sie sieht aus wie die
+               * Kante daneben, nur minimal anders getönt.
+               *
+               * Die Stärke trägt hier, nicht die Farbe. Deshalb kein
+               * Schein und keine volle Deckung — das sah aus wie
+               * ausgewählt statt wie empfohlen.
+               */
               a.betont
-                ? "border-[rgb(from_var(--color-accent)_r_g_b_/_0.85)]"
-                : "border-line",
+                ? "border-2 border-[rgb(from_var(--color-accent)_r_g_b_/_0.85)]"
+                : "border border-line",
             ].join(" ")}
             style={{ background: "var(--ed-surface)" }}
           >

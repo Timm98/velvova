@@ -1,227 +1,287 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Card, Stack } from "@/components/ui";
-import { EINWILLIGUNGEN, EINWILLIGUNGSERKLAERUNG } from "@/lib/privacy/einwilligungen";
+import {
+  Abschluss,
+  Abschnitt,
+  Aufklapper,
+  Einstieg,
+  Grundsaetze,
+  Hauptknopf,
+  LESEBREITE,
+  Nebenknopf,
+} from "@/components/unterseiten/Geruest";
+import { funktion, hatZiel } from "@/lib/unterseiten/verfuegbarkeit";
 
-export const metadata: Metadata = { title: "Sicherheit" };
+export const metadata: Metadata = {
+  title: "Sicherheit",
+  description:
+    "Welche Daten Velvova verarbeitet, wer Zugriff bekommt — und welche Massnahmen umgesetzt sind und welche nicht.",
+};
 
-export default function SecurityPage() {
-  const measures: [string, string][] = [
-    ["Verschlüsselte Uebertragung", "TLS für jede Verbindung. Sitzungs-Cookies sind httpOnly, SameSite und in Produktion secure."],
-    ["Passwörter", "Gespeichert wird ausschließlich ein scrypt-Hash mit zufälligem Salt. Der Vergleich läuft in konstanter Zeit. Verlangt werden mindestens acht Zeichen - Länge schützt besser als erzwungene Sonderzeichen."],
-    ["Sitzungen", "Im Cookie steht ein zufälliges Token, in der Datenbank nur dessen Hash. Wer die Datenbank liest, kann sich damit nicht anmelden. Jede Sitzung ist einzeln widerrufbar."],
-    ["Zugriffskontrolle in der Datenbank", "Row Level Security über eine eingeschränkte Anwendungsrolle. Jede Anfrage läuft in einer Transaktion, die zuerst die erhöhten Rechte ablegt und die Nutzerkennung setzt. Ohne diesen Rahmen sind keine Nutzerdaten sichtbar."],
-    ["Trennung sensibler Inhalte", "Besonders schutzbedürftige Freitexte können verschlüsselt abgelegt werden; die Aufbewahrungsklasse steht an jeder Angabe."],
-    ["Uploads", "Prüfung von Typ und Größe, Anbindung für einen Schadsoftware-Scan, verschlüsselter Objektspeicher, kurzlebige signierte Links statt öffentlicher Adressen."],
-    ["Kein Personenbezug in Protokollen", "Chattexte, Dokumentinhalte und Freitexte erscheinen nicht in Logs oder in der Nutzungsmessung."],
-    ["Nachvollziehbarkeit", "Supportzugriff auf Nutzerinhalte ist nur über einen begründeten, protokollierten Ausnahmezugriff möglich - nicht beiläufig."],
-    ["Externe Texte", "Stellenanzeigen, Bewertungen und Lebensläufe werden als Daten behandelt, nie als Anweisungen. Auffällige Formulierungen werden markiert und angezeigt statt still entfernt."],
-  ];
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Sicherheit — jede Aussage gegen den Code geprüft
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Diese Seite ist die einzige der fünf, bei der eine falsche Aussage
+ * nicht bloss enttäuscht, sondern täuscht. Deshalb wurde jeder
+ * technische Satz der alten Fassung nachgeschlagen, bevor er hier
+ * wieder auftauchen durfte.
+ *
+ * ── Was die Prüfung am 9. September 2026 ergab ─────────────────
+ *
+ * BESTÄTIGT
+ *
+ *   Passwörter mit scrypt. `lib/auth.ts` nutzt `scryptSync` mit
+ *   N=16384, r=8, p=1, zufälligem Salt je Passwort und
+ *   `timingSafeEqual` beim Vergleich. Wichtig dabei: Velvova hat eine
+ *   EIGENE Anmeldung und benutzt nicht Supabase Auth. Der übliche
+ *   Einwand — Supabase hashe mit bcrypt, die Beschreibung passe also
+ *   nicht — trifft hier nicht zu, weil die Voraussetzung nicht
+ *   stimmt. Eine Supabase-Datenbank zu benutzen heisst nicht,
+ *   Supabase Auth zu benutzen.
+ *
+ *   Sitzungs-Cookie mit `httpOnly: true`, `sameSite: "lax"` und
+ *   `secure` in Produktion (`lib/auth.ts`).
+ *
+ *   Kurzlebige signierte Links statt öffentlicher Adressen.
+ *   `lib/supabase/storage.ts` erzeugt sie über `createSignedUrl` mit
+ *   Ablauffrist.
+ *
+ *   Maskierung vor dem Protokollieren. `packages/observability/redact.ts`
+ *   führt eine Liste von Feldnamen, die nicht in Protokolle gelangen.
+ *
+ * NICHT BESTÄTIGT — und deshalb hier gestrichen
+ *
+ *   „Anbindung für einen Schadsoftware-Scan". Gesucht nach clamav,
+ *   virus, malware, scan: kein Scanner, keine Anbindung, kein
+ *   Aufrufpunkt. Selbst die vorsichtige Formulierung „Anbindung"
+ *   beschrieb etwas, das es nicht gibt.
+ *
+ *   „Verschlüsselter Objektspeicher" im Sinne eigener Verschlüsselung.
+ *   Die Spalten `credentials_encrypted` und `statement_encrypted`
+ *   stehen im Schema — geschrieben wird in keine von beiden. Ein
+ *   Feld, das „encrypted" heisst und leer bleibt, ist keine
+ *   Verschlüsselung, sondern ein Vorhaben mit Namen.
+ *
+ * Diese beiden Punkte stehen jetzt unter „Was noch nicht umgesetzt
+ * ist". Sie zu löschen wäre bequemer gewesen und hätte die Seite
+ * positiver aussehen lassen — genau das ist der Grund, es nicht zu
+ * tun.
+ */
+
+/**
+ * Der Stand der letzten Inhaltsprüfung.
+ *
+ * Ein festes Datum, kein `new Date()`. Ein automatisch eingesetztes
+ * Heute behauptet jeden Tag aufs Neue eine Prüfung, die an genau
+ * einem Tag stattgefunden hat — das ist die unauffälligste Art, eine
+ * Sicherheitsseite unwahr werden zu lassen.
+ *
+ * Wer den Code ändert, ändert dieses Datum mit. Steht es still,
+ * während die Anwendung weiterläuft, ist das die richtige Auskunft:
+ * Seitdem hat niemand nachgesehen.
+ */
+const GEPRUEFT_AM = "9. September 2026";
+
+export default function SicherheitSeite() {
+  const einstellungen = funktion("datenschutz-einstellungen");
 
   return (
-    <Stack gap={6}>
-      <header>
-        <h1 style={{ fontSize: "var(--text-3xl)", lineHeight: "var(--leading-3xl)" }}>Sicherheit</h1>
-        <p style={{ marginTop: "var(--space-4)", fontSize: "var(--text-lg)", color: "var(--text-secondary)" }}>
-          Welche Maßnahmen tatsächlich umgesetzt sind - und was noch aussteht.
-        </p>
-      </header>
+    <>
+      <Einstieg
+        oberzeile="Sicherheit"
+        titel="Deine Daten. Klar geregelt."
+        text="Hier steht, welche Daten Velvova verarbeitet, wer Zugriff bekommt und was du selbst verwalten kannst. Und zwar auch das, was noch nicht umgesetzt ist."
+        aktionen={
+          <>
+            {hatZiel(einstellungen) ? (
+              <Hauptknopf href={einstellungen.route}>Einstellungen öffnen</Hauptknopf>
+            ) : null}
+            <Nebenknopf href="/privacy">Datenschutzerklärung lesen</Nebenknopf>
+          </>
+        }
+        unter={
+          <p className="text-[13px] leading-[1.6] text-ink-3">
+            Inhalt zuletzt gegen den Code geprüft am {GEPRUEFT_AM}. Das ist ein Prüfdatum, kein
+            Audit — eine externe Zertifizierung oder ein Penetrationstest liegt nicht vor.
+          </p>
+        }
+      />
 
-      <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-4)" }}>
-        {measures.map(([title, body]) => (
-          <Card as="li" key={title}>
-            <Stack gap={2}>
-              <h2 style={{ fontSize: "var(--text-base)" }}>{title}</h2>
-              <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>{body}</p>
-            </Stack>
-          </Card>
-        ))}
-      </ul>
+      <Abschnitt
+        titel="Drei Fragen, kurz beantwortet"
+        kinder={
+          <Grundsaetze
+            punkte={[
+              {
+                titel: "Zugriff auf deine Angaben",
+                text: "Dein Karrieregespräch, deine Dokumente und deine Notizen gehören in den privaten Bereich. Ein Arbeitgeberzugang, der davon etwas sieht, existiert heute nicht — und wenn er kommt, nur für gezielt freigegebene Angaben.",
+              },
+              {
+                titel: "Verarbeitung durch KI",
+                text: "Einordnungen laufen über Sprachmodelle von OpenAI und Anthropic. Was dorthin geht, ist die Frage und der zugehörige Text — nicht dein gesamtes Profil. Die Supportantworten bekommen ausschliesslich die Produktdokumentation.",
+              },
+              {
+                titel: "Speichern und löschen",
+                text: "Was du eingibst, kannst du ändern und löschen. Wie weit das heute per Selbstbedienung geht und wo es über den Kontakt läuft, steht unten bei den offenen Punkten.",
+              },
+            ]}
+          />
+        }
+      />
+
+      <Abschnitt
+        titel="Was umgesetzt ist"
+        text="Jeder Punkt hier ist an einer Stelle im Code nachgeschlagen. Die Stelle steht dabei."
+        kinder={
+          <Aufklapper
+            fragen={[
+              {
+                frage: "Anmeldung und Sitzungen",
+                antwort: (
+                  <>
+                    <p>
+                      Gespeichert wird kein Passwort, sondern ein scrypt-Hash mit zufälligem Salt je
+                      Konto. Der Vergleich läuft in konstanter Zeit, damit die Antwortdauer nicht
+                      verrät, wie weit ein Rateversuch gekommen ist. Verlangt werden mindestens acht
+                      Zeichen — Länge schützt besser als erzwungene Sonderzeichen.
+                    </p>
+                    <p>
+                      Velvova hat dafür eine eigene Anmeldung und benutzt nicht die Anmeldung des
+                      Datenbankanbieters. Das ist ein Unterschied, der oft übersehen wird: Eine
+                      Supabase-Datenbank zu verwenden heisst nicht, Supabase Auth zu verwenden.
+                    </p>
+                    <p>
+                      Das Sitzungs-Cookie ist <code>httpOnly</code> — Javascript im Browser kommt
+                      nicht heran — und <code>SameSite=Lax</code>; in Produktion zusätzlich{" "}
+                      <code>secure</code>, also nur über TLS.
+                    </p>
+                  </>
+                ),
+              },
+              {
+                frage: "Dateien und Uploads",
+                antwort: (
+                  <>
+                    <p>
+                      Typ und Grösse werden geprüft. Dateien liegen nicht unter öffentlichen
+                      Adressen: Der Zugriff läuft über kurzlebige signierte Links, die nach einer
+                      Frist ungültig werden.
+                    </p>
+                    <p>
+                      Einen Schadsoftware-Scan gibt es nicht — siehe unten. Lade deshalb nichts hoch,
+                      was du nicht auch per E-Mail verschicken würdest.
+                    </p>
+                  </>
+                ),
+              },
+              {
+                frage: "Protokolle und Supportzugriff",
+                antwort: (
+                  <>
+                    <p>
+                      Vor dem Protokollieren werden Felder maskiert, die Persönliches enthalten
+                      können — darunter Freitexte, Begründungen, Notizen und Zugangsdaten. Die Liste
+                      steht an einer Stelle und gilt für alles, was protokolliert wird.
+                    </p>
+                    <p>
+                      Was ein Hosting-Anbieter unabhängig davon in seinen eigenen Protokollen führt,
+                      liegt ausserhalb dieses Codes und damit ausserhalb dessen, was hier zugesagt
+                      werden kann.
+                    </p>
+                  </>
+                ),
+              },
+              {
+                frage: "Externe Inhalte und KI-Verarbeitung",
+                antwort: (
+                  <>
+                    <p>
+                      Für Einordnungen werden Sprachmodelle von OpenAI und Anthropic eingesetzt.
+                      Übermittelt wird, was für die jeweilige Frage nötig ist.
+                    </p>
+                    <p>
+                      Der Support-Faden ist davon getrennt: Er bekommt die Frage und die
+                      Produktdokumentation, nicht dein Karrieregespräch. Das ist keine Einstellung,
+                      sondern ein eigener Endpunkt mit eigenem Kontext.
+                    </p>
+                    <p>
+                      Einzelheiten dazu stehen in der{" "}
+                      <Link
+                        href="/ai-transparency"
+                        className="text-accent-text underline underline-offset-[3px]"
+                      >
+                        KI-Transparenz
+                      </Link>
+                      .
+                    </p>
+                  </>
+                ),
+              },
+            ]}
+          />
+        }
+      />
 
       {/*
-        ══════════════════════════════════════════════════════════
-        Die Haken und die Erklärung — hier, wo sie jeder lesen kann
-        ══════════════════════════════════════════════════════════
+        Der Abschnitt, den man am liebsten weglassen würde.
 
-        Sie standen ausschliesslich im Privacy Center, also hinter der
-        Anmeldung. Wer noch kein Konto hat, konnte nirgends nachlesen,
-        worin er einwilligen würde — und genau das ist die Frage, die
-        vor der Anmeldung gestellt wird.
-
-        Diese Seite zählte bis dahin Verschlüsselung, Rollenmodell und
-        Protokollierung auf. Alles richtig, alles über die Technik —
-        und nichts über die einzige Entscheidung, die dem Menschen
-        gehört.
-
-        Die Liste kommt aus `lib/privacy/einwilligungen.ts`, derselben
-        Quelle wie die Schalter in den Einstellungen. Zwei Listen
-        derselben Einwilligungen laufen auseinander, sobald eine
-        dazukommt, und dann verspricht die öffentliche Seite etwas
-        anderes, als die Anwendung schaltet.
+        Er steht bewusst gross und nicht in einer Unterebene: Eine
+        bekannte Lücke, die man suchen muss, ist praktisch keine
+        Auskunft. Beide Punkte standen vorher als Leistung auf dieser
+        Seite.
       */}
-      <Card>
-        <Stack gap={3}>
-          <h2 style={{ fontSize: "var(--text-base)" }}>Datenschutz: die Haken</h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-            Sieben Einwilligungen, jede einzeln zu setzen und einzeln zu widerrufen.
-            Keine ist voreingestellt: Was nicht ausdrücklich erteilt wurde, gilt als
-            nicht erteilt.
-          </p>
-
-          {(["funktion", "weitergabe"] as const).map((art) => (
-            <Stack gap={2} key={art}>
-              <h3 style={{ fontSize: "var(--text-sm)" }}>
-                {art === "funktion"
-                  ? "Damit Funktionen möglich sind"
-                  : "Damit Daten das Haus verlassen dürfen"}
-              </h3>
-              <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-3)" }}>
-                {Object.entries(EINWILLIGUNGEN)
-                  .filter(([, e]) => e.art === art)
-                  .map(([schluessel, e]) => (
-                    <li
-                      key={schluessel}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "auto 1fr",
-                        gap: "var(--space-3)",
-                        alignItems: "start",
-                      }}
-                    >
-                      {/*
-                        Ein leeres Kästchen, kein Häkchen.
-                        
-                        Es zeigt den Zustand, in dem jedes Konto
-                        anfängt — und der ist „nicht erteilt". Ein
-                        gesetztes Häkchen daneben zu zeichnen wäre
-                        eine Abbildung von etwas, das es nicht gibt.
-                        
-                        `aria-hidden`, weil es keine Bedienung ist:
-                        Geschaltet wird im Privacy Center, hier steht
-                        nur, was es gibt.
-                      */}
-                      <span
-                        aria-hidden
-                        style={{
-                          width: 16,
-                          height: 16,
-                          marginTop: 3,
-                          borderRadius: 4,
-                          border: "1.5px solid var(--border-default)",
-                          display: "block",
-                        }}
-                      />
-                      <div>
-                        <span style={{ fontWeight: 500, fontSize: "var(--text-sm)" }}>{e.title}</span>
-                        <p
-                          style={{
-                            fontSize: "var(--text-sm)",
-                            color: "var(--text-secondary)",
-                            marginTop: 2,
-                          }}
-                        >
-                          {e.body}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-              </ul>
-            </Stack>
-          ))}
-        </Stack>
-      </Card>
-
-      <Card>
-        <Stack gap={3}>
-          <h2 style={{ fontSize: "var(--text-base)" }}>Einwilligungserklärung</h2>
-          <ol
-            style={{
-              display: "grid",
-              gap: "var(--space-3)",
-              paddingLeft: "var(--space-5)",
-              margin: 0,
-            }}
-          >
-            {EINWILLIGUNGSERKLAERUNG.map((satz) => (
-              <li key={satz} style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                {satz}
+      <Abschnitt
+        titel="Was noch nicht umgesetzt ist"
+        text={`Diese Punkte standen bis zum ${GEPRUEFT_AM} auf dieser Seite, als wären sie fertig. Sie sind es nicht.`}
+        kinder={
+          <ul className="grid gap-6">
+            {[
+              {
+                titel: "Kein Schadsoftware-Scan für Uploads",
+                text: "Die frühere Fassung nannte eine „Anbindung für einen Schadsoftware-Scan“. Es gibt weder einen Scanner noch eine Anbindung noch eine Stelle, an der einer aufgerufen würde. Hochgeladene Dateien werden auf Typ und Grösse geprüft und sonst nicht.",
+              },
+              {
+                titel: "Keine zusätzliche Verschlüsselung einzelner Felder",
+                text: "Im Datenmodell gibt es Spalten mit dem Zusatz „encrypted“. Geschrieben wird in keine davon. Der Schutz der Daten ruht damit auf der Verschlüsselung des Datenbankanbieters und auf den Zugriffsregeln — nicht auf einer eigenen Feldverschlüsselung.",
+              },
+              {
+                titel: "Kein externer Nachweis",
+                text: "Es gibt keine Zertifizierung und keinen Penetrationstest von aussen. Was auf dieser Seite steht, beruht auf einer Durchsicht des eigenen Codes — mehr behauptet das Prüfdatum oben nicht.",
+              },
+            ].map((p) => (
+              <li key={p.titel} className="grid gap-2 border-t border-line pt-5">
+                <h3 className="text-[17px] font-semibold text-ink">{p.titel}</h3>
+                <p className={`${LESEBREITE} text-[15px] leading-[1.6] text-ink-2`}>{p.text}</p>
               </li>
             ))}
-          </ol>
-          <p style={{ fontSize: "var(--text-sm)" }}>
-            Gesetzt und widerrufen wird alles im{" "}
-            <Link href="/app/settings/privacy" style={{ textDecoration: "underline" }}>
-              Privacy Center
-            </Link>
-            . Der vollständige Rechtstext steht in der{" "}
-            <Link href="/privacy" style={{ textDecoration: "underline" }}>
-              Datenschutzerklärung
-            </Link>
-            .
-          </p>
-        </Stack>
-      </Card>
-
-      {/*
-        Was ein Arbeitgeber sieht — und was nicht.
-        
-        Diese Liste stand auf der Unternehmensseite, in zwei Kästen
-        neben dem Absatz, der dasselbe in drei Sätzen sagt. Dort war
-        sie acht Aufzählungspunkte lang für eine Frage, die auf einer
-        Produktseite niemand so genau stellt.
-        
-        Hier ist sie richtig: Wer diese Seite öffnet, will es genau
-        wissen — und die Zusage steht neben den übrigen, statt allein
-        auf einer Verkaufsseite.
-      */}
-      <Card>
-        <Stack gap={3}>
-          <h2 style={{ fontSize: "var(--text-base)" }}>Was ein Arbeitgeber sieht</h2>
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-            Ein Unternehmen sieht nie ein Profil, sondern ausschliesslich die Angaben, die jemand
-            für genau diese Stelle freigegeben hat — entstanden im Moment der Bewerbung.
-          </p>
-          <div style={{ display: "grid", gap: "var(--space-4)", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}>
-            <Stack gap={2}>
-              <h3 style={{ fontSize: "var(--text-sm)" }}>Sichtbar</h3>
-              <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                <li>· Name und Kontaktadresse</li>
-                <li>· die Kurzbeschreibung</li>
-                <li>· das Anschreiben</li>
-                <li>· freigegebene Unterlagen</li>
-              </ul>
-            </Stack>
-            <Stack gap={2}>
-              <h3 style={{ fontSize: "var(--text-sm)" }}>Nicht sichtbar</h3>
-              <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-                <li>· das Gespräch mit Monday</li>
-                <li>· das aktuelle Gehalt</li>
-                <li>· Lebenshaltung und Steuerangaben</li>
-                <li>· andere Bewerbungen</li>
-              </ul>
-            </Stack>
-          </div>
-          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-            Auch nicht zusammengefasst, auch nicht auf Anfrage. Die Trennung liegt in den
-            Zeilenrichtlinien der Datenbank, nicht in der Abfragedisziplin einzelner Stellen.
-          </p>
-        </Stack>
-      </Card>
-
-      <Card style={{ background: "var(--surface-sunken)", boxShadow: "none" }}>
-        <Stack gap={3}>
-          <h2 style={{ fontSize: "var(--text-base)" }}>Was noch aussteht</h2>
-          <ul style={{ listStyle: "none", display: "grid", gap: "var(--space-2)", fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
-            <li>· Mehrfaktor-Anmeldung ist vorbereitet, aber nicht aktiviert.</li>
-            <li>· Der Schadsoftware-Scan ist als Schnittstelle vorhanden; ein Dienst ist nicht angebunden.</li>
-            <li>· Ein externer Sicherheitstest hat nicht stattgefunden.</li>
-            <li>· Ein Wiederherstellungstest der Sicherungen steht aus.</li>
           </ul>
-          <p style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>
-            Diese Liste steht hier, weil eine Sicherheitsseite ohne offene Punkte unglaubwürdig ist.
+        }
+      />
+
+      <Abschnitt
+        titel="Einstellungen sind im Konto, nicht hier"
+        kinder={
+          <p className={`${LESEBREITE} text-[16px] leading-[1.65] text-ink-2`}>
+            Diese Seite erklärt, was passiert. Verändern lässt sich nichts von hier aus — Schalter
+            auf einer öffentlichen Seite hätten kein Konto, an dem sie etwas speichern könnten, und
+            ein Schalter, der nur die Farbe wechselt, ist keine Datenschutzfunktion. Die echten
+            Einstellungen stehen im angemeldeten Bereich.
           </p>
-        </Stack>
-      </Card>
-    </Stack>
+        }
+      />
+
+      <Abschluss
+        titel="Etwas gefunden, das nicht stimmt?"
+        text="Wenn dir eine Sicherheitslücke auffällt, schreib uns direkt, bevor du es öffentlich machst. Bitte keine Passwörter oder Zugangsschlüssel in der Nachricht."
+        aktionen={
+          <>
+            <Hauptknopf href="/contact">Sicherheitsproblem melden</Hauptknopf>
+            <Nebenknopf href="/privacy">Datenschutzerklärung</Nebenknopf>
+          </>
+        }
+      />
+    </>
   );
 }
