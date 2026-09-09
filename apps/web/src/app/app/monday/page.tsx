@@ -49,7 +49,11 @@ function entdoppeln<T extends { statement: string }>(items: T[]): T[] {
  * Komponente. Deshalb ist er nach einem Neuladen noch da — und auf
  * einem zweiten Gerät auch.
  */
-export default async function NinaPage() {
+export default async function NinaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ g?: string }>;
+}) {
   const { t, brand } = await getPageContext();
   const user = await requireUser();
 
@@ -82,7 +86,23 @@ export default async function NinaPage() {
     loadInterview(),
     bestandAufnehmen(user.id),
     (async () => {
+      /*
+       * ── Ein bestimmtes Gespräch öffnen ──────────────────────────
+       *
+       * `?g=` kommt aus der Liste der letzten Gespräche in der
+       * Seitenleiste. Ohne diesen Weg wäre die Liste eine Reihe von
+       * Verweisen, die alle dasselbe öffnen — sichtbar erst, wenn
+       * jemand den zweiten anklickt und wieder im ersten landet.
+       *
+       * Die Prüfung, ob das Gespräch der Person gehört, macht
+       * `ensureConversation` selbst: Es sucht nach Kennung UND
+       * Nutzer. Findet es nichts, legt es ein neues an — eine fremde
+       * Kennung führt also nicht zu fremdem Inhalt, sondern ins
+       * Leere. Das ist die richtige Antwort auf eine geratene Adresse.
+       */
+      const gewuenscht = (await searchParams).g?.trim();
       const g = await ensureConversation(user.id, {
+        conversationId: gewuenscht && gewuenscht.length < 64 ? gewuenscht : null,
         kind: "career_interview",
         locale: user.locale,
         route: "/app/monday",
@@ -105,7 +125,12 @@ export default async function NinaPage() {
       conversationId={gespräch.id}
       initialMessages={nachrichten
         .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ id: m.id, role: m.role as "user" | "assistant", content: m.content }))}
+        .map((m) => ({
+          id: m.id,
+          role: m.role as "user" | "assistant",
+          content: m.content,
+          modell: m.model ?? null,
+        }))}
       hypotheses={entdoppeln(view.openHypotheses).slice(0, 4)}
       initialStage={bestand.stage}
       initialStatus={STAGE_STATUS_DE[bestand.stage]}

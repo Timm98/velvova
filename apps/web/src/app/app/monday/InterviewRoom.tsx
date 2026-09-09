@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
+import { ArrowDown, BookOpen, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
 import { confirmEvidence, dismissEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
@@ -515,15 +515,38 @@ export function InterviewRoom({
          * Gespräch läuft. Auf der leeren Fläche steht nichts ausser
          * dem Core, dem Namen und der Frage.
          */}
-        {!nochNichtsGesagt && (
-          <div className="flex shrink-0 items-center justify-end pt-4 pb-1">
+        {/*
+         * ── Die Zeile über dem Gespräch ────────────────────────────
+         *
+         * Sie steht IMMER, auch auf der leeren Fläche — denn der
+         * Kontext ist gerade dann interessant, wenn man noch nichts
+         * gefragt hat: Was weiss Monday schon, was fehlt ihr noch?
+         *
+         * Das Punkt-Menü dagegen nur bei laufendem Gespräch. „Pause"
+         * über einem leeren Chat wäre ein Angebot, etwas zu
+         * unterbrechen, das nicht läuft.
+         */}
+        <div className="flex shrink-0 items-center justify-end gap-1 pt-4 pb-1">
+          <button
+            type="button"
+            onClick={() => setFortschrittOffen(true)}
+            className={cn(
+              "flex min-h-8 items-center gap-1.5 rounded-(--radius-pill) px-2.5 text-xs",
+              "text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text)",
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)",
+            )}
+          >
+            <BookOpen className="size-3.5 shrink-0" strokeWidth={1.8} />
+            Kontext
+          </button>
+          {!nochNichtsGesagt && (
             <Gespraechsmenue
               onPause={pausieren}
               pending={pending}
               labels={{ pause: labels.pauseSession }}
             />
-          </div>
-        )}
+          )}
+        </div>
 
         {/*
          * Was beim Sprechen schiefging — sichtbar, nicht nur im Zustand.
@@ -761,8 +784,8 @@ export function InterviewRoom({
                     <p
                       aria-live={istLetzte ? "polite" : undefined}
                       className={cn(
-                        "max-w-[var(--measure)] whitespace-pre-wrap text-base leading-relaxed",
-                        istLetzte ? "text-ink" : "text-ink-2",
+                        "max-w-[var(--measure)] text-[15px] leading-relaxed whitespace-pre-wrap",
+                        istLetzte ? "text-(--app-text)" : "text-(--app-text-2)",
                       )}
                     >
                       {/*
@@ -786,7 +809,36 @@ export function InterviewRoom({
                     </p>
                   )}
                   {m.role === "assistant" && !m.streaming && (
-                    <SpeakButton messageId={m.id} className="mt-2 -ml-3 justify-self-start" />
+                    /*
+                     * Die Fusszeile einer Antwort: Vorlesen und, wenn
+                     * bekannt, wer geschrieben hat.
+                     *
+                     * Zusammen in einer Reihe statt untereinander —
+                     * §15 verlangt kompakt gruppierte Antwortaktionen
+                     * und keine Werkzeugleiste unter jedem Absatz.
+                     */
+                    <div className="mt-1.5 flex items-center gap-3">
+                      <SpeakButton messageId={m.id} className="-ml-3" />
+                      {m.modell && (
+                        /*
+                         * ── Woher der Name kommt ──────────────────
+                         *
+                         * Aus den Nutzungsdaten des Anbieters, also
+                         * aus dem Lauf selbst — nicht aus dem, was im
+                         * Auswahlfeld steht. Bei einem Ausweichmodell
+                         * ist das der Unterschied zwischen einer
+                         * Angabe und einer Vermutung.
+                         *
+                         * Nur wenn er bekannt ist. Eine Zeile „Mit
+                         * unbekannt" wäre schlechter als keine.
+                         */
+                        <span className="text-2xs text-(--app-text-3)">
+                          {m.modellAuto
+                            ? `Automatisch gewählt: ${m.modell}`
+                            : `Mit ${m.modell}`}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </li>
               );
@@ -1093,6 +1145,9 @@ export function InterviewRoom({
         groups={nina.progressGroups ?? progress.groups}
         completeness={nina.readiness?.score ?? progress.completeness}
         readiness={nina.readiness}
+        /* Was Monday vermutet, aber noch nicht bestätigt hat. Es lag
+           bisher nur im Kopfbereich und ist mit ihm verschwunden. */
+        vermutungen={hypotheses}
         assistantName={assistantName}
       />
     </div>

@@ -29,6 +29,7 @@ export function ProgressDrawer({
   groups,
   completeness,
   readiness,
+  vermutungen = [],
   assistantName,
 }: {
   open: boolean;
@@ -36,6 +37,18 @@ export function ProgressDrawer({
   groups: Fortschrittsgruppe[];
   completeness: number;
   readiness?: { state: string; missing: string[]; reason: string } | null;
+  /**
+   * Was Monday vermutet, aber noch nicht bestätigt hat.
+   *
+   * ── Warum das hierhin gehört ────────────────────────────────────
+   *
+   * „Was ich über dich weiss" ist unvollständig, solange nur das
+   * Bestätigte darin steht. Eine Vermutung, die im Hintergrund die
+   * Antworten mitprägt und nirgends sichtbar ist, kann niemand
+   * berichtigen — und genau das ist der Fall, in dem eine falsche
+   * Annahme lange bleibt.
+   */
+  vermutungen?: { id: string; statement: string }[];
   assistantName: string;
 }) {
   const fläche = useRef<HTMLDivElement>(null);
@@ -77,7 +90,7 @@ export function ProgressDrawer({
           // Fläche rechts. Beides derselbe Inhalt, beides mit dem Daumen
           // bzw. der Maus dort, wo die Hand ohnehin ist.
           "inset-x-0 bottom-0 max-h-[85dvh] rounded-t-(--radius-sheet)",
-          "sm:inset-y-4 sm:left-auto sm:right-4 sm:w-[420px] sm:max-h-none sm:rounded-(--radius-sheet)",
+          "sm:inset-y-4 sm:left-auto sm:right-4 sm:w-[340px] sm:max-h-none sm:rounded-(--radius-sheet)",
           "motion-safe:animate-[nina-rise_240ms_cubic-bezier(0.16,1,0.3,1)]",
         )}
       >
@@ -108,7 +121,15 @@ export function ProgressDrawer({
            * Der Ring zeigt dasselbe, ohne ein Versprechen über die
            * Restlänge zu machen.
            */}
-          <div className="flex items-center gap-5 rounded-(--radius-surface) bg-accent-soft px-6 py-5">
+          {/*
+            Grau statt blau.
+
+            Hier lag `bg-accent-soft` — eine getönte Fläche über die
+            ganze Breite, und das Erste, was man beim Öffnen sah. Der
+            Ring darin trägt die Zahl; die Fläche darunter musste
+            nichts sagen und sagte trotzdem am lautesten.
+          */}
+          <div className="flex items-center gap-4 rounded-(--radius-surface) bg-(--app-erhoben-2) px-5 py-4">
             <div className="relative grid size-16 shrink-0 place-items-center">
               <svg viewBox="0 0 40 40" className="absolute inset-0 -rotate-90" aria-hidden>
                 <circle cx="20" cy="20" r="17" fill="none" stroke="var(--surface-1)" strokeWidth="4" />
@@ -155,6 +176,32 @@ export function ProgressDrawer({
               </li>
             ))}
           </ul>
+
+          {vermutungen.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-sm font-medium">Was ich vermute</h3>
+              {/*
+                Ausdrücklich getrennt von dem, was oben steht.
+                
+                Oben ist Bestätigtes, hier Angenommenes. Beides in
+                einer Liste zu führen wäre die bequeme Lösung und die
+                falsche: Wer eine Vermutung für eine Tatsache hält,
+                berichtigt sie nicht — und eine unberichtigte Annahme
+                prägt jede weitere Antwort mit.
+              */}
+              <p className="mt-1 text-2xs leading-relaxed text-ink-3">
+                Noch nicht bestätigt. Sag mir, wenn etwas davon nicht stimmt.
+              </p>
+              <ul className="mt-3 grid gap-2">
+                {vermutungen.slice(0, 5).map((v) => (
+                  <li key={v.id} className="flex gap-2.5 text-sm leading-relaxed text-ink-2">
+                    <span aria-hidden className="mt-2 size-1.5 shrink-0 rounded-full border border-ink-3" />
+                    {v.statement}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {readiness && readiness.missing.length > 0 && (
             <div className="mt-6">

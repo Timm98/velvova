@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Bell,
   ChevronDown,
@@ -103,6 +103,7 @@ export function Seitenleiste({
   gespraeche?: Leisteneintrag[];
 }) {
   const pfad = usePathname();
+  const offenesGespraech = useSearchParams().get("g");
   const [eng, setEng] = useState(false);
   const [kontoOffen, setKontoOffen] = useState(false);
   const kontoRef = useRef<HTMLDivElement>(null);
@@ -352,7 +353,16 @@ export function Seitenleiste({
                 href={g.href}
                 text={g.titel}
                 Icon={MessageSquare}
-                aktiv={pfad === g.href}
+                /*
+                 * Nach der Kennung vergleichen, nicht nach der Adresse.
+                 *
+                 * `usePathname` liefert `/app/monday` ohne Abfrage —
+                 * verglichen mit `/app/monday?g=…` hätte nie ein
+                 * Eintrag als aktiv gegolten. Auffallen würde das
+                 * nicht als Fehler, sondern als fehlende Hervorhebung:
+                 * Man sieht nicht, in welchem Gespräch man ist.
+                 */
+                aktiv={pfad === "/app/monday" && offenesGespraech === g.id}
               />
             ))}
           </div>

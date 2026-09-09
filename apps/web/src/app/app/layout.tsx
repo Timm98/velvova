@@ -16,6 +16,7 @@ import { logoutAction } from "@/app/(auth)/actions";
 import { profilbildKennung } from "@/lib/profilbild-kennung";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { projekteFuerLeiste } from "@/lib/chancen/projekte";
+import { gespraecheFuerLeiste } from "@/lib/nina/leistengespraeche";
 
 /**
  * Das App-Gerüst.
@@ -137,6 +138,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         bildKennung={profilbildKennung(einstellungen?.avatarPfad)}
         /* Die offenen Vorhaben. Leer heisst: der Abschnitt fehlt. */
         projekte={await projekteFuerLeiste(user.id)}
+        /* Die letzten Gespräche — echte Nutzerdaten, leere fallen weg. */
+        gespraeche={await gespraecheFuerLeiste(user.id)}
         /* Für die Regionsauswahl im Fussbereich — sie soll den
            aktuellen Stand zeigen und nicht immer „Deutschland". */
         land={einstellungen?.jobMarketCountry ?? "DE"}

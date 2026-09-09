@@ -74,6 +74,23 @@ export interface NinaMessage {
    * nicht, welche Anbieter beteiligt waren.
    */
   teamschritte?: string[];
+  /**
+   * Welches Modell diese Antwort geschrieben hat.
+   *
+   * ── Warum am einzelnen Zug und nicht am Gespräch ────────────────
+   *
+   * Weil sich die Wahl mitten im Gespräch ändern darf. Stünde der
+   * Name nur einmal oben, träfe er rückwirkend auch auf Antworten zu,
+   * die ein anderes Modell geschrieben hat — und niemand könnte das
+   * nachträglich auseinanderhalten.
+   *
+   * Der Wert kommt aus den Nutzungsdaten des Anbieters, nicht aus
+   * unserer Auswahl. Bei einem Ausweichmodell ist das der Unterschied
+   * zwischen einer Angabe und einer Vermutung.
+   */
+  modell?: string | null;
+  /** Ob die Wahl automatisch getroffen wurde. Ändert nur den Satz. */
+  modellAuto?: boolean;
 }
 
 /** Was die aktuelle Seite über sich sagt. Seiten melden das selbst an. */
@@ -821,7 +838,9 @@ export function NinaProvider({
                * abzuleiten wäre eine Vermutung — und bei einem
                * Ausweichmodell die falsche.
                */
-              if (typeof ereignis.model === "string") setZuletztesModell(ereignis.model);
+              const gelaufenesModell =
+                typeof ereignis.model === "string" ? ereignis.model : null;
+              if (gelaufenesModell) setZuletztesModell(gelaufenesModell);
               takt.fertig = true;
               /*
                * Mit Zeitgrenze warten, nie unbegrenzt.
@@ -842,7 +861,18 @@ export function NinaProvider({
                 new Promise<void>((weiter) => setTimeout(weiter, 2000)),
               ]);
               setMessages((m) =>
-                m.map((n) => (n.id === antwortId ? { ...n, streaming: false } : n)),
+                m.map((n) =>
+                  n.id === antwortId
+                    ? {
+                        ...n,
+                        streaming: false,
+                        modell: gelaufenesModell,
+                        /* `modell` ist der Zustand zum Zeitpunkt des
+                           Sendens — die Wahl, nicht das Ergebnis. */
+                        modellAuto: modell === "auto",
+                      }
+                    : n,
+                ),
               );
             }
           }

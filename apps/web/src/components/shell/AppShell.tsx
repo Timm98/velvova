@@ -71,6 +71,7 @@ export function AppShell({
   userEmail,
   planName,
   planHref,
+  gespraeche,
   userName,
   unreadCount,
   onLogout,
@@ -99,6 +100,8 @@ export function AppShell({
   planName: string;
   /** Wohin der Warenkorb in der Leiste führt. */
   planHref: string;
+  /** Die letzten Gespräche für die Leiste. Leer heisst: kein Abschnitt. */
+  gespraeche?: { id: string; titel: string; href: string }[];
   userName: string | null;
   unreadCount: number;
   onLogout: React.ReactNode;
@@ -272,6 +275,7 @@ export function AppShell({
         onLogout={onLogout}
         onSuche={() => setPaletteOpen(true)}
         projekte={projekte}
+        gespraeche={gespraeche}
       />
 
       {/*

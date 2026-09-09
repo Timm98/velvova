@@ -44,6 +44,8 @@ export interface StoredMessage {
   role: "user" | "assistant" | "tool";
   content: string;
   toolCalls: { name: string; ok: boolean; summary?: string }[];
+  /** Welches Modell geantwortet hat. `null` bei eigenen Nachrichten. */
+  model: string | null;
   createdAt: Date;
 }
 
@@ -252,6 +254,11 @@ export async function loadMessages(
         index: schema.ninaMessages.index,
         role: schema.ninaMessages.role,
         content: schema.ninaMessages.content,
+        /* Wer geschrieben hat — steht unter der Antwort, auch nach
+           einem Neuladen. Ohne diese Zeile verlor die Angabe beim
+           nächsten Öffnen ihren Wert und die Unterhaltung sah aus,
+           als hätte immer dasselbe Modell geantwortet. */
+        model: schema.ninaMessages.model,
         toolCalls: schema.ninaMessages.toolCalls,
         createdAt: schema.ninaMessages.createdAt,
       })
