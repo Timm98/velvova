@@ -1910,3 +1910,27 @@ input[type="number"] {
 
 /* Wer wenig Bewegung will, will trotzdem sehen, welche Karte
    empfohlen ist — der Schein bewegt sich nicht und bleibt. */
+
+/* ── Plattformzeichen: hell/dunkel wie bei den Zahlungsarten ──
+ *
+ * Dieselbe Umschaltung, nur für die Logos von Apple, Windows und
+ * Android am „App herunterladen".
+ *
+ * Die Vorlagen sind einfarbig, und einfarbig heisst hier: Auf der
+ * falschen Fläche verschwindet das Zeichen ganz. Ein weisses
+ * Apple-Zeichen auf hellem Grund ist nicht blass, es ist weg.
+ *
+ * Umschaltung über CSS und nicht über JavaScript, aus demselben
+ * Grund wie bei den Partnerkacheln: Ein Wechsel nach der Hydratation
+ * zeigt beim Laden für einen Moment das falsche.
+ */
+.plattformzeichen .fuer-dunkel { display: none; }
+.plattformzeichen .fuer-hell { display: block; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .plattformzeichen .fuer-dunkel { display: block; }
+  :root:not([data-theme="light"]) .plattformzeichen .fuer-hell { display: none; }
+}
+
+:root[data-theme="dark"] .plattformzeichen .fuer-dunkel { display: block; }
+:root[data-theme="dark"] .plattformzeichen .fuer-hell { display: none; }

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { AUSSENVERWEISE } from "@paycheck/config";
-import { ArrowRight, Monitor } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { AppleKnopf, GoogleKnopf, Trenner } from "@/app/(auth)/formstuecke";
+import { AppHolen } from "./AppHolen";
 
 /**
  * Die Knopfstile stehen hier, nicht als Import.
@@ -216,28 +216,7 @@ export function Einstieg({
         Herunterladen, ohne eine Zeile Code. Die Funktion ist gebaut;
         was fehlt, ist die Datei.
       */}
-      {AUSSENVERWEISE.desktopUrl ? (
-        /*
-          Mittig und nur so breit wie sein Text — wie in der Vorlage.
-
-          Über die volle Breite sähe er aus wie ein vierter
-          Anmeldeweg. Er ist aber keiner: Man lädt etwas herunter und
-          meldet sich nicht an. Deshalb steht er ausserhalb des
-          Kastens und nimmt nicht dessen Breite.
-        */
-        <a
-          href={AUSSENVERWEISE.desktopUrl}
-          className={`${KNOPF_RAND} mx-auto w-fit px-5 text-sm`}
-        >
-          <Monitor aria-hidden className="size-4" strokeWidth={2} />
-          Desktop-App herunterladen
-        </a>
-      ) : (
-        <p className="flex items-center justify-center gap-2 text-sm text-ink-3">
-          <Monitor aria-hidden className="size-4 shrink-0" strokeWidth={2} />
-          Desktop-App: kommt bald
-        </p>
-      )}
+      <AppHolen />
     </div>
   );
 }
