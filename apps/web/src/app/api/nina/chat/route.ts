@@ -44,6 +44,7 @@ import {
   zugAnwenden,
   zustimmungVermerken,
 } from "@/lib/nina/engine";
+import { alsMaterial, mondayTeam } from "@/lib/nina/teamlauf";
 import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
 import { listJobsForUser, loadProfileContext } from "@/lib/matching";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
@@ -578,6 +579,49 @@ export async function POST(request: Request) {
       let outputTokens: number | null = null;
       let latenz: number | null = null;
 
+      /*
+       * ══════════════════════════════════════════════════════════
+       * Vor der Antwort: Lohnt sich ein Team?
+       * ══════════════════════════════════════════════════════════
+       *
+       * `mondayTeam` entscheidet das selbst und gibt in den weitaus
+       * meisten Fällen `null` zurück — bei einer flachen Frage, bei
+       * fehlender Freigabe, bei erschöpftem Budget, bei zu wenigen
+       * verfügbaren Modellen. Dann läuft alles wie bisher.
+       *
+       * Es steht VOR dem Antwortstrom und nicht darin: Das Team
+       * analysiert, Monday schreibt. Was es herausfindet, geht als
+       * Material in ihren Systemtext — nicht in den Verlauf, sonst
+       * läse sie beim nächsten Aufruf ihre eigene Analyse als
+       * Aussage ihres Gegenübers.
+       *
+       * Der eigene `try`: Ein gescheitertes Team darf die Antwort
+       * nicht kosten. Es ist eine Verbesserung, keine Voraussetzung
+       * — und für die Person ist eine Antwort ohne Voranalyse
+       * unendlich viel besser als eine Fehlermeldung.
+       */
+      let teamMaterial: string | null = null;
+      try {
+        const team = await mondayTeam({
+          userId: user.id,
+          frage: eingabe.message ?? "",
+          /* Nur Gesichertes, kein Verlauf: Das Team beurteilt eine
+             Frage, es soll nicht das Gespräch nacherzählen. */
+          angaben: [...scoped.confirmedFacts, ...scoped.hardConstraints].join("\n"),
+          tiefe,
+          melden: (ereignis) => send({ type: "team", ...ereignis }),
+        });
+        if (team) teamMaterial = alsMaterial(team);
+      } catch (fehler) {
+        console.warn(
+          "[monday/team] Lauf fehlgeschlagen, Antwort läuft ohne:",
+          fehler instanceof Error ? fehler.message : String(fehler),
+        );
+      }
+
+      /* Beide Stromaufrufe unten bekommen denselben Systemtext. */
+      const systemMitTeam = teamMaterial ? `${systemPrompt}\n\n${teamMaterial}` : systemPrompt;
+
       try {
         /*
          * Die Agentenschleife.
@@ -606,7 +650,7 @@ export async function POST(request: Request) {
           let textInDieserRunde = false;
 
           for await (const event of provider.streamConversation({
-            system: systemPrompt,
+            system: systemMitTeam,
             messages,
             tier: routing.providerTier,
             tools,
@@ -692,7 +736,7 @@ export async function POST(request: Request) {
          */
         if (antwort.trim().length === 0) {
           for await (const event of provider.streamConversation({
-            system: systemPrompt,
+            system: systemMitTeam,
             messages,
             tier: routing.providerTier,
             tools: [],

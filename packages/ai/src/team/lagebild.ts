@@ -134,12 +134,29 @@ export function lagebild(
         const stand = staende.get(schluessel(u.aussage));
         if (!stand) continue;
         /*
+         * ── Selbstbestätigung nein, Selbstkorrektur ja ───────────
+         *
          * Wer eine Aussage selbst aufgestellt hat, darf sie nicht
-         * stützen. `pruefrunde` legt sie ihm gar nicht erst vor —
-         * diese Zeile ist die zweite Sperre, falls jemand das
-         * Lagebild später mit anders gebauten Daten aufruft.
+         * STÜTZEN. Das wäre ein Echo, und im Lagebild wäre es später
+         * nicht mehr von einer echten Bestätigung zu unterscheiden.
+         *
+         * Ihr zu WIDERSPRECHEN ist das Gegenteil und sehr viel wert.
+         * Der Prüfer sieht die Aussage anonym; dass er sie verwirft,
+         * ohne zu wissen, dass sie von ihm stammt, ist ein
+         * unabhängiges zweites Urteil — und ein Modell, das sich
+         * unter Prüfung selbst korrigiert, ist das stärkste Signal,
+         * das in diesem Verfahren überhaupt vorkommt.
+         *
+         * Der Unterschied fiel erst auf, als die ganze Kette einmal
+         * am Stück lief: Stellen alle drei Modelle dieselbe Aussage
+         * auf, ist jeder Prüfer zugleich Urheber — und eine Sperre
+         * ohne diese Unterscheidung machte die Aussage
+         * unwiderlegbar. Je einiger sich die Modelle waren, desto
+         * weniger konnte ihnen widersprochen werden. Genau
+         * verkehrt herum.
          */
-        if (stand.vertretenVon.includes(pruefer.rolle)) continue;
+        const eigene = stand.vertretenVon.includes(pruefer.rolle);
+        if (eigene && u.urteil !== "widersprochen") continue;
 
         if (u.urteil === "gestuetzt") {
           if (!stand.gestuetztVon.includes(pruefer.rolle)) stand.gestuetztVon.push(pruefer.rolle);

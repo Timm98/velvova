@@ -171,3 +171,47 @@ describe("lagebild", () => {
     expect(bild.staende.map((s) => s.stand)).toEqual(["gesichert", "strittig", "verworfen"]);
   });
 });
+
+describe("Selbstbestätigung gegen Selbstkorrektur", () => {
+  /*
+   * Gefunden, als die ganze Kette zum ersten Mal am Stück lief.
+   * Stellen alle Modelle dieselbe Aussage auf, ist jeder Prüfer
+   * zugleich Urheber — eine Sperre ohne diese Unterscheidung machte
+   * die Aussage unwiderlegbar. Je einiger sich die Modelle waren,
+   * desto weniger konnte ihnen widersprochen werden.
+   */
+  it("lässt einen widersprechen, der die Aussage selbst aufgestellt hat", () => {
+    const bild = lagebild(
+      [
+        lauf("hauptanalyse", ["Quereinstieg ist ausgeschlossen"]),
+        lauf("gegenpruefung", ["Quereinstieg ist ausgeschlossen"]),
+      ],
+      [
+        pruefer("gegenpruefung", [
+          {
+            aussage: "Quereinstieg ist ausgeschlossen",
+            urteil: "widersprochen",
+            begruendung: "Es gibt Umschulungswege.",
+            beleg: "Bundesagentur",
+          },
+        ]),
+      ],
+      true,
+    );
+    expect(bild.staende[0]!.stand).toBe("verworfen");
+  });
+
+  it("lässt ihn sie weiterhin nicht stützen", () => {
+    const bild = lagebild(
+      [lauf("hauptanalyse", ["Meine eigene These"], ["Quelle"])],
+      [
+        pruefer("hauptanalyse", [
+          { aussage: "Meine eigene These", urteil: "gestuetzt", begruendung: "Ja.", beleg: null },
+        ]),
+      ],
+      true,
+    );
+    expect(bild.staende[0]!.gestuetztVon).toEqual([]);
+    expect(bild.staende[0]!.stand).toBe("ungeprueft");
+  });
+});

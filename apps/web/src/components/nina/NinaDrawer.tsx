@@ -224,6 +224,30 @@ export function NinaDrawer({ assistantName }: { assistantName: string }) {
               {assistantName}
             </p>
 
+            {/*
+              Was vor der Antwort geprüft wurde.
+              
+              Steht über den Werkzeugen, weil es zeitlich davor liegt:
+              erst die Prüfung, dann das Nachschlagen, dann der Text.
+              Eine Liste, die nicht der Reihenfolge folgt, liest sich
+              wie eine Aufzählung von Fähigkeiten statt wie ein
+              Vorgang.
+              
+              Keine Modellnamen. Wichtig ist, dass die Frage aus
+              mehreren Blickwinkeln geprüft wurde und was dabei
+              herauskam — nicht, welche Anbieter beteiligt waren.
+            */}
+            {letzteVonNina.teamschritte && letzteVonNina.teamschritte.length > 0 && (
+              <ul className="mb-1.5 grid gap-1">
+                {letzteVonNina.teamschritte.map((zeile, i) => (
+                  <li key={`${i}-${zeile}`} className="flex items-center gap-2 text-xs text-ink-3">
+                    <span aria-hidden className="size-1.5 rounded-full bg-ink-3/40" />
+                    {zeile}
+                  </li>
+                ))}
+              </ul>
+            )}
+
             {letzteVonNina.tools && letzteVonNina.tools.length > 0 && (
               <ul className="mb-1.5 grid gap-1">
                 {letzteVonNina.tools.map((w) => (

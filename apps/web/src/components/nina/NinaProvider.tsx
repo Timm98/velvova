@@ -22,6 +22,38 @@ import { useNinaVoice } from "./useNinaVoice";
  * Server längst weiß.
  */
 
+/**
+ * Ein Teamereignis in einen Satz für Menschen.
+ *
+ * `null` heisst: Das gehört nicht auf den Bildschirm. Nicht jeder
+ * Zwischenschritt ist eine Mitteilung wert — eine Liste, in der alles
+ * steht, liest niemand, und dann ist auch das Wichtige verschwunden.
+ */
+function teamzeile(e: Record<string, unknown>): string | null {
+  switch (e.art) {
+    case "aufgestellt":
+      return "Prüft die Frage aus mehreren Blickwinkeln";
+    case "agent":
+      /* Nur der Ausfall wird gemeldet. Dass etwas geklappt hat, sagt
+         das Ergebnis am Ende — dreimal „fertig" ist Rauschen. */
+      return e.status === "erfolg" ? null : "Ein Blickwinkel ist ausgefallen";
+    case "gegengeprueft":
+      return `Gegenprüfung: ${e.urteile} Aussagen beurteilt`;
+    case "gegenpruefung_ausgefallen":
+      return "Keine Gegenprüfung möglich";
+    case "richter":
+      return e.entschieden === 0 ? null : `${e.entschieden} strittige Punkte entschieden`;
+    case "fertig": {
+      const teile = [`${e.gesichert} belegt`];
+      if (Number(e.strittig) > 0) teile.push(`${e.strittig} bleibt offen`);
+      if (Number(e.verworfen) > 0) teile.push(`${e.verworfen} verworfen`);
+      return teile.join(", ");
+    }
+    default:
+      return null;
+  }
+}
+
 export interface NinaMessage {
   id: string;
   role: "user" | "assistant";
@@ -29,6 +61,19 @@ export interface NinaMessage {
   /** Läuft die Antwort gerade ein? Dann ist sie noch unvollständig. */
   streaming?: boolean;
   tools?: { name: string; label: string; ok?: boolean }[];
+  /**
+   * Was Monday vor der Antwort geprüft hat.
+   *
+   * Jede Zeile steht für etwas, das GESCHEHEN ist — nicht für einen
+   * Schritt, der geplant war. Ein Balken, der von einer geschätzten
+   * Dauer hochzählt, steht bei 95 Prozent, sobald ein Modell hängt,
+   * und behauptet damit Arbeit, die niemand tut.
+   *
+   * Ohne Modellnamen: Für die Person ist wichtig, dass ihre Frage aus
+   * mehreren Blickwinkeln geprüft wurde und was dabei herauskam —
+   * nicht, welche Anbieter beteiligt waren.
+   */
+  teamschritte?: string[];
 }
 
 /** Was die aktuelle Seite über sich sagt. Seiten melden das selbst an. */
@@ -674,6 +719,20 @@ export function NinaProvider({
                     : n,
                 ),
               );
+              continue;
+            }
+
+            if (ereignis.type === "team") {
+              const zeile = teamzeile(ereignis);
+              if (zeile) {
+                setMessages((m) =>
+                  m.map((n) =>
+                    n.id === antwortId
+                      ? { ...n, teamschritte: [...(n.teamschritte ?? []), zeile] }
+                      : n,
+                  ),
+                );
+              }
               continue;
             }
 
