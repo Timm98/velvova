@@ -720,7 +720,22 @@ export function InterviewRoom({
                      * abschickt. Die eckigere Ecke unten rechts zeigt
                      * weiterhin, von wem sie kommen, ohne einen Pfeil.
                      */
-                    <p className="max-w-[80%] whitespace-pre-wrap rounded-(--radius-lg) rounded-br-md bg-accent px-5 py-3.5 text-base leading-relaxed text-accent-on">
+                    <p
+                    /*
+                     * Grau, nicht blau.
+                     *
+                     * Hier stand `bg-accent` — die Markenfarbe als
+                     * Sprechblase. In einem langen Gespräch ergibt das
+                     * eine Spalte farbiger Kästen auf der rechten
+                     * Seite, und die eigene Stimme wird lauter als die
+                     * Antwort, auf die es ankommt.
+                     *
+                     * Eine leicht erhöhte Fläche genügt, um zu sagen:
+                     * das hier hast du geschrieben. Mehr muss sie
+                     * nicht sagen.
+                     */
+                    className="max-w-[80%] rounded-(--radius-lg) rounded-br-md bg-(--app-erhoben-2) px-4 py-3 text-[15px] leading-relaxed whitespace-pre-wrap text-(--app-text)"
+                  >
                       {m.content}
                     </p>
                   ) : (
