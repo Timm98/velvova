@@ -128,6 +128,28 @@ export function umleitungFuer(host: string, pfad: string): string | null {
    */
   const kurz = (h: string) => h.toLowerCase().replace(/:\d+$/, "").replace(/^www\./, "");
   const hier = kurz(host);
+
+  /*
+   * ── Die Wurzel der Anwendung ist nicht die Wurzel der Seite ─────
+   *
+   * Hier stand `/` in einem Topf mit dem übrigen Marketing, und
+   * damit schickte `app.velvovatest.com/` jeden auf die öffentliche
+   * Seite. Wer die Adresse der Anwendung eintippt, sah das Marketing
+   * — beide Domains zeigten dasselbe, und die Trennung sah aus, als
+   * täte sie nichts.
+   *
+   * Auf claude.ai landet man bei `/` in der Anwendung oder auf der
+   * Anmeldung. Nie im Marketing. Die Wurzel gehört dem Host, unter
+   * dem sie aufgerufen wird — und auf der Anwendungsdomain ist das
+   * der Einstieg in die Anwendung.
+   *
+   * `/app/monday` und nicht `/login`: Wer angemeldet ist, soll nicht
+   * über eine Anmeldeseite gehen, die er nicht braucht. Ist er es
+   * nicht, schickt `requireUser` ihn dorthin — mit `weiter`, sodass
+   * er danach ankommt, wo er hinwollte.
+   */
+  if (pfad === "/" && hier === kurz(app)) return `https://${app}/app/monday`;
+
   const zustaendig = zustaendigFuer(pfad);
   if (zustaendig === "beide") return null;
 

@@ -92,7 +92,22 @@ describe("Mit eingerichteter Trennung", () => {
   it("schickt das Marketing von der Anwendung weg", () => {
     trennungEinrichten();
     expect(umleitungFuer("monday.ai", "/product")).toBe("https://velvova.com/product");
-    expect(umleitungFuer("monday.ai", "/")).toBe("https://velvova.com/");
+  });
+
+  it("führt die Wurzel der Anwendung in die Anwendung, nicht ins Marketing", () => {
+    /*
+     * Der Fehler, den ein Blick in den Browser gefunden hat: `/` lag
+     * in einem Topf mit dem übrigen Marketing, und damit schickte die
+     * Anwendungsdomain jeden auf die öffentliche Seite. Beide Domains
+     * zeigten dasselbe — die Trennung sah aus, als täte sie nichts.
+     */
+    trennungEinrichten();
+    expect(umleitungFuer("monday.ai", "/")).toBe("https://monday.ai/app/monday");
+  });
+
+  it("lässt die Wurzel der öffentlichen Seite in Ruhe", () => {
+    trennungEinrichten();
+    expect(umleitungFuer("velvova.com", "/")).toBeNull();
   });
 
   it("lässt jeden Pfad dort, wo er hingehört", () => {
