@@ -116,6 +116,26 @@ export async function GET(): Promise<NextResponse> {
   // würde den Host wechseln und das gerade gesetzte Cookie entwerten.
   // Ein relatives Location-Feld ist nach RFC 7231 zulässig und behält
   // den Host der Anfrage.
-  const response = new NextResponse(null, { status: 307, headers: { Location: "/app" } });
+  //
+  // ── Warum /app/monday und nicht /app ────────────────────────────
+  //
+  // Weil `/app` keine Seite mehr ist. Es gab dort einmal eine zweite
+  // Startseite für Angemeldete; die wurde abgeschafft, weil die
+  // Startseite für beide dieselbe ist. Seitdem antwortet `/app` mit
+  // einer Weiterleitung auf `/`.
+  //
+  // Die Kette lautete also: dieser Endpunkt → /app → /. Das Cookie war
+  // gesetzt, die Anmeldung hatte funktioniert, und der Mensch stand
+  // auf der öffentlichen Startseite.
+  //
+  // In der Testreihe war es genau derselbe Weg, nur sichtbarer:
+  // `loginAsDemo` wartet auf eine Adresse unter `/app` und lief in die
+  // Zeitgrenze von zwei Minuten. Danach scheiterte JEDER Fall, der
+  // eine Anmeldung braucht — an einer Weiterleitung, nicht an dem,
+  // was er prüfen wollte.
+  //
+  // `/app/monday` ist dasselbe Ziel, das die Registrierung nach dem
+  // Anlegen eines Kontos ansteuert.
+  const response = new NextResponse(null, { status: 307, headers: { Location: "/app/monday" } });
   return attachCookie(response, result.cookieName, result.token, result.ttlDays);
 }

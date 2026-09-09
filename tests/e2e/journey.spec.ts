@@ -700,7 +700,14 @@ test.describe("Responsives Verhalten", () => {
     await loginAsDemo(page);
   });
 
-  for (const path of ["/", "/app", "/app/jobs", "/app/career", "/app/applications"]) {
+  /*
+   * `/app` stand hier und ist heraus.
+   *
+   * Es ist keine Seite, sondern eine Weiterleitung auf `/` — der Fall
+   * prüfte also zum zweiten Mal die Startseite und nannte es „/app".
+   * `/app/monday` ist die Seite, die dort gemeint war.
+   */
+  for (const path of ["/", "/app/monday", "/app/jobs", "/app/career", "/app/applications"]) {
     test(`${path} läuft nicht seitlich über`, async ({ page }) => {
       await page.goto(path);
       await expectNoHorizontalOverflow(page);
@@ -730,7 +737,14 @@ test.describe("Responsives Verhalten", () => {
      */
     const breite = testInfo.project.use.viewport?.width ?? 1440;
     test.skip(breite >= 768, "Die untere Leiste gibt es nur unter 768 px");
-    await page.goto("/app");
+    /*
+     * `/app/jobs`, nicht `/app`.
+     *
+     * `/app` ist keine Seite, sondern eine Weiterleitung auf die
+     * öffentliche Startseite — und die trägt keine untere Leiste. Der
+     * Fall suchte sie also auf einer Seite, auf der es sie nie gab.
+     */
+    await page.goto("/app/jobs");
     const bottomNav = page.locator("nav.app-nav-bottom");
     await expect(bottomNav).toBeVisible();
     await expect(bottomNav.getByRole("link")).toHaveCount(5);
