@@ -34,3 +34,5 @@ export * from "./pruefstand.ts";
 export * from "./dimensionsvergleich.ts";
 export * from "./klaerungsrang.ts";
 export * from "./checkzugriff.ts";
+
+export * from "./stillechancen.ts";
