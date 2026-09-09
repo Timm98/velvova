@@ -35,6 +35,20 @@ const GRUENDE: Record<string, string> = {
     "Dieser Anmeldeweg ist noch nicht eingerichtet. Melde dich bitte mit deiner E-Mail-Adresse an.",
   anbieter:
     "Die Anmeldung über den externen Anbieter konnte nicht abgeschlossen werden. Bitte versuche es noch einmal.",
+  /*
+   * Drei Abschnitte desselben Ablaufs, drei Kennungen.
+   *
+   * Die Sätze sind bewusst nah beieinander — für die Person ändert
+   * sich wenig, sie kann in allen drei Fällen dasselbe tun. Der
+   * Unterschied steht in der Adresse, und dort ist er das, was einen
+   * Fehlerbericht von einer Vermutung unterscheidet.
+   */
+  anbieter_kein_code:
+    "Vom Anmeldedienst kam keine Bestätigung zurück. Bitte versuche es noch einmal.",
+  anbieter_tausch:
+    "Die Anmeldung kam zurück, konnte aber nicht abgeschlossen werden. Bitte versuche es noch einmal — am besten im selben Fenster, ohne den Anmeldelink zu kopieren.",
+  anbieter_konto:
+    "Die Anmeldung hat geklappt, dein Konto liess sich aber nicht öffnen. Bitte versuche es noch einmal.",
 };
 
 export default async function LoginPage({

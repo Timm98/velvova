@@ -84,7 +84,24 @@ export async function GET(request: NextRequest) {
   }
 
   const code = searchParams.get("code");
-  if (!code || !isSupabaseConfigured()) return zurueck("anbieter");
+  /*
+   * ── Warum die Gründe hier auseinandergezogen sind ───────────────
+   *
+   * Bis eben endeten drei ganz verschiedene Fälle in derselben
+   * Meldung: kein Code angekommen, Austausch gescheitert, Konto nicht
+   * verknüpfbar. Von aussen — also für den, der es meldet, und für
+   * den, der es beheben soll — waren sie nicht zu unterscheiden.
+   *
+   * Es geht nicht um bessere Sätze für die Person; die bleiben
+   * absichtlich zurückhaltend. Es geht darum, dass in der Adresse
+   * steht, WELCHE Strecke gerissen ist. Ohne das bleibt nur Raten,
+   * und Raten hat hier schon eine Runde gekostet.
+   *
+   * Nichts davon verrät etwas: Es sind unsere eigenen Abschnitte des
+   * Ablaufs, keine Aussagen über Gültigkeit von Zugangsdaten.
+   */
+  if (!code) return zurueck("anbieter_kein_code");
+  if (!isSupabaseConfigured()) return zurueck("anbieter_aus");
 
   try {
     const supabase = await createSupabaseServerClient();
@@ -92,7 +109,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (error || !data.user) {
       protokolliereFehler("callback:exchange", error);
-      return zurueck("anbieter");
+      /*
+       * Der häufigste Grund an dieser Stelle ist der fehlende
+       * PKCE-Prüfwert: Er liegt als Cookie auf dem Host, auf dem die
+       * Anmeldung begann. Kommt der Rückweg auf einer anderen Domain
+       * an, ist er nicht da — und der Austausch scheitert, ohne dass
+       * irgendetwas kaputt wäre.
+       */
+      return zurueck("anbieter_tausch");
     }
 
     const { userId } = await verknuepfeIdentitaet(ausSupabaseNutzer(data.user));
@@ -107,6 +131,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(zielNachLogin(entryRoute(state), weiter), origin));
   } catch (fehler) {
     protokolliereFehler("callback", fehler);
-    return zurueck("anbieter");
+    return zurueck("anbieter_konto");
   }
 }
