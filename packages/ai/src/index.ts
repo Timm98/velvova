@@ -36,3 +36,4 @@ export * from "./registry/katalog.ts";
 export * from "./registry/registry.ts";
 export * from "./registry/anbieter.ts";
 export * from "./team/aufstellung.ts";
+export * from "./team/lauf.ts";
