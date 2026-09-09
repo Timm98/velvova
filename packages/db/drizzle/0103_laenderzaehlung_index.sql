@@ -1,0 +1,58 @@
+-- ══════════════════════════════════════════════════════════════════
+-- Der Index, der die Länderzählung aus dem Heap holt
+-- ══════════════════════════════════════════════════════════════════
+--
+-- Die Zählung im Stellenabruf lautet:
+--
+--   select count(*) from jobs
+--   where is_demo = false and country = $1
+--     and (expires_at is null or expires_at > now())
+--
+-- Es gibt bereits drei Indexe auf `country`:
+--
+--   jobs_country_published_idx    (country, published_at DESC)
+--   jobs_land_neueste_idx         (country, published_at DESC NULLS LAST)
+--   jobs_kandidaten_land_idx      (country, coalesce(published_at, fetched_at) DESC)
+--
+-- Keiner davon enthaelt `expires_at`. Postgres findet die Zeilen also
+-- ueber den Index und muss danach fuer JEDE einzelne in die Tabelle
+-- greifen, nur um ein Datum zu lesen. Bei DE sind das 1,2 Millionen
+-- zufaellige Zugriffe fuer eine einzige Zahl.
+--
+-- Gemessen am 9. September 2026: die Zaehlung lief lokal in die
+-- 20-Sekunden-Frist und brach ab; `count(*)` ueber die ganze Tabelle
+-- brach nach 40 Sekunden ab. In Produktion geht sie durch, aber knapp
+-- — `laenderbestand` ist aktuell, und der Bestand waechst weiter.
+--
+-- Mit `expires_at` im Index steht alles Noetige im Index selbst: ein
+-- reiner Indexlauf ohne einen einzigen Tabellenzugriff.
+--
+-- ── Warum CONCURRENTLY ──────────────────────────────────────────
+--
+-- Ein gewoehnliches CREATE INDEX nimmt eine ACCESS-EXCLUSIVE-Sperre
+-- auf `jobs`. Auf einer Millionentabelle dauert der Aufbau Minuten,
+-- und in dieser Zeit steht JEDER Lese- und Schreibzugriff — die
+-- Stellenseite waere fuer die Dauer tot.
+--
+-- CONCURRENTLY baut ihn nebenher. Es dauert laenger und braucht zwei
+-- Durchlaeufe, aber niemand merkt etwas.
+--
+-- Das geht nur, weil `migrate.ts` jede Anweisung einzeln und OHNE
+-- Transaktion ausfuehrt. CREATE INDEX CONCURRENTLY in einem
+-- Transaktionsblock scheitert mit einem Fehler.
+--
+-- ── Wenn es scheitert ───────────────────────────────────────────
+--
+-- CONCURRENTLY kann einen ungueltigen Index hinterlassen, etwa wenn
+-- der Aufbau abbricht. Dann steht er da und wird nicht benutzt.
+-- Erkennen:
+--
+--   select indexrelid::regclass from pg_index where not indisvalid;
+--
+-- Beheben: `drop index concurrently jobs_land_ablauf_idx;` und die
+-- Migration erneut laufen lassen. `if not exists` allein reicht dafuer
+-- nicht — ein ungueltiger Index existiert im Sinne dieser Pruefung.
+
+create index concurrently if not exists jobs_land_ablauf_idx
+  on jobs (country, expires_at)
+  where is_demo = false;
