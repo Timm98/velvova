@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, ChevronDown, FolderKanban, MessageSquare, PanelLeft, Plus } from "lucide-react";
+import {
+  Bell,
+  ChevronDown,
+  FolderKanban,
+  MessageSquare,
+  PanelLeft,
+  Plus,
+  ShoppingCart,
+} from "lucide-react";
 import type { Kontogruppe } from "./kontoeintraege.ts";
 import { ARBEITSBEREICHE, SUCHE, istHier } from "./seitenleiste-eintraege.ts";
 import { cn } from "@/lib/cn";
@@ -63,6 +71,8 @@ export function Seitenleiste({
   userName,
   userEmail,
   bildKennung,
+  planName,
+  planHref,
   unreadCount,
   gruppen,
   onLogout,
@@ -74,6 +84,17 @@ export function Seitenleiste({
   userName: string | null;
   userEmail: string;
   bildKennung: string | null;
+  /**
+   * Der Name des laufenden Abos — „Free", „Premium", „Max".
+   *
+   * Kommt aus `PLAENE[zugang.plan].name`, also aus den echten
+   * Abodaten. Nicht erfunden, nicht vorbelegt: Ein Plan, der in der
+   * Leiste steht und nicht stimmt, ist schlimmer als keiner — man
+   * liest ihn im Vorbeigehen und glaubt ihm.
+   */
+  planName: string;
+  /** Wohin der Warenkorb führt. Ansehen, nicht bestellen. */
+  planHref: string;
   unreadCount: number;
   gruppen: Kontogruppe[];
   onLogout: React.ReactNode;
@@ -193,7 +214,7 @@ export function Seitenleiste({
          * Navigation, und zwei Navigationen für dieselben Ziele sind
          * keine Wahl, sondern eine Verdopplung.
          */
-        "hidden shrink-0 flex-col border-r border-line bg-raised md:flex",
+        "hidden shrink-0 flex-col border-r border-(--app-rand) bg-(--app-leiste) md:flex",
         /* Eigene Höhe und eigenes Rollen: Die Leiste bleibt stehen,
            während der Inhalt daneben scrollt. */
         "md:h-dvh md:sticky md:top-0",
@@ -224,18 +245,29 @@ export function Seitenleiste({
 
       {/* ── Gespräch beginnen ───────────────────────────────────── */}
       <div className={cn("px-3 pt-2 pb-1", eng && "px-2")}>
+        {/*
+          „Neuer Chat", nicht „Mit Monday sprechen".
+
+          Der alte Text beschrieb den Gesprächspartner, nicht die
+          Handlung. Wer eine Leiste überfliegt, sucht Verben: Was
+          passiert, wenn ich hier klicke? „Neuer Chat" beantwortet
+          das; „Mit Monday sprechen" stellt jemanden vor.
+
+          Und er war der auffälligste Knopf der ganzen Leiste — für
+          etwas, das man ohnehin ständig tut.
+        */}
         <Link
           href="/app/monday"
-          title={eng ? "Mit Monday sprechen" : undefined}
+          title={eng ? "Neuer Chat" : undefined}
           className={cn(
-            "flex min-h-9 items-center gap-2.5 rounded-(--radius-control) border border-line px-2.5 text-[14px] font-medium text-ink",
-            "transition-colors hover:border-accent hover:bg-soft",
+            "flex min-h-9 items-center gap-2.5 rounded-(--radius-control) border border-(--app-rand) px-2.5 text-[14px] font-medium text-(--app-text)",
+            "transition-colors hover:border-(--app-rand-stark) hover:bg-(--app-hover)",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
             eng && "justify-center px-0",
           )}
         >
           <Plus className="size-[18px] shrink-0" strokeWidth={2} />
-          <span className={cn(eng && "sr-only")}>Mit Monday sprechen</span>
+          <span className={cn(eng && "sr-only")}>Neuer Chat</span>
         </Link>
       </div>
 
@@ -365,17 +397,21 @@ export function Seitenleiste({
           </span>
           {!eng && (
             <>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-medium text-ink">
-                  {userName ?? userEmail}
-                </span>
-                {userName && (
-                  <span className="block truncate text-2xs text-ink-3">{userEmail}</span>
-                )}
+              {/*
+                Nur der Name. Die Adresse stand hier als zweite Zeile
+                und war das Einzige, was von unten dauerhaft ins Auge
+                fiel — eine Angabe, die man kennt, an einem Ort, den
+                man oft ansieht. Sie steht jetzt im Kontomenü.
+
+                Darunter liegt statt ihrer der Plan: eine Angabe, die
+                sich ändert und die man tatsächlich nachschlägt.
+              */}
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-(--app-text)">
+                {userName ?? userEmail}
               </span>
               <ChevronDown
                 className={cn(
-                  "size-4 shrink-0 text-ink-3 transition-transform",
+                  "size-4 shrink-0 text-(--app-text-3) transition-transform",
                   kontoOffen && "rotate-180",
                 )}
                 strokeWidth={1.8}
@@ -383,6 +419,35 @@ export function Seitenleiste({
             </>
           )}
         </button>
+
+        {/*
+          ── Zweite Zeile: der laufende Plan ───────────────────────
+
+          Links, was gilt. Rechts der Weg zum Ändern.
+
+          Der Warenkorb ist ein Verweis und keine Bestellung — er
+          öffnet die Übersicht. Ein Knopf an dieser Stelle, der
+          unmittelbar etwas kostet, wäre die unangenehmste Überraschung,
+          die eine Seitenleiste bereithalten kann.
+
+          Eingeklappt entfällt die Zeile: Ein Warenkorb ohne den Plan
+          daneben ist ein Angebot ohne Zusammenhang.
+        */}
+        {!eng && (
+          <div className="mt-0.5 flex items-center gap-2 pr-1 pl-[2.85rem]">
+            <span className="min-w-0 flex-1 truncate text-2xs text-(--app-text-3)">
+              {planName}
+            </span>
+            <Link
+              href={planHref}
+              aria-label={`Abo ansehen — aktuell ${planName}`}
+              title="Abo ansehen"
+              className="flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)"
+            >
+              <ShoppingCart className="size-4" strokeWidth={1.8} />
+            </Link>
+          </div>
+        )}
 
         {kontoOffen && (
           /*
@@ -394,6 +459,9 @@ export function Seitenleiste({
             role="menu"
             className="absolute bottom-[calc(100%-0.25rem)] left-2 z-50 max-h-[70dvh] w-[15.5rem] overflow-y-auto rounded-(--radius-lg) border border-line bg-raised p-1.5 shadow-xl"
           >
+            {/* Die Adresse steht jetzt hier — dort, wo man sie sucht,
+                wenn man sie sucht. */}
+            <p className="truncate px-3 pt-1 pb-2 text-2xs text-(--app-text-3)">{userEmail}</p>
             {gruppen.map((gruppe, i) => (
               <div key={gruppe.titel} className={cn(i > 0 && "mt-1.5 border-t border-line pt-1.5")}>
                 {/* Der Titel trennt nur fuer Vorlesegeraete; sichtbar tut das die Linie. */}

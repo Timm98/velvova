@@ -97,6 +97,10 @@ export default async function NinaPage() {
   return (
     <InterviewRoom
       assistantName={brand.assistantName}
+      /* Aus dem angemeldeten Profil, nie fest im Code. Fehlt er,
+         steht in der Begrüssung nur „Hallo" — freundlicher als ein
+         Platzhalter und ehrlicher als ein erfundener Vorname. */
+      displayName={user.displayName?.trim() || null}
       openingQuestion={view.step.text}
       conversationId={gespräch.id}
       initialMessages={nachrichten

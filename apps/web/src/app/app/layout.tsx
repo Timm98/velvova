@@ -8,6 +8,7 @@ import { loadGate } from "@/lib/gate";
 import { getPageContext } from "@/lib/locale";
 import { AppShell } from "@/components/shell/AppShell";
 import { zugangFür } from "@/lib/billing/zugang";
+import { PLAENE } from "@/lib/billing/plaene";
 import { NinaProvider } from "@/components/nina/NinaProvider";
 import { NinaDock } from "@/components/nina/NinaDock";
 import { ensureWorkflowState } from "@/lib/nina/workflow-state";
@@ -112,6 +113,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       autoSpeak={einstellungen?.voiceAutoplay ?? false}
     >
       <AppShell
+        /*
+          Der Plan aus den echten Abodaten.
+
+          `zugangFür` liegt in `cache()`, der zweite Aufruf kostet
+          also nichts — oben wird derselbe Wert bereits für den
+          Hinweisbalken gelesen.
+
+          Der Warenkorb führt auf die Übersicht, nicht in eine
+          Bestellung. Ein Klick in der Seitenleiste darf nichts
+          kosten.
+        */
+        planName={PLAENE[(await zugangFür(user.id)).plan].name}
+        planHref="/app/settings/abo"
         /* Ohne laufenden Auftrag steht oben die nächtliche Suche,
            mit Auftrag die App. Die Leiste selbst sitzt in `AppShell`. */
         nachtsZiel={hatAbo ? null : "/app/jobs#nachts"}

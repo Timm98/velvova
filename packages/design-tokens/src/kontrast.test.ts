@@ -160,3 +160,54 @@ describe("Kontrast im hellen Modus", () => {
     ).toEqual([]);
   });
 });
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * Die Arbeitsfläche der Anwendung
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * „Keine zu schwachen Textkontraste" steht als Regel im Bauauftrag.
+ * Eine Regel, die nur im Auftrag steht, ist eine Absicht — hier wird
+ * sie nachgerechnet.
+ *
+ * Der dritte Textton ist der, um den es geht: Er trägt Nebenangaben
+ * (Zeitpunkte, Modellnamen, Zustände) und rutscht beim Entwerfen
+ * gern nach unten, weil er „ruhiger" aussehen soll. Ruhig ist er
+ * dann auch — nur nicht mehr lesbar.
+ */
+describe("Arbeitsfläche der Anwendung", () => {
+  const APP = CSS.slice(CSS.indexOf("[data-app] {"));
+
+  function appToken(name: string): string {
+    const treffer = APP.match(new RegExp(`\\s--${name}:\\s*(#[0-9a-fA-F]{6})`));
+    const wert = treffer?.[1];
+    if (!wert) throw new Error(`--${name} fehlt im App-Bereich`);
+    return wert;
+  }
+
+  const APP_FLAECHEN = ["app-grund", "app-leiste", "app-eingabe", "app-erhoben"];
+  const APP_SCHRIFTEN = ["app-text", "app-text-2", "app-text-3"];
+
+  for (const schrift of APP_SCHRIFTEN) {
+    it(`--${schrift} erreicht 4,5:1 auf jeder App-Fläche`, () => {
+      const vordergrund = appToken(schrift);
+      const durchgefallen = APP_FLAECHEN.map((f) => ({
+        flaeche: f,
+        wert: kontrast(vordergrund, appToken(f)),
+      })).filter((e) => e.wert < 4.5);
+
+      expect(
+        durchgefallen,
+        durchgefallen.map((e) => `${e.flaeche}: ${e.wert.toFixed(2)}:1`).join(", "),
+      ).toEqual([]);
+    });
+  }
+
+  it("hält die Sidebar dunkler als die Hauptfläche", () => {
+    /* Die Tiefenordnung der Vorlage: Die Leiste tritt zurück, die
+       Arbeitsfläche liegt darüber, die Eingabe darauf. Kehrte sich
+       das um, sähe die Navigation aus wie der Inhalt. */
+    expect(leuchtdichte(appToken("app-leiste"))).toBeLessThan(leuchtdichte(appToken("app-grund")));
+    expect(leuchtdichte(appToken("app-grund"))).toBeLessThan(leuchtdichte(appToken("app-eingabe")));
+  });
+});

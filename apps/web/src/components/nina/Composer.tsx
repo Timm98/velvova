@@ -72,6 +72,7 @@ export function Composer({
   onListeningChange,
   dokumenteFür,
   modellwahl = false,
+  vorgabe,
 }: {
   onSend: (text: string, options?: { fromVoice?: boolean }) => void;
   busy: boolean;
@@ -81,6 +82,23 @@ export function Composer({
   onSkip?: () => void;
   skipLabel?: string;
   className?: string;
+  /**
+   * Ein vorbereiteter Satz von aussen — etwa aus einem Vorschlag.
+   *
+   * ── Warum vorbereiten und nicht senden ──────────────────────────
+   *
+   * Wer auf „Bewerbung vorbereiten" tippt, hat sich für ein Thema
+   * entschieden, nicht für eine Frage. Eine Nachricht, die daraufhin
+   * losgeht, nimmt ihm den Satz aus der Hand, den er gerade
+   * formulieren wollte — und die Antwort beantwortet etwas, das er so
+   * nie gefragt hätte.
+   *
+   * Der Zähler statt der Zeichenkette als Auslöser: Zweimal derselbe
+   * Vorschlag ist zweimal dieselbe Absicht. Verglichen man den Text,
+   * täte der zweite Klick nichts — und das sähe aus wie ein defekter
+   * Knopf.
+   */
+  vorgabe?: { text: string; zaehler: number };
   /**
    * Mondays Name — schaltet den Dokumentknopf frei.
    *
@@ -127,6 +145,18 @@ export function Composer({
   const [stimmeMöglich, setStimmeMöglich] = useState(false);
 
   const feld = useRef<HTMLTextAreaElement>(null);
+
+  const letzteVorgabe = useRef(0);
+  useEffect(() => {
+    if (!vorgabe || vorgabe.zaehler === letzteVorgabe.current) return;
+    letzteVorgabe.current = vorgabe.zaehler;
+    setText(vorgabe.text);
+    const el = feld.current;
+    if (!el) return;
+    el.focus();
+    /* Cursor ans Ende: Man schreibt weiter, man überschreibt nicht. */
+    requestAnimationFrame(() => el.setSelectionRange(el.value.length, el.value.length));
+  }, [vorgabe]);
   const erkennung = useRef<Erkennung | null>(null);
   const festerTeil = useRef("");
 

@@ -6,6 +6,8 @@ import { ArrowDown, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-r
 import { confirmEvidence, dismissEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
+import { Gespraechsmenue } from "@/components/nina/Gespraechsmenue";
+import { Startansicht } from "@/components/nina/Startansicht";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
@@ -87,6 +89,7 @@ const IMPULSE_JE_STUFE: Record<string, string[]> = {
 
 export function InterviewRoom({
   assistantName,
+  displayName,
   openingQuestion,
   hypotheses,
   initialMessages,
@@ -104,6 +107,14 @@ export function InterviewRoom({
   initialStage: string;
   initialStatus: string;
   progress: { groups: { key: string; label: string; done: boolean }[]; completeness: number };
+  /**
+   * Der Name aus dem angemeldeten Profil.
+   *
+   * `null`, wenn keiner hinterlegt ist — dann steht dort nur „Hallo".
+   * Nie ein fester Name im Code: Ein Beispielname, der in Produktion
+   * durchrutscht, begrüsst jeden mit dem Namen eines Fremden.
+   */
+  displayName: string | null;
   labels: { yourAnswer: string; pauseSession: string };
 }) {
   const nina = useNina();
@@ -421,6 +432,13 @@ export function InterviewRoom({
   const impulse = IMPULSE_JE_STUFE[stufe] ?? [];
   const nochNichtsGesagt = nina.messages.length === 0;
 
+  /* Ein Vorschlag bereitet den Satz vor, er sendet ihn nicht. Der
+     Zähler macht denselben Vorschlag zweimal wirksam. */
+  const [entwurf, setEntwurf] = useState<{ text: string; zaehler: number }>({
+    text: "",
+    zaehler: 0,
+  });
+
   return (
     /*
      * `h-full` bis ganz nach unten durchreichen.
@@ -458,214 +476,40 @@ export function InterviewRoom({
             über ihre Fläche hinaus (`inset-[-18%]`), bei 120px also gut
             20 Pixel. Mit dem kleineren Abstand lag der Schein auf dem
             Wort „Monday". */}
-        <header className="uebergang-gespraech-kopf flex shrink-0 flex-wrap items-center gap-x-6 gap-y-3 pt-6 pb-5">
-          {/*
-           * Monday schrumpft, sobald das Gespräch läuft.
-           *
-           * Gross am Anfang: da ist sie das Einzige auf der Fläche und
-           * soll es sein. Klein, sobald jemand scrollt — dann gehört
-           * der Platz den Nachrichten.
-           *
-           * Umgeschaltet wird `size`, nicht eine Hülle drumherum.
-           *
-           * Der erste Versuch war eine Box mit `overflow-hidden`, die
-           * ihre Grösse animiert. Das Ergebnis war ein dunkelvioletter
-           * Kasten: das weiche Licht hinter Monday liegt bewusst
-           * ausserhalb ihrer Fläche (`inset-[-18%]`), und die Hülle hat
-           * es an vier geraden Kanten abgeschnitten.
-           *
-           * Der Wechsel des `size`-Werts tauscht nur zwei Klassen am
-           * selben Element. React baut nichts neu auf, die Szene lebt
-           * weiter — die 12 MB werden nicht noch einmal geladen — und
-           * der ResizeObserver in NinaScene passt die Leinwand
-           * währenddessen mit an.
-           */}
-          {/*
-           * Auf dem Telefon immer die kleine Fassung.
-           *
-           * Bei 390 Pixeln bricht die Kopfzeile ohnehin in zwei Reihen:
-           * Monday mit Titel oben, die Knöpfe darunter. Mit dem grossen
-           * Bild ergab das 220 Pixel — ein Viertel eines 844 Pixel hohen
-           * Bildschirms, bevor eine einzige Nachricht zu sehen war.
-           *
-           * Auf dem Telefon ist Platz das knappste Gut. Mondays Grösse
-           * darf dort nicht die Hälfte des Gesprächs kosten; ab `sm`
-           * bleibt sie gross, weil dort Raum dafür da ist.
-           */}
-          {/*
-           * Eine Grösse, keine Animation beim Scrollen.
-           *
-           * Vorher wechselte der Kern zwischen 120 und 72 Pixeln, je
-           * nachdem wie weit man gescrollt hatte. Das kostete oben ein
-           * Viertel des Bildschirms und bewegte danach die ganze
-           * Kopfzeile, während man las.
-           *
-           * `NinaCore` steht fest bei 72 beziehungsweise 120 Pixeln —
-           * gross genug, dass man die Struktur im Inneren sieht und
-           * nicht nur eine Kugel, klein genug, dass das Gespräch die
-           * Seite behält.
-           */}
-          <NinaCore />
-
-          <div className="grid min-w-0 flex-1 gap-0.5">
-            <h1 className="font-display text-xl font-normal tracking-[-0.02em]">
-              {assistantName}
-            </h1>
-            {/* Eine menschliche Statuszeile. Keine Zahl, keine Strecke. */}
-            {/* Zwei Zeilen statt einer abgeschnittenen. Die Statuszeile
-                ist ein ganzer Satz („Wir klären gerade, worum es dir
-                geht") — mitten im Wort abgeschnitten liest sie sich wie
-                ein Fehler, nicht wie eine Auskunft. */}
-            <p aria-live="polite" className="line-clamp-2 text-sm text-ink-2">
-              {status}
-            </p>
+        {/*
+         * ══════════════════════════════════════════════════════════
+         * Hier stand der grosse Kopfbereich — 207 Zeilen
+         * ══════════════════════════════════════════════════════════
+         *
+         * Ein Ring, Mondays Name, ein Beschreibungssatz, ein
+         * Fortschrittsbalken und fünf Knöpfe nebeneinander: „Was ich
+         * über dich weiss", „Live sprechen", Verlauf, Neu, Pause.
+         *
+         * Auf einem leeren Gespräch war das alles, was man sah — eine
+         * Werkzeugleiste, bevor es etwas zu bearbeiten gab. Und in
+         * einem laufenden Gespräch nahm sie den oberen Fünftel der
+         * Fläche für Dinge, die man einmal am Tag braucht.
+         *
+         * Die Funktionen sind nicht weg, sie stehen jetzt dort, wo man
+         * sie sucht:
+         *
+         *   „Was ich über dich weiss"  → Kontextbereich
+         *   „Live sprechen"            → Sprachbedienung am Composer
+         *   Verlauf, Neu, Pause        → Gesprächsmenü rechts
+         *
+         * Was bleibt, ist eine Zeile — und die auch nur, wenn ein
+         * Gespräch läuft. Auf der leeren Fläche steht nichts ausser
+         * dem Core, dem Namen und der Frage.
+         */}
+        {!nochNichtsGesagt && (
+          <div className="flex shrink-0 items-center justify-end pt-4 pb-1">
+            <Gespraechsmenue
+              onPause={pausieren}
+              pending={pending}
+              labels={{ pause: labels.pauseSession }}
+            />
           </div>
-
-          {/*
-           * Drei Handlungen, drei Ränge — vorher drei gleich laute Knöpfe.
-           *
-           * Gemessen: 232 + 229 + 208 Pixel, zusammen 677 in einer
-           * Spalte von 820. Neben Monday und der Statuszeile ging das
-           * nicht auf, also brach die Gruppe in eine zweite Reihe und
-           * die Kopfzeile war 220 Pixel hoch — ein Viertel des Fensters,
-           * bevor eine einzige Nachricht zu sehen war.
-           *
-           * Umbrechen war nicht das Problem, sondern dass alle drei so
-           * aussahen, als wären sie gleich wichtig. Sie sind es nicht:
-           *
-           *   „Was ich über dich weiß" bleibt vollständig beschriftet.
-           *   In einem Produkt, dessen Versprechen die Verfügung über
-           *   die eigenen Daten ist, ist das kein Knopf, den man zu
-           *   einem Symbol eindampft — „über dich" ist genau der Teil,
-           *   auf den es ankommt.
-           *
-           *   „Live sprechen" verliert Mondays Namen. Er steht als
-           *   Überschrift zwei Zentimeter daneben; ihn im Knopf zu
-           *   wiederholen kostete 70 Pixel und sagte nichts Neues. Die
-           *   ganze Formulierung bleibt als aria-label für alle, die
-           *   die Überschrift nicht mitlesen.
-           *
-           *   Pausieren wird ein Symbol. Es ist die seltenste der drei
-           *   Handlungen, und ein durchgestrichener Kreis mit zwei
-           *   Balken ist eine der wenigen Formen, die wirklich jeder
-           *   kennt.
-           */}
-          <div className="flex shrink-0 items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setFortschrittOffen(true)}
-              className="inline-flex h-11 items-center gap-2 rounded-(--radius-control) bg-soft px-4 text-sm text-ink-2 transition-colors hover:bg-soft-hover hover:text-ink"
-            >
-              <Sparkle className="size-4" strokeWidth={1.8} />
-              {/*
-               * Auf dem Telefon kürzer.
-               *
-               * Mit der vollen Beschriftung brach die Knopfgruppe bei
-               * 390 Pixeln in eine zweite Reihe, und die Kopfzeile war
-               * 220 Pixel hoch — ein Viertel des Bildschirms, bevor
-               * eine Nachricht zu sehen war.
-               *
-               * „über dich" ist der Teil, auf den es ankommt, und er
-               * bleibt: er unterscheidet „was Monday weiss" von „was Monday
-               * kann". Weg fällt nur das Verb, das aus dem Zusammenhang
-               * ohnehin klar ist. Für Vorlesegeräte bleibt der ganze
-               * Satz über `aria-label`.
-               */}
-              <span aria-hidden className="sm:hidden">Über dich</span>
-              <span aria-hidden className="hidden sm:inline">Was ich über dich weiß</span>
-              <span className="sr-only">Was ich über dich weiß</span>
-            </button>
-
-            {/*
-             * Die drei Aktionen als EINE Gruppe.
-             *
-             * Vorher waren es drei gleichrangige Flex-Kinder neben Monday
-             * und der Statuszeile. In einer 820 Pixel breiten Spalte
-             * passte das nicht: jeder Knopf brach einzeln um, die
-             * Kopfzeile wuchs auf vier Reihen und 220 Pixel — ein
-             * Drittel der Gesprächsfläche, für drei Knöpfe.
-             *
-             * Als Gruppe brechen sie gemeinsam in eine zweite Reihe statt
-             * einzeln in drei.
-             */}
-          {/*
-             * Der eigene Knopf für das Live-Gespräch (§14.2).
-             *
-             * Getrennt vom Mikrofon im Composer, und das ist kein Zufall:
-             * das eine ist Diktat — sprechen statt tippen, danach lesen
-             * und absenden. Das hier ist ein Gespräch, das von selbst
-             * weiterläuft. Ein Knopf für beides würde niemandem sagen,
-             * was gleich passiert.
-             */}
-            {/*
-              Der Knopf steht IMMER da — auch bevor der Browser
-              geantwortet hat, ob er ein Mikrofon hat.
-              
-              Vorher erschien er erst nach der Hydration. Damit brach
-              die Kopfzeile nachträglich in eine zweite Reihe um und
-              schob alles darunter 94 Pixel nach unten: gemessene 0,095
-              Layoutverschiebung, und für den Menschen ein Satz, der
-              beim Lesen wegrutscht.
-              
-              Ohne Mikrofon ist er abgeschaltet und sagt, warum. Ein
-              deaktivierter Knopf ist ehrlicher als einer, der aus dem
-              Nichts auftaucht.
-            */}
-            {(
-              <button
-                type="button"
-                onClick={live.stand.zustand === "aus" ? live.starten : live.beenden}
-                disabled={!live.möglich}
-                title={live.möglich ? undefined : "Dieser Browser stellt kein Mikrofon bereit."}
-                aria-pressed={live.stand.zustand !== "aus"}
-                aria-label={
-                  live.stand.zustand === "aus"
-                    ? `Live mit ${assistantName} sprechen`
-                    : `Gespräch mit ${assistantName} beenden`
-                }
-                className={cn(
-                  "inline-flex h-11 items-center gap-2 rounded-(--radius-control) px-4 text-sm transition-colors",
-                  live.stand.zustand === "aus"
-                    ? "text-ink-2 hover:bg-soft hover:text-ink"
-                    : "bg-accent text-accent-on hover:bg-accent-hover",
-                  /*
-                   * Gedämpft über die Textfarbe, nicht über Deckkraft.
-                   *
-                   * `opacity-45` senkt den Kontrast von allem darunter —
-                   * axe hat das auf /app/monday als Verstoss gemeldet.
-                   * `text-ink-3` ist geprüft und erreicht 4,5:1 auf
-                   * jeder Fläche; der Knopf sieht trotzdem inaktiv aus,
-                   * weil ihm die Umrandung und der Hover fehlen.
-                   */
-                  !live.möglich && "cursor-not-allowed text-ink-3 hover:bg-transparent",
-                )}
-              >
-                {live.stand.zustand === "aus" ? (
-                  <Mic className="size-4" strokeWidth={1.8} />
-                ) : (
-                  <Square className="size-3.5 fill-current" strokeWidth={0} />
-                )}
-                {live.stand.zustand === "aus" ? "Live sprechen" : "Beenden"}
-              </button>
-            )}
-
-            <button
-              type="button"
-              onClick={pausieren}
-              disabled={pending}
-              aria-label={labels.pauseSession}
-              title={labels.pauseSession}
-              /* Quadratisch statt `px-4`: ohne Text ist waagerechte
-                 Polsterung nur Luft, und 44×44 ist die Fläche, die
-                 auch ein Daumen trifft. */
-              className="inline-flex size-11 items-center justify-center rounded-(--radius-control) text-ink-2 transition-colors hover:bg-soft hover:text-ink disabled:cursor-not-allowed disabled:text-ink-3"
-            >
-              <PauseCircle className="size-4" strokeWidth={1.8} />
-            </button>
-
-          </div>
-
-        </header>
+        )}
 
         {/*
          * Was beim Sprechen schiefging — sichtbar, nicht nur im Zustand.
@@ -752,9 +596,27 @@ export function InterviewRoom({
              * Klassen wie jede Nachricht von Monday — dieselbe Grösse,
              * dieselbe Schrift, dasselbe Mass.
              */
-            <p className="max-w-[var(--measure)] whitespace-pre-wrap text-base leading-relaxed text-ink">
-              {openingQuestion}
-            </p>
+            /*
+             * ── Die leere Fläche ──────────────────────────────────
+             *
+             * Core, Name, vier Vorschläge — und die Eröffnungsfrage
+             * darunter, in derselben Grösse wie jede Nachricht von
+             * Monday.
+             *
+             * Die Gruppe steht in einem Bereich, der bereits
+             * `justify-center` trägt; zusammen mit dem Composer
+             * darunter liegt sie damit leicht oberhalb der Mitte —
+             * genau dort, wohin der Blick zuerst geht.
+             */
+            <div className="grid justify-items-center gap-8 py-6">
+              <Startansicht
+                displayName={displayName}
+                onVorschlag={(text) => setEntwurf((v) => ({ text, zaehler: v.zaehler + 1 }))}
+              />
+              <p className="max-w-[var(--measure)] whitespace-pre-wrap text-center text-base leading-relaxed text-(--app-text-2)">
+                {openingQuestion}
+              </p>
+            </div>
           )}
 
           <ol className="grid gap-8">
@@ -1097,6 +959,7 @@ export function InterviewRoom({
             </button>
           )}
           <Composer
+            vorgabe={entwurf.zaehler > 0 ? entwurf : undefined}
             onSend={(text, options) => {
               /*
                * Wer selbst schreibt, will seine Zeile sehen.

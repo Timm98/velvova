@@ -1,10 +1,11 @@
 import {
+  Bell,
   Briefcase,
   FileText,
   FolderOpen,
   MessageSquare,
+  Plug,
   Search,
-  Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -40,18 +41,32 @@ export interface Seitenleisteneintrag {
 }
 
 /**
- * Die vier Arbeitsbereiche.
+ * Die Arbeitsbereiche.
  *
  * `Ausprobieren` und `FAQ` sind hier bewusst nicht: Das eine ist eine
  * Demonstration für Menschen ohne Konto, das andere gehört zur Hilfe.
  * Beide waren in der alten Kopfzeile gleichrangig neben „Bewerbungen“
  * — und damit stand eine Produktvorführung neben der eigenen Arbeit.
+ *
+ * ── Warum „Monday“ hier nicht mehr steht ────────────────────────
+ *
+ * Weil „+ Neuer Chat“ darüber genau dorthin führt. Zwei Wege zum
+ * selben Ort, zehn Pixel auseinander, sind keine Auswahl — der
+ * zweite sieht aus, als führte er woandershin, und man probiert ihn
+ * einmal, um es herauszufinden.
+ *
+ * ── Plugins zeigt auf die vorhandene Verwaltung ─────────────────
+ *
+ * `/app/settings/integrations` gibt es, mit Verbindungszuständen und
+ * Aktionen. Eine zweite Seite daneben wäre ein Parallelsystem, das
+ * beim ersten neuen Anbieter auseinanderläuft.
  */
 export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
-  { href: "/app/monday", text: "Monday", icon: Sparkles },
   { href: "/app/jobs", text: "Jobs & Checks", icon: Briefcase },
   { href: "/app/applications", text: "Bewerbungen", icon: FileText },
   { href: "/app/documents", text: "Dokumente", icon: FolderOpen },
+  { href: "/app/settings/integrations", text: "Plugins", icon: Plug },
+  { href: "/app/notifications", text: "Benachrichtigungen", icon: Bell },
 ];
 
 /** Eigene Zeile, weil sie kein Ort ist, sondern ein Werkzeug. */

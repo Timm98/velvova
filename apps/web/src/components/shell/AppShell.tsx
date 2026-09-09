@@ -69,6 +69,8 @@ export function AppShell({
   nachtsZiel = null,
   assistantName,
   userEmail,
+  planName,
+  planHref,
   userName,
   unreadCount,
   onLogout,
@@ -93,6 +95,10 @@ export function AppShell({
   nachtsZiel?: string | null;
   assistantName: string;
   userEmail: string;
+  /** Der Name des laufenden Abos, aus den echten Abodaten. */
+  planName: string;
+  /** Wohin der Warenkorb in der Leiste führt. */
+  planHref: string;
   userName: string | null;
   unreadCount: number;
   onLogout: React.ReactNode;
@@ -208,8 +214,20 @@ export function AppShell({
 
   return (
     <div
+      /*
+       * ── Die Arbeitsfläche beginnt hier ──────────────────────────
+       *
+       * `data-app` schaltet den eigenen Satz Flächen ein — #151515
+       * für den Grund, #111111 für die Leiste, #20201F für die
+       * Eingabe. Er gilt nur unterhalb dieses Knotens.
+       *
+       * An der Hülle und nicht im dunklen Theme, weil sonst die
+       * öffentliche Seite stillschweigend mitginge. Sie trägt das
+       * Marineblau der Marke; die Arbeitsfläche soll zurücktreten.
+       */
+      data-app=""
       className={cn(
-        "flex flex-col bg-page",
+        "flex flex-col bg-(--app-grund) text-(--app-text)",
         /*
          * Ab `md` wird aus der Spalte eine Zeile: links die Leiste,
          * rechts der Inhalt. Beide bekommen die volle Fensterhoehe,
@@ -247,6 +265,8 @@ export function AppShell({
         userName={userName}
         userEmail={userEmail}
         bildKennung={bildKennung ?? null}
+        planName={planName}
+        planHref={planHref}
         unreadCount={unreadCount}
         gruppen={accountGruppen}
         onLogout={onLogout}
@@ -356,6 +376,28 @@ export function AppShell({
        * Monday steht jetzt auf der Startseite in voller Grösse, und das
        * Dock liegt weiterhin auf jeder Seite.
        */}
+
+      {/*
+        ── Oben rechts: nur der Name ───────────────────────────────
+
+        Kein Kasten, kein Untertitel, keine Werkzeugleiste. Eine Marke
+        wirkt hochwertig, wenn sie sich nicht erklärt.
+
+        Nur ab `md`: Darunter trägt `TopNav` bereits den Namen, und
+        zweimal derselbe Schriftzug übereinander sieht nicht nach
+        Ruhe aus, sondern nach einem Fehler.
+
+        `pointer-events-none`, damit dieser Streifen nichts abfängt.
+        Er ist eine Angabe, kein Bedienelement.
+      */}
+      <div
+        aria-hidden
+        className="pointer-events-none hidden shrink-0 justify-end px-8 pt-5 pb-1 md:flex"
+      >
+        <span className="font-titel text-[13px] tracking-[0.14em] text-(--app-text-3) uppercase">
+          {brandName}
+        </span>
+      </div>
 
       <main
         id="inhalt"
