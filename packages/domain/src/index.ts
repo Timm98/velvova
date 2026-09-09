@@ -36,3 +36,4 @@ export * from "./klaerungsrang.ts";
 export * from "./checkzugriff.ts";
 
 export * from "./stillechancen.ts";
+export * from "./arbeitgeberpassung.ts";
