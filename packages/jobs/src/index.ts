@@ -85,3 +85,5 @@ export * from "./sources/ats/smartrecruiters-partner.ts";
 /* Regeln fuer den Abruf fremder Karriereseiten. */
 export * from "./karriereseite/abrufregeln.ts";
 export * from "./karriereseite/karrierelinks.ts";
+export * from "./karriereseite/fremdinhalt.ts";
+export * from "./karriereseite/abruf.ts";
