@@ -470,7 +470,21 @@ export function InterviewRoom({
        * benennen könnte — es macht nur den oberen Rand unruhig.
        */}
 
-      <div className="relative mx-auto flex h-full w-full max-w-[820px] flex-col">
+      <div
+        className={cn(
+          "relative mx-auto flex h-full w-full max-w-[820px] flex-col",
+          /*
+           * Solange nichts gesagt wurde, ist die ganze Spalte die
+           * Gruppe: Begrüssung, Vorschläge, Frage, Eingabefeld.
+           *
+           * Vorher war nur der Gesprächsbereich zentriert und das
+           * Eingabefeld klebte am unteren Rand — dazwischen lagen
+           * dreihundert Pixel. Am Bildschirm gemessen, nicht
+           * geschätzt.
+           */
+          nochNichtsGesagt && "justify-center",
+        )}
+      >
         {/* ── Kopf ────────────────────────────────────────────── */}
         {/* `gap-x-6`, nicht 4: das Licht hinter Monday reicht bewusst 18%
             über ihre Fläche hinaus (`inset-[-18%]`), bei 120px also gut
@@ -569,13 +583,25 @@ export function InterviewRoom({
              */
             "uebergang-gespraech-strom ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1 pb-6",
             /*
-             * Auch die Ausrichtung wird normal.
+             * ── Leere Fläche: die Gruppe liegt über der Mitte ──────
              *
-             * `justify-center` schob die erste Frage in die Mitte der
-             * leeren Fläche — passend zu einer Schautafel, nicht zu
-             * einer Nachricht. Ein Gespräch beginnt oben und wächst
-             * nach unten; das gilt schon für den ersten Satz.
+             * Ein laufendes Gespräch beginnt oben und wächst nach
+             * unten — `justify-center` wäre dort ein Fehler, weil der
+             * Verlauf bei jeder Nachricht springt. Genau deshalb war
+             * es hier einmal entfernt worden, und für ein Gespräch
+             * bleibt das richtig.
+             *
+             * Für die LEERE Fläche stimmt es aber. Beim ersten Blick
+             * auf den fertigen Bildschirm stand die Begrüssung ganz
+             * oben, darunter sechshundert Pixel Nichts, ganz unten
+             * das Eingabefeld: drei Dinge, die zusammengehören, mit
+             * dem halben Bildschirm dazwischen.
+             *
+             * `pb-[8vh]` schiebt die Gruppe eine Spur über die Mitte.
+             * Genau mittig wirkt auf einem breiten Bildschirm zu tief,
+             * weil der Blick beim Lesen ohnehin oberhalb ansetzt.
              */
+            nochNichtsGesagt && "flex flex-none flex-col justify-center pb-2",
           )}
         >
           {nochNichtsGesagt && (
@@ -1006,11 +1032,21 @@ export function InterviewRoom({
             weiterscrollt. Ein Bauteil für beide Richtungen: Zwei fast
             gleiche wären beim ersten Unterschied auseinandergelaufen.
           */}
-          <ScrollUebergang
-            ziel="/app/jobs"
-            richtung="runter"
-            hinweis="Nach unten scrollen, um deine Stellen zu sehen"
-          />
+          {/*
+           * Hier stand „Nach unten scrollen, um deine Stellen zu
+           * sehen".
+           *
+           * Ein Satz, der eine Anleitung ist. Er stand unter dem
+           * Eingabefeld und verriet, dass die Stellen dort liegen, wo
+           * niemand sie vermutet — hinter dem Composer, ausserhalb des
+           * Bildes. Eine Oberfläche, die erklären muss, wo etwas ist,
+           * hat es an der falschen Stelle.
+           *
+           * Die Stellen sind nicht weg: Sie stehen im Gespräch, wo sie
+           * besprochen werden, und unter „Jobs & Checks" in der
+           * Leiste — an einem Ort, den man findet, ohne dass ihn
+           * jemand ansagt.
+           */}
 
           {/*
             Hier standen die Antwortimpulse — Plättchen unter dem

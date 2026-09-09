@@ -281,8 +281,39 @@ export function Composer({
            `.uebergang-sucheingabe` in globals.css. Dasselbe Feld
            trägt ihn dort oben. */
         "uebergang-sucheingabe",
-        "rounded-(--radius-pill) bg-raised p-2.5 shadow-md transition-[box-shadow] duration-(--duration-base)",
-        "focus-within:shadow-[0_0_0_2px_var(--primary),0_8px_26px_rgba(98,92,255,0.08)]",
+        /*
+         * ── Kein Ring, keine Pille, keine Wolke ─────────────────
+         *
+         * Hier stand `rounded-(--radius-pill)`, `shadow-md` und beim
+         * Fokus ein zwei Pixel breiter Ring in der Markenfarbe.
+         *
+         * Der Ring war das Auffälligste auf der ganzen Fläche —
+         * dauerhaft, sobald der Cursor im Feld stand, also praktisch
+         * immer. Eine Farbe, die nie weggeht, hört auf, etwas zu
+         * bedeuten; sie färbt nur noch.
+         *
+         * Die Pille wiederum passt zu einer Zeile. Dieses Feld ist
+         * mehrzeilig gedacht: Wer eine Lage schildert, schreibt drei
+         * Sätze, keine Suchanfrage. Bei drei Zeilen wurde aus der
+         * Pille ein Stadion — eine Form, die es in der Vorlage nicht
+         * gibt.
+         *
+         * Jetzt: weiche Ecken, ein Rand, den man sucht und trotzdem
+         * findet, und beim Fokus derselbe Rand eine Spur deutlicher.
+         * Genug, um zu wissen, wo man ist. Nicht genug, um daneben
+         * etwas anderes lesen zu können.
+         */
+        "rounded-[20px] border border-(--app-rand) bg-(--app-eingabe) p-2.5",
+        "transition-colors duration-(--duration-base)",
+        "focus-within:border-(--app-rand-stark)",
+        /*
+         * Mindesthöhe und Breite wie in der Vorlage.
+         *
+         * Ein hohes leeres Feld ist eine Einladung: Es sagt, dass hier
+         * mehr als eine Zeile erwartet wird. Ein flaches sagt das
+         * Gegenteil, und man schreibt entsprechend kurz.
+         */
+        "mx-auto w-full max-w-[760px] min-h-[118px] flex flex-col justify-between",
         className,
       )}
     >
@@ -366,7 +397,19 @@ export function Composer({
         </div>
       )}
 
-      <div className="flex items-end gap-1.5">
+      {/*
+        ── Oben der Text, unten die Bedienung ────────────────────
+        
+        Vorher standen Büroklammer, Mikrofon und Senden NEBEN dem
+        Textfeld, und die Modellwahl in einer eigenen Zeile darunter.
+        Bei drei Zeilen Text rutschten die Knöpfe mit nach unten und
+        die Zeile darunter wurde zur vierten Ebene.
+        
+        Die Vorlage trennt sauber: Der Text nimmt oben so viel Platz,
+        wie er braucht; die Bedienung steht unten und bleibt, wo sie
+        ist. Man weiss immer, wo das Senden liegt.
+      */}
+      <div className="flex">
         <textarea
           ref={feld}
           rows={1}
@@ -386,9 +429,14 @@ export function Composer({
           /* min-h-12 plus p-2.5 der Hülle ergibt 68px Ruhehöhe — in der
              Spanne 64–76 aus §8.4. Die Schrift folgt der Skala statt
              einem festen Pixelwert. */
-          className="max-h-[200px] min-h-12 flex-1 resize-none bg-transparent px-4 py-3 text-base leading-relaxed text-ink outline-none placeholder:text-ink-3 disabled:opacity-60"
+          className="max-h-[240px] min-h-11 flex-1 resize-none bg-transparent px-3 py-2 text-[15px] leading-relaxed text-(--app-text) outline-none placeholder:text-(--app-text-3) disabled:opacity-60"
         />
+      </div>
 
+      {/* ── Die Bedienzeile ──────────────────────────────────────
+          Links Anhänge, rechts Einstellung und Handlungen. Sie steht
+          fest am unteren Rand, egal wie hoch der Text wird. */}
+      <div className="flex items-center gap-1.5 pt-1">
         {onSkip && skipLabel && (
           <button
             type="button"
@@ -409,12 +457,17 @@ export function Composer({
           />
         )}
 
+        {/* Alles Weitere nach rechts. Die Modellwahl zuerst: Sie ist
+            eine Einstellung, die man liest, bevor man handelt. */}
+        <div className="ml-auto flex items-center gap-1.5">
+          {modellwahl && <Modellwahl />}
+
         {stimmeMöglich && !hört && (
           <button
             type="button"
             onClick={diktatStarten}
             aria-label="Antwort diktieren"
-            className="mb-0.5 grid size-11 shrink-0 place-items-center rounded-(--radius-control) text-ink-2 transition-colors hover:bg-soft hover:text-ink"
+            className="grid size-9 shrink-0 place-items-center rounded-(--radius-control) text-(--app-text-2) transition-colors hover:bg-(--app-hover) hover:text-(--app-text)"
           >
             <Mic className="size-[18px]" strokeWidth={1.8} />
           </button>
@@ -426,29 +479,16 @@ export function Composer({
           disabled={busy || text.trim().length === 0}
           aria-label="Senden"
           className={cn(
-            "mb-0.5 grid size-11 shrink-0 place-items-center rounded-(--radius-control) transition-all duration-(--duration-fast)",
+            "grid size-9 shrink-0 place-items-center rounded-(--radius-control) transition-all duration-(--duration-fast)",
             text.trim().length > 0 && !busy
               ? "bg-accent text-accent-on shadow-sm hover:bg-accent-hover active:translate-y-px"
-              : "bg-soft text-ink-3",
+              : "bg-(--app-erhoben-2) text-(--app-text-3)",
           )}
         >
           <ArrowUp className="size-[18px]" strokeWidth={2.2} />
         </button>
-      </div>
-
-      {/*
-        Die Modellwahl steht UNTER der Eingabezeile, rechts.
-
-        Nicht darin: Sie gehört nicht in die Reihe mit Mikrofon und
-        Senden — das sind Handlungen, und dies ist eine Einstellung.
-        Und nicht links: Dort beginnt der Text, und der Blick soll
-        zuerst dorthin.
-      */}
-      {modellwahl && (
-        <div className="flex justify-end px-1.5 pb-1">
-          <Modellwahl />
         </div>
-      )}
+      </div>
     </div>
   );
 }

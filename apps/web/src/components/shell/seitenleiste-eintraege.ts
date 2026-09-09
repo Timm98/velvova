@@ -1,5 +1,4 @@
 import {
-  Bell,
   Briefcase,
   FileText,
   FolderOpen,
@@ -66,7 +65,15 @@ export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
   { href: "/app/applications", text: "Bewerbungen", icon: FileText },
   { href: "/app/documents", text: "Dokumente", icon: FolderOpen },
   { href: "/app/settings/integrations", text: "Plugins", icon: Plug },
-  { href: "/app/notifications", text: "Benachrichtigungen", icon: Bell },
+  /*
+   * Benachrichtigungen stehen NICHT hier.
+   *
+   * Sie haben in der Leiste eine eigene Zeile, weil sie als einzige
+   * eine Zahl tragen — die ungelesenen. Hier eingetragen erschienen
+   * sie zweimal untereinander, einmal mit Zähler und einmal ohne.
+   * Beim Bauen nicht aufgefallen, beim ersten Blick auf den
+   * Bildschirm sofort.
+   */
 ];
 
 /** Eigene Zeile, weil sie kein Ort ist, sondern ein Werkzeug. */

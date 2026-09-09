@@ -220,7 +220,7 @@ export const pl: Messages = {
       "Zanim pokażę ci oferty, chcę zrozumieć, co naprawdę potrafisz, co daje ci energię i " +
       "jakich warunków potrzebujesz. W każdej chwili możesz wszystko poprawić lub pominąć.",
     progress: "Zrozumiano {done} z {total} tematów",
-    yourAnswer: "Napisz do {assistant} lub porozmawiaj z nią …",
+    yourAnswer: "Jak mogę pomóc w kolejnym kroku?",
     send: "Wyślij",
     voiceMode: "Mów",
     textMode: "Pisz",

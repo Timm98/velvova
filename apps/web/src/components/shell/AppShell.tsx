@@ -339,7 +339,19 @@ export function AppShell({
         schieben sich übereinander.
       */}
       <div ref={kopfRef} className="sticky top-0 z-40">
-        <AppHinweisleiste nachtsZiel={nachtsZiel} />
+        {/*
+          Nicht über dem Gespräch.
+
+          Der Balken lief über die volle Breite und war das Erste, was
+          man auf der Gesprächsseite sah — eine Ankündigung über einer
+          leeren Fläche, auf der gerade Ruhe herrschen soll. Er ist
+          schliessbar, aber bis dahin ist er die Standardfläche, und
+          genau das soll er nicht sein.
+
+          Auf allen anderen Seiten bleibt er: Dort steht er über
+          Inhalt, nicht über einer Einladung zu sprechen.
+        */}
+        {!fülltFenster && <AppHinweisleiste nachtsZiel={nachtsZiel} />}
 
         <div className="md:hidden">
         <TopNav

@@ -207,7 +207,7 @@ export const de = {
       "gibt und welche Bedingungen du brauchst. Du kannst jederzeit etwas korrigieren oder " +
       "überspringen.",
     progress: "{done} von {total} Themen verstanden",
-    yourAnswer: "Schreib {assistant} oder sprich mit ihr …",
+    yourAnswer: "Wie kann ich dir bei deinem nächsten Schritt helfen?",
     send: "Senden",
     voiceMode: "Sprechen",
     textMode: "Schreiben",

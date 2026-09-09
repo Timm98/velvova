@@ -212,7 +212,7 @@ export const es: Messages = {
       "Antes de mostrarte ofertas quiero entender qué sabes hacer realmente, qué te da energía " +
       "y qué condiciones necesitas. Puedes corregir u omitir cualquier cosa en cualquier momento.",
     progress: "{done} de {total} temas entendidos",
-    yourAnswer: "Escribe a {assistant} o habla con ella …",
+    yourAnswer: "¿Cómo puedo ayudarte con tu siguiente paso?",
     send: "Enviar",
     voiceMode: "Hablar",
     textMode: "Escribir",

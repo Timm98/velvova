@@ -215,7 +215,7 @@ export const fr: Messages = {
       "ce qui vous donne de l'énergie et quelles conditions vous sont nécessaires. Vous pouvez " +
       "corriger ou passer n'importe quoi à tout moment.",
     progress: "{done} sujets sur {total} compris",
-    yourAnswer: "Écrivez à {assistant} ou parlez-lui …",
+    yourAnswer: "Comment puis-je t'aider pour la suite ?",
     send: "Envoyer",
     voiceMode: "Parler",
     textMode: "Écrire",

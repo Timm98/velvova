@@ -200,7 +200,7 @@ export const en: Messages = {
       "Before I show you any jobs, I want to understand what you can really do, what gives you " +
       "energy and what conditions you need. You can correct or skip anything at any time.",
     progress: "{done} of {total} topics understood",
-    yourAnswer: "Write to {assistant} or speak with her …",
+    yourAnswer: "How can I help with your next step?",
     send: "Send",
     voiceMode: "Speak",
     textMode: "Type",

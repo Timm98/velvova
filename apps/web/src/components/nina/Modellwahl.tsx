@@ -131,9 +131,23 @@ export function Modellwahl({ className }: { className?: string }) {
         aria-expanded={offen}
         aria-label="Modell wählen"
         className={cn(
-          "flex max-w-[18rem] items-center gap-1.5 rounded-(--radius-pill) px-2 py-1",
-          "text-2xs text-ink-3 transition-colors hover:bg-soft hover:text-ink-2",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+          /*
+           * Sichtbar, aber nicht laut.
+           *
+           * Der Chip stand in `text-2xs` und der schwächsten Textstufe
+           * — man musste wissen, dass er da ist, um ihn zu finden. Das
+           * gewählte Modell ist aber die Angabe, die man beim Blick
+           * auf die Eingabe zuerst sucht: Wer antwortet mir gerade?
+           *
+           * Eine Stufe grösser, eine Stufe heller, und ein Rand beim
+           * Überfahren. Kein Kasten im Ruhezustand: Er soll ablesbar
+           * sein, nicht um Aufmerksamkeit bitten.
+           */
+          "flex max-w-[18rem] min-h-8 items-center gap-1.5 rounded-(--radius-pill) px-2.5",
+          "text-xs text-(--app-text-2) transition-colors",
+          "hover:bg-(--app-hover) hover:text-(--app-text)",
+          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)",
+          offen && "bg-(--app-hover) text-(--app-text)",
         )}
       >
         <Sparkles className="size-3 shrink-0" strokeWidth={1.9} />
@@ -148,7 +162,28 @@ export function Modellwahl({ className }: { className?: string }) {
         /* Nach oben: Der Chip sitzt am unteren Rand des Eingabefelds. */
         <div
           role="menu"
-          className="absolute bottom-[calc(100%+0.4rem)] right-0 z-50 max-h-[60dvh] w-[19rem] overflow-y-auto rounded-(--radius-lg) border border-line bg-raised p-1.5 shadow-xl"
+          className={cn(
+            /*
+             * ── Schreibtisch: über dem Chip, rechtsbündig ─────────
+             */
+            "absolute right-0 bottom-[calc(100%+0.4rem)] z-50 max-h-[60dvh] w-[21rem]",
+            "overflow-y-auto rounded-(--radius-lg) border border-(--app-rand) bg-(--app-erhoben) p-1.5 shadow-xl",
+            /*
+             * ── Mobil: eine Fläche über dem Eingabefeld ───────────
+             *
+             * Am Chip verankert lief das Menü links aus dem Bild —
+             * gemessen: linke Kante bei −61 Pixel, ein Fünftel der
+             * Liste ausserhalb des Fensters. Die Breite zu begrenzen
+             * half nicht, denn nicht sie war das Problem, sondern der
+             * Ankerpunkt: Rechts vom Chip stehen noch Mikrofon und
+             * Senden, also beginnt seine rechte Kante weit vor dem
+             * Fensterrand.
+             *
+             * Auf schmalen Geräten hängt es deshalb nicht mehr am
+             * Chip, sondern am Fenster.
+             */
+            "max-sm:fixed max-sm:inset-x-3 max-sm:bottom-[6.5rem] max-sm:w-auto",
+          )}
         >
           <Zeile
             name="Automatisch"
@@ -161,11 +196,11 @@ export function Modellwahl({ className }: { className?: string }) {
             }}
           />
 
-          {laedt && <p className="px-3 py-2 text-2xs text-ink-3">Wird geladen …</p>}
+          {laedt && <p className="px-3 py-2 text-2xs text-(--app-text-3)">Wird geladen …</p>}
 
           {auskunft?.gruppen.map((g) => (
-            <div key={g.anbieter} className="mt-1.5 border-t border-line pt-1.5">
-              <p className="px-3 pb-1 text-2xs uppercase tracking-[0.08em] text-ink-3">
+            <div key={g.anbieter} className="mt-1.5 border-t border-(--app-rand) pt-1.5">
+              <p className="px-3 pb-1 text-2xs uppercase tracking-[0.08em] text-(--app-text-3)">
                 {g.name}
               </p>
               {g.modelle.map((m) => (
@@ -190,7 +225,7 @@ export function Modellwahl({ className }: { className?: string }) {
             niemand wüsste, ob die Funktion fehlt oder die Einrichtung.
           */}
           {auskunft && !auskunft.auswahlMoeglich && (
-            <p className="mt-1.5 border-t border-line px-3 pt-2 text-2xs leading-relaxed text-ink-3">
+            <p className="mt-1.5 border-t border-(--app-rand) px-3 pt-2 text-2xs leading-relaxed text-(--app-text-3)">
               Es ist noch kein Modell freigegeben. Monday antwortet über die
               eingerichtete Verbindung.
             </p>
