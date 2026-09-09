@@ -278,10 +278,44 @@ export async function POST(request: Request) {
    * jedes Land regelmässig dran, ohne dass irgendwo Zustand
    * gespeichert werden muss — die Zeit selbst ist der Zeiger.
    *
-   * Dazu ein Zeitbudget: Vier Minuten, dann bricht die Familie ab.
-   * Was übrig bleibt, ist beim nächsten Lauf vorn.
+   * Dazu ein Zeitbudget.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum 200 Sekunden und nicht 240
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier standen 240 Sekunden bei einer Laufzeitgrenze von 300. Dahinter
+   * kommt aber noch die Länderzählung mit bis zu 45 Sekunden, und davor
+   * liegen Registrierungen, Suchbegriffe und eine Abfrage der Ausbeute.
+   * 240 + 45 + Vorlauf ist mehr als 300 — die Route lief in Produktion
+   * in den 504.
+   *
+   * Der zweite, schwerere Fehler war nicht die Zahl, sondern wo sie
+   * geprüft wurde: NUR ZWISCHEN den Adaptern. Ein Adapter, der bei
+   * Sekunde 239 begann, lief zu Ende, egal wie lange er brauchte.
+   *
+   *   200 s  Abruf
+   *  + 45 s  Länderzählung (höchstens)
+   *  + ~20 s Vorlauf und Antwort
+   *  ───────
+   *   265 s  bei 300 s Grenze — 35 Sekunden Luft
+   *
+   * Die Luft ist Absicht. Ein Lauf, der die Grenze reisst, verliert
+   * ALLES, auch das bereits Geschriebene aus der Antwort; einer, der
+   * eine Quelle weniger schafft, verliert eine Quelle bis zum nächsten
+   * Mal. Die zweite Kosten ist die kleinere.
    */
-  const BUDGET_MS = 240_000;
+  const BUDGET_MS = 200_000;
+
+  /**
+   * Was ein einzelner Adapter höchstens bekommt.
+   *
+   * Auch wenn viel Budget übrig ist: Ein Adapter, der 90 Sekunden
+   * braucht, nimmt sie vier anderen weg. Careerjet läuft über
+   * Suchbegriffe mal Seiten und hat keine eigene Obergrenze — ohne
+   * diese Deckelung schöpft er das ganze Budget aus.
+   */
+  const ADAPTER_MS = 45_000;
   const beginn = Date.now();
 
   /*
@@ -384,20 +418,58 @@ export async function POST(request: Request) {
         const ausGruppe: IngestResult[] = [];
         const versatz = gruppe.length > 1 ? takt % gruppe.length : 0;
         for (let n = 0; n < gruppe.length; n++) {
-          if (Date.now() - beginn > BUDGET_MS) break;
+          const restlich = BUDGET_MS - (Date.now() - beginn);
+          if (restlich <= 0) break;
           if (n > 0) await warte(PAUSE_MS);
           const adapter = gruppe[(versatz + n) % gruppe.length]!;
           const policy = decideForProvider(adapter.key);
-          ausGruppe.push(
-            await ingestFromAdapter(adapter, {
-              limit,
-              policy: {
-                decision: policy.decision,
-                allowedOperations: policy.allowedOperations,
-                reason: policy.reason,
-              },
-            }),
+
+          /*
+           * Die Frist dieses einen Laufs.
+           *
+           * Das Kleinere aus „was vom Budget übrig ist" und „was ein
+           * Adapter höchstens darf". Ohne sie prüfte die Schleife das
+           * Budget nur VOR dem Start und konnte einen laufenden Adapter
+           * nicht mehr anhalten — das war die Ursache des 504.
+           *
+           * `AbortSignal.timeout` und nicht ein eigener Controller mit
+           * `setTimeout`: Der Zeitgeber hängt am Signal und wird mit ihm
+           * aufgeräumt. Ein vergessener `clearTimeout` hielte die
+           * Funktion am Leben, nachdem die Antwort längst raus ist.
+           */
+          const frist = AbortSignal.timeout(Math.min(restlich, ADAPTER_MS));
+
+          const t0 = Date.now();
+          const ergebnis = await ingestFromAdapter(adapter, {
+            limit,
+            signal: frist,
+            policy: {
+              decision: policy.decision,
+              allowedOperations: policy.allowedOperations,
+              reason: policy.reason,
+            },
+          });
+          const dauer = ((Date.now() - t0) / 1000).toFixed(1);
+
+          /*
+           * Eine Zeile je Quelle, damit im Vercel-Protokoll steht, wer
+           * die Zeit verbraucht. Ohne sie sieht man nur, dass der Lauf
+           * zu lange dauerte, und rät, an welcher Stelle.
+           *
+           * Keine Schlüssel, keine Adressen, keine Namen — nur der
+           * Quellenschlüssel, Zahlen und der Ausgang.
+           */
+          const ausgang = ergebnis.abgebrochen
+            ? "abgebrochen"
+            : ergebnis.errors.length > 0
+              ? "fehlgeschlagen"
+              : "fertig";
+          console.info(
+            `[refresh] ${adapter.key} ${ausgang} nach ${dauer}s — ` +
+              `${ergebnis.fetched} geholt, ${ergebnis.inserted} neu`,
           );
+
+          ausGruppe.push(ergebnis);
         }
         return ausGruppe;
       }),
@@ -436,7 +508,56 @@ export async function POST(request: Request) {
     { fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0 },
   );
 
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Ein Wort für den Ausgang des ganzen Laufs
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Bisher stand in der Antwort nur, was jede Quelle geliefert hat.
+   * Wer sie las, musste selbst zusammenzählen, ob der Lauf gelungen
+   * ist — und ein Zeitplan, der nur auf den Statuscode schaut, sah
+   * 200 und war zufrieden, auch wenn jede zweite Quelle ausfiel.
+   *
+   * Drei Fälle, und die Grenze zwischen ihnen ist die wichtige:
+   *
+   *   erfolg          keine Quelle ist gescheitert
+   *   teilerfolg      mindestens eine gescheitert, mindestens eine
+   *                   hat geliefert
+   *   fehlschlag      keine einzige hat etwas geliefert
+   *
+   * Ein Abbruch wegen Zeitmangel zählt NICHT als Fehlschlag der
+   * Quelle. Sie hat nichts falsch gemacht; wir hatten keine Zeit mehr,
+   * und beim nächsten Lauf steht sie vorn.
+   */
+  const gescheitert = results.filter((r) => !r.abgebrochen && r.errors.length > 0);
+  const abgebrochen = results.filter((r) => r.abgebrochen);
+  const geliefert = results.filter((r) => r.errors.length === 0);
+  const status =
+    gescheitert.length === 0
+      ? "erfolg"
+      : geliefert.length > 0
+        ? "teilerfolg"
+        : "fehlschlag";
+
+  const gesamtSekunden = ((Date.now() - beginn) / 1000).toFixed(1);
+  console.info(
+    `[refresh] ${status} nach ${gesamtSekunden}s — ` +
+      `${results.length} Quellen, ${geliefert.length} geliefert, ` +
+      `${gescheitert.length} gescheitert, ${abgebrochen.length} abgebrochen, ` +
+      `${total.inserted} neue Stellen`,
+  );
+
   return NextResponse.json({
+    status,
+    /* Je Quelle ein Wort, damit man den Ausgang lesen kann, ohne die
+       Zahlen darunter zu deuten. */
+    quellen: Object.fromEntries(
+      results.map((r) => [
+        r.sourceKey,
+        r.abgebrochen ? "abgebrochen" : r.errors.length > 0 ? "fehlgeschlagen" : "erfolg",
+      ]),
+    ),
+    dauerSekunden: Number(gesamtSekunden),
     // Was NICHT abgerufen wurde und warum — das gehört in dieselbe
     // Antwort wie das, was abgerufen wurde.
     skipped,

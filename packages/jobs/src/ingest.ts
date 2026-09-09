@@ -47,6 +47,15 @@ export interface IngestResult {
    * aus einem Fehlen nichts, und es darf nichts geschlossen werden.
    */
   feedVollstaendig: boolean;
+  /**
+   * Der Lauf wurde von aussen abgebrochen, weil seine Frist ablief.
+   *
+   * Das ist etwas anderes als ein Fehler: Der Anbieter hat nichts
+   * falsch gemacht, wir hatten keine Zeit mehr. Der Unterschied zählt
+   * an zwei Stellen — die Sicherung darf nicht auslösen, und die
+   * Antwort darf das nicht als Anbieterausfall melden.
+   */
+  abgebrochen?: boolean;
   errors: string[];
   startedAt: Date;
   finishedAt: Date;
@@ -961,7 +970,33 @@ export interface IngestPolicy {
 
 export async function ingestFromAdapter(
   adapter: JobSourceAdapter,
-  options: { limit?: number; since?: Date; policy?: IngestPolicy } = {},
+  options: {
+    limit?: number;
+    since?: Date;
+    policy?: IngestPolicy;
+    /**
+     * Die Frist für DIESEN Lauf, vom Aufrufer gesetzt.
+     *
+     * ══════════════════════════════════════════════════════════
+     * Warum es die geben muss
+     * ══════════════════════════════════════════════════════════
+     *
+     * Ohne sie ist ein Adapter unbegrenzt. Die Adapter setzen zwar
+     * `mitFrist(options.signal)` — aber ohne übergebenes Signal
+     * erzeugt das je AUFRUF eine neue Frist von 45 Sekunden. Careerjet
+     * läuft über Suchbegriffe mal Seiten; bei zehn Begriffen und fünf
+     * Seiten sind das fünfzig Anfragen mit je eigener Frist.
+     *
+     * Genau daran ist der Abruf in Produktion mit 504 gestorben: Der
+     * Aufrufer prüfte sein Budget zwischen den Adaptern, konnte einen
+     * laufenden aber nicht mehr anhalten.
+     *
+     * Mit einem Signal wird aus jeder Einzelfrist ein
+     * `AbortSignal.any([unseres, 45s])` — unseres gewinnt, sobald es
+     * früher fällt.
+     */
+    signal?: AbortSignal;
+  } = {},
 ): Promise<IngestResult> {
   const startedAt = new Date();
 
@@ -1096,11 +1131,27 @@ export async function ingestFromAdapter(
     listings = await adapter.fetchListings({
       limit: grenze,
       since: seit ?? undefined,
+      signal: options.signal,
     });
   } catch (error) {
-    breaker.recordFailure();
-    result.failed = 1;
-    result.errors.push(error instanceof Error ? error.message : String(error));
+    /*
+     * Abbruch ist kein Anbieterfehler.
+     *
+     * Wenn UNSERE Frist zuschlägt, hat der Anbieter nichts falsch
+     * gemacht. Ihn dafür in die Sicherung zu schicken — drei Fehler,
+     * fünf Minuten Pause — bestrafte ihn für unsere Knappheit, und
+     * beim nächsten Lauf wäre er ausgesetzt, obwohl er verfügbar ist.
+     */
+    const abgebrochen = options.signal?.aborted === true ||
+      (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError"));
+    if (!abgebrochen) breaker.recordFailure();
+    result.abgebrochen = abgebrochen;
+    result.failed = abgebrochen ? 0 : 1;
+    result.errors.push(
+      abgebrochen
+        ? "Zeitbudget erschöpft — der Lauf wurde abgebrochen, nicht der Anbieter."
+        : error instanceof Error ? error.message : String(error),
+    );
     result.finishedAt = new Date();
     await db
       .update(schema.jobSources)
