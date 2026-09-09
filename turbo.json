@@ -1,18 +1,119 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
-  "globalDependencies": [".env", "tsconfig.base.json"],
+  "globalDependencies": [
+    ".env",
+    "tsconfig.base.json"
+  ],
   "globalEnv": [
-    "NODE_ENV", "DATABASE_URL", "DATABASE_DRIVER", "PGLITE_DATA_DIR",
-    "AI_PROVIDER", "ANTHROPIC_API_KEY", "AI_MODEL_STRONG", "AI_MODEL_FAST",
-    "AI_MODEL_EMBED", "MAIL_PROVIDER", "SMTP_URL", "STORAGE_DRIVER",
-    "STORAGE_DIR", "AUTH_SECRET", "PAYCHECK_DEMO_MODE", "NEXT_PUBLIC_API_URL"
+    "NODE_ENV",
+    "ADZUNA_APP_ID",
+    "ADZUNA_APP_KEY",
+    "ADZUNA_COUNTRY",
+    "ADZUNA_FRIST_MS",
+    "ADZUNA_GLEICHZEITIG",
+    "ADZUNA_PAUSE_MS",
+    "AI_MODEL_EMBED",
+    "AI_MODEL_FAST",
+    "AI_MODEL_STRONG",
+    "AI_PROVIDER",
+    "ANTHROPIC_API_KEY",
+    "APIFY_ACTORS",
+    "APIFY_TOKEN",
+    "API_PORT",
+    "APP_URL",
+    "AUTH_SECRET",
+    "BEWERTUNGSPEICHER",
+    "BEWERTUNG_KANDIDATEN",
+    "BRAVE_SEARCH_API_KEY",
+    "BRIGHT_DATA_API_KEY",
+    "BRIGHT_DATA_DATASET_ID",
+    "CAREERJET_API_KEY",
+    "CAREERJET_REFERER",
+    "CAREERJET_USER_AGENT",
+    "CAREERJET_USER_IP",
+    "CORESIGNAL_API_KEY",
+    "DATABASE_DRIVER",
+    "DATABASE_URL",
+    "DEV_LOGIN_ENABLED",
+    "DEV_NOMADO24_DEBUG",
+    "ENABLE_NOMADO24",
+    "ENABLE_SMARTRECRUITERS_PARTNER_FEED",
+    "EXPO_PUBLIC_API_URL",
+    "FINDWORK_API_KEY",
+    "GOOGLE_SEARCH_API_KEY",
+    "GOOGLE_SEARCH_ENGINE_ID",
+    "JOBS_REFRESH_SECRET",
+    "JOB_SOURCES_EXCLUDE",
+    "JOOBLE_API_KEY",
+    "JOOBLE_KEYWORDS",
+    "JOOBLE_LOCATION",
+    "LIGHTCAST_CLIENT_ID",
+    "LIGHTCAST_CLIENT_SECRET",
+    "LIGHTCAST_ENABLED",
+    "MAIL_PROVIDER",
+    "NEXT_PUBLIC_API_URL",
+    "NOMADO24_API_BASE_URL",
+    "OPENAI_API_KEY",
+    "OPENAI_EMBEDDING_MODEL",
+    "OPENAI_MODEL_DEEP",
+    "OPENAI_MODEL_DEFAULT",
+    "OPENAI_MODEL_FAST",
+    "OPENAI_MODEL_REALTIME",
+    "OPENAI_SPEECH_MODEL",
+    "OPENAI_TRANSCRIBE_MODEL",
+    "ORS_API_KEY",
+    "PAYCHECK_DEMO_MODE",
+    "PGLITE_DATA_DIR",
+    "RAPIDAPI_HOST",
+    "RAPIDAPI_KEY",
+    "REED_API_KEY",
+    "REVIEW_VOTE_SECRET",
+    "ROUTING_URL",
+    "SMARTRECRUITERS_PARTNER_TOKEN",
+    "SMTP_URL",
+    "STORAGE_DIR",
+    "STORAGE_DRIVER",
+    "SUPABASE_SECRET_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "THEIRSTACK_API_KEY",
+    "USAJOBS_API_KEY",
+    "USAJOBS_EMAIL",
+    "NEXT_PUBLIC_*",
+    "EXPO_PUBLIC_*"
   ],
   "tasks": {
-    "build": { "dependsOn": ["^build"], "outputs": ["dist/**", ".next/**", "!.next/cache/**"] },
-    "dev": { "cache": false, "persistent": true },
-    "lint": { "dependsOn": ["^build"] },
-    "typecheck": { "dependsOn": ["^build"] },
-    "test": { "dependsOn": ["^build"], "outputs": ["coverage/**"] }
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "test": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ]
+    }
   }
 }
