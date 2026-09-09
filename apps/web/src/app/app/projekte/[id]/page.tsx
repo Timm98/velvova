@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { Briefcase, FileText, MessagesSquare } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { projektLaden } from "@/lib/chancen/projekte";
+import { freieStellen } from "@/lib/chancen/zuordnen";
+import { StelleLoesen, Stellenzuordnung } from "@/components/chancen/Stellenzuordnung";
 import { PageHeader } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Vorhaben" };
@@ -95,14 +97,33 @@ export default async function ProjektSeite({
         zahl={projekt.stellen.length}
         leer="Noch keine Stelle in diesem Vorhaben gemerkt."
       >
-        <Liste
-          eintraege={projekt.stellen.map((s) => ({
-            id: s.id,
-            href: `/app/jobs/${s.jobId}`,
-            oben: s.titel,
-            unten: s.firma,
-          }))}
-        />
+        <div className="grid gap-3">
+          {projekt.stellen.length > 0 && (
+            <ul className="grid gap-1">
+              {projekt.stellen.map((s) => (
+                <li key={s.id} className="flex items-center gap-2">
+                  <Link
+                    href={`/app/jobs/${s.jobId}`}
+                    className="min-w-0 flex-1 rounded-(--radius-sm) px-2 py-1.5 transition-colors hover:bg-(--app-hover)"
+                  >
+                    <span className="block truncate text-[14px] text-(--app-text)">{s.titel}</span>
+                    <span className="block truncate text-2xs text-(--app-text-3)">{s.firma}</span>
+                  </Link>
+                  <StelleLoesen savedJobId={s.id} projektId={projekt.id} />
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/*
+            Die Zuordnung steht UNTER der Liste, nicht darüber.
+
+            Oben wäre sie das Erste, was man sieht — und ein Vorhaben
+            handelt von den Stellen, die schon darin sind, nicht davon,
+            welche man noch hinzufügen könnte.
+          */}
+          <Stellenzuordnung projektId={projekt.id} frei={await freieStellen()} />
+        </div>
       </Abschnitt>
 
       <Abschnitt
