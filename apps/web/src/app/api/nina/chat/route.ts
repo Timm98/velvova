@@ -19,6 +19,7 @@ import {
   type ToolName,
 } from "@paycheck/ai";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { projektAnlegenPruefen } from "@paycheck/domain";
 import {
   completedGroups,
   gespraechstiefe,
@@ -141,6 +142,7 @@ const IMPLEMENTED_TOOLS = [
   "search_jobs",
   "save_job",
   "create_application",
+  "projekt_anlegen",
 ] as const satisfies readonly ToolName[];
 
 const RUNNING_LABEL: Record<ToolName, string> = {
@@ -157,6 +159,7 @@ const RUNNING_LABEL: Record<ToolName, string> = {
   generate_document_draft: "Entwurf entsteht",
   schedule_follow_up: "Erinnerung wird angelegt",
   request_career_analysis: "Ich denke gründlich darüber nach",
+  projekt_anlegen: "Vorhaben wird angelegt",
 };
 
 export async function POST(request: Request) {
@@ -613,7 +616,7 @@ export async function POST(request: Request) {
                 writes: WRITING_TOOLS.includes(check.name),
               });
 
-              const ergebnis = await runTool(user.id, check.name, check.input);
+              const ergebnis = await runTool(user.id, check.name, check.input, gespräch.id);
               werkzeuge.push({ name: check.name, ok: ergebnis.ok, summary: ergebnis.error });
               dieseRunde.push({
                 id: event.id,
@@ -962,6 +965,15 @@ async function runTool(
   userId: string,
   name: ToolName,
   input: unknown,
+  /*
+   * Das laufende Gespräch.
+   *
+   * Bisher brauchte kein Werkzeug es — `projekt_anlegen` schon: Es
+   * ordnet das Gespräch dem neuen Vorhaben zu. Ohne diese Zuordnung
+   * entstünde ein Vorhaben ohne Verlauf, und das Gespräch, in dem es
+   * beschlossen wurde, läge daneben.
+   */
+  conversationId: string,
 ): Promise<{ ok: boolean; output?: unknown; error?: string }> {
   const db = await getDb();
 
@@ -1133,6 +1145,80 @@ async function runTool(
             })),
           },
         };
+      }
+
+      /*
+       * ══════════════════════════════════════════════════════════
+       * Ein Vorhaben anlegen
+       * ══════════════════════════════════════════════════════════
+       *
+       * Das Modell hat gefragt und eine Zustimmung behauptet. Was es
+       * NICHT entscheiden darf, steht in `projektAnlegenPruefen`:
+       * ob der Name taugt, ob es das Vorhaben schon gibt, ob die
+       * Leiste noch Platz hat.
+       *
+       * Der Fall „gibt es schon" ist dabei kein Fehler. Wer nach drei
+       * Wochen wieder über Zürich spricht, meint dasselbe Vorhaben —
+       * ein zweites daneben wäre für ihn nicht unterscheidbar, und
+       * seine Stellen lägen danach in zwei Töpfen. Also wird das
+       * vorhandene geöffnet und das gesagt.
+       */
+      case "projekt_anlegen": {
+        const data = input as z.infer<(typeof ToolSchemas)["projekt_anlegen"]>;
+
+        const vorhandene = await withUser(db, userId, (tx) =>
+          tx
+            .select({
+              id: schema.projekte.id,
+              name: schema.projekte.name,
+              status: schema.projekte.status,
+            })
+            .from(schema.projekte)
+            .where(eq(schema.projekte.userId, userId)),
+        );
+
+        const urteil = projektAnlegenPruefen(data.name, vorhandene);
+
+        if (!urteil.erlaubt && urteil.grund === "existiert") {
+          return {
+            ok: true,
+            output: {
+              projektId: urteil.vorhandenesId,
+              name: urteil.name,
+              neu: false,
+              hinweis: "Dieses Vorhaben gibt es bereits — ich benutze es weiter.",
+            },
+          };
+        }
+        if (!urteil.erlaubt) return { ok: false, error: urteil.hinweis };
+
+        const [angelegt] = await withUser(db, userId, (tx) =>
+          tx
+            .insert(schema.projekte)
+            .values({ userId, name: urteil.name, ziel: data.ziel })
+            .returning({ id: schema.projekte.id }),
+        );
+        if (!angelegt) return { ok: false, error: "Das Vorhaben konnte nicht angelegt werden." };
+
+        /*
+         * Das laufende Gespräch gehört ab jetzt dazu.
+         *
+         * Ohne diese Zeile entstünde ein Vorhaben ohne Verlauf, und
+         * das Gespräch, in dem es beschlossen wurde, läge daneben.
+         */
+        await withUser(db, userId, (tx) =>
+          tx
+            .update(schema.ninaConversations)
+            .set({ projektId: angelegt.id })
+            .where(
+              and(
+                eq(schema.ninaConversations.id, conversationId),
+                eq(schema.ninaConversations.userId, userId),
+              ),
+            ),
+        );
+
+        return { ok: true, output: { projektId: angelegt.id, name: urteil.name, neu: true } };
       }
 
       case "save_job": {

@@ -14,6 +14,7 @@ import { ensureWorkflowState } from "@/lib/nina/workflow-state";
 import { logoutAction } from "@/app/(auth)/actions";
 import { profilbildKennung } from "@/lib/profilbild-kennung";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
+import { projekteFuerLeiste } from "@/lib/chancen/projekte";
 
 /**
  * Das App-Gerüst.
@@ -120,6 +121,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         proSekunde={bestand.proSekunde}
         gespraechBegonnen={(await loadGate(user.id)).hasAnySession}
         bildKennung={profilbildKennung(einstellungen?.avatarPfad)}
+        /* Die offenen Vorhaben. Leer heisst: der Abschnitt fehlt. */
+        projekte={await projekteFuerLeiste(user.id)}
         /* Für die Regionsauswahl im Fussbereich — sie soll den
            aktuellen Stand zeigen und nicht immer „Deutschland". */
         land={einstellungen?.jobMarketCountry ?? "DE"}

@@ -80,6 +80,7 @@ export function AppShell({
   proSekunde,
   gespraechBegonnen,
   bildKennung,
+  projekte = [],
 }: {
   labels: NavLabels;
   brandName: string;
@@ -115,6 +116,8 @@ export function AppShell({
   gespraechBegonnen?: boolean;
   /* Ob ein Profilbild hinterlegt ist — für das Kontomenü. */
   bildKennung?: string | null;
+  /** Die offenen Vorhaben. Leer heisst: der Abschnitt fehlt. */
+  projekte?: { id: string; titel: string; href: string }[];
   children: React.ReactNode;
   /** Der eingestellte Jobmarkt — für die Regionsauswahl im Fussbereich. */
   land: string;
@@ -248,6 +251,7 @@ export function AppShell({
         gruppen={accountGruppen}
         onLogout={onLogout}
         onSuche={() => setPaletteOpen(true)}
+        projekte={projekte}
       />
 
       {/*

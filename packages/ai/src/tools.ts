@@ -185,6 +185,29 @@ export const ToolSchemas = {
     dueAt: z.string().datetime(),
     label: z.string().min(3).max(200),
   }),
+
+  /**
+   * Ein Vorhaben anlegen — nachdem der Mensch es bestätigt hat.
+   *
+   * ── Warum `bestaetigt` ein Pflichtfeld ist ──────────────────
+   *
+   * Weil ein Eintrag in der Seitenleiste etwas ist, das bleibt. Wer
+   * einmal „ich schaue mich mal in Zürich um" sagt, hat damit kein
+   * Vorhaben eröffnet — er hat einen Satz gesagt.
+   *
+   * Als `z.literal(true)` kann das Modell das Feld nicht weglassen und
+   * nicht auf false setzen: Es muss behaupten, gefragt zu haben. Das
+   * hindert es nicht am Lügen, aber es hindert es am VERSEHEN — und im
+   * Protokoll steht hinterher, dass Zustimmung behauptet wurde.
+   */
+  projekt_anlegen: z.object({
+    /** Kurz. Er steht in der Seitenleiste und wird sonst abgeschnitten. */
+    name: z.string().min(2).max(40),
+    /** Was gesucht wird, in einem Satz. Aus dem Gespräch, nicht erfunden. */
+    ziel: z.string().min(3).max(200),
+    /** Ob der Mensch dem Namen zugestimmt hat. */
+    bestaetigt: z.literal(true),
+  }),
 } as const;
 
 export type ToolName = keyof typeof ToolSchemas;
@@ -216,6 +239,9 @@ export const TOOL_DESCRIPTIONS: Record<ToolName, string> = {
   generate_document_draft:
     "Erzeugt einen Dokumententwurf. Jede Tatsachenbehauptung braucht einen Beleg.",
   schedule_follow_up: "Legt eine Erinnerung zu einer Bewerbung an.",
+  projekt_anlegen:
+    "Legt ein Vorhaben an und ordnet dieses Gespräch ihm zu. Erst benutzen, " +
+    "nachdem die Person dem Namen ausdrücklich zugestimmt hat.",
 };
 
 /**
@@ -232,6 +258,7 @@ export const WRITING_TOOLS: ToolName[] = [
   "create_application",
   "generate_document_draft",
   "schedule_follow_up",
+  "projekt_anlegen",
 ];
 
 export interface ToolCall {
