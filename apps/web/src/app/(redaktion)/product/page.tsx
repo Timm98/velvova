@@ -84,6 +84,7 @@ export default function LoesungenSeite() {
       />
 
       <Abschnitt
+        id="wege"
         titel="Vier Wege hinein"
         text="Jeder führt zu etwas, das es gibt. Wo eine Funktion noch nicht freigegeben ist, steht das an der Karte — statt eines Knopfes, der ins Leere führt."
         kinder={

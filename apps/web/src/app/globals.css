@@ -1845,3 +1845,57 @@ input[type="number"] {
     scroll-snap-type: none;
   }
 }
+
+/* ── Die hervorgehobene Preisstufe ────────────────────────────
+ *
+ * Ein Schein statt einer stärkeren Linie.
+ *
+ * Vier Versuche mit der Kante allein sind gescheitert: Eine gedeckte
+ * Linie war gemessen vorhanden und wurde dreimal als „weg" gemeldet,
+ * eine volle bei zwei Pixeln als „zu stark". Das Auge findet Kanten
+ * über den Kontrast zur Fläche, nicht über ihre Existenz — und dafür
+ * ist eine Linie das falsche Werkzeug.
+ *
+ * Gemeint ist eine leuchtende Linie, kein leuchtender Kasten. Der
+ * Unterschied steckt allein im Radius des Scheins: weit gesetzt wird
+ * daraus ein Hof um die Karte, eng gesetzt sitzt er auf der Kante und
+ * die Linie selbst glüht.
+ *
+ * `--color-accent` folgt dem Thema, also blau im Dunkeln und orange im
+ * Hellen, ohne dass hier eine Farbe steht.
+ */
+.abo-betont {
+  /*
+   * Drei Schichten, und jede hat genau eine Aufgabe:
+   *
+   *   1. die Linie selbst — schmal, fast volle Deckung
+   *   2. der enge Schein direkt an ihr, der sie leuchten lässt
+   *   3. ein letzter, weiter Hauch, damit die Kante nicht abrupt endet
+   *
+   * Der Unterschied zur Fassung davor liegt in Schicht 2. Dort stand
+   * ein einzelner Schein mit 34 Pixeln Radius: Der lag als Hof um die
+   * ganze Karte und liess die Karte leuchten, nicht die Linie. Eng
+   * gesetzt verschmilzt er mit der Kante — und erst dadurch wird aus
+   * einer blauen Linie eine leuchtende.
+   */
+  /*
+   * Die Linie ist dunkler als ihr Schein, und das ist der Punkt.
+   *
+   * Vorher trugen beide dieselbe Farbe. Dann ist die Linie so hell wie
+   * das Leuchten um sie herum, und beides verschwimmt zu einem
+   * breiten, weichen Band — man sieht ein Glühen, aber keine Kante
+   * mehr.
+   *
+   * Jetzt: Kante auf 62 Prozent Akzent mit Schwarz gemischt, der
+   * Schein in voller Akzentfarbe. So liegt die dunkle Linie IM
+   * Leuchten statt darin unterzugehen — dasselbe Verhältnis wie bei
+   * einer Leuchtröhre, deren Fassung dunkler ist als ihr Licht.
+   */
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--color-accent) 62%, #000),
+    0 0 9px 0 rgb(from var(--color-accent) r g b / 0.55),
+    0 0 24px -6px rgb(from var(--color-accent) r g b / 0.3);
+}
+
+/* Wer wenig Bewegung will, will trotzdem sehen, welche Karte
+   empfohlen ist — der Schein bewegt sich nicht und bleibt. */

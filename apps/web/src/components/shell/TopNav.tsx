@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BEREICHSMENUE, hatMenue } from "./bereichsmenue";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Briefcase, Building2, CircleQuestionMark, FileText, MessagesSquare, Mic, Puzzle, Search, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -208,6 +209,72 @@ export function TopNav({
    * weiterhin über die Knöpfe rechts oben — nur nicht mehr darüber,
    * welche Seiten es gibt.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Das offene Aufklappmenü
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Ein einziger Zustand für alle Punkte, nicht einer je Punkt: Es
+   * darf immer nur eines offen sein, und mit fünf unabhängigen
+   * Zuständen müsste jeder beim Öffnen die vier anderen schliessen.
+   *
+   * Der Wert ist die Route des Punktes, nicht sein Index — dann
+   * verschiebt sich nichts, wenn die Liste sich ändert.
+   */
+  const [menue, setMenue] = useState<string | null>(null);
+  const menueRef = useRef<HTMLDivElement | null>(null);
+  /*
+   * Eine kurze Frist beim Verlassen mit der Maus.
+   *
+   * Zwischen dem Wort oben und dem Feld darunter liegen ein paar
+   * Pixel Luft. Ohne Frist schliesst das Menü genau dort — man zieht
+   * die Maus nach unten und es ist weg, bevor man ankommt.
+   */
+  const zuUhr = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function oeffne(href: string) {
+    if (zuUhr.current) clearTimeout(zuUhr.current);
+    setMenue(href);
+  }
+  function schliesseGleich() {
+    if (zuUhr.current) clearTimeout(zuUhr.current);
+    setMenue(null);
+  }
+  function schliesseBald() {
+    if (zuUhr.current) clearTimeout(zuUhr.current);
+    zuUhr.current = setTimeout(() => setMenue(null), 180);
+  }
+
+  /* Beim Seitenwechsel zu. Sonst steht es nach dem Klick noch offen
+     über der neuen Seite. */
+  useEffect(() => {
+    schliesseGleich();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
+  /*
+   * Escape schliesst, Klick daneben auch.
+   *
+   * Beides gehört zusammen und wird gern vergessen: Ein Menü, das nur
+   * durch erneuten Klick auf dasselbe Wort zugeht, ist eine Falle für
+   * jeden, der es versehentlich geöffnet hat.
+   */
+  useEffect(() => {
+    if (!menue) return;
+    function taste(e: KeyboardEvent) {
+      if (e.key === "Escape") schliesseGleich();
+    }
+    function daneben(e: MouseEvent) {
+      if (!menueRef.current?.contains(e.target as Node)) schliesseGleich();
+    }
+    document.addEventListener("keydown", taste);
+    document.addEventListener("mousedown", daneben);
+    return () => {
+      document.removeEventListener("keydown", taste);
+      document.removeEventListener("mousedown", daneben);
+    };
+  }, [menue]);
+
   const imArbeitsbereich = pathname.startsWith("/app") || pathname.startsWith("/business");
   const wege = imArbeitsbereich ? BEREICHE : BESUCHER;
   /*
@@ -531,73 +598,163 @@ export function TopNav({
           {wege.map((b) => {
             const aktiv = istAktiv(pathname, b.href, b.exact);
             const Icon = b.icon;
+            const klasse = cn(
+              /*
+               * Das Wort steht jetzt auf jeder Breite ab `md`.
+               *
+               * Vorher wurde es zwischen 768 und 1024 Pixeln
+               * versteckt, weil die Liste sonst mit Marke und
+               * Werkzeugen um dieselbe Zeile stritt und überlief.
+               * In einer eigenen Reihe gibt es diesen Streit
+               * nicht mehr — und ein Symbol ohne Wort ist eine
+               * Vokabel, die man raten muss.
+               */
+              "flex h-12 items-center justify-center rounded-(--radius-control) px-2 text-[13px] transition-colors duration-(--duration-fast) md:px-3 md:text-[15px]",
+              /*
+               * Alle Wege in Schwarz, nicht nur der aktive.
+               *
+               * Vorher stand der aktive schwarz und die übrigen
+               * grau — das las sich wie „hier bin ich, der Rest
+               * ist ausgegraut". Sie sind aber alle gleich
+               * erreichbar. Die Auszeichnung übernimmt die
+               * blaue Kapsel und die Fettung; die Schriftfarbe
+               * bleibt durchgehend gleich.
+               */
+              /*
+               * Beim Überfahren wird die Schrift blau — keine
+               * Fläche darunter.
+               *
+               * Vorher legte sich eine helle Kapsel unter das
+               * Wort. Bei acht Wegen nebeneinander sah das aus,
+               * als wäre einer davon ausgewählt: dieselbe Form,
+               * die den aktiven Punkt auszeichnet, nur in einem
+               * anderen Ton. Wer die Maus über die Zeile zog,
+               * bekam den Eindruck, die Seite habe gewechselt.
+               *
+               * Ein Farbwechsel der Schrift sagt dasselbe —
+               * „hier kannst du klicken" — und kann mit der
+               * Auszeichnung des aktiven Punktes nicht
+               * verwechselt werden.
+               */
+              "text-ink",
+              aktiv
+                ? "bg-accent-subtle font-semibold"
+                : "font-medium hover:text-accent-text",
+            );
             return (
               <li key={b.href}>
-                <Link
-                  href={b.href}
-                  aria-current={aktiv ? "page" : undefined}
-                  className={cn(
-                    /*
-                     * Das Wort steht jetzt auf jeder Breite ab `md`.
-                     *
-                     * Vorher wurde es zwischen 768 und 1024 Pixeln
-                     * versteckt, weil die Liste sonst mit Marke und
-                     * Werkzeugen um dieselbe Zeile stritt und überlief.
-                     * In einer eigenen Reihe gibt es diesen Streit
-                     * nicht mehr — und ein Symbol ohne Wort ist eine
-                     * Vokabel, die man raten muss.
-                     */
-                    "flex h-12 items-center justify-center rounded-(--radius-control) px-2 text-[13px] transition-colors duration-(--duration-fast) md:px-3 md:text-[15px]",
-                    /*
-                     * Alle Wege in Schwarz, nicht nur der aktive.
-                     *
-                     * Vorher stand der aktive schwarz und die übrigen
-                     * grau — das las sich wie „hier bin ich, der Rest
-                     * ist ausgegraut". Sie sind aber alle gleich
-                     * erreichbar. Die Auszeichnung übernimmt die
-                     * blaue Kapsel und die Fettung; die Schriftfarbe
-                     * bleibt durchgehend gleich.
-                     */
-                    /*
-                     * Beim Überfahren wird die Schrift blau — keine
-                     * Fläche darunter.
-                     *
-                     * Vorher legte sich eine helle Kapsel unter das
-                     * Wort. Bei acht Wegen nebeneinander sah das aus,
-                     * als wäre einer davon ausgewählt: dieselbe Form,
-                     * die den aktiven Punkt auszeichnet, nur in einem
-                     * anderen Ton. Wer die Maus über die Zeile zog,
-                     * bekam den Eindruck, die Seite habe gewechselt.
-                     *
-                     * Ein Farbwechsel der Schrift sagt dasselbe —
-                     * „hier kannst du klicken" — und kann mit der
-                     * Auszeichnung des aktiven Punktes nicht
-                     * verwechselt werden.
-                     */
-                    "text-ink",
-                    aktiv
-                      ? "bg-accent-subtle font-semibold"
-                      : "font-medium hover:text-accent-text",
-                  )}
-                >
-                  {/*
-                    Nur das Wort.
+                {hatMenue(b.href) ? (
+                  /*
+                    Ein Knopf, kein Verweis.
 
-                    Die Symbole standen daneben und trugen nichts bei:
-                    Ein Haus für „Heute", eine Aktentasche für „Jobs" —
-                    das Wort sagt es bereits, und zwei Zeichen für
-                    dieselbe Sache machen die Zeile nur unruhiger.
-                    `b.icon` bleibt in der Liste stehen; die untere
-                    Leiste auf schmalen Geräten braucht es weiterhin,
-                    dort steht es allein.
-                  */}
-                  <span>{b.label}</span>
-                </Link>
+                    Er führt nirgendwohin, er öffnet — und genau das
+                    muss ein Vorleseprogramm sagen können. Ein `<a>`
+                    mit Klick-Empfänger kündigt einen Seitenwechsel an,
+                    der nicht kommt. Der Überblick der Abteilung steht
+                    als erster Eintrag im Feld darunter, damit der Weg
+                    dorthin nicht verlorengeht.
+                  */
+                  <button
+                    type="button"
+                    aria-expanded={menue === b.href}
+                    aria-controls="bereichsfeld"
+                    onClick={() => (menue === b.href ? schliesseGleich() : oeffne(b.href))}
+                    onMouseEnter={() => oeffne(b.href)}
+                    onMouseLeave={schliesseBald}
+                    onFocus={() => oeffne(b.href)}
+                    className={cn(klasse, "gap-1.5")}
+                  >
+                    <span>{b.label}</span>
+                    {/*
+                      Der Pfeil dreht sich, wenn das Feld offen ist.
+                      `aria-hidden`, weil `aria-expanded` dasselbe schon
+                      sagt — und zwar in Worten.
+                    */}
+                    <svg
+                      aria-hidden
+                      viewBox="0 0 16 16"
+                      className={cn(
+                        "size-3.5 shrink-0 text-ink-3 transition-transform duration-(--duration-fast)",
+                        menue === b.href && "rotate-180",
+                      )}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M4 6.5 8 10.5l4-4" />
+                    </svg>
+                  </button>
+                ) : (
+                  <Link
+                    href={b.href}
+                    aria-current={aktiv ? "page" : undefined}
+                    onMouseEnter={schliesseBald}
+                    className={klasse}
+                  >
+                    <span>{b.label}</span>
+                  </Link>
+                )}
               </li>
             );
           })}
         </ul>
       </nav>
+
+      {/*
+        ══════════════════════════════════════════════════════════
+        Das Feld liegt NEBEN der Zeile, nicht darin
+        ══════════════════════════════════════════════════════════
+
+        Die Navigationszeile trägt `overflow-x-auto`, damit sie auf
+        schmalen Geräten seitlich rollt. Ein absolut gesetztes Feld
+        darin würde an ihrer Unterkante abgeschnitten — man sähe die
+        oberste Zeile des Menüs und sonst nichts.
+
+        Deshalb steht es als Geschwister der Zeile und ist an der
+        Kopfzeile ausgerichtet, die dafür `relative z-40` trägt. Über
+        die volle Breite, wie in der Vorlage: Vier Spalten brauchen
+        mehr Platz, als unter einem einzelnen Wort ist.
+
+        `onMouseEnter` hält es offen, während man hineinzieht — ohne
+        das schliesst es auf halbem Weg zwischen Wort und Eintrag.
+      */}
+      {menue && BEREICHSMENUE[menue] ? (
+        <div
+          id="bereichsfeld"
+          ref={menueRef}
+          onMouseEnter={() => oeffne(menue)}
+          onMouseLeave={schliesseBald}
+          className="absolute inset-x-0 top-full z-10 hidden border-b border-line bg-page shadow-lg md:block"
+        >
+          <div className="mx-auto grid w-full max-w-(--breite-inhalt) gap-x-10 gap-y-8 px-5 py-8 md:grid-cols-2 md:px-8 lg:grid-cols-4">
+            {BEREICHSMENUE[menue].map((spalte) => (
+              <div key={spalte.titel} className="grid content-start gap-1">
+                <h2 className="mb-2 text-2xs font-semibold uppercase tracking-[0.12em] text-ink-3">
+                  {spalte.titel}
+                </h2>
+                <ul className="grid gap-0.5">
+                  {spalte.eintraege.map((e) => (
+                    <li key={e.ziel + e.text}>
+                      <Link
+                        href={e.ziel}
+                        onClick={schliesseGleich}
+                        className="grid gap-0.5 rounded-(--radius-control) px-2 py-2 transition-colors hover:bg-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      >
+                        <span className="text-[15px] text-ink">{e.text}</span>
+                        {e.hinweis ? (
+                          <span className="text-[13px] leading-snug text-ink-3">{e.hinweis}</span>
+                        ) : null}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </header>
   );
 }

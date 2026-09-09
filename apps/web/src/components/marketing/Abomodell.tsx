@@ -133,65 +133,39 @@ export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
               "grid h-full content-start gap-6 rounded-(--radius-lg) p-7",
               "md:row-span-4 md:grid-rows-subgrid",
               /*
-               * Die hervorgehobene Stufe bekommt eine Linie in der
-               * Akzentfarbe — im Dunkeln blau, im Hellen orange, weil
-               * `--color-accent` dem Thema folgt.
+               * ══════════════════════════════════════════════════
+               * Die hervorgehobene Stufe: volle Akzentfarbe und ein
+               * Schein dahinter
+               * ══════════════════════════════════════════════════
                *
-               * Zwei Anläufe, und der Wert steht zwischen ihnen. Voll
-               * gedeckt mit einem Schein dahinter sah die Karte aus
-               * wie ausgewählt statt wie empfohlen, und die beiden
-               * anderen wirkten daneben wie Restposten. Bei 55 Prozent
-               * war sie dann nicht mehr zu sehen — gemessen war die
-               * Linie da, gemeldet wurde „die Umrandung ist weg".
+               * Fünf Anläufe, und der Weg dorthin ist die Begründung:
                *
-               * 85 Prozent ohne Schein: deutlich genug, um eine
-               * Empfehlung zu sein, ruhig genug, um die Nachbarn nicht
-               * zu entwerten.
-               */
-              /*
-               * Zwei Pixel bei der hervorgehobenen, einer bei den
-               * anderen — und das ist der eigentliche Unterschied.
+               *   1 px / 55 %            gemessen vorhanden, gemeldet als „weg"
+               *   1 px / 85 %            dasselbe noch einmal
+               *   2 px / 85 %            „zu stark"
+               *   1 px / 28 % auf allen  „seh ich nicht mehr"
+               *   volle Farbe + Schein   ✓
                *
-               * Bei einem Pixel war die Linie gemessen vorhanden
-               * (`color(srgb … / 0.85)` am Rand der Karte) und wurde
-               * trotzdem zweimal als „die Umrandung ist weg" gemeldet.
-               * Eine Haarlinie in gedecktem Blau auf dunklem Grund
-               * liest niemand als Auszeichnung; sie sieht aus wie die
-               * Kante daneben, nur minimal anders getönt.
+               * Die Lehre daraus: Eine gedeckte Linie ist auf dunklem
+               * Grund keine Auszeichnung. Sie ist gemessen da — man
+               * kann ihren Farbwert auslesen — und trotzdem sieht man
+               * sie nicht, weil das Auge Kanten über den Kontrast zur
+               * Fläche findet und nicht über ihre Existenz.
                *
-               * Die Stärke trägt hier, nicht die Farbe — und das ist
-               * der ganze Trick. Drei Anläufe:
+               * Also volle Akzentfarbe und ein weicher Schein
+               * dahinter, und beides nur an EINER Karte. Der Schein
+               * ist dabei das, was die Auszeichnung trägt: Er hebt die
+               * Karte von der Fläche ab, statt nur ihre Kante
+               * einzufärben.
                *
-               *   1 px / 55 %   gemessen vorhanden, gemeldet als „weg"
-               *   1 px / 85 %   dasselbe noch einmal
-               *   2 px / 85 %   gemeldet als „zu stark"
-               *   2 px / 45 %   deutlich, ohne zu schreien
-               *
-               * Bei einem Pixel entscheidet die Deckung darüber, ob
-               * man die Linie überhaupt sieht; bei zweien darüber, wie
-               * laut sie ist. Deshalb dick und blass statt dünn und
-               * satt. Kein Schein dahinter — der liess die Karte
-               * aussehen wie ausgewählt statt wie empfohlen.
-               *
-               * ── Und warum die anderen zwei auch eine bekommen ──
-               *
-               * Weil eine einzelne farbige Kontur zwischen zwei
-               * beinahe unsichtbaren Kanten (`--line` liegt bei zehn
-               * Prozent Deckung) nicht wie eine Empfehlung aussieht,
-               * sondern wie ein Fehler an genau dieser Karte.
-               *
-               * Alle drei tragen jetzt dieselbe Kontur in der
-               * Akzentfarbe, die oberste nur deutlicher. Damit ist der
-               * Unterschied ein Unterschied im Grad und nicht in der
-               * Art — und die Reihe liest sich als eine Reihe.
+               * Die beiden anderen tragen wieder `border-line`. Alle
+               * drei einzufärben war der Versuch, den Unterschied zu
+               * einem im Grad zu machen — dabei verschwand er ganz.
                *
                * `--color-accent` folgt dem Thema: im Dunkeln blau, im
-               * Hellen orange. Hier steht deshalb keine Farbe,
-               * sondern nur, wie viel davon.
+               * Hellen orange. Hier steht deshalb keine Farbe.
                */
-              a.betont
-                ? "border-2 border-[rgb(from_var(--color-accent)_r_g_b_/_0.45)]"
-                : "border border-[rgb(from_var(--color-accent)_r_g_b_/_0.28)]",
+              a.betont ? "abo-betont border border-transparent" : "border border-line",
             ].join(" ")}
             style={{ background: "var(--ed-surface)" }}
           >

@@ -81,6 +81,24 @@ const MARKEN: Marke[] = [
     datei: "/marken/claude-frei.png",
     dateiDunkel: "/marken/claude-dunkel-frei.png",
   },
+  /*
+   * Gemini — wie OpenAI und Claude in zwei Fassungen.
+   *
+   * Der Stern ist ein Farbverlauf und auf beiden Seiten sichtbar; der
+   * Schriftzug daneben ist einfarbig und verschwindet jeweils auf der
+   * falschen Fläche. Deshalb schwarz fürs helle Thema, weiss fürs
+   * dunkle — dieselbe Regel wie bei den beiden anderen.
+   *
+   * Die Dateien kamen als 3840×2160 mit viel durchsichtigem Rand und
+   * sind auf 480×270 gebracht, das Format der übrigen Badges. Ohne
+   * das wäre das Zeichen bei gleicher Kachelhöhe kleiner als die
+   * anderen — der Rand zählt mit.
+   */
+  {
+    name: "Gemini",
+    datei: "/marken/gemini-hell-frei.png",
+    dateiDunkel: "/marken/gemini-dunkel-frei.png",
+  },
 ];
 
 /*
@@ -142,14 +160,24 @@ export function Partnerleiste({
       <p className="text-center text-sm leading-relaxed text-ink-2">{titel}</p>
 
       {/*
-        Umbruch statt Laufband.
+        Ein Raster, kein Umbruch — und kein Laufband.
 
         Eine automatisch scrollende Logoschlange zieht den Blick vom
-        Einstieg weg und lässt sich nicht anhalten. Fünf Kacheln passen
-        auf jeder Breite in eine oder zwei Zeilen — dafür braucht es
-        keine Bewegung.
+        Einstieg weg und lässt sich nicht anhalten. Die brauchte es nie.
+
+        Der freie Umbruch dagegen hat mit der sechsten Marke aufgehört
+        zu funktionieren: Sechs Kacheln zu 109 Pixeln brauchen mehr,
+        als die Karte innen bietet, und Gemini fiel allein in eine
+        zweite Zeile. Acht Pixel je Kachel weniger halfen bei 1440 und
+        bei 1024 nicht — die Karte ist dort schmaler, und die Rechnung
+        hätte je Haltepunkt anders ausgehen müssen.
+
+        Sechs Spalten ab `sm`, drei darunter. Damit steht nie eine
+        Kachel allein, die Breiten sind gleich, weil das Raster sie
+        gleich macht, und es gibt keine Zahl, die jemand nachrechnen
+        muss.
       */}
-      <ul className="mt-4 flex flex-wrap items-center justify-center gap-3">
+      <ul className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
         {MARKEN.map((m) => (
           <li
             key={m.name}
@@ -173,8 +201,15 @@ export function Partnerleiste({
              * genau so breit, wie ihr Zeichen ist. Gleich gross sind
              * sie in der Höhe, und das ist die Achse, an der das Auge
              * eine Reihe misst.
+             *
+             * `px-3` statt `px-4` und `gap-2` statt `gap-3`, seit
+             * Gemini dazugekommen ist. Gemessen: Sechs Kacheln zu 109
+             * Pixeln mit zwölf Pixeln Abstand brauchen 714, die Karte
+             * bietet innen 664 — die sechste fiel allein in eine
+             * zweite Zeile. Acht Pixel weniger je Kachel und vier
+             * weniger je Lücke bringen alle sechs auf eine.
              */
-            className="markenbadge flex items-center justify-center rounded-(--radius-md) border border-line px-4 py-3"
+            className="markenbadge flex items-center justify-center rounded-(--radius-md) border border-line px-3 py-3"
             style={{ background: "var(--ed-canvas)" }}
           >
             {/*
