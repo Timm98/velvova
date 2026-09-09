@@ -35,3 +35,4 @@ export * from "./prompts/karriereanalyse.ts";
 export * from "./registry/katalog.ts";
 export * from "./registry/registry.ts";
 export * from "./registry/anbieter.ts";
+export * from "./team/aufstellung.ts";
