@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { umleitungFuer } from "@/lib/domaenen";
 
 /**
  * Content Security Policy mit Nonce.
@@ -22,6 +23,43 @@ function istLokal(request: NextRequest): boolean {
 }
 
 export function middleware(request: NextRequest): NextResponse {
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Zwei Domains, eine Anwendung
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Die öffentliche Seite und die Anwendung liegen unter zwei
+   * Adressen. Diese Weiche schickt jeden Pfad dorthin, wo er
+   * hingehört — und sie tut nichts, solange beide Adressen nicht
+   * eingerichtet sind.
+   *
+   * ── Warum das keine Produktion umlegen kann ────────────────
+   *
+   * `umleitungFuer` vergleicht den ANFRAGEHOST mit den beiden
+   * eingerichteten. Passt er zu keinem von beiden, gibt es keine
+   * Umleitung. Eine Testdomain lässt sich damit vollständig
+   * einrichten, ohne dass die laufende Adresse etwas davon merkt.
+   *
+   * ── Warum 307 und nicht 308 ──────────────────────────────────
+   *
+   * 308 ist dauerhaft und wird vom Browser gespeichert — auch dann
+   * noch, wenn die Einrichtung längst wieder aus ist. Wer eine
+   * Trennung erprobt, will sie zurücknehmen können, ohne bei jedem
+   * Beteiligten den Zwischenspeicher zu leeren.
+   *
+   * Ganz vorn, vor der CSP: Eine Antwort, die den Host wechselt,
+   * braucht keine Richtlinie für Skripte, die sie nicht ausliefert.
+   */
+  const woanders = umleitungFuer(
+    request.headers.get("host") ?? request.nextUrl.host,
+    request.nextUrl.pathname,
+  );
+  if (woanders) {
+    const ziel = new URL(woanders);
+    ziel.search = request.nextUrl.search;
+    return NextResponse.redirect(ziel, 307);
+  }
+
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const isDev = process.env.NODE_ENV !== "production";
 
