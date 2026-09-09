@@ -178,9 +178,54 @@ export async function getDbHandle(cfg: RuntimeConfig = loadRuntimeConfig()): Pro
    * Speicher ansammeln — bei einem Server, der wie hier stundenlang
    * läuft, lohnt sie sich.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Wie viele Verbindungen EIN Prozess halten darf
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Hier stand `max: 10`. Der Supabase-Pooler im Session-Modus hat
+   * `pool_size: 15`. Diese beiden Zahlen passen nicht zueinander:
+   *
+   *   Zwei Prozesse mit vollem Pool sperren alle anderen aus.
+   *
+   * Gemessen am 10. September 2026, nicht ausgedacht: vier lokale
+   * Ernteläufe (`adzuna-orte.mjs`), ein Entwicklungsserver und die
+   * Produktion auf Vercel — jeder mit dieser Zahl. Der Pooler
+   * antwortete allen mit
+   *
+   *   (EMAXCONNSESSION) max clients reached in session mode
+   *
+   * Sichtbar wurde das nicht als Datenbankfehler. Die Detailseiten
+   * rufen `notFound()`, wenn ihre Abfrage nichts zurückgibt — und
+   * eine Abfrage, die nicht laufen kann, gibt nichts zurück. Also
+   * stand da eine 404-Seite, lokal wie live, für Daten, die
+   * vorhanden waren.
+   *
+   * ── Warum drei ────────────────────────────────────────────────
+   *
+   * Weil mehrere Prozesse nebeneinander laufen müssen. Fünf lokale
+   * mal drei sind fünfzehn — schon das ist knapp, aber es lässt
+   * jeden einzelnen arbeiten statt einen alles nehmen.
+   *
+   * Drei und nicht eins: Eine Seite, die vier Abfragen nebeneinander
+   * stellt, hat sonst keinen Nutzen mehr davon; sie liefen
+   * nacheinander, und genau dafür stehen die `Promise.all` in den
+   * Layouts.
+   *
+   * ── Was das nicht behebt ──────────────────────────────────────
+   *
+   * Die eigentliche Grenze bleibt `pool_size: 15` am Pooler. Wer
+   * dauerhaft mehr Prozesse braucht, hebt sie dort an oder wechselt
+   * für die Skripte in den Transaktionsmodus — hier ist nur dafür
+   * gesorgt, dass ein einzelner Prozess nicht alles nimmt.
+   *
+   * Über `DB_POOL_MAX` änderbar, ohne diese Datei anzufassen.
+   */
+  const hoechstens = Number.parseInt(process.env.DB_POOL_MAX ?? "", 10);
+
   const pool = new Pool({
     connectionString: libpqSemantik(cfg.db.url),
-    max: 10,
+    max: Number.isFinite(hoechstens) && hoechstens > 0 ? hoechstens : 3,
     connectionTimeoutMillis: 10_000,
     idleTimeoutMillis: 30_000,
     maxUses: 7_500,
