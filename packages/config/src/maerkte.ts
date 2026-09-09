@@ -110,25 +110,40 @@ export interface Aussenverweise {
   social: { netz: SozialesNetz; name: string; url: string | null }[];
 }
 
-export type SozialesNetz = "instagram" | "facebook" | "linkedin" | "youtube" | "x";
+export type SozialesNetz =
+  | "instagram"
+  | "facebook"
+  | "linkedin"
+  | "youtube"
+  | "x"
+  | "tiktok"
+  | "discord";
 
 export const AUSSENVERWEISE: Aussenverweise = {
   iosUrl: null,
   androidUrl: null,
   appInfoUrl: null,
   /*
-   * TODO(Velvova): Die fünf Adressen eintragen, sobald die Konten
+   * TODO(Velvova): Die sechs Adressen eintragen, sobald die Konten
    * bestehen. Bis dahin bleibt jede `null`, und die Leiste im Fuss
    * zeigt genau die Kanäle, die es wirklich gibt — bei ausschliesslich
    * `null` gar keine.
+   *
+   * Das ist der Grund, warum die Leiste heute unsichtbar ist, obwohl
+   * die Abzeichen im Projekt liegen: Es fehlt nicht das Bild, es fehlt
+   * die Adresse.
    *
    * Die Reihenfolge hier ist die Reihenfolge im Fuss.
    */
   social: [
     { netz: "instagram", name: "Instagram", url: null },
-    { netz: "facebook", name: "Facebook", url: null },
     { netz: "linkedin", name: "LinkedIn", url: null },
     { netz: "youtube", name: "YouTube", url: null },
+    { netz: "tiktok", name: "TikTok", url: null },
     { netz: "x", name: "X", url: null },
+    { netz: "discord", name: "Discord", url: null },
+    /* Facebook steht ohne Abzeichen da: Für die anderen sechs liegt
+       eine Datei vor, für dieses nicht. Ein Eintrag ohne Bild wäre
+       eine Lücke in der Reihe. */
   ],
 };
