@@ -8,7 +8,10 @@ import {
   ToolSchemas,
   WRITING_TOOLS,
   aiUnavailableMessage,
+  anbieterFuerModell,
   buildNinaSystemPrompt,
+  modellAuswaehlen,
+  ModellNichtVerfuegbarError,
   route as routeTask,
   selectProvider,
   validateToolCall,
@@ -102,6 +105,16 @@ const BodySchema = z.object({
    * wollte er" ist keine Grundlage dafür, jemandem Stellen vorzusetzen.
    */
   agreeToSeeJobs: z.boolean().default(false),
+  /*
+   * Welches Modell antworten soll.
+   *
+   * `"auto"` oder gar nichts heisst: Monday entscheidet. Sonst die
+   * interne Kennung aus /api/monday/models — nie eine API-Kennung.
+   * Der Browser soll gar nicht wissen, wie die Modelle beim Anbieter
+   * heissen; sonst steht irgendwann ein Anbietername in einer
+   * Komponente.
+   */
+  modell: z.string().max(64).optional(),
 });
 
 /**
@@ -161,11 +174,62 @@ export async function POST(request: Request) {
    * Schlägt das fehl, ist noch nichts gespeichert und noch nichts
    * behauptet. Die Person bekommt eine ehrliche Meldung statt eines
    * Gesprächs mit einem Gegenüber, das es nicht gibt.
+   *
+   * ── Zwei Wege, und der zweite weicht nicht aus ──────────────
+   *
+   * Ohne ausdrückliche Wahl gilt die Konfiguration wie bisher.
+   *
+   * Mit ausdrücklicher Wahl gilt genau dieses Modell. Ist es nicht
+   * verfügbar, bricht die Anfrage ab — sie fällt NICHT auf ein
+   * anderes zurück. Wer ein Modell wählt, soll dieses bekommen oder
+   * erfahren, warum nicht; eine Antwort von einem Modell, das er
+   * nicht gewählt hat, wäre eine stille Lüge.
    */
+  const gewaehlt =
+    eingabe.modell && eingabe.modell !== "auto" ? eingabe.modell : null;
+
   let provider;
   try {
-    provider = await selectProvider();
+    if (gewaehlt) {
+      const definition = modellAuswaehlen(gewaehlt);
+      if (!definition) {
+        return Response.json(
+          {
+            error: "modell_nicht_verfuegbar",
+            message:
+              "Dieses Modell steht gerade nicht zur Verfügung. " +
+              "Wähle ein anderes oder stelle auf Automatisch.",
+          },
+          { status: 409 },
+        );
+      }
+      const cfg = loadRuntimeConfig();
+      provider = await anbieterFuerModell(definition, {
+        maxTokens: cfg.ai.maxTokensPerRun,
+        timeoutMs: cfg.ai.timeoutMs,
+      });
+    } else {
+      provider = await selectProvider();
+    }
   } catch (error) {
+    if (error instanceof ModellNichtVerfuegbarError) {
+      /*
+       * Der Grund nennt die Umgebungsvariable und geht deshalb ins
+       * Protokoll, nicht ans Netz. Nach draussen dieselbe Meldung wie
+       * oben: Wer eine Kennung rät, soll aus der Antwort nichts über
+       * die Einrichtung lernen.
+       */
+      console.warn("[monday] Modell nicht verfügbar:", error.message);
+      return Response.json(
+        {
+          error: "modell_nicht_verfuegbar",
+          message:
+            "Dieses Modell steht gerade nicht zur Verfügung. " +
+            "Wähle ein anderes oder stelle auf Automatisch.",
+        },
+        { status: 409 },
+      );
+    }
     if (error instanceof AiNotConfiguredError) {
       return Response.json(
         { error: "ai_not_configured", message: aiUnavailableMessage() },

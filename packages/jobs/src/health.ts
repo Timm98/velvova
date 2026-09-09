@@ -208,7 +208,7 @@ export async function cachedHealthCheck(
   return report;
 }
 
-/** Eine Sicherung je Anbieter, prozessweit. */
+/** Eine Sicherung je Adapter, prozessweit. */
 const breakers = new Map<string, CircuitBreaker>();
 
 export function breakerFor(providerKey: string): CircuitBreaker {
@@ -220,8 +220,84 @@ export function breakerFor(providerKey: string): CircuitBreaker {
   return b;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   Die zweite Sicherung: eine je Anbieter, nicht je Land
+   ══════════════════════════════════════════════════════════════════
+
+   Hier stand einmal der Kommentar „Eine Sicherung je Anbieter" über
+   einer Zuordnung nach `adapter.key`. Beides zusammen stimmt nicht:
+   Die Schlüssel heissen `careerjet_de`, `careerjet_fr`, `adzuna_de`
+   — der Anbieter ist der Teil vor dem Unterstrich.
+
+   ── Was das gekostet hat ────────────────────────────────────────
+
+   Careerjet hat 32 Ländervarianten. Am 9. September 2026 antworteten
+   alle 32 mit derselben Meldung: „Unauthorized access from IP …" —
+   eine Freigabeliste beim Anbieter, also ein Zustand des Kontos und
+   nicht des Landes.
+
+   Mit einer Sicherung je Land heisst das: 32 Sicherungen lernen
+   dieselbe Lektion getrennt, jede braucht drei Fehlschläge, und nach
+   fünf Minuten Wartezeit fangen alle wieder an. Fast hundert Anfragen
+   je Lauf, deren Ausgang von der ersten an feststand — bezahlt aus
+   dem Zeitbudget der Quellen, die geliefert hätten.
+
+   ── Warum trotzdem beide Sicherungen ────────────────────────────
+
+   Weil nicht jeder Fehler den Anbieter meint. Ein Land, das 404
+   liefert oder gerade leer ist, sagt nichts über die anderen 31. Die
+   Anbietersicherung löst deshalb NUR bei Fehlern aus, die
+   kontoweit sind — und die einzeln zu bewerten sind, nicht in Summe.
+*/
+
+/** `careerjet_de` → `careerjet`. Die eine Stelle, an der das steht. */
+export function quellenfamilie(adapterKey: string): string {
+  return adapterKey.split("_")[0] ?? adapterKey;
+}
+
+const familienBreakers = new Map<string, CircuitBreaker>();
+
+export function familienBreakerFor(adapterKey: string): CircuitBreaker {
+  const familie = quellenfamilie(adapterKey);
+  let b = familienBreakers.get(familie);
+  if (!b) {
+    b = new CircuitBreaker();
+    familienBreakers.set(familie, b);
+  }
+  return b;
+}
+
+/**
+ * Meint dieser Fehler den Anbieter und nicht das Land?
+ *
+ * ── Warum das den Text liest und nicht einen Statuscode ─────────
+ *
+ * Weil die Adapter einfache `Error` werfen, mit dem Status im Satz.
+ * Das ist keine schöne Grundlage, und ein eigener Fehlertyp mit
+ * `status` wäre die richtige — aber er verlangte, achtzehn Adapter
+ * anzufassen, und die sollen hier nicht nebenbei umgebaut werden.
+ *
+ * Deshalb ist die Erkennung bewusst ENG. Ein Fehler, der hier nicht
+ * erkannt wird, kostet ein paar vergebliche Anfragen. Einer, der
+ * fälschlich als kontoweit gilt, sperrt einen Anbieter, der
+ * funktioniert — und das ist der teurere Fehler.
+ *
+ * Vorrang hat ein `status` am Fehler, falls ihn jemand später
+ * mitgibt. Dann greift der Text gar nicht mehr.
+ */
+const KONTOWEIT = /\b(401|403|429)\b|unauthorized|not authorized|invalid (api[- ]?)?key|forbidden|quota exceeded|rate limit/i;
+
+export function istKontoweiterFehler(fehler: unknown): boolean {
+  const status = (fehler as { status?: unknown })?.status;
+  if (typeof status === "number") return status === 401 || status === 403 || status === 429;
+
+  const text = fehler instanceof Error ? fehler.message : String(fehler ?? "");
+  return KONTOWEIT.test(text);
+}
+
 /** Nur für Tests: alle Sicherungen und Zwischenspeicher zurücksetzen. */
 export function resetBreakers(): void {
   breakers.clear();
+  familienBreakers.clear();
   cache.clear();
 }

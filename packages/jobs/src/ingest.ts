@@ -9,7 +9,7 @@ import { DEFAULT_CAPABILITIES, normalise, type JobSourceAdapter, type Normalised
 import { aehnlicherText } from "./zusammenfuehren.ts";
 import { decideForProvider } from "@paycheck/sources";
 import { canonicalKey } from "./canonical.ts";
-import { breakerFor } from "./health.ts";
+import { breakerFor, familienBreakerFor, istKontoweiterFehler, quellenfamilie } from "./health.ts";
 
 /**
  * Echte Anzeigen in die Datenbank bringen.
@@ -1048,20 +1048,40 @@ export async function ingestFromAdapter(
    * im Minutentakt anzufragen, verlängert seinen Ausfall.
    */
   const breaker = breakerFor(adapter.key);
+  /*
+   * Die zweite Sicherung gilt dem Anbieter, nicht dem Land.
+   *
+   * Sie greift bei Fehlern, die kontoweit sind — ein gesperrter
+   * Schlüssel, eine IP-Freigabeliste, ein erschöpftes Kontingent.
+   * Careerjet hat 32 Ländervarianten; ohne sie fragt jede einzeln
+   * dreimal nach, bevor sie begreift, was nach der ersten Antwort
+   * feststand.
+   */
+  const familienBreaker = familienBreakerFor(adapter.key);
+
+  const ausgesetzt = (sekunden: number, grund: string): IngestResult => ({
+    sourceKey: adapter.key,
+    fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0,
+    /* Ein ausgesetzter Abruf hat gar nichts gesehen. */
+    feedVollstaendig: false,
+    errors: [`${grund} Nächster Versuch in ${sekunden} Sekunden.`],
+    startedAt,
+    finishedAt: new Date(),
+  });
+
+  if (!familienBreaker.allows()) {
+    return ausgesetzt(
+      Math.ceil(familienBreaker.retryInMs() / 1000),
+      `Abruf ausgesetzt: ${quellenfamilie(adapter.key)} meldet einen kontoweiten Fehler ` +
+        `(Zugang, Freigabe oder Kontingent). Andere Länder desselben Anbieters helfen dagegen nicht.`,
+    );
+  }
+
   if (!breaker.allows()) {
-    const sekunden = Math.ceil(breaker.retryInMs() / 1000);
-    return {
-      sourceKey: adapter.key,
-      fetched: 0, inserted: 0, updated: 0, unchanged: 0, merged: 0, failed: 0,
-      /* Ein ausgesetzter Abruf hat gar nichts gesehen. */
-      feedVollstaendig: false,
-      errors: [
-        `Abruf ausgesetzt: die letzten Versuche sind fehlgeschlagen. ` +
-          `Nächster Versuch in ${sekunden} Sekunden.`,
-      ],
-      startedAt,
-      finishedAt: new Date(),
-    };
+    return ausgesetzt(
+      Math.ceil(breaker.retryInMs() / 1000),
+      "Abruf ausgesetzt: die letzten Versuche sind fehlgeschlagen.",
+    );
   }
 
   const db = await getDb();
@@ -1144,7 +1164,17 @@ export async function ingestFromAdapter(
      */
     const abgebrochen = options.signal?.aborted === true ||
       (error instanceof Error && (error.name === "AbortError" || error.name === "TimeoutError"));
-    if (!abgebrochen) breaker.recordFailure();
+    if (!abgebrochen) {
+      breaker.recordFailure();
+      /*
+       * Nur kontoweite Fehler zählen für den Anbieter.
+       *
+       * Ein Land mit 404 oder leerem Ergebnis sagt nichts über die
+       * anderen 31 — es dafür alle zu sperren wäre der teurere
+       * Fehler von beiden.
+       */
+      if (istKontoweiterFehler(error)) familienBreaker.recordFailure();
+    }
     result.abgebrochen = abgebrochen;
     result.failed = abgebrochen ? 0 : 1;
     result.errors.push(
@@ -1165,6 +1195,14 @@ export async function ingestFromAdapter(
   }
 
   breaker.recordSuccess();
+  /*
+   * Ein erfolgreiches Land beweist, dass das Konto geht.
+   *
+   * Damit ist die Anbietersicherung zurückgesetzt — sonst bliebe sie
+   * offen, obwohl die Ursache behoben ist, und die übrigen Länder
+   * blieben ausgesperrt, bis die Wartezeit abläuft.
+   */
+  familienBreaker.recordSuccess();
   result.fetched = listings.length;
 
   /*

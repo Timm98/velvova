@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { sql } from "drizzle-orm";
 import { getDb, schema } from "@paycheck/db";
 import { loadRuntimeConfig } from "@paycheck/config";
-import { activeAdapters, ingestFromAdapter, type IngestResult } from "@paycheck/jobs";
+import { activeAdapters, ingestFromAdapter, type IngestResult,
+  quellenfamilie,
+} from "@paycheck/jobs";
 import { suchbegriffeAusProfilen } from "@/lib/jobs/suchbegriffe";
 import { currentUser } from "@/lib/auth";
 import { decideForProvider } from "@paycheck/sources";
@@ -263,7 +265,7 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const familie = adapter.key.split("_")[0] ?? adapter.key;
+    const familie = quellenfamilie(adapter.key);
     const liste = familien.get(familie);
     if (liste) liste.push(adapter);
     else familien.set(familie, [adapter]);
