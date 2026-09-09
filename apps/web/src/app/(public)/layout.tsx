@@ -107,9 +107,11 @@ export default async function PublicLayout({ children }: { children: React.React
         Anker zeigen würde. Der Weg zur nächtlichen Suche führt hier
         über ein Konto — das ist der ehrliche Link.
       */}
-      <AppHinweisleiste nachtsZiel="/register" />
+      <AppHinweisleiste nachtsZiel={await mondayZiel("/register")} />
 
       <TopNav
+        anmeldeZiel={await mondayZiel("/login")}
+        registrierZiel={await mondayZiel("/register")}
         brandName={brand.name}
         userName={sitzung.userName}
         userEmail={sitzung.userEmail}

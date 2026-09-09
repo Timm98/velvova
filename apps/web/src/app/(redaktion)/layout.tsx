@@ -3,6 +3,7 @@ import { getPageContext } from "@/lib/locale";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { TopNav } from "@/components/shell/TopNav";
+import { mondayZiel } from "@/lib/mondayziel";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
 import { laenderbestand } from "@/lib/jobs/laenderbestand";
@@ -121,9 +122,11 @@ export default async function RedaktionLayout({ children }: { children: React.Re
         Anker zeigen würde. Der Weg zur nächtlichen Suche führt hier
         über ein Konto — das ist der ehrliche Link.
       */}
-      <AppHinweisleiste nachtsZiel="/register" />
+      <AppHinweisleiste nachtsZiel={await mondayZiel("/register")} />
 
       <TopNav
+        anmeldeZiel={await mondayZiel("/login")}
+        registrierZiel={await mondayZiel("/register")}
         brandName={brand.name}
         userName={sitzung.userName}
         userEmail={sitzung.userEmail}

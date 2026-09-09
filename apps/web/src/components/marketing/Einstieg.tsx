@@ -65,6 +65,7 @@ export function Einstieg({
   angemeldet,
   weiter,
   mondayZiel = "/app/monday",
+  registrierZiel = "/register",
 }: {
   angemeldet: boolean;
   /** Wohin nach der Anmeldung. Leer heisst: dorthin, wo man herkam. */
@@ -85,6 +86,17 @@ export function Einstieg({
    * der Vorgabewert ist der relative Pfad — der überall stimmt.
    */
   mondayZiel?: string;
+  /**
+   * Wohin „Kostenlos starten" führt — dieselbe Begründung.
+   *
+   * Hier zählt sie doppelt: Von dieser Seite aus beginnt der
+   * Google-Login. Er MUSS auf der Anwendungsdomain starten, weil der
+   * PKCE-Prüfwert als Cookie auf dem Host liegt, auf dem er erzeugt
+   * wurde. Ein Prüfwert auf der Marketingdomain wird beim Rückweg
+   * nicht gefunden, und der Austausch scheitert — ohne dass
+   * irgendetwas kaputt wäre.
+   */
+  registrierZiel?: string;
 }) {
   /*
    * Wer angemeldet ist, braucht keine Anmeldung.
@@ -160,7 +172,7 @@ export function Einstieg({
           <AppleKnopf weiter={weiter} />
         </div>
         <Trenner />
-        <Link href="/register" className={KNOPF_HAUPT}>
+        <Link href={registrierZiel} className={KNOPF_HAUPT}>
           Mit E-Mail fortfahren
         </Link>
         {/*

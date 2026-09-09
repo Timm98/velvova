@@ -1,4 +1,4 @@
-import { readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { mondayLink, trennungAktiv, umleitungFuer, zustaendigFuer } from "./domaenen.ts";
@@ -272,5 +272,66 @@ describe("Einordnung gegen den tatsächlichen Dateibaum", () => {
     for (const pfad of pfade) {
       expect(zustaendigFuer(pfad), `${pfad} gehört zur Anwendung`).not.toBe("seite");
     }
+  });
+});
+
+/*
+ * ══════════════════════════════════════════════════════════════════
+ * Kein Anmeldeweg auf der öffentlichen Seite darf relativ sein
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Der Google-Login MUSS auf der Anwendungsdomain beginnen. Der
+ * PKCE-Prüfwert wird als Cookie auf dem Host abgelegt, auf dem er
+ * entsteht; entsteht er auf der Marketingdomain, wird er beim
+ * Rückweg nicht gefunden und der Austausch scheitert — ohne dass
+ * irgendetwas kaputt wäre.
+ *
+ * Über die Weiche in der Middleware kommt man zwar auch an. Aber ein
+ * Sprung, auf den man sich verlässt, ist ein Sprung, der einmal
+ * ausfällt: eine Route, die jemand versehentlich unter „überall"
+ * einordnet, und der Prüfwert liegt falsch. Genau das ist in diesem
+ * Projekt schon einmal passiert.
+ *
+ * Der Test liest deshalb die Dateien und nicht die Absicht.
+ */
+describe("Anmeldewege auf den öffentlichen Seiten", () => {
+  const wurzel = new URL("../app/", import.meta.url).pathname;
+
+  /** Seiten, die unter der öffentlichen Domain ausgeliefert werden. */
+  const OEFFENTLICH = [
+    "page.tsx",
+    "(public)/layout.tsx",
+    "(redaktion)/layout.tsx",
+    "for-business/page.tsx",
+    "for-business/studien/page.tsx",
+    "unternehmen/[slug]/page.tsx",
+  ];
+
+  it("führt jeden Anmelde- und Registrierweg über mondayZiel", () => {
+    const verstoesse: string[] = [];
+
+    for (const datei of OEFFENTLICH) {
+      const pfad = join(wurzel, datei);
+      if (!existsSync(pfad)) continue;
+      const inhalt = readFileSync(pfad, "utf8");
+
+      for (const zeile of inhalt.split("\n")) {
+        /* Ein Zeichenketten-Literal "/login" oder "/register" als
+           Ziel — genau das, was auf der Marketingdomain bliebe. */
+        if (/(?:href|Ziel|ziel)\s*=\s*["'](\/login|\/register)["']/.test(zeile)) {
+          verstoesse.push(`${datei}: ${zeile.trim()}`);
+        }
+      }
+    }
+
+    expect(
+      verstoesse,
+      `Diese Ziele bleiben auf der Marketingdomain:\n    ${verstoesse.join("\n    ")}`,
+    ).toEqual([]);
+  });
+
+  it("prüft überhaupt etwas", () => {
+    const da = OEFFENTLICH.filter((d) => existsSync(join(wurzel, d)));
+    expect(da.length).toBeGreaterThanOrEqual(5);
   });
 });

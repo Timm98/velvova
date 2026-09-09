@@ -171,6 +171,8 @@ export function TopNav({
   proSekunde = 0,
   sprache,
   angemeldet = true,
+  anmeldeZiel = "/login",
+  registrierZiel = "/register",
 }: {
   brandName: string;
   userName: string | null;
@@ -187,6 +189,29 @@ export function TopNav({
    * die Umgebung beim Anmelden auszutauschen.
    */
   angemeldet?: boolean;
+  /**
+   * Wohin „Anmelden" und „Konto anlegen" führen.
+   *
+   * ── Warum als Angabe und nicht hier ermittelt ──────────────────
+   *
+   * Weil dies ein Client-Bauteil ist und der Host der Anfrage nur
+   * serverseitig feststeht. Ihn im Browser zu lesen hiesse, beim
+   * ersten Zeichnen einen anderen Verweis zu erzeugen als der Server
+   * — und genau daran zerbricht die Hydratation.
+   *
+   * Vorbelegt relativ, und das ist innerhalb der Anwendung richtig:
+   * Dort wäre ein absoluter Verweis auf dieselbe Domain ein voller
+   * Seitenwechsel statt einer Navigation.
+   *
+   * Die öffentlichen Seiten reichen `mondayZiel("/login")` herein.
+   * Nur dort zählt es: Der Google-Login MUSS auf der
+   * Anwendungsdomain beginnen, weil der PKCE-Prüfwert als Cookie auf
+   * dem Host liegt, auf dem er erzeugt wurde. Über die Weiche in der
+   * Middleware kommt man zwar auch an — aber ein Sprung, auf den man
+   * sich verlässt, ist ein Sprung, der einmal ausfallen wird.
+   */
+  anmeldeZiel?: string;
+  registrierZiel?: string;
   /* Bestandsgrösse für die Beschriftung der Suche. Serverseitig
      geladen und durchgereicht — dies ist eine Client-Komponente. */
   stellenzahl?: string;
@@ -522,13 +547,13 @@ export function TopNav({
                   zwei Verweise die Zeile über den Rand. Gemessen bei
                   320 Pixeln: 66 Pixel Überstand. */}
               <Link
-                href="/login"
+                href={anmeldeZiel}
                 className="hidden h-11 items-center rounded-(--radius-pill) px-4 text-[15px] font-medium text-ink transition-colors hover:text-accent-text sm:inline-flex"
               >
                 Anmelden
               </Link>
               <Link
-                href="/register"
+                href={registrierZiel}
                 className="inline-flex h-11 shrink-0 items-center rounded-(--radius-pill) bg-accent px-4 text-sm font-semibold text-accent-on transition-opacity hover:opacity-90 sm:px-5 sm:text-[15px]"
               >
                 <span className="hidden sm:inline">Konto anlegen</span>

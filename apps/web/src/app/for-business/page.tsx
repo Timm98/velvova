@@ -18,6 +18,7 @@ import { HilfeKnopf } from "@/components/marketing/HilfeKnopf";
 import { Landeshinweis } from "@/components/marketing/Landeshinweis";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
 import { TopNav } from "@/components/shell/TopNav";
+import { mondayZiel } from "@/lib/mondayziel";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { besucherHerkunft } from "@/lib/herkunft";
 import { bestandszahl } from "@/lib/jobs/bestandszahl";
@@ -125,9 +126,11 @@ export default async function FuerUnternehmenSeite() {
        * Was diese Seite braucht, steht ohnehin schon im Kopf: „Für
        * Unternehmen" ist einer der Wege in der zweiten Zeile.
        */}
-      <AppHinweisleiste nachtsZiel="/register" />
+      <AppHinweisleiste nachtsZiel={await mondayZiel("/register")} />
 
       <TopNav
+        anmeldeZiel={await mondayZiel("/login")}
+        registrierZiel={await mondayZiel("/register")}
         brandName={brand.name}
         userName={sitzung.userName}
         userEmail={sitzung.userEmail}

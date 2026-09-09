@@ -159,6 +159,8 @@ export default async function LandingPage() {
       <NinaVorladen />
 
       <TopNav
+        anmeldeZiel={await mondayZiel("/login")}
+        registrierZiel={await mondayZiel("/register")}
         brandName={brand.name}
         userName={sitzung.userName}
         userEmail={sitzung.userEmail}
@@ -188,6 +190,7 @@ export default async function LandingPage() {
       */}
       <main id="inhalt">
         <Einstiegshero
+          registrierHref={await mondayZiel("/register")}
           angemeldet={sitzung.angemeldet}
           anrede={sitzung.anrede}
           mondayHref={await mondayZiel()}
@@ -273,6 +276,7 @@ const NAV = [
  * 3D-Modell — die linke Spalte steht sofort und vollständig.
  */
 function Einstiegshero({
+  registrierHref,
   angemeldet,
   anrede,
   mondayHref,
@@ -281,6 +285,10 @@ function Einstiegshero({
   anrede: string | null;
   /* Von der Seite gereicht, weil nur sie den Host der Anfrage kennt. */
   mondayHref: string;
+  /* Der Weg zur Registrierung — und damit zum Google-Login. Er
+     beginnt auf der Anwendungsdomain, weil der PKCE-Prüfwert dort
+     entstehen muss. */
+  registrierHref: string;
 }) {
   return (
     /*
@@ -390,7 +398,11 @@ function Einstiegshero({
           als über die Weiche in der Middleware. Auf jedem anderen
           Host bleibt der Pfad relativ, und dort ist er richtig.
         */}
-        <Einstieg angemeldet={angemeldet} mondayZiel={mondayHref} />
+        <Einstieg
+          angemeldet={angemeldet}
+          mondayZiel={mondayHref}
+          registrierZiel={registrierHref}
+        />
       </div>
 
       {/*

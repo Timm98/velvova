@@ -6,6 +6,7 @@ import { brand } from "@paycheck/config";
 import { AppHinweisleiste } from "@/components/shell/AppHinweisleiste";
 import { VelvovaFooter } from "@/components/shell/VelvovaFooter";
 import { TopNav } from "@/components/shell/TopNav";
+import { mondayZiel } from "@/lib/mondayziel";
 import { kopfsitzung } from "@/components/shell/Kopfsitzung";
 import { BestandProvider } from "@/components/marketing/BestandProvider";
 import { HilfeKnopf } from "@/components/marketing/HilfeKnopf";
@@ -80,6 +81,8 @@ export default async function UnternehmensSeite({
 
         <AppHinweisleiste />
         <TopNav
+        anmeldeZiel={await mondayZiel("/login")}
+        registrierZiel={await mondayZiel("/register")}
           brandName={brand.name}
           userName={sitzung.userName}
           userEmail={sitzung.userEmail}
@@ -155,7 +158,7 @@ export default async function UnternehmensSeite({
                   <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-0.5" strokeWidth={2} />
                 </Link>
                 <Link
-                  href="/register"
+                  href={await mondayZiel("/register")}
                   className="inline-flex min-h-13 items-center rounded-(--radius-pill) px-6 text-[15px] font-medium"
                   style={{ color: "var(--ed-ink)", boxShadow: "inset 0 0 0 1px var(--ed-hairline-strong)" }}
                 >
