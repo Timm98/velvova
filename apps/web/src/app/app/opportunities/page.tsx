@@ -6,6 +6,8 @@ import { requireUser } from "@/lib/auth";
 import { getPageContext } from "@/lib/locale";
 import { loadGate } from "@/lib/gate";
 import { buildAndStoreFunnel } from "@/lib/opportunity/reality-engine";
+import { stilleChancenLaden } from "@/lib/chancen/stillechancen";
+import { StilleChancen } from "@/components/chancen/StilleChancen";
 import { Button, Card } from "@/components/ui";
 import { EmptyState, PageHeader } from "@/components/ui/states";
 
@@ -41,6 +43,18 @@ export default async function OpportunitiesPage() {
    * berechenbar ist, nimmt jemandem auch das, was schon da wäre.
    */
   const funnel = await buildAndStoreFunnel(user.id);
+  /*
+   * Die stillen Chancen gehören auf diese Seite und nicht auf eine
+   * eigene.
+   *
+   * Der Trichter beantwortet „wie viele Möglichkeiten habe ich
+   * wirklich" — und ein Arbeitgeber ohne Anzeige ist eine Möglichkeit,
+   * die im Trichter gar nicht vorkommt, weil sie nie eine Anzeige war.
+   * Sie daneben zu stellen macht die Antwort vollständig; sie auf eine
+   * eigene Seite zu legen hiesse, den Chancenraum weiterhin unter Wert
+   * zu zeigen.
+   */
+  const chancen = await stilleChancenLaden(user.id);
   const ohneProfil = !gate.unlocked;
   const erste = funnel.stufen[0]!.count;
   const letzte = funnel.stufen.at(-1)!.count;
@@ -146,6 +160,17 @@ export default async function OpportunitiesPage() {
           )}
         </Card>
       )}
+
+      {/*
+        Nach dem Trichter, nicht davor.
+
+        Der Trichter ist die Antwort auf „wie viele echte
+        Möglichkeiten habe ich" — und sie beginnt mit dem, was
+        ausgeschrieben ist. Was nicht ausgeschrieben ist, kommt
+        danach: als Ergänzung, nicht als Ersatz. Andersherum stünde
+        eine Vermutung über einer Zahl, die stimmt.
+      */}
+      <StilleChancen chancen={chancen} />
 
       <p className="text-xs leading-relaxed text-ink-3">
         {funnel.hinweis} Berechnet am{" "}
