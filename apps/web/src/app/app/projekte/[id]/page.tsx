@@ -94,6 +94,9 @@ export default async function ProjektSeite({
         icon={Briefcase}
         id="jobs"
         titel="Gemerkte Stellen"
+        /* Bleibt auch im leeren Abschnitt stehen — dort ist sie das
+           Einzige, was man tun kann. */
+        immer={<Stellenzuordnung projektId={projekt.id} frei={await freieStellen()} />}
         zahl={projekt.stellen.length}
         leer="Noch keine Stelle in diesem Vorhaben gemerkt."
       >
@@ -122,7 +125,6 @@ export default async function ProjektSeite({
             handelt von den Stellen, die schon darin sind, nicht davon,
             welche man noch hinzufügen könnte.
           */}
-          <Stellenzuordnung projektId={projekt.id} frei={await freieStellen()} />
         </div>
       </Abschnitt>
 
@@ -160,6 +162,7 @@ function Abschnitt({
   titel,
   zahl,
   leer,
+  immer,
   children,
 }: {
   /* Sprungziel für die Verweise aus der Seitenleiste. */
@@ -168,6 +171,17 @@ function Abschnitt({
   titel: string;
   zahl: number;
   leer: string;
+  /**
+   * Was auch im leeren Abschnitt stehen bleibt.
+   *
+   * ── Warum das nötig wurde ───────────────────────────────────────
+   *
+   * Der Abschnitt zeigte bei null Einträgen NUR seinen Leertext und
+   * verschluckte die Kinder. Damit verschwand der Knopf „Gemerkte
+   * Stelle zuordnen" genau dann, wenn man ihn braucht — in einem
+   * leeren Vorhaben. Am Bildschirm sofort zu sehen, im Code nicht.
+   */
+  immer?: React.ReactNode;
   children?: React.ReactNode;
 }) {
   return (
@@ -182,6 +196,7 @@ function Abschnitt({
       ) : (
         children
       )}
+      {immer}
     </section>
   );
 }

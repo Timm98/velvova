@@ -74,19 +74,47 @@ export async function projektLaden(
     return await projektLesen(userId, projektId);
   } catch (fehler) {
     /*
-     * Fehlt die Tabelle, gibt es das Vorhaben nicht.
+     * ══════════════════════════════════════════════════════════════
+     * „Gibt es nicht" und „konnte nicht geladen werden"
+     * ══════════════════════════════════════════════════════════════
      *
-     * Die Migration läuft nicht beim Deploy. Zwischen dem Ausrollen
-     * des Codes und dem Ausführen der Migration existiert `projekte`
-     * nicht, und eine geworfene Abfrage würde daraus eine 500 machen
-     * — für eine Seite, die man nur über einen Link erreicht, den es
-     * ohne Daten gar nicht gibt.
+     * Hier wurde JEDER Fehler zu `null`. Der Aufrufer macht daraus
+     * `notFound()` — und damit wurde aus einer Datenbank, die gerade
+     * keine Verbindung hergibt, der Satz „diese Seite existiert
+     * nicht".
      *
-     * Protokolliert wird trotzdem: Ein verschluckter Fehler, den
-     * niemand sieht, ist der nächste stille.
+     * Am Bildschirm gemessen, mit der Zeile nachweislich in der
+     * Datenbank:
+     *
+     *   GET /app/projekte/2d39…  200 in 1456 ms
+     *   GET /app/projekte/2d39…  200 in  565 ms
+     *   GET /app/projekte/2d39…  404 in  190 ms   ← 41 ms Anwendung
+     *
+     * Dreimal dieselbe Adresse, dasselbe Vorhaben, und beim vierten
+     * Mal war es angeblich weg. Das ist die unangenehmste Sorte
+     * Fehlermeldung: Sie ist eindeutig, verständlich und beschreibt
+     * etwas anderes als das, was passiert ist.
+     *
+     * Die ursprüngliche Begründung stand hier und war für ihren Fall
+     * richtig: Zwischen Ausrollen und Migration gibt es die Tabelle
+     * nicht, und eine 500 für eine Seite, die man ohne Daten gar
+     * nicht erreicht, wäre lauter als nötig.
+     *
+     * Genau dieser Fall wird weiter verschluckt — aber nur er.
+     * Postgres nennt ihn 42P01. Alles andere fliegt und wird zu
+     * einer Fehlerseite, die sagt, dass etwas schiefging, statt zu
+     * behaupten, es gäbe nichts.
      */
-    console.warn("[projekte] konnte nicht geladen werden:", (fehler as Error).message);
-    return null;
+    const code = (fehler as { code?: string; cause?: { code?: string } })?.code
+      ?? (fehler as { cause?: { code?: string } })?.cause?.code;
+
+    if (code === "42P01") {
+      console.warn("[projekte] Tabelle fehlt noch — Vorhaben gilt als nicht vorhanden.");
+      return null;
+    }
+
+    console.error("[projekte] konnte nicht geladen werden:", (fehler as Error).message);
+    throw fehler;
   }
 }
 

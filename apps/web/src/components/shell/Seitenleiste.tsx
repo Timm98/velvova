@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { Kontogruppe } from "./kontoeintraege.ts";
 import { ARBEITSBEREICHE, SUCHE, istHier } from "./seitenleiste-eintraege.ts";
+import { NeuesProjekt, Projektmenue } from "./Projektaktionen";
 import { cn } from "@/lib/cn";
 
 /**
@@ -125,6 +126,7 @@ function Projektzeile({
         >
           <span className="truncate">{projekt.titel}</span>
         </Link>
+        <Projektmenue id={projekt.id} name={projekt.titel} />
       </div>
 
       {auf && (
@@ -419,13 +421,29 @@ export function Seitenleiste({
         Abschnitt mit Überschrift wäre die Ankündigung einer Funktion,
         die es noch nicht gibt.
       */}
-      {projekte.length > 0 && (
-        <div className={cn("min-h-0 px-3", eng && "px-2")}>
-          <Ueberschrift text="Projekte" />
+      {/*
+        Der Abschnitt steht auch leer da — anders als die Gespräche.
+        
+        Vorher galt für beide: nichts zeichnen, solange nichts drin
+        ist. Für Gespräche stimmt das; sie entstehen von selbst. Ein
+        Vorhaben entsteht nicht von selbst, und ohne Überschrift gäbe
+        es keinen Ort für das Plus, mit dem man es anlegt.
+      */}
+      {!eng && (
+        <div className={cn("min-h-0 px-3")}>
+          <div className="flex items-center justify-between gap-1 pr-1">
+            <Ueberschrift text="Projekte" />
+            <NeuesProjekt />
+          </div>
           <div className="grid gap-0.5">
             {projekte.map((p) => (
               <Projektzeile key={p.id} projekt={p} offen={pfad === p.href} />
             ))}
+            {projekte.length === 0 && (
+              <p className="px-1.5 pb-1 text-2xs leading-relaxed text-(--app-text-3)">
+                Sag Monday, was du beruflich vorhast — oder leg selbst eines an.
+              </p>
+            )}
           </div>
         </div>
       )}
