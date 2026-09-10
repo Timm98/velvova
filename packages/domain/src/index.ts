@@ -50,3 +50,4 @@ export * from "./versandfreigabe.ts";
 export * from "./wandelbar.ts";
 export * from "./dauerbedarf.ts";
 export * from "./wunschprofil.ts";
+export * from "./arbeitsweise.ts";

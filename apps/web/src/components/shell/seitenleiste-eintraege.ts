@@ -2,6 +2,7 @@ import {
   Briefcase,
   Compass,
   Moon,
+  Sliders,
   FileText,
   FolderOpen,
   MessageSquare,
@@ -88,6 +89,15 @@ export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
    * allein.
    */
   { href: "/app/bruecke", text: "Was du kannst", icon: Compass },
+  /*
+   * „Wie du arbeitest" direkt daneben.
+   *
+   * „Was du kannst" ist die Fähigkeit, „wie du arbeitest" die Art.
+   * Beides zusammen ergibt die Passung; einzeln ergibt jedes nur eine
+   * halbe Antwort. Deshalb stehen sie nebeneinander und nicht das eine
+   * bei den Stellen und das andere in den Einstellungen.
+   */
+  { href: "/app/arbeitsweise", text: "Wie du arbeitest", icon: Sliders },
   { href: "/app/applications", text: "Bewerbungen", icon: FileText },
   { href: "/app/documents", text: "Dokumente", icon: FolderOpen },
   { href: "/app/plugins", text: "Plugins", icon: Plug },
