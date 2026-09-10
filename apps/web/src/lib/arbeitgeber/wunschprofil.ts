@@ -8,7 +8,6 @@ import {
   EBENENSATZ,
   anforderungenPruefen,
   ebenensignal,
-  klaerungsfragen,
   lagePruefen,
   rolleBelegt,
   verbindlichkeitshinweis,
@@ -17,6 +16,7 @@ import {
   type Wunschlage,
 } from "@paycheck/domain";
 import { verlangeRolle, protokolliere } from "./zugang";
+import { vorgangAnlegen } from "./bedarfsvorgang";
 
 /**
  * ══════════════════════════════════════════════════════════════════
@@ -84,7 +84,7 @@ export type Aufnahme =
    * hat — und genau daran hängt, ob dieses Produkt eine Diagnose ist
    * oder ein Verkaufstrichter.
    */
-  | { art: "situation"; ebene: Ebene; satz: string; fragen: string[] }
+  | { art: "situation"; vorgangId: string; ebene: Ebene; satz: string; fragen: string[] }
   | {
       art: "entwurf";
       angebotId: string;
@@ -96,11 +96,24 @@ export type Aufnahme =
 /** So lange darf ein Angebot höchstens gelten, wenn nichts gesagt wurde. */
 const GUELTIG_STANDARD = 60;
 
-export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufnahme> {
+export async function bedarfAufnehmen(
+  orgId: string,
+  text: string,
+  klaerung = false,
+): Promise<Aufnahme> {
   const { user } = await verlangeRolle(orgId, "admin");
 
   const roh = text.trim().slice(0, 6000);
   if (roh.length < 20) return { art: "leer" };
+
+  /*
+   * Im Klärungsweg läuft gar kein Modell.
+   *
+   * Wer sagt „Anfragen bleiben liegen", hat keine Rolle genannt — ein
+   * Modell darauf anzusetzen heisst, es zum Raten einzuladen. Der
+   * teuerste Weg zum falschesten Ergebnis.
+   */
+  if (klaerung) return await lageAlsVorgang(orgId, roh);
 
   let provider;
   try {
@@ -172,12 +185,7 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
      */
     const signal = ebenensignal(roh);
     if (signal === "beduerfnis" || signal === "beobachtung") {
-      return {
-        art: "situation",
-        ebene: signal,
-        satz: EBENENSATZ[signal],
-        fragen: klaerungsfragen(signal),
-      };
+      return await lageAlsVorgang(orgId, roh);
     }
     return { art: "leer" };
   }
@@ -223,6 +231,27 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
     lage,
     hinweis: verbindlichkeitshinweis(tage),
     auffaelligkeiten,
+  };
+}
+
+/**
+ * Aus einer Lagebeschreibung einen Vorgang machen.
+ *
+ * ── Warum das geschrieben wird und nicht nur geantwortet ────────
+ *
+ * Bis zum 10.09.2026 bekam der Betrieb hier drei Rückfragen und sonst
+ * nichts — beim nächsten Besuch war alles weg. Ein Befund, der eine
+ * Sitzung nicht überlebt, lässt sich weder prüfen noch widerrufen
+ * noch einen Monat später vergleichen.
+ */
+async function lageAlsVorgang(orgId: string, roh: string): Promise<Aufnahme> {
+  const vorgang = await vorgangAnlegen(orgId, roh);
+  return {
+    art: "situation",
+    vorgangId: vorgang.id,
+    ebene: vorgang.ebene,
+    satz: EBENENSATZ[vorgang.ebene],
+    fragen: vorgang.fragen,
   };
 }
 

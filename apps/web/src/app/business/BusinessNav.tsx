@@ -43,6 +43,12 @@ const WEGE = [
    * findet hier den Weg, der ohne sie auskommt.
    */
   { href: "/business/bedarf", label: "Bedarf" },
+  /*
+   * „Klärungen" steht neben „Bedarf", weil es derselbe Einstieg ist —
+   * nur für den Fall, dass noch nicht feststeht, ob überhaupt jemand
+   * eingestellt werden muss.
+   */
+  { href: "/business/vorgaenge", label: "Klärungen" },
   { href: "/business/matches", label: "Matches" },
   { href: "/business/bewerbungen", label: "Gespräche" },
   { href: "/business/unternehmensseite", label: "Unternehmensseite" },

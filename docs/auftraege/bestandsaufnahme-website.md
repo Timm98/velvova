@@ -210,7 +210,11 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
    Fuss, die Unternehmensseite und den Preisblock der Startseite. Die
    fünf Einträge oben sind ausdrücklich als fünf angelegt; ein
    sechster ist eine Gestaltungsentscheidung.
-5. **Diagnose-Tabellen.** `bedarfsebenen.ts` und `befundlage.ts`
-   rechnen heute ohne Speicher. Damit ein Befund einen Monat später
-   noch dasteht, braucht es eine Migration; die ist nicht
-   geschrieben und nicht freigegeben.
+5. **Diagnose-Tabellen** — erledigt am 11.09.2026 mit Migration 0112.
+   `bedarfsvorgaenge`, `bedarfsquellen`, `bedarfsbefunde` und
+   `bedarfsschritte` stehen in Produktion, alle vier mit
+   erzwungenem Zeilenschutz über `organization_id`. Die Klärung liegt
+   unter `/business/vorgaenge`.
+
+   Offen bleibt der Monatsbericht: Die Tabellen tragen die Historie,
+   aber es gibt keinen Lauf, der zwei Stände vergleicht.

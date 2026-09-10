@@ -441,7 +441,20 @@ DECLARE
      * `bedarfs_schnappschuss` steht hier NICHT: eine Auszaehlung ueber
      * oeffentliche Anzeigen, dieselbe Bauart wie standzeit_referenz.
      */
-    'angebote'
+    'angebote',
+    /*
+     * Die vier Tabellen der Bedarfsdiagnose (Migration 0112).
+     *
+     * Was ein Betrieb ueber seine eigenen Engpaesse sagt, ist das
+     * Vertraulichste, was er hier hinterlegt -- vertraulicher als ein
+     * Gehalt. Alle vier tragen `organization_id` selbst, damit
+     * dieselbe Richtlinie greift und keine ueber einen Verbund
+     * gebaute Sonderform entsteht.
+     */
+    'bedarfsvorgaenge',
+    'bedarfsquellen',
+    'bedarfsbefunde',
+    'bedarfsschritte'
   ];
 BEGIN
   FOREACH t IN ARRAY org_tables LOOP

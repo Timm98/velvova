@@ -32,7 +32,7 @@ export function Bedarfsaufnahme({ orgId, klaerung = false }: { orgId: string; kl
 
   function aufnehmen() {
     setMeldung(null);
-    starten(async () => setLage(await bedarfAufnehmen(orgId, text)));
+    starten(async () => setLage(await bedarfAufnehmen(orgId, text, klaerung)));
   }
 
   function bestaetigen(angebotId: string) {
@@ -127,9 +127,15 @@ export function Bedarfsaufnahme({ orgId, klaerung = false }: { orgId: string; kl
             ))}
           </ul>
           <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
-            Schreiben Sie die Antworten oben dazu. Solange nicht feststeht, woran es liegt, lege ich
-            kein Angebot an — ein erfundener Bedarf kostet Sie mehr als eine Rückfrage.
+            Solange nicht feststeht, woran es liegt, lege ich kein Angebot an — ein erfundener
+            Bedarf kostet Sie mehr als eine Rückfrage.
           </p>
+          <a
+            href={`/business/vorgaenge/${lage.vorgangId}`}
+            className="inline-flex min-h-11 w-fit items-center rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90"
+          >
+            Klärung öffnen
+          </a>
         </section>
       )}
 

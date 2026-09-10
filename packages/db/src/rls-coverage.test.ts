@@ -48,6 +48,53 @@ describe("RLS-Abdeckung", () => {
     expect(result.rows.map((r) => r.tabelle)).toEqual([]);
   });
 
+  /**
+   * Dieselbe Prüfung für den zweiten Anker.
+   *
+   * Die Lücke war real: `bedarfsvorgaenge` und ihre drei Untertabellen
+   * (Migration 0112) tragen keine `user_id`, sondern eine
+   * `organization_id` — die Prüfung darüber hätte sie nicht gesehen.
+   * Was ein Betrieb über seine eigenen Engpässe sagt, ist das
+   * Vertraulichste, was er hier hinterlegt.
+   *
+   * Ausgenommen sind Tabellen, die eine Organisation nur ERWÄHNEN,
+   * ohne ihr zu gehören — sie stehen namentlich in `ERLAUBT_OHNE`,
+   * damit eine neue Tabelle nicht stillschweigend dazukommt.
+   */
+  it("schützt jede Tabelle, die eine Organisationskennung trägt", async () => {
+    const ERLAUBT_OHNE: string[] = [
+      /* Die Organisation selbst — eigene Richtlinie weiter unten in rls.sql. */
+      "organizations",
+    ];
+
+    const result = (await db.execute(sql`
+      SELECT c.relname AS tabelle
+      FROM pg_class c
+      JOIN pg_namespace n ON n.oid = c.relnamespace
+      JOIN information_schema.columns col
+        ON col.table_schema = 'public'
+       AND col.table_name = c.relname
+       AND col.column_name = 'organization_id'
+      WHERE n.nspname = 'public' AND c.relkind = 'r' AND NOT c.relrowsecurity
+      GROUP BY c.relname
+      ORDER BY c.relname
+    `)) as unknown as { rows: { tabelle: string }[] };
+
+    expect(result.rows.map((r) => r.tabelle).filter((t) => !ERLAUBT_OHNE.includes(t))).toEqual([]);
+
+    /*
+     * Gegenprobe. Eine Suche, die nichts findet, ist von einer, die
+     * nicht sucht, nicht zu unterscheiden — und macht diesen Test
+     * grün, sobald jemand den Spaltennamen vertippt.
+     */
+    const traeger = (await db.execute(sql`
+      SELECT count(DISTINCT table_name)::int AS n
+      FROM information_schema.columns
+      WHERE table_schema = 'public' AND column_name = 'organization_id'
+    `)) as unknown as { rows: { n: number }[] };
+    expect(traeger.rows[0]!.n).toBeGreaterThan(4);
+  });
+
   it("hinterlegt zu jedem aktivierten RLS auch eine Richtlinie", async () => {
     // RLS ohne Richtlinie sperrt alles — das fällt sofort auf. Der
     // umgekehrte Fall ist der gefährliche, aber dieser hier kostet
