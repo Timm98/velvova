@@ -50,25 +50,29 @@ export default async function BrueckeSeite() {
       />
 
       {lage.art === "kein_profil" && (
-        /*
-         * Kein Fehler, sondern die ehrliche Auskunft. Wer nichts
-         * erzählt hat, über den lässt sich nichts sagen — und eine
-         * Liste aus dem Nichts wäre geraten.
-         */
-        <section className="grid gap-3 rounded-(--radius-lg) border border-line bg-raised p-6">
-          <h2 className="text-[17px] font-semibold text-ink">Dafür muss ich dich erst kennen</h2>
-          <p className="max-w-[var(--measure)] text-[15px] leading-relaxed text-ink-2">
-            Diese Liste entsteht aus dem, was du tatsächlich getan hast — nicht aus deinem
-            Berufstitel. Erzähl Monday von deinen letzten Stationen, dann rechne ich sie gegen die
-            offenen Stellen.
-          </p>
-          <Link
-            href="/app/monday"
-            className="inline-flex min-h-11 w-fit items-center rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90"
-          >
-            Mit Monday sprechen
-          </Link>
-        </section>
+        <>
+          {/*
+            Kein Fehler, sondern die ehrliche Auskunft. Wer nichts
+            erzählt hat, über den lässt sich nichts sagen — und eine
+            Liste aus dem Nichts wäre geraten.
+          */}
+          <section className="grid gap-3 rounded-(--radius-lg) border border-line bg-raised p-6">
+            <h2 className="text-[17px] font-semibold text-ink">Dafür muss ich dich erst kennen</h2>
+            <p className="max-w-[var(--measure)] text-[15px] leading-relaxed text-ink-2">
+              Diese Liste entsteht aus dem, was du tatsächlich getan hast — nicht aus deinem
+              Berufstitel. Erzähl Monday von deinen letzten Stationen, dann rechne ich sie gegen
+              die offenen Stellen.
+            </p>
+            <Link
+              href="/app/monday"
+              className="inline-flex min-h-11 w-fit items-center rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90"
+            >
+              Mit Monday sprechen
+            </Link>
+          </section>
+
+          <Beispiel />
+        </>
       )}
 
       {lage.art === "kein_modell" && (
@@ -204,5 +208,80 @@ export default async function BrueckeSeite() {
         </>
       )}
     </div>
+  );
+}
+
+
+/**
+ * Was die Seite kann, an einem fremden Verlauf gezeigt.
+ *
+ * ── Warum überhaupt ein Beispiel ────────────────────────────────
+ *
+ * Ohne Profil steht hier sonst nur eine Aufforderung. Wer nie gesehen
+ * hat, was am Ende herauskommt, hat auch keinen Grund, dreissig
+ * Minuten über seinen Werdegang zu erzählen — und genau das ist die
+ * offene Frage dieses Produkts.
+ *
+ * ── Warum es kein erfundenes Beispiel ist ───────────────────────
+ *
+ * Diese sieben Stellen stammen aus einem Messlauf vom 10.9.2026 über
+ * 400 echte deutsche Anzeigen mit echter Gehaltsangabe. Die Titel und
+ * die Beträge stehen so im Bestand. Erfunden ist nur der Mensch, gegen
+ * den geprüft wurde — und dass er es ist, steht darüber.
+ *
+ * Zahlen als „deine" auszugeben, wenn sie einem anderen gehören, wäre
+ * derselbe Fehler wie eine Liste ohne Profil zu raten.
+ */
+function Beispiel() {
+  const stellen = [
+    { geld: "75.000 €", titel: "Vertriebsmitarbeiter Außendienst Wärmepumpen", wie: "mit Einarbeitung", weil: "Berät seit neun Jahren Menschen in Ausnahmesituationen, führt Angehörigengespräche über Geld und Entscheidungen." },
+    { geld: "74.000 €", titel: "PMO Projektmanagement Infrastruktur", wie: "mit Einarbeitung", weil: "Plant seit vier Jahren Dienste für vierzehn Menschen, koordiniert zwischen Stationen, Ärzten und Angehörigen." },
+    { geld: "65.850 €", titel: "Sachbearbeiterin Kitaförderung", wie: "mit Einarbeitung", weil: "Führt Dokumentation, die einer Prüfbehörde standhält — MDK-Prüfung ohne Beanstandung bestanden." },
+    { geld: "61.800 €", titel: "Stellvertretende Pflegedienstleitung", wie: "sofort", weil: "Vertritt die Leitung bereits. Es steht nur nirgends als Aufgabe." },
+    { geld: "61.653 €", titel: "Fachleitung Sicherheit und Ordnung", wie: "sofort", weil: "Als Hygienebeauftragte trägt sie Ordnungsverantwortung mit gesetzlicher Prüfpflicht. Genau das ist die Stelle." },
+    { geld: "61.000 €", titel: "Betriebsassistent", wie: "sofort", weil: "Anleitung, Beschwerdebearbeitung, Medikamentenmanagement — dasselbe Handwerk, anderes Wort." },
+    { geld: "57.500 €", titel: "Referent Qualitätsentwicklung und Audit — Airbus", wie: "mit Einarbeitung", weil: "Hat Dokumentation vor einer Aufsichtsbehörde verteidigt. Das ist Auditerfahrung, in einer anderen Branche erworben." },
+  ] as const;
+
+  return (
+    <section className="grid gap-4">
+      <div className="grid gap-1.5">
+        <span className="font-mono text-2xs uppercase tracking-[0.1em] text-ink-3">
+          Beispiel — nicht deine Daten
+        </span>
+        <h2 className="text-[17px] font-semibold text-ink">
+          So sieht es für eine Pflegefachkraft aus
+        </h2>
+        <p className="max-w-[var(--measure)] text-[15px] leading-relaxed text-ink-2">
+          34 Jahre, neun Jahre Akutpflege, kein Studium, 48.000 € im Jahr. Aus 400 geprüften
+          Anzeigen blieben diese übrig. Drei davon könnte sie heute antreten.
+        </p>
+      </div>
+
+      <ul className="grid gap-2">
+        {stellen.map((s) => (
+          <li
+            key={s.titel}
+            className="grid gap-2 rounded-(--radius-lg) border border-line border-dashed bg-raised/60 p-5"
+          >
+            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <span className="text-[16px] font-semibold text-ink">{s.titel}</span>
+              <span className="font-mono text-[15px] tabular-nums text-accent-text">{s.geld}</span>
+            </div>
+            <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+              {s.weil}
+            </p>
+            <span className="text-2xs text-ink-3">
+              {s.wie === "sofort" ? "Kann sie sofort antreten" : "Mit Einarbeitung"}
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
+        Titel und Beträge stammen aus echten Anzeigen im Bestand, gemessen am 10. September 2026.
+        Erfunden ist nur der Mensch, gegen den geprüft wurde.
+      </p>
+    </section>
   );
 }
