@@ -400,7 +400,7 @@ export async function POST(request: Request) {
     await markInterviewCompleted(user.id).catch(() => {});
   }
 
-  const [envelope, seite, verlauf] = await Promise.all([
+  const [envelope, seite, verlauf, offenesVorhaben] = await Promise.all([
     buildContextEnvelope(user.id, {
       conversationId: gespräch.id,
       applicationId: eingabe.applicationId,
@@ -412,6 +412,15 @@ export async function POST(request: Request) {
       applicationId: eingabe.applicationId,
     }),
     loadModelContext(user.id, gespräch.id),
+    /*
+     * Das Vorhaben, in dem dieses Gespräch steht.
+     *
+     * `buildNinaSystemPrompt` kennt das Feld `projekt` samt eigener
+     * Testdatei — übergeben hat es nie jemand. Monday sprach deshalb
+     * in einem Projektgespräch wie in einem beliebigen: Sie wusste,
+     * was der Mensch will, aber nicht, woran er gerade arbeitet.
+     */
+    vorhabenLaden(user.id, gespräch.projektId),
   ]);
 
   const scoped = await buildScopedContext(envelope, { recentTurnLimit: 0 });
@@ -453,6 +462,7 @@ export async function POST(request: Request) {
       missing: bestand.readiness.missing,
     },
     userName: user.displayName,
+    projekt: offenesVorhaben,
     /*
      * Die offene Rückfrage kommt in die Seitenlage.
      *
@@ -560,10 +570,25 @@ export async function POST(request: Request) {
    * die Prüfung in `zuordnungPruefen` es zulässt — das Modell
    * schlägt vor, die Anwendung entscheidet.
    */
+  /*
+   * Welches Vorhaben offen ist, sagt der Verlauf — nicht der Browser.
+   *
+   * Hier stand `eingabe.projektId`. Das Feld gibt es im Schema, und
+   * kein Client hat es je gefüllt: `offenesProjekt` war immer `null`,
+   * und damit fiel in `zuordnungPruefen` fast jede Verfeinerung auf
+   * „Gespräch" zurück, weil es kein offenes Vorhaben gab, das man
+   * hätte verfeinern können.
+   *
+   * `gespräch.projektId` ist die richtige Quelle: Sie steht in der
+   * Datenbank, sie gehört zum Verlauf, und sie lässt sich von aussen
+   * nicht setzen. Das Feld aus der Eingabe bleibt als Vorrang für
+   * Aufrufer, die ausdrücklich in einem Vorhaben arbeiten.
+   */
   const projektLaeuft = projektZuordnen(
     user.id,
     eingabe.message ?? "",
-    eingabe.projektId ?? null,
+    eingabe.projektId ?? gespräch.projektId ?? null,
+    gespräch.id,
   ).catch((fehler) => {
     console.warn("[monday/projekt] Einordnung fehlgeschlagen:", fehler);
     return null;
@@ -1421,8 +1446,31 @@ async function runTool(
 
       case "save_job": {
         const data = input as z.infer<(typeof ToolSchemas)["save_job"]>;
+        /*
+         * Gemerkt IM Vorhaben, wenn das Gespräch zu einem gehört.
+         *
+         * Ohne diese Zeile landete jede Stelle im freien Topf — auch
+         * die, über die man gerade im Projektgespräch sprach. Auf der
+         * Projektseite musste man sie danach von Hand wieder
+         * hineinlegen, obwohl sie dort besprochen worden war.
+         */
+        const [verlauf] = await withUser(db, userId, (tx) =>
+          tx
+            .select({ projektId: schema.ninaConversations.projektId })
+            .from(schema.ninaConversations)
+            .where(
+              and(
+                eq(schema.ninaConversations.id, conversationId),
+                eq(schema.ninaConversations.userId, userId),
+              ),
+            )
+            .limit(1),
+        );
         await withUser(db, userId, (tx) =>
-          tx.insert(schema.savedJobs).values({ userId, jobId: data.jobId }).onConflictDoNothing(),
+          tx
+            .insert(schema.savedJobs)
+            .values({ userId, jobId: data.jobId, projektId: verlauf?.projektId ?? null })
+            .onConflictDoNothing(),
         );
         return { ok: true, output: { saved: true } };
       }
@@ -1452,5 +1500,36 @@ async function runTool(
       ok: false,
       error: error instanceof Error ? error.message : "Das Werkzeug ist fehlgeschlagen.",
     };
+  }
+}
+
+/**
+ * Name und Ziel des offenen Vorhabens — oder `null`.
+ *
+ * Wirft nicht: Ein Gespräch, das an einem gelöschten Vorhaben hängt,
+ * ist ein Gespräch ohne Vorhaben. Das ist kein Grund, keine Antwort
+ * zu geben.
+ */
+async function vorhabenLaden(
+  userId: string,
+  projektId: string | null,
+): Promise<{ name: string; ziel: string | null } | null> {
+  if (!projektId) return null;
+  try {
+    const db = await getDb();
+    const [p] = await withUser(db, userId, (tx) =>
+      tx
+        .select({ name: schema.projekte.name, ziel: schema.projekte.ziel })
+        .from(schema.projekte)
+        .where(and(eq(schema.projekte.id, projektId), eq(schema.projekte.userId, userId)))
+        .limit(1),
+    );
+    return p ?? null;
+  } catch (fehler) {
+    console.warn(
+      "[monday/projekt] Vorhaben liess sich nicht laden:",
+      fehler instanceof Error ? fehler.message : String(fehler),
+    );
+    return null;
   }
 }

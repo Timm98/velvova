@@ -15,15 +15,22 @@ import { requireUser } from "@/lib/auth";
  * „Stellen" eines Vorhabens war deshalb immer leer, unabhängig davon,
  * wie viele Stellen jemand gemerkt hatte.
  *
- * ── Warum von Hand und nicht automatisch ────────────────────────
+ * ── Warum es das VON HAND weiterhin gibt ────────────────────────
  *
- * Weil eine automatische Zuordnung wissen müsste, welche Stelle zu
- * welchem Wunsch passt — und diese Bewertung je Vorhaben gibt es noch
- * nicht. Sie zu erfinden hiesse, eine Liste zu füllen, deren
- * Zusammensetzung niemand erklären kann.
+ * Hier stand: „eine automatische Zuordnung müsste wissen, welche
+ * Stelle zu welchem Wunsch passt — und diese Bewertung je Vorhaben
+ * gibt es noch nicht." Es gibt sie jetzt: Ein Vorhaben hat einen
+ * Suchauftrag, der Lauf bewertet und schreibt nach `auftrag_treffer`,
+ * und `projektStellen` liest beides zusammen.
  *
- * Von Hand ist wenig, aber es ist wahr: Was hier steht, hat ein
- * Mensch dorthin gelegt.
+ * Diese Datei bleibt trotzdem, weil sie etwas anderes tut. Die Suche
+ * beantwortet „was passt zu diesem Wunsch". Sie beantwortet nicht
+ * „diese eine Stelle will ich mir merken, obwohl sie durch jedes
+ * Raster fällt" — und genau das ist ein Vorgang, den keine Bewertung
+ * ersetzen soll.
+ *
+ * Auf der Projektseite ist der Unterschied sichtbar: Was die Suche
+ * gefunden hat, trägt einen Fit. Was von Hand dazukam, trägt keinen.
  */
 
 /**

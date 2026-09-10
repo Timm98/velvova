@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import {
   selectProvider,
   zuordnungPruefen,
@@ -73,6 +73,16 @@ export async function projektZuordnen(
   userId: string,
   nachricht: string,
   offenesProjekt: string | null,
+  /**
+   * Das laufende Gespräch.
+   *
+   * Ohne diese Kennung entstand ein Vorhaben ohne Verlauf: Der Chat,
+   * in dem es besprochen wurde, lag daneben und zählte nicht dazu.
+   * Der Werkzeugpfad `projekt_anlegen` hat das immer getan, der
+   * automatische nie — und das war der Unterschied zwischen einem
+   * Vorhaben, das man von Hand anlegt, und einem, das Monday erkennt.
+   */
+  conversationId: string | null = null,
 ): Promise<Zuordnungsergebnis | null> {
   const text = nachricht.trim();
   /*
@@ -130,7 +140,14 @@ export async function projektZuordnen(
       { projekte, offenesProjekt },
     );
 
-    return { ...zuordnung, projekt: await ausfuehren(userId, zuordnung, projekte) };
+    const projekt = await ausfuehren(userId, zuordnung, projekte);
+
+    /* Der Verlauf gehört zum Vorhaben — bei allen drei Arten. Wo
+       Monday erkennt, worum es geht, gehört auch das Gespräch dorthin,
+       in dem sie es erkannt hat. */
+    if (projekt && conversationId) await gespraechAnhaengen(userId, conversationId, projekt.id);
+
+    return { ...zuordnung, projekt };
   } catch (fehler) {
     console.warn(
       "[monday/projekt] Einordnung fehlgeschlagen:",
@@ -155,6 +172,7 @@ async function ausfuehren(
         .values({ userId, name: z.name!, ziel: z.ziel, status: "aktiv" })
         .returning({ id: schema.projekte.id, name: schema.projekte.name }),
     );
+    if (angelegt) await sucheAnlegen(userId, angelegt.id, z.ziel);
     return angelegt ?? null;
   }
 
@@ -175,6 +193,16 @@ async function ausfuehren(
         .set({ ziel: neu.slice(0, 1000) })
         .where(and(eq(schema.projekte.id, z.projektId!), eq(schema.projekte.userId, userId))),
     );
+    /*
+     * Auch beim Verfeinern: Hat das Vorhaben noch keine Suche, ist
+     * das ergänzte Ziel oft erst der Satz, aus dem eine wird. „Ich
+     * suche etwas in Zürich" trägt keine Tätigkeit; „Projektleitung,
+     * höchstens zwei Tage vor Ort" schon.
+     *
+     * Gibt es bereits eine, kehrt `sucheFuerProjekt` sofort zurück —
+     * ein zweiter Auftrag entsteht hier nie.
+     */
+    await sucheAnlegen(userId, z.projektId, neu);
     return vorher ? { id: vorher.id, name: vorher.name } : null;
   }
 
@@ -184,4 +212,77 @@ async function ausfuehren(
   }
 
   return null;
+}
+
+/**
+ * Das laufende Gespräch an ein Vorhaben hängen.
+ *
+ * ── Warum nur, wenn es noch zu keinem gehört ────────────────────
+ *
+ * Weil ein Gespräch sonst wandern könnte. Wer über sein Zürich-
+ * Vorhaben spricht und dabei Berlin erwähnt, hat nicht das Gespräch
+ * verschoben — er hat einen Satz gesagt. Ein Verlauf, der dabei
+ * lautlos das Vorhaben wechselt, nimmt dem einen Projekt seine
+ * Geschichte und gibt sie dem anderen.
+ *
+ * Umhängen ist deshalb eine Handlung und keine Vermutung.
+ */
+async function gespraechAnhaengen(
+  userId: string,
+  conversationId: string,
+  projektId: string,
+): Promise<void> {
+  try {
+    const db = await getDb();
+    await withUser(db, userId, (tx) =>
+      tx
+        .update(schema.ninaConversations)
+        .set({ projektId })
+        .where(
+          and(
+            eq(schema.ninaConversations.id, conversationId),
+            eq(schema.ninaConversations.userId, userId),
+            isNull(schema.ninaConversations.projektId),
+          ),
+        ),
+    );
+  } catch (fehler) {
+    console.warn(
+      "[projekte] Gespräch liess sich nicht zuordnen:",
+      fehler instanceof Error ? fehler.message : String(fehler),
+    );
+  }
+}
+
+/**
+ * Die Suche zum Vorhaben — und warum ein Fehler hier folgenlos ist.
+ *
+ * Ein Vorhaben ohne Suche ist ein Vorhaben, dessen Stellenliste noch
+ * leer ist. Ein Gespräch, das abbricht, weil das Modell für die
+ * Kriterien gerade nicht erreichbar war, ist ein kaputter Chat.
+ *
+ * Deshalb wird der Fehler protokolliert und nicht geworfen. Was
+ * fehlt, sieht man auf der Projektseite: Dort steht dann, dass für
+ * dieses Vorhaben noch keine Suche eingerichtet ist — und nicht, dass
+ * es keine Treffer gibt.
+ */
+async function sucheAnlegen(
+  userId: string,
+  projektId: string,
+  ziel: string | null,
+): Promise<void> {
+  try {
+    const { sucheFuerProjekt } = await import("@/lib/chancen/projektsuche");
+    const befund = await sucheFuerProjekt(userId, projektId, ziel);
+    if (!befund.ok) {
+      console.info(
+        `[projekte] keine Suche für ${projektId} angelegt: ${befund.grund}`,
+      );
+    }
+  } catch (fehler) {
+    console.error(
+      "[projekte] Suche zum Vorhaben fehlgeschlagen:",
+      fehler instanceof Error ? fehler.message : String(fehler),
+    );
+  }
 }

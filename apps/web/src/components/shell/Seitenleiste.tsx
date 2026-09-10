@@ -15,6 +15,8 @@ import {
 import type { Kontogruppe } from "./kontoeintraege.ts";
 import { ARBEITSBEREICHE, SUCHE, istHier } from "./seitenleiste-eintraege.ts";
 import { NeuesProjekt, Projektmenue } from "./Projektaktionen";
+import { leistenstellen } from "@/lib/chancen/leistenstellen";
+import type { Projektstelle } from "@/lib/chancen/projekttreffer";
 import { cn } from "@/lib/cn";
 
 /**
@@ -94,11 +96,34 @@ function Projektzeile({
   const pfad = usePathname();
   const hier = pfad === projekt.href;
 
-  const BEREICHE = [
-    { text: "Wunsch", anker: "" },
-    { text: "Jobs", anker: "#jobs" },
-    { text: "Bewerbungen", anker: "#bewerbungen" },
-  ] as const;
+  /*
+   * ── Warum hier Stellen stehen und keine Sprungmarken ──────────
+   *
+   * Hier standen drei Zeilen: „Wunsch", „Jobs", „Bewerbungen" —
+   * Anker auf dieselbe Seite. Aufgeklappt sah man damit, welche
+   * Abschnitte es gibt, und nicht, was drin ist. Ein Vorhaben mit
+   * dreissig Treffern und eines mit keinem sahen gleich aus.
+   *
+   * Jetzt stehen die Stellen selbst da, die höchsten zuerst. Die
+   * Bewerbungen bleiben als eine Zeile darunter: Sie sind ein
+   * anderer Stand derselben Sache, keine Liste, die man hier
+   * durchsieht.
+   */
+  const [lage, setLage] = useState<
+    { art: "zu" } | { art: "laedt" } | { art: "da"; stellen: Projektstelle[]; gesamt: number }
+  >({ art: "zu" });
+
+  useEffect(() => {
+    if (!auf || lage.art !== "zu") return;
+    let weg = false;
+    setLage({ art: "laedt" });
+    void leistenstellen(projekt.id).then((a) => {
+      if (!weg) setLage({ art: "da", stellen: a.stellen, gesamt: a.gesamt });
+    });
+    return () => {
+      weg = true;
+    };
+  }, [auf, lage.art, projekt.id]);
 
   return (
     <div className="grid gap-0.5">
@@ -131,15 +156,64 @@ function Projektzeile({
 
       {auf && (
         <div className="grid gap-0.5 pl-7">
-          {BEREICHE.map((b) => (
+          {lage.art === "laedt" && (
+            <span className="flex min-h-7 items-center px-1.5 text-2xs text-(--app-text-3)">
+              Stellen werden geladen …
+            </span>
+          )}
+
+          {lage.art === "da" && lage.gesamt < 0 && (
+            /* Der Fehlerfall trägt eigene Worte. „Keine Stellen" wäre
+               eine Aussage über die Suche statt über den Fehler. */
+            <span className="flex min-h-7 items-center px-1.5 text-2xs text-(--app-text-3)">
+              Stellen nicht abrufbar
+            </span>
+          )}
+
+          {lage.art === "da" && lage.gesamt === 0 && (
+            /* Kein Treffer ist etwas anderes als kein Suchauftrag —
+               was von beidem, sagt die Projektseite. Hier steht nur,
+               dass nichts da ist. */
+            <span className="flex min-h-7 items-center px-1.5 text-2xs text-(--app-text-3)">
+              Noch keine Stellen
+            </span>
+          )}
+
+          {lage.art === "da" &&
+            lage.stellen.map((stelle) => (
+              <Link
+                key={stelle.jobId}
+                href={`/app/jobs/${stelle.jobId}`}
+                title={`${stelle.titel} — ${stelle.firma}`}
+                className="flex min-h-7 items-center gap-1.5 rounded-(--radius-sm) px-1.5 text-2xs text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text-2)"
+              >
+                <span className="truncate">{stelle.titel}</span>
+                {/* Die Zahl nur, wenn es eine gibt. Ein fehlender Fit
+                    ist keine Null — er heisst, dass für diese Stelle
+                    keine Prüfung gelaufen ist. */}
+                {stelle.fit !== null && (
+                  <span className="ml-auto shrink-0 font-mono tabular-nums text-(--app-text-3)">
+                    {stelle.fit}
+                  </span>
+                )}
+              </Link>
+            ))}
+
+          {lage.art === "da" && lage.gesamt > lage.stellen.length && (
             <Link
-              key={b.text}
-              href={`${projekt.href}${b.anker}`}
+              href={`${projekt.href}#jobs`}
               className="flex min-h-7 items-center rounded-(--radius-sm) px-1.5 text-2xs text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text-2)"
             >
-              {b.text}
+              Alle {lage.gesamt} Stellen
             </Link>
-          ))}
+          )}
+
+          <Link
+            href={`${projekt.href}#bewerbungen`}
+            className="flex min-h-7 items-center rounded-(--radius-sm) px-1.5 text-2xs text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text-2)"
+          >
+            Bewerbungen
+          </Link>
         </div>
       )}
     </div>

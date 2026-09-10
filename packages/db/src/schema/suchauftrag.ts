@@ -14,6 +14,7 @@ import {
 import { users } from "./identity.ts";
 import { jobs } from "./jobs.ts";
 import { jobAnalysen } from "./nina.ts";
+import { projekte } from "./projekte.ts";
 
 /**
  * „Monday sucht für dich weiter" — der Suchauftrag und alles daran.
@@ -66,6 +67,18 @@ export const suchAuftraege = pgTable(
     geltungsbereich: jsonb("geltungsbereich").$type<Record<string, unknown>>().notNull().default({}),
     /** chat · voice · suchergebnisse · vorschlag */
     herkunft: text("herkunft").notNull().default("chat"),
+    /**
+     * Zu welchem Vorhaben diese Suche gehört.
+     *
+     * Der Weg zu den Stellen eines Projekts führt hierüber: Projekt →
+     * Suchauftrag → `auftragTreffer` → Stellen. Eine eigene
+     * Trefferkette am Projekt wäre eine zweite Rechnung derselben
+     * Frage, und zwei solche Rechnungen laufen auseinander.
+     *
+     * Nullbar: Suchaufträge gab es vor den Projekten und soll es
+     * weiter ohne geben.
+     */
+    projektId: uuid("projekt_id").references(() => projekte.id, { onDelete: "set null" }),
     aktiveProfilVersion: uuid("aktive_profil_version"),
     aktualisierungNoetig: boolean("aktualisierung_noetig").notNull().default(true),
     zuletztGeprueft: timestamp("zuletzt_geprueft", { withTimezone: true }),
@@ -82,6 +95,10 @@ export const suchAuftraege = pgTable(
     index("such_auftraege_user_idx").on(t.userId, t.status),
     index("such_auftraege_faellig_idx").on(t.status, t.naechsteFaelligkeit),
     index("such_auftraege_offen_idx").on(t.aktualisierungNoetig, t.status),
+    /* Teilindex in der Migration: Aufträge ohne Projekt sind der
+       häufige Fall und beantworten die Frage nicht, für die dieser
+       Index da ist. */
+    index("such_auftraege_projekt_idx").on(t.projektId),
   ],
 );
 

@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { Briefcase, FileText, MessagesSquare } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { projektLaden } from "@/lib/chancen/projekte";
+import { projektStellen } from "@/lib/chancen/projekttreffer";
+import { suchePruefen } from "@/lib/chancen/projektsuche";
+import { Projektsuche } from "@/components/chancen/Projektsuche";
 import { freieStellen } from "@/lib/chancen/zuordnen";
 import { StelleLoesen, Stellenzuordnung } from "@/components/chancen/Stellenzuordnung";
 import { PageHeader } from "@/components/ui/states";
@@ -48,6 +51,19 @@ export default async function ProjektSeite({
    */
   if (!projekt) notFound();
 
+  /*
+   * Die Stellen kommen nicht mehr aus `projektLaden`.
+   *
+   * Dort standen nur die von Hand zugeordneten — die Spalte
+   * `saved_jobs.projekt_id`. `projektStellen` liest zusätzlich die
+   * Treffer der Suchaufträge dieses Vorhabens und führt beides zu
+   * einer Liste zusammen, in der man die Herkunft noch sieht.
+   */
+  const [stellen, suche] = await Promise.all([
+    projektStellen(user.id, projekt.id),
+    suchePruefen(user.id, projekt.id),
+  ]);
+
   const standtext: Record<string, string> = {
     aktiv: "läuft",
     ruht: "pausiert",
@@ -88,43 +104,80 @@ export default async function ProjektSeite({
             Weiter mit Monday
           </Link>
         )}
+
+        {/*
+          Der Zustand der Suche gehört zum Wunsch, nicht zu den
+          Stellen. Er beantwortet die Frage, warum unten etwas steht
+          oder nicht — und die stellt sich, bevor man hinsieht.
+        */}
+        <div className="pt-1">
+          <Projektsuche projektId={projekt.id} suche={suche} />
+        </div>
       </Abschnitt>
 
+      {/*
+        ── Warum hier zwei Herkünfte in EINER Liste stehen ────────
+
+        Die Stellen eines Vorhabens kommen aus zwei Richtungen: Der
+        Suchauftrag hat sie gefunden und bewertet, oder jemand hat
+        eine gemerkte Stelle hineingelegt. Zwei getrennte Abschnitte
+        wären ehrlicher gewesen und trotzdem falsch — man sucht nicht
+        zweimal, man sucht einmal.
+
+        Unterschieden wird deshalb in der Zeile, nicht im Abschnitt:
+        Was Monday gefunden hat, trägt einen Fit. Was von Hand
+        hineingelegt wurde, trägt keinen — und zwar sichtbar, denn für
+        diese Stellen ist keine Prüfung gelaufen. Eine erfundene Zahl
+        daneben wäre die schlimmere Lösung.
+      */}
       <Abschnitt
         icon={Briefcase}
         id="jobs"
-        titel="Gemerkte Stellen"
+        titel="Stellen"
         /* Bleibt auch im leeren Abschnitt stehen — dort ist sie das
            Einzige, was man tun kann. */
         immer={<Stellenzuordnung projektId={projekt.id} frei={await freieStellen()} />}
-        zahl={projekt.stellen.length}
-        leer="Noch keine Stelle in diesem Vorhaben gemerkt."
+        zahl={stellen.length}
+        leer="Noch keine Stellen. Sobald für dieses Vorhaben eine Suche läuft, stehen die Treffer hier."
       >
         <div className="grid gap-3">
-          {projekt.stellen.length > 0 && (
+          {stellen.length > 0 && (
             <ul className="grid gap-1">
-              {projekt.stellen.map((s) => (
-                <li key={s.id} className="flex items-center gap-2">
+              {stellen.map((s) => (
+                <li key={s.jobId} className="flex items-center gap-2">
                   <Link
                     href={`/app/jobs/${s.jobId}`}
                     className="min-w-0 flex-1 rounded-(--radius-sm) px-2 py-1.5 transition-colors hover:bg-(--app-hover)"
                   >
                     <span className="block truncate text-[14px] text-(--app-text)">{s.titel}</span>
-                    <span className="block truncate text-2xs text-(--app-text-3)">{s.firma}</span>
+                    <span className="block truncate text-2xs text-(--app-text-3)">
+                      {s.firma}
+                      {/*
+                        Die Zulässigkeit steht dabei, wenn sie offen
+                        ist. „Passt zu 82 %" neben einer Muss-Angabe,
+                        die niemand geprüft hat, ist die Zahl ohne den
+                        Vorbehalt, der zu ihr gehört.
+                      */}
+                      {s.zulaessigkeit === "needs_clarification" && " · noch zu klären"}
+                      {s.herkunft === "hand" && " · von dir zugeordnet"}
+                    </span>
                   </Link>
-                  <StelleLoesen savedJobId={s.id} projektId={projekt.id} />
+
+                  {s.fit !== null && (
+                    <span className="shrink-0 font-mono text-[13px] tabular-nums text-(--app-text-2)">
+                      {s.fit}
+                    </span>
+                  )}
+
+                  {/* Lösen geht nur bei dem, was von Hand dazukam.
+                      Einen Treffer der Suche zu „lösen" hiesse, gegen
+                      das Ergebnis zu entscheiden, ohne es zu ändern —
+                      beim nächsten Lauf stünde er wieder da. */}
+                  {s.merkId && <StelleLoesen savedJobId={s.merkId} projektId={projekt.id} />}
                 </li>
               ))}
             </ul>
           )}
-
-          {/*
-            Die Zuordnung steht UNTER der Liste, nicht darüber.
-
-            Oben wäre sie das Erste, was man sieht — und ein Vorhaben
-            handelt von den Stellen, die schon darin sind, nicht davon,
-            welche man noch hinzufügen könnte.
-          */}
         </div>
       </Abschnitt>
 

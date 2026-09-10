@@ -73,7 +73,22 @@ export async function ensureConversation(
     jobId?: string | null;
     applicationId?: string | null;
   } = {},
-): Promise<{ id: string; kind: ConversationKind; summary: string | null; messageCount: number }> {
+): Promise<{
+  id: string;
+  kind: ConversationKind;
+  summary: string | null;
+  messageCount: number;
+  /**
+   * Das Vorhaben, zu dem dieses Gespräch gehört.
+   *
+   * Es kommt von hier und nicht vom Browser. Die Chat-Route hatte
+   * ein Feld `projektId` in ihrem Eingabeschema, das kein Client je
+   * gefüllt hat — und selbst wenn: Welches Vorhaben offen ist, ist
+   * eine Eigenschaft des Verlaufs und nichts, was der Aufrufer
+   * bestimmen sollte.
+   */
+  projektId: string | null;
+}> {
   const db = await getDb();
   const kind = options.kind ?? "assistant";
 
@@ -85,6 +100,7 @@ export async function ensureConversation(
           kind: schema.ninaConversations.kind,
           summary: schema.ninaConversations.summary,
           messageCount: schema.ninaConversations.messageCount,
+          projektId: schema.ninaConversations.projektId,
         })
         .from(schema.ninaConversations)
         .where(
@@ -134,6 +150,7 @@ export async function ensureConversation(
           kind: schema.ninaConversations.kind,
           summary: schema.ninaConversations.summary,
           messageCount: schema.ninaConversations.messageCount,
+          projektId: schema.ninaConversations.projektId,
         })
         .from(schema.ninaConversations)
         .where(
@@ -163,6 +180,7 @@ export async function ensureConversation(
         kind: schema.ninaConversations.kind,
         summary: schema.ninaConversations.summary,
         messageCount: schema.ninaConversations.messageCount,
+        projektId: schema.ninaConversations.projektId,
       });
 
     return neu!;

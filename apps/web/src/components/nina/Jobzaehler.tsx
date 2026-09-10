@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Database } from "lucide-react";
+import { useBestand } from "@/components/marketing/BestandProvider";
 import { cn } from "@/lib/cn";
 
 /**
@@ -26,6 +27,21 @@ import { cn } from "@/lib/cn";
  * Stellen gibt. Ein Fehler, der als „0 Jobs" erscheint, ist die
  * schlimmste Verwechslung von allen — er sieht aus wie eine Aussage
  * über den Markt.
+ *
+ * ── Warum die Zahl läuft und woher sie das nimmt ────────────────
+ *
+ * Der Bestand wächst, während jemand hier sitzt. Eine Zahl, die den
+ * ganzen Besuch über stillsteht, behauptet das Gegenteil.
+ *
+ * Gezählt wird aber nicht hier. `BestandProvider` hängt über der
+ * ganzen App und hält EINEN laufenden Wert — genau deshalb, weil zwei
+ * eigene Zeitgeber, die dieselbe Formel rechnen, `Date.now()` wenige
+ * Millisekunden versetzt ablesen und dann abwechselnd Werte zeigen,
+ * die sich um eins unterscheiden. Auf einem Bildschirm liest das
+ * niemand als Rundung.
+ *
+ * Der Abruf hier bleibt trotzdem: Er liefert den Zeitpunkt für den
+ * Kasten und trägt die Zahl auch dort, wo kein Rahmen darüber steht.
  *
  * ── Warum das den Composer nicht aufhält ────────────────────────
  *
@@ -58,6 +74,7 @@ function alter(stand: string | null): { text: string; veraltet: boolean } {
 export function Jobzaehler({ className }: { className?: string }) {
   const [lage, setLage] = useState<Lage>({ art: "laedt" });
   const [offen, setOffen] = useState(false);
+  const laufend = useBestand();
 
   useEffect(() => {
     let abgebrochen = false;
@@ -101,6 +118,17 @@ export function Jobzaehler({ className }: { className?: string }) {
 
   const { text, veraltet } = alter(lage.stand);
 
+  /*
+   * Der laufende Wert gewinnt — aber nur, wenn er den abgerufenen
+   * nicht unterbietet.
+   *
+   * Der Rahmen beginnt seinen Anlauf 12.000 unter dem Stand und
+   * arbeitet sich von unten heran. Fällt der Abruf hier mitten in
+   * diesen Anlauf, stünde für einen Moment eine kleinere Zahl da als
+   * die, die gerade geholt wurde — sichtbar als Sprung zurück.
+   */
+  const angezeigt = laufend ? Math.max(laufend.wert, lage.genau) : lage.genau;
+
   return (
     <span className={cn("relative", className)}>
       <button
@@ -114,7 +142,7 @@ export function Jobzaehler({ className }: { className?: string }) {
         )}
       >
         <Database className="size-3.5 shrink-0" strokeWidth={1.8} />
-        <span className="font-mono tabular-nums">{zahl(lage.genau)}</span>
+        <span className="font-mono tabular-nums">{zahl(angezeigt)}</span>
       </button>
 
       {offen && (
@@ -123,7 +151,7 @@ export function Jobzaehler({ className }: { className?: string }) {
           className="absolute bottom-[calc(100%+0.4rem)] left-0 z-50 block w-64 rounded-(--radius-lg) border border-(--app-rand) bg-(--app-erhoben) p-3 text-2xs leading-relaxed text-(--app-text-2) shadow-xl"
         >
           <strong className="block pb-1 font-medium text-(--app-text)">
-            {zahl(lage.genau)} aktive Stellen im Bestand
+            {zahl(angezeigt)} aktive Stellen im Bestand
           </strong>
           Entdoppelt, noch nicht abgelaufen, für die Suche verfügbar.
           {" "}

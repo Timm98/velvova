@@ -12,7 +12,15 @@ export const dynamic = "force-dynamic";
 export async function GET(): Promise<Response> {
   const b = await bestandszahl();
   return Response.json(
-    { genau: b.genau, proSekunde: b.proSekunde },
+    /*
+     * `stand` gehört dazu.
+     *
+     * Der Zähler im Composer klappt einen Kasten auf, in dem steht,
+     * wann zuletzt gezählt wurde. Ohne dieses Feld las er `undefined`
+     * und schrieb „Zeitpunkt unbekannt" in Rot — eine Fehlermeldung
+     * über eine Zahl, die stimmte.
+     */
+    { genau: b.genau, proSekunde: b.proSekunde, stand: b.stand },
     { headers: { "Cache-Control": "no-store" } },
   );
 }
