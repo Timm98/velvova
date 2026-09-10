@@ -115,11 +115,23 @@ export default async function MorgenSeite() {
 
       {lage.vorschlaege.length > 0 && (
         <section className="grid gap-4">
-          <h2 className="text-[17px] font-semibold text-ink">
-            {lage.vorschlaege.length === 1
-              ? "Diese Stelle würde ich mir ansehen"
-              : `Diese ${lage.vorschlaege.length} würde ich mir zuerst ansehen`}
-          </h2>
+          <div className="grid gap-1">
+            <h2 className="text-[17px] font-semibold text-ink">
+              {lage.vorschlaege.length === 1
+                ? "Diese Stelle würde ich mir ansehen"
+                : `Diese ${lage.vorschlaege.length} würde ich mir zuerst ansehen`}
+            </h2>
+            {/*
+              Warum in dieser Reihenfolge — und was dabei nicht helfen
+              konnte. Eine Liste ohne diesen Satz sieht aus, als sei
+              alles eingerechnet worden, was man sich vorstellt.
+            */}
+            {lage.reihenfolgeSatz && (
+              <p className="max-w-[var(--measure)] text-[14px] leading-relaxed text-ink-3">
+                {lage.reihenfolgeSatz}
+              </p>
+            )}
+          </div>
 
           <ul className="grid gap-3">
             {lage.vorschlaege.map((v) => (

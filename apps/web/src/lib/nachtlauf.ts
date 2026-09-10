@@ -1,5 +1,6 @@
 import { getDb, schema, withUser } from "@paycheck/db";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { spitzenauswahl, grundlagenSatz, type Spitzenkandidat } from "@paycheck/matching";
 import {
   LEERE_BILANZ,
   bilanzSatz,
@@ -53,6 +54,8 @@ export interface Vorschlag {
 }
 
 export interface Morgenlage {
+  /** Warum die fünf in dieser Reihenfolge stehen. */
+  reihenfolgeSatz: string;
   /** `null` heisst: In dieser Nacht lief keine Suche. */
   lauf: {
     id: string;
@@ -139,18 +142,30 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
    * heute abgelaufen ist, gehört nicht in einen Bericht, der „diese
    * fünf würde ich mir zuerst ansehen" sagt.
    */
-  const vorschlaege = await withUser(db, userId, (tx) =>
+  /*
+   * Mehr laden, als am Ende dasteht.
+   *
+   * Die letzten fünf entscheidet nicht die Datenbank, sondern
+   * `spitzenauswahl()` — und die kann nur auswählen, was sie sieht.
+   * Vierzig ist die Menge, aus der ein Nachtlauf mit hundert geprüften
+   * Stellen realistisch schöpft.
+   */
+  const engereWahl = await withUser(db, userId, (tx) =>
     tx
       .select({
         trefferId: schema.auftragTreffer.id,
         jobId: schema.auftragTreffer.jobId,
         titel: schema.jobs.title,
         firma: schema.companies.name,
+        arbeitgeberId: schema.jobs.companyId,
         ort: schema.jobs.location,
         fitScore: schema.auftragTreffer.fitScore,
         gruende: schema.auftragTreffer.empfehlungsgruende,
         offenePunkte: schema.auftragTreffer.offenePunkte,
         caveat: schema.auftragTreffer.caveat,
+        gehaltMin: schema.jobs.salaryMin,
+        gehaltZeitraum: schema.jobs.salaryPeriod,
+        gehaltHerkunft: schema.jobs.salaryProvenance,
       })
       .from(schema.auftragTreffer)
       .innerJoin(schema.jobs, eq(schema.jobs.id, schema.auftragTreffer.jobId))
@@ -163,8 +178,39 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
         ),
       )
       .orderBy(desc(schema.auftragTreffer.fitScore))
-      .limit(TOP_N),
+      .limit(40),
   ).catch(() => []);
+
+  /*
+   * Das Gehalt zählt nur, wenn es vom Arbeitgeber kommt.
+   *
+   * `board_estimate` ist die Schätzung eines Portals — 280.283 Zeilen
+   * im Bestand. Sie in eine Reihenfolge einzurechnen hiesse, Stellen
+   * danach zu sortieren, was ein Dritter über sie vermutet.
+   */
+  const kandidaten: Spitzenkandidat[] = engereWahl.map((v) => ({
+    trefferId: v.trefferId,
+    arbeitgeberId: v.arbeitgeberId,
+    fitScore: v.fitScore,
+    gehaltJahr:
+      v.gehaltMin !== null && (v.gehaltHerkunft === "employer" || v.gehaltHerkunft === "provider")
+        ? v.gehaltZeitraum === "year"
+          ? v.gehaltMin
+          : v.gehaltZeitraum === "month"
+            ? v.gehaltMin * 12
+            : null
+        : null,
+    /* Beide liegen noch nicht je Treffer vor — sie entscheiden deshalb nicht. */
+    anzeigenqualitaet: null,
+    arbeitgeberurteil: null,
+  }));
+
+  const spitze = spitzenauswahl(kandidaten, { anzahl: TOP_N, jeArbeitgeber: 2 });
+  const gewaehlt = new Set(spitze.gewaehlt.map((k) => k.trefferId));
+  const rang = new Map(spitze.gewaehlt.map((k, i) => [k.trefferId, i]));
+  const vorschlaege = engereWahl
+    .filter((v) => gewaehlt.has(v.trefferId))
+    .sort((a, b) => (rang.get(a.trefferId) ?? 0) - (rang.get(b.trefferId) ?? 0));
 
   /*
    * Arbeitgeber ohne passende Anzeige.
@@ -200,6 +246,7 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
       : null,
     bilanz,
     satz: lauf ? bilanzSatz(bilanz) : "",
+    reihenfolgeSatz: vorschlaege.length > 1 ? grundlagenSatz(spitze) : "",
     grund: lauf ? magerkeitsgrund(bilanz) : null,
     ringzustand: ringbild(phase),
     zeile: phasentext(phase, bilanz),
