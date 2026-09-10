@@ -164,8 +164,21 @@ export async function loadStudio(applicationId: string): Promise<StudioView | nu
     delivery: {
       providerName: provider.displayName,
       connected: provider.isConnected(),
-      // Nur ein verbundener Nicht-Entwurfsweg versendet überhaupt etwas.
-      willActuallySend: false,
+      /*
+       * Abgeleitet, nicht gesetzt.
+       *
+       * Hier stand `false` als Konstante — heute richtig, weil kein
+       * Anbieter tatsächlich versendet, aber falsch gebaut: Wer später
+       * einen echten Weg anschliesst, ändert die Klasse und nicht
+       * diese Zeile, und dann behauptet die Oberfläche weiter, es gehe
+       * nichts hinaus, während Mails unterwegs sind.
+       *
+       * `key === "draft"` erzeugt eine Datei, `mailpit` gibt an einen
+       * lokalen Testserver ab. Beides verlässt das Gerät nicht. Alles
+       * andere versendet, sobald es verbunden ist.
+       */
+      willActuallySend:
+        provider.isConnected() && provider.key !== "draft" && provider.key !== "mailpit",
     },
   };
 }

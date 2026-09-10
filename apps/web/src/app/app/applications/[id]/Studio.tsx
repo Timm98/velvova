@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Entwurfsuebergabe } from "@/components/applications/Entwurfsuebergabe";
 import { approveArtifact, generateArtifact, sendApplication, updateArtifact } from "@/lib/studio";
 import type { StudioView } from "@/lib/studio";
 import { Badge, buttonClass, Card, Stack } from "@/components/ui";
@@ -39,7 +40,15 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
   const [activeId, setActiveId] = useState<string | null>(view.artifacts[0]?.id ?? null);
-  const [draftText, setDraftText] = useState<string | null>(null);
+  /*
+   * Der Entwurf mit Dateiname, nicht nur sein Text.
+   *
+   * Vorher lag hier nur der Inhalt, und die Oberfläche zeigte ihn in
+   * einem Textfeld mit dem Satz „kopier ihn in dein Mailprogramm" —
+   * samt roher Kopfzeilen. Das kopiert niemand. Für eine Datei
+   * braucht es den Namen dazu.
+   */
+  const [entwurf, setEntwurf] = useState<{ filename: string; content: string } | null>(null);
   /*
    * Der getippte Text des Editors — hier oben, nicht im Editor.
    *
@@ -95,7 +104,7 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
     startTransition(async () => {
       const r = await sendApplication(view.application.id, active.id, confirmed);
       setMessage({ tone: r.ok ? "ok" : "error", text: r.message });
-      if (r.draft) setDraftText(r.draft.content);
+      if (r.draft) setEntwurf(r.draft);
       router.refresh();
     });
   }
@@ -381,26 +390,14 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                   </Stack>
                 )}
 
-                {draftText && (
-                  <div style={{ display: "grid", gap: "var(--space-2)" }}>
-                    <p style={{ fontSize: "var(--text-sm)", color: "var(--positive)" }}>
-                      Entwurf erstellt. Kopier ihn in dein Mailprogramm:
-                    </p>
-                    <textarea
-                      readOnly
-                      value={draftText}
-                      rows={8}
-                      style={{
-                        width: "100%",
-                        fontFamily: "var(--font-mono)",
-                        fontSize: "var(--text-xs)",
-                        padding: "var(--space-3)",
-                        border: "1px solid var(--border-default)",
-                        borderRadius: "var(--radius-md)",
-                        background: "var(--surface-sunken)",
-                      }}
-                    />
-                  </div>
+                {entwurf && (
+                  <Entwurfsuebergabe
+                    jobId={view.job.id}
+                    dateiname={entwurf.filename}
+                    inhalt={entwurf.content}
+                    empfaenger={view.job.applyTarget ?? ""}
+                    betreff={`Bewerbung als ${view.job.title}`}
+                  />
                 )}
               </Stack>
             </Card>
