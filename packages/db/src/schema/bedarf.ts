@@ -1,4 +1,4 @@
-import { boolean, index, integer, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, jsonb, pgTable, real, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { organizations, users } from "./identity.ts";
 import { angebote } from "./angebote.ts";
 
@@ -158,4 +158,57 @@ export const bedarfsschritte = pgTable(
     erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("bedarfsschritte_vorgang_idx").on(t.vorgangId, t.erstelltAm)],
+);
+
+/**
+ * Die Verbindung zwischen freigegebenem Bedarf und einem Menschen.
+ *
+ * ── Warum die Person diese Zeile nicht liest ────────────────────
+ *
+ * Der Zeilenschutz hängt allein an `organizationId`. Es ist eine
+ * interne Vorschau: Sie löst keine Nachricht aus, und der Mensch
+ * erfährt von ihr nichts — weil es noch nichts zu erfahren gibt.
+ * Dieselbe Bauart wie `postingCandidates`, aus demselben Grund.
+ *
+ * Die Kehrseite gehört dazu: Solange das so ist, gibt es keine
+ * Ansicht, in der ein Mensch nachsieht, wem er vorgeschlagen wurde.
+ * Eine Schuld, kein Entwurf. Siehe Migration 0114.
+ */
+export const bedarfstreffer = pgTable(
+  "bedarfstreffer",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    vorgangId: uuid("vorgang_id")
+      .notNull()
+      .references(() => bedarfsvorgaenge.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+
+    /** 0–100. `null` heisst nicht ermittelbar — etwas anderes als null Punkte. */
+    passung: integer("passung"),
+    /** 0–1. Ohne sie ist die Passung eine Zahl ohne Aussage. */
+    abdeckung: real("abdeckung"),
+
+    bedingungen: jsonb("bedingungen").$type<unknown[]>().notNull().default([]),
+    offenePunkte: jsonb("offene_punkte").$type<string[]>().notNull().default([]),
+    freigegebeneNachweise: jsonb("freigegebene_nachweise").$type<string[]>().notNull().default([]),
+
+    /** Der Fingerabdruck der Stände, aus denen der Vorschlag entstand. */
+    grundlage: text("grundlage").notNull(),
+
+    /** `vorschau` · `angefragt` · `zurueckgezogen` */
+    zustand: text("zustand").notNull().default("vorschau"),
+
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+    aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    /* Ein zweiter Lauf aktualisiert, er verdoppelt nicht. */
+    uniqueIndex("bedarfstreffer_paar_idx").on(t.vorgangId, t.userId),
+    index("bedarfstreffer_organisation_idx").on(t.organizationId, t.vorgangId),
+  ],
 );

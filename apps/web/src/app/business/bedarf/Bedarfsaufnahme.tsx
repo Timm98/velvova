@@ -24,7 +24,15 @@ import { bedarfAufnehmen, angebotVerbindlichMachen, type Aufnahme } from "@/lib/
  * Aufnehmen und Zusagen dieselbe Handlung sind, erzeugt Zusagen, die
  * niemand bewusst gegeben hat.
  */
-export function Bedarfsaufnahme({ orgId, klaerung = false }: { orgId: string; klaerung?: boolean }) {
+export function Bedarfsaufnahme({
+  orgId,
+  klaerung = false,
+  vorgangId,
+}: {
+  orgId: string;
+  klaerung?: boolean;
+  vorgangId?: string;
+}) {
   const [text, setText] = useState("");
   const [lage, setLage] = useState<Aufnahme | null>(null);
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -32,7 +40,7 @@ export function Bedarfsaufnahme({ orgId, klaerung = false }: { orgId: string; kl
 
   function aufnehmen() {
     setMeldung(null);
-    starten(async () => setLage(await bedarfAufnehmen(orgId, text, klaerung)));
+    starten(async () => setLage(await bedarfAufnehmen(orgId, text, klaerung, vorgangId)));
   }
 
   function bestaetigen(angebotId: string) {

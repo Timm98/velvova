@@ -461,7 +461,21 @@ DECLARE
      * nur an einer Stelle gebuendelt.
      */
     'monatsbericht_einstellungen',
-    'monatsberichte'
+    'monatsberichte',
+    /*
+     * `bedarfstreffer` traegt eine `user_id` UND eine
+     * `organization_id` -- und steht trotzdem hier, mit der
+     * Mitgliedsregel allein.
+     *
+     * Absicht: Es ist eine interne Vorschau fuer den Betrieb. Sie
+     * loest keine Nachricht aus, und der Mensch erfaehrt von ihr
+     * nichts, weil es noch nichts zu erfahren gibt. Bekaeme er die
+     * Eigentuemerregel, saehe er eine Anfrage, die niemand gestellt
+     * hat.
+     *
+     * Dieselbe Bauart wie `posting_candidates`.
+     */
+    'bedarfstreffer'
   ];
 BEGIN
   FOREACH t IN ARRAY org_tables LOOP

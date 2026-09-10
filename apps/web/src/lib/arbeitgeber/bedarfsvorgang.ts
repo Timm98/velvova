@@ -70,6 +70,8 @@ export interface Vorgangslage {
   schritte: { von: string; nach: string; erlaubt: boolean; grund: string | null; am: Date }[];
   /** Ob aus diesem Stand ein Angebot entstehen dürfte. */
   darfAngebot: boolean;
+  /** Das beschriebene Angebot, falls es schon eines gibt. */
+  angebotId: string | null;
 }
 
 function alsEbene(roh: string): Ebene {
@@ -503,6 +505,7 @@ export async function vorgangLesen(orgId: string, vorgangId: string): Promise<Vo
       am: s.erstelltAm,
     })),
     darfAngebot: ebene === "freigegebene_moeglichkeit" && weg !== null && brauchtMenschen(weg),
+    angebotId: v.angebotId,
   };
 }
 

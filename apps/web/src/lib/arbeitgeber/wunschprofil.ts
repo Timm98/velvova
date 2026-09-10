@@ -100,6 +100,7 @@ export async function bedarfAufnehmen(
   orgId: string,
   text: string,
   klaerung = false,
+  vorgangId?: string,
 ): Promise<Aufnahme> {
   const { user } = await verlangeRolle(orgId, "admin");
 
@@ -219,6 +220,27 @@ export async function bedarfAufnehmen(
       })
       .returning({ id: schema.angebote.id }),
   );
+
+  /*
+   * Die Rückverknüpfung, falls das Angebot aus einer Klärung kommt.
+   *
+   * Ohne sie stünde das Angebot neben dem Vorgang statt an ihm — und
+   * die Suche nach passenden Menschen fände keine Rolle, obwohl eine
+   * beschrieben wurde.
+   */
+  if (vorgangId && zeile?.id) {
+    await withUser(db, user.id, (tx) =>
+      tx
+        .update(schema.bedarfsvorgaenge)
+        .set({ angebotId: zeile.id, aktualisiertAm: new Date() })
+        .where(
+          and(
+            eq(schema.bedarfsvorgaenge.id, vorgangId),
+            eq(schema.bedarfsvorgaenge.organizationId, orgId),
+          ),
+        ),
+    );
+  }
 
   await protokolliere(user.id, orgId, "angebot_entwurf", zeile?.id, {
     gestrichen: gestrichen.length,

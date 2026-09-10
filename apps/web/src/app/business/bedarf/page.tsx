@@ -26,9 +26,9 @@ export const dynamic = "force-dynamic";
 export default async function BedarfPage({
   searchParams,
 }: {
-  searchParams: Promise<{ org?: string; weg?: string }>;
+  searchParams: Promise<{ org?: string; weg?: string; vorgang?: string }>;
 }) {
-  const { org, weg } = await searchParams;
+  const { org, weg, vorgang } = await searchParams;
   const { organisation } = await arbeitgeberKontext(org);
 
   /*
@@ -51,7 +51,7 @@ export default async function BedarfPage({
         </p>
       </div>
 
-      <Bedarfsaufnahme orgId={organisation.organizationId} klaerung={klaerung} />
+      <Bedarfsaufnahme orgId={organisation.organizationId} klaerung={klaerung} vorgangId={vorgang} />
 
       <section className="grid gap-2 border-t border-line pt-6">
         <h2 className="text-[15px] font-semibold text-ink">Was mit den Angaben passiert</h2>

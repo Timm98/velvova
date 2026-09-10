@@ -58,3 +58,4 @@ export * from "./bedarfsebenen.ts";
 export * from "./befundlage.ts";
 export * from "./quellenfreigabe.ts";
 export * from "./monatsbericht.ts";
+export * from "./bedarfstreffer.ts";

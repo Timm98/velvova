@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { EBENEN, type Ebene } from "@paycheck/domain";
 import { arbeitgeberKontext } from "@/lib/arbeitgeber/zugang";
 import { vorgangLesen } from "@/lib/arbeitgeber/bedarfsvorgang";
 import { Klaerung } from "./Klaerung";
+import { Menschen } from "./Menschen";
 
 export const metadata: Metadata = { title: "Klärung" };
 export const dynamic = "force-dynamic";
@@ -130,11 +132,24 @@ export default async function VorgangPage({
         <section className="grid gap-2 rounded-(--radius-lg) border border-line bg-raised p-4">
           <h2 className="text-[15px] font-semibold text-ink">Daraus darf jetzt ein Angebot werden</h2>
           <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
-            Freigegeben von {v.freigabeVon}. Der gewählte Weg braucht einen Menschen von aussen —
-            unter „Bedarf" beschreiben Sie die Rolle, und daraus entsteht ein Angebot mit
-            Konditionen und Frist.
+            Freigegeben von {v.freigabeVon}. Der gewählte Weg braucht einen Menschen von aussen.
+            {v.angebotId
+              ? " Die Rolle ist beschrieben — die Suche unten rechnet gegen sie."
+              : " Beschreiben Sie zuerst die Rolle: Ohne Rolle, Ort und Konditionen wäre jede Passung eine Zahl aus fast nichts."}
           </p>
+          {!v.angebotId && (
+            <Link
+              href={`/business/bedarf?weg=rolle&vorgang=${v.id}`}
+              className="inline-flex min-h-11 w-fit items-center rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90"
+            >
+              Rolle beschreiben
+            </Link>
+          )}
         </section>
+      )}
+
+      {v.darfAngebot && v.angebotId && (
+        <Menschen orgId={organisation.organizationId} vorgangId={v.id} />
       )}
     </div>
   );

@@ -221,6 +221,12 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
    Lauf je Organisation und Berichtsmonat, geweckt täglich von
    `.github/workflows/monatsbericht.yml`.
 
-   Offen bleibt daran: Zu einem bestätigten Bedarf werden noch keine
-   passenden Menschen gesucht — das ist für Angebote gebaut, nicht
-   für Klärungen.
+   Seit dem 11.09.2026 sucht ein freigegebener Bedarf auch passende
+   Menschen (Migration 0114, `bedarfstreffer`). Gemessen am selben
+   Tag: **0 von 1.004 Konten** haben `auffindbar = true`. Der Schalter
+   liegt unter `/app/settings/privacy`; niemand hat ihn umgelegt.
+
+   Das ist kein Defekt der Suche, sondern ihr Ergebnis — und es gilt
+   ebenso für den älteren Vorschlagslauf zu Stellenanzeigen, der
+   dieselbe Menge durchsucht. Die Engstelle ist die Zustimmung, nicht
+   das Rechnen.
