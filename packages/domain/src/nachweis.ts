@@ -48,6 +48,14 @@ export const AUFGABENHERKUNFT = ["aus_anzeige", "vom_arbeitgeber"] as const;
 export type Aufgabenherkunft = (typeof AUFGABENHERKUNFT)[number];
 
 export interface Aufgabe {
+  /**
+   * Woran sich die Lösung messen lässt.
+   *
+   * Ohne Prüfpunkte ist die Bewertung ein Urteil, und ein Urteil ist
+   * genau das, was dieses Zeugnis nicht enthalten darf. Siehe
+   * `probeBewerten` weiter unten.
+   */
+  pruefpunkte: Pruefpunkt[];
   /** Was zu tun ist, in der Sprache der Zielbranche. */
   text: string;
   /**
@@ -235,4 +243,108 @@ export interface Rueckmeldung {
   offen: string[];
   /** Ob ein weiterer Versuch möglich ist. */
   nochmal: boolean;
+}
+
+/* ── Die Bewertung ───────────────────────────────────────────── */
+
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Warum eine Aufgabe eine Lösung haben muss
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Eine automatisch bewertete Arbeitsprobe ist nur so glaubwürdig wie
+ * ihre Bewertung. „Schreibe einen Text über X" lässt sich nicht
+ * bewerten, ohne zu urteilen — und ein Urteil ist genau das, was
+ * dieses Zeugnis nicht enthalten darf.
+ *
+ * Deshalb hat jede Aufgabe Prüfpunkte: Dinge, die in der Lösung
+ * vorkommen müssen, weil sie in der Sache liegen. „Finde die
+ * Abweichungen in vier Anträgen" hat vier davon. Ob jemand sie
+ * gefunden hat, ist dann kein Ermessen, sondern ein Abgleich.
+ *
+ * ── Warum der Mensch die Prüfpunkte danach sieht ────────────────
+ *
+ * Weil eine Bewertung, die man nicht nachrechnen kann, keine ist.
+ * Nach der Abgabe steht offen, was erwartet wurde — dann kann jemand
+ * widersprechen, und ein Widerspruch, den es geben kann, ist der
+ * Grund, warum man dem Ergebnis glaubt.
+ */
+
+export interface Pruefpunkt {
+  /** Was zu finden oder zu tun war. */
+  was: string;
+  /** Woran man erkennt, dass es getan wurde. */
+  erwartet: string;
+}
+
+/**
+ * Wie viele Prüfpunkte getroffen sein müssen.
+ *
+ * Drei Viertel. Nicht alle: Eine Arbeitsprobe, die nur bei
+ * Fehlerfreiheit besteht, misst Sorgfalt unter Zeitdruck und nicht,
+ * ob jemand die Arbeit kann. Nicht die Hälfte: Wer die Hälfte einer
+ * Aufgabe löst, hat sie nicht gelöst.
+ */
+export const BESTEHENSGRENZE = 0.75;
+
+export interface Bewertung {
+  /** Welche Prüfpunkte getroffen wurden — in derselben Reihenfolge. */
+  getroffen: boolean[];
+  /** Was der Mensch dazu bekommt, unabhängig vom Ausgang. */
+  anmerkungen: string[];
+}
+
+export type Probenausgang =
+  | { art: "bestanden"; ergebnistext: string; getroffen: number; gesamt: number }
+  | { art: "nicht_bestanden"; getroffen: number; gesamt: number }
+  | { art: "nicht_bewertbar"; grund: "keine_pruefpunkte" | "unvollstaendig" };
+
+/**
+ * Aus Prüfpunkten und Treffern ein Ergebnis machen.
+ *
+ * Der Ergebnistext beschreibt, was passiert ist — er urteilt nicht.
+ * „Hat 4 von 4 Punkten getroffen" ist eine Beobachtung; „hat die
+ * Aufgabe gut gelöst" wäre eine Meinung, und `zeugnisPruefen` würde
+ * sie zurückweisen.
+ */
+export function probeBewerten(
+  punkte: readonly Pruefpunkt[],
+  bewertung: Bewertung,
+): Probenausgang {
+  if (punkte.length === 0) return { art: "nicht_bewertbar", grund: "keine_pruefpunkte" };
+  if (bewertung.getroffen.length !== punkte.length) {
+    /*
+     * Eine Bewertung, die nicht zu jedem Prüfpunkt etwas sagt, ist
+     * unvollständig — und ein Ergebnis daraus wäre geraten. Lieber
+     * kein Zeugnis als eines, dessen Zustandekommen niemand
+     * nachvollziehen kann.
+     */
+    return { art: "nicht_bewertbar", grund: "unvollstaendig" };
+  }
+
+  const getroffen = bewertung.getroffen.filter(Boolean).length;
+  const gesamt = punkte.length;
+
+  if (getroffen / gesamt < BESTEHENSGRENZE) {
+    return { art: "nicht_bestanden", getroffen, gesamt };
+  }
+
+  /*
+   * Was nicht getroffen wurde, steht im Ergebnistext mit drin.
+   *
+   * Ein Zeugnis, das nur die Treffer nennt, ist ein Werbetext. Wer
+   * liest „hat drei von vier gefunden, die vierte übersehen", weiss
+   * mehr — und glaubt den drei anderen deshalb.
+   */
+  const verfehlt = punkte.filter((_, i) => !bewertung.getroffen[i]).map((p) => p.was);
+  const teile = [`Hat ${getroffen} von ${gesamt} Prüfpunkten getroffen`];
+  if (verfehlt.length > 0) teile.push(`nicht getroffen: ${verfehlt.join("; ")}`);
+  if (bewertung.anmerkungen.length > 0) teile.push(bewertung.anmerkungen.join("; "));
+
+  return {
+    art: "bestanden",
+    ergebnistext: teile.join(". ") + ".",
+    getroffen,
+    gesamt,
+  };
 }

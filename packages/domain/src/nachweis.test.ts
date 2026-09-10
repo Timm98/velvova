@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   HOECHSTDAUER,
   aufgabePruefen,
+  probeBewerten,
   wirdFestgehalten,
   zeugnisGilt,
   zeugnisPruefen,
@@ -16,6 +17,10 @@ import {
 
 const aufgabe = (p: Partial<Aufgabe> = {}): Aufgabe => ({
   taetigkeit: "Prüfung von Förderanträgen auf Vollständigkeit",
+  pruefpunkte: [
+    { was: "Fehlende Unterschrift in Antrag 2", erwartet: "als fehlend benannt" },
+    { was: "Widersprüchliche Summen in Antrag 4", erwartet: "Abweichung beziffert" },
+  ],
   text:
     "Vier eingereichte Förderanträge liegen vor. Prüfe, welche Angaben fehlen oder " +
     "einander widersprechen, und halte je Antrag fest, was nachzufordern ist.",
@@ -44,7 +49,9 @@ describe("aufgabePruefen", () => {
   it("verlangt, wofür die Aufgabe steht", () => {
     /* „Hat eine Aufgabe gelöst" sagt niemandem etwas. Ohne Tätigkeit
        ist das Zeugnis später nicht einzuordnen. */
-    expect(aufgabePruefen(aufgabe({ taetigkeit: "  " })).grund ?? null).toBe("keine_taetigkeit");
+    const b = aufgabePruefen(aufgabe({ taetigkeit: "  " }));
+    expect(b.art).toBe("untauglich");
+    if (b.art === "untauglich") expect(b.grund).toBe("keine_taetigkeit");
   });
 
   it("lehnt ab, was länger dauert als eine Arbeitsprobe", () => {
@@ -53,7 +60,8 @@ describe("aufgabePruefen", () => {
      * unbezahlte Arbeit — und der Unterschied ist genau der, an dem
      * sich seriöse Verfahren von Ausbeutung trennen.
      */
-    expect(aufgabePruefen(aufgabe({ minuten: HOECHSTDAUER + 1 })).grund ?? null).toBe("zu_lang");
+    const zulang = aufgabePruefen(aufgabe({ minuten: HOECHSTDAUER + 1 }));
+    expect(zulang.art === "untauglich" && zulang.grund).toBe("zu_lang");
     expect(aufgabePruefen(aufgabe({ minuten: HOECHSTDAUER })).art).toBe("gueltig");
   });
 
@@ -62,13 +70,13 @@ describe("aufgabePruefen", () => {
        „keine" gemeint — er hat nicht daran gedacht, und der Geprüfte
        rät dann. */
     expect(aufgabePruefen(aufgabe({ hilfsmittel: [] })).art).toBe("gueltig");
-    expect(
-      aufgabePruefen(aufgabe({ hilfsmittel: undefined as unknown as string[] })).grund ?? null,
-    ).toBe("keine_hilfsmittel_genannt");
+    const ohne = aufgabePruefen(aufgabe({ hilfsmittel: undefined as unknown as string[] }));
+    expect(ohne.art === "untauglich" && ohne.grund).toBe("keine_hilfsmittel_genannt");
   });
 
   it("lehnt eine zu knappe Aufgabenstellung ab", () => {
-    expect(aufgabePruefen(aufgabe({ text: "Prüfe die Anträge." })).grund ?? null).toBe("zu_knapp");
+    const knapp = aufgabePruefen(aufgabe({ text: "Prüfe die Anträge." }));
+    expect(knapp.art === "untauglich" && knapp.grund).toBe("zu_knapp");
   });
 });
 
@@ -149,5 +157,74 @@ describe("wirdFestgehalten", () => {
     expect(wirdFestgehalten("bestanden")).toBe(true);
     expect(wirdFestgehalten("nicht_bestanden")).toBe(false);
     expect(wirdFestgehalten("abgebrochen")).toBe(false);
+  });
+});
+
+describe("probeBewerten", () => {
+  const punkte = [
+    { was: "Fehlende Unterschrift in Antrag 2", erwartet: "als fehlend benannt" },
+    { was: "Widersprüchliche Summen in Antrag 4", erwartet: "Abweichung beziffert" },
+    { was: "Abgelaufene Frist in Antrag 1", erwartet: "Datum genannt" },
+    { was: "Doppelte Position in Antrag 3", erwartet: "Dopplung benannt" },
+  ];
+
+  it("bewertet nicht ohne Prüfpunkte", () => {
+    /*
+     * „Schreibe einen Text über X" lässt sich nicht bewerten, ohne zu
+     * urteilen — und ein Urteil ist genau das, was dieses Zeugnis
+     * nicht enthalten darf.
+     */
+    const b = probeBewerten([], { getroffen: [], anmerkungen: [] });
+    expect(b.art === "nicht_bewertbar" && b.grund).toBe("keine_pruefpunkte");
+  });
+
+  it("bewertet nicht, wenn zu einem Punkt nichts gesagt wurde", () => {
+    /* Ein Ergebnis aus einer unvollständigen Bewertung wäre geraten.
+       Lieber kein Zeugnis als eines, dessen Zustandekommen niemand
+       nachvollziehen kann. */
+    const b = probeBewerten(punkte, { getroffen: [true, true], anmerkungen: [] });
+    expect(b.art === "nicht_bewertbar" && b.grund).toBe("unvollstaendig");
+  });
+
+  it("besteht ab drei von vier", () => {
+    /* Nicht alle: Eine Probe, die nur bei Fehlerfreiheit besteht,
+       misst Sorgfalt unter Zeitdruck. Nicht die Hälfte: Wer die
+       Hälfte löst, hat nicht gelöst. */
+    const drei = probeBewerten(punkte, { getroffen: [true, true, true, false], anmerkungen: [] });
+    expect(drei.art).toBe("bestanden");
+    const zwei = probeBewerten(punkte, { getroffen: [true, true, false, false], anmerkungen: [] });
+    expect(zwei.art).toBe("nicht_bestanden");
+  });
+
+  it("nennt im Ergebnis auch, was verfehlt wurde", () => {
+    /*
+     * Ein Zeugnis, das nur die Treffer nennt, ist ein Werbetext. Wer
+     * liest „hat drei von vier gefunden, die vierte übersehen", weiss
+     * mehr — und glaubt den drei anderen deshalb.
+     */
+    const b = probeBewerten(punkte, { getroffen: [true, true, true, false], anmerkungen: [] });
+    expect(b.art === "bestanden" && b.ergebnistext).toContain("3 von 4");
+    expect(b.art === "bestanden" && b.ergebnistext).toContain("Doppelte Position");
+  });
+
+  it("erzeugt einen Ergebnistext, den zeugnisPruefen annimmt", () => {
+    /*
+     * Der Test, der die beiden Hälften zusammenhält: Was die
+     * Bewertung schreibt, muss die Zeugnisprüfung durchlassen. Sonst
+     * entsteht ein Ergebnis, das nie ein Zeugnis werden kann.
+     */
+    const b = probeBewerten(punkte, {
+      getroffen: [true, true, true, true],
+      anmerkungen: ["Begründung zu Antrag 4 war unvollständig"],
+    });
+    expect(b.art).toBe("bestanden");
+    if (b.art !== "bestanden") return;
+    expect(zeugnisPruefen(zeugnis({ ergebnis: b.ergebnistext }))).toEqual({ art: "gueltig" });
+  });
+
+  it("hält einen nicht bestandenen Versuch nicht fest", () => {
+    const b = probeBewerten(punkte, { getroffen: [true, false, false, false], anmerkungen: [] });
+    expect(b.art).toBe("nicht_bestanden");
+    expect(wirdFestgehalten("nicht_bestanden")).toBe(false);
   });
 });

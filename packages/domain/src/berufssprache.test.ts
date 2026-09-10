@@ -116,8 +116,11 @@ describe("uebersetzungPruefen — unbrauchbare Eingaben", () => {
      * Sie sieht wie Arbeit aus und ist keine — und sie verstellt den
      * Blick darauf, dass für diese Zeile keine Brücke gefunden wurde.
      */
-    expect(uebersetzungPruefen(u("Dienstplanung", "Dienstplanung")).grund ?? null).toBe("unveraendert");
-    expect(uebersetzungPruefen(u("Dienstplanung", "dienstplanung")).grund ?? null).toBe("unveraendert");
+    for (const fassung of ["Dienstplanung", "dienstplanung"]) {
+      const b = uebersetzungPruefen(u("Dienstplanung", fassung));
+      expect(b.art).toBe("unbrauchbar");
+      if (b.art === "unbrauchbar") expect(b.grund).toBe("unveraendert");
+    }
   });
 });
 
