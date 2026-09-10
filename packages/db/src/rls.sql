@@ -430,7 +430,18 @@ DECLARE
   org_tables text[] := ARRAY[
     'organization_invitations','job_postings','posting_candidates','organization_events',
     'unternehmensprofile','stellen_matches','match_regeln','match_protokoll',
-    'onboarding_gespraeche','onboarding_nachrichten','onboarding_angaben'
+    'onboarding_gespraeche','onboarding_nachrichten','onboarding_angaben',
+    /*
+     * Angebote gehoeren dem registrierten Arbeitgeber, nicht einem
+     * Menschen und nicht einem Eintrag im Stellenindex. Ohne
+     * Richtlinie koennte ein fremdes Konto lesen, was ein Betrieb zu
+     * zahlen bereit waere, bevor er es irgendwem gegenueber gesagt
+     * hat.
+     *
+     * `bedarfs_schnappschuss` steht hier NICHT: eine Auszaehlung ueber
+     * oeffentliche Anzeigen, dieselbe Bauart wie standzeit_referenz.
+     */
+    'angebote'
   ];
 BEGIN
   FOREACH t IN ARRAY org_tables LOOP
