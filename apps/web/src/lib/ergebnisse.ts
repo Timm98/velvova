@@ -1,5 +1,6 @@
 import { getDb, schema, withSystem, withUser } from "@paycheck/db";
 import { and, eq, isNotNull, sql } from "drizzle-orm";
+import { zufriedenheitsSpalte } from "@paycheck/domain";
 
 /**
  * Der Outcome Loop: hat unsere Empfehlung getaugt?
@@ -145,8 +146,7 @@ export async function zufriedenheitVermerken(
   tagesmarke: number,
   wert: number,
 ): Promise<void> {
-  const spalte =
-    tagesmarke >= 180 ? "zufriedenheit180" : tagesmarke >= 90 ? "zufriedenheit90" : "zufriedenheit30";
+  const spalte = zufriedenheitsSpalte(tagesmarke);
   const db = await getDb();
   await withUser(db, userId, (tx) =>
     tx

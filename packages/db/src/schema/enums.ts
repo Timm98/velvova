@@ -102,7 +102,16 @@ export const applicationEventTypeEnum = pgEnum("application_event_type", [
   "job_viewed", "job_saved", "application_started", "application_sent",
   "acknowledged", "response_received", "interview_scheduled", "interview_held",
   "offer_received", "rejected", "withdrawn", "accepted",
+  /*
+   * Die Marken des Wechselverlaufs (Migration 0107).
+   *
+   * 60 und 180 werden nicht mehr geplant, bleiben aber gültig: dazu
+   * liegen Erinnerungen in der Datenbank. 365 und 1095 sind neu — die
+   * Zufriedenheit nach einem Wechsel steigt im ersten Jahr und fällt
+   * danach, und dieser Teil der Kurve war bisher unbeobachtet.
+   */
   "fit_check_30", "fit_check_60", "fit_check_90", "fit_check_180",
+  "fit_check_365", "fit_check_1095",
 ]);
 export const artifactKindEnum = pgEnum("artifact_kind", [
   "cv_ats", "cv_designed", "cover_letter", "application_email",

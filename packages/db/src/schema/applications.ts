@@ -172,6 +172,23 @@ export const checkIns = pgTable("check_ins", {
   leadershipAndTeam: text("leadership_and_team"),
   learningOpportunities: text("learning_opportunities"),
   overallFit: integer("overall_fit"),
+  /*
+   * Der Wechselkontext (Migration 0107).
+   *
+   * Eine Zufriedenheitszahl ohne diese drei Angaben ist nicht deutbar:
+   * Ein freiwilliger Wechsel und eine Betriebsschliessung erzeugen
+   * verschiedene Verläufe, ein Berufswechsel einen anderen als ein
+   * Arbeitgeberwechsel, und Überqualifikation senkt die Zufriedenheit
+   * dauerhaft und unabhängig vom Wechsel.
+   *
+   * Nullbar und ohne Vorgabewert: `null` heisst „nicht gesagt". Der
+   * Wechselgrund kann eine Kündigung sein — danach zu fragen ist
+   * zumutbar, eine Antwort zu erzwingen nicht. Geprüft wird in
+   * `wechselverlauf.ts`, bevor geschrieben wird.
+   */
+  wechselgrund: text("wechselgrund"),
+  berufsnaehe: text("berufsnaehe"),
+  ausbildungspassung: text("ausbildungspassung"),
   /** Bleibt privat, solange nicht ausdrücklich geteilt. */
   sharedWithPartner: boolean("shared_with_partner").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -247,6 +264,16 @@ export const empfehlungsErgebnisse = pgTable("empfehlungs_ergebnisse", {
   zufriedenheit30: integer("zufriedenheit_30"),
   zufriedenheit90: integer("zufriedenheit_90"),
   zufriedenheit180: integer("zufriedenheit_180"),
+  /*
+   * Über das erste Jahr hinaus (Migration 0107).
+   *
+   * Die Zufriedenheit nach einem Wechsel steigt im Jahr des Wechsels
+   * und fällt danach. Wer nur bis 180 Tage misst, misst den Anstieg —
+   * und hält eine Empfehlung für gelungen, die nach zwölf Monaten
+   * gekippt ist.
+   */
+  zufriedenheit365: integer("zufriedenheit_365"),
+  zufriedenheit1095: integer("zufriedenheit_1095"),
 
   aktualisiertAm: timestamp("aktualisiert_am", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [

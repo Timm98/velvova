@@ -1,5 +1,6 @@
 import { getDb, schema, withUser } from "@paycheck/db";
-import { and, eq, isNull, lte } from "drizzle-orm";
+import { and, eq, inArray, isNull, lte } from "drizzle-orm";
+import { MARKEN, checkInLabel, zusagenLabel } from "@paycheck/domain";
 
 /**
  * Erinnerungen an fällige Check-ins.
@@ -16,12 +17,14 @@ import { and, eq, isNull, lte } from "drizzle-orm";
  * Anfang an, die Startseite liest sie — geschrieben hat nie jemand
  * hinein.
  *
- * ── Warum 30, 90 und 180 ──────────────────────────────────────
+ * ── Wann gefragt wird ─────────────────────────────────────────
  *
- * Die ersten dreissig Tage zeigen, ob die Anzeige gestimmt hat. Neunzig
- * zeigen, ob die Arbeit trägt. Hundertachtzig liegen hinter der
- * Probezeit — und erst dort trennt sich, ob eine Empfehlung getaugt
- * hat. Wer noch in der Probezeit ist, will die Stelle meistens behalten.
+ * Hier stand: 30, 90 und 180 Tage, weil hundertachtzig hinter der
+ * Probezeit liegen und sich erst dort trenne, ob eine Empfehlung
+ * getaugt habe. Das war falsch — alle drei Marken liegen im
+ * Zufriedenheitshoch, das jeder Wechsel für sich erzeugt. Die
+ * Begründung und die neuen Marken stehen jetzt an einer Stelle:
+ * `wechselverlauf.ts` im Domänenpaket.
  *
  * ── Warum kein Versand ────────────────────────────────────────
  *
@@ -30,23 +33,26 @@ import { and, eq, isNull, lte } from "drizzle-orm";
  * im neuen Job ist nichts, was ungefragt in einen Posteingang gehört.
  */
 
-const MARKEN = [30, 90, 180] as const;
-
 /*
  * Der Promise Lock prüft früher.
  *
  * Der Check-in fragt nach Zufriedenheit — die braucht Zeit. Eine
  * gebrochene Zusage fällt früher auf: Wer nach vierzehn Tagen keine
- * Einarbeitung hat, hat keine.
+ * Einarbeitung hat, hat keine. Deshalb bleibt diese Reihe kurz und
+ * folgt den Marken des Wechselverlaufs nicht.
  */
 const ZUSAGENMARKEN = [14, 30, 90] as const;
 const TAG_MS = 86_400_000;
 
 /**
- * Legt die drei Erinnerungen an, wenn jemand eine Stelle antritt.
+ * Legt die Erinnerungen an, wenn jemand eine Stelle antritt.
  *
  * Fällt still aus, wenn es sie schon gibt: Ein zweites `accepted` —
- * etwa nach einer Korrektur — soll keine sechs Termine erzeugen.
+ * etwa nach einer Korrektur — soll keine doppelten Termine erzeugen.
+ *
+ * Die späteste liegt drei Jahre voraus. Das ist Absicht: Eine
+ * Erinnerung, die nie kommt, kostet eine Zeile; eine Frage, die zu früh
+ * gestellt wird, kostet die Antwort.
  */
 export async function checkInsPlanen(
   userId: string,
@@ -77,7 +83,7 @@ export async function checkInsPlanen(
           applicationId,
           kind: "check_in",
           dueAt: new Date(ab.getTime() + tage * TAG_MS),
-          label: `Wie läuft es nach ${tage} Tagen?`,
+          label: checkInLabel(tage),
           /*
            * Kein Entwurfstext.
            *
@@ -91,7 +97,7 @@ export async function checkInsPlanen(
           applicationId,
           kind: "zusagen_pruefung",
           dueAt: new Date(ab.getTime() + tage * TAG_MS),
-          label: `Stimmt nach ${tage} Tagen, was dir zugesagt wurde?`,
+          label: zusagenLabel(tage),
           draftMessage: null,
         })),
       ]),
@@ -107,12 +113,20 @@ export async function checkInsPlanen(
  *
  * Nur die, deren Marke erreicht ist: Wer nach 30 Tagen antwortet, soll
  * nicht auch die 90-Tage-Erinnerung verlieren.
+ *
+ * ── Warum zwei Beschriftungen ─────────────────────────────────
+ *
+ * Die Erinnerung wird über ihren Text gefunden, und der Text hat sich
+ * geändert („nach 180 Tagen" heisst jetzt „nach 6 Monaten"). Termine
+ * mit der alten Beschriftung liegen in der Datenbank — wer einen davon
+ * beantwortet, soll ihn auch loswerden.
  */
 export async function checkInAbgehakt(
   userId: string,
   applicationId: string,
   tagesmarke: number,
 ): Promise<void> {
+  const beschriftungen = [...new Set([checkInLabel(tagesmarke), `Wie läuft es nach ${tagesmarke} Tagen?`])];
   const db = await getDb();
   await withUser(db, userId, (tx) =>
     tx
@@ -123,7 +137,7 @@ export async function checkInAbgehakt(
           eq(schema.reminders.userId, userId),
           eq(schema.reminders.applicationId, applicationId),
           eq(schema.reminders.kind, "check_in"),
-          eq(schema.reminders.label, `Wie läuft es nach ${tagesmarke} Tagen?`),
+          inArray(schema.reminders.label, beschriftungen),
           isNull(schema.reminders.completedAt),
         ),
       ),

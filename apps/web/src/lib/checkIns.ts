@@ -1,7 +1,14 @@
 "use server";
 
 import { getDb, schema, withUser } from "@paycheck/db";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
+import {
+  ereignisFuerMarke,
+  kontextFortschreiben,
+  kontextLesen,
+  markeAngenommen,
+  markeText,
+} from "@paycheck/domain";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { recordEvent } from "@/lib/matching";
@@ -25,9 +32,14 @@ import { rowToJob } from "@/lib/matching";
  *
  * `sharedWithPartner` steht auf false und wird hier nie gesetzt. Was
  * jemand über seinen neuen Arbeitgeber schreibt, ist das Empfindlichste
- * im ganzen Produkt. Für die Auswertung verlässt nur die Zahl zwischen
- * 1 und 5 diese Zeile — und auch die erst als Mittelwert über
- * mindestens zwanzig Fälle.
+ * im ganzen Produkt. Die Freitexte verlassen diese Zeile nie.
+ *
+ * In eine Auswertung gehen nur die Zahl zwischen 1 und 5 und die drei
+ * Angaben zum Wechselkontext ein — und auch die erst als Mittelwert
+ * über mindestens zwanzig Fälle. Der Kontext steht dort nicht als
+ * Merkmal einer Person, sondern als Trennung: ein Verlauf nach einer
+ * Kündigung ist ein anderer als nach einem freiwilligen Wechsel, und
+ * ohne diese Trennung ist der Mittelwert nicht deutbar.
  */
 
 export interface CheckInEingabe {
@@ -39,9 +51,14 @@ export interface CheckInEingabe {
   aufgabenEnergie?: string;
   fuehrungUndTeam?: string;
   lernmoeglichkeiten?: string;
+  /*
+   * Der Wechselkontext — einmal erfragt, auf jede spätere Antwort
+   * mitgeschrieben. Freiwillig: `undefined` heisst „nicht gesagt".
+   */
+  wechselgrund?: string;
+  berufsnaehe?: string;
+  ausbildungspassung?: string;
 }
-
-const MARKEN = [30, 60, 90, 180];
 
 export async function checkInSpeichern(eingabe: CheckInEingabe): Promise<void> {
   const user = await requireUser();
@@ -68,8 +85,40 @@ export async function checkInSpeichern(eingabe: CheckInEingabe): Promise<void> {
   );
   if (!bewerbung) throw new Error("Diese Bewerbung gibt es nicht.");
 
-  const marke = MARKEN.includes(eingabe.tagesmarke) ? eingabe.tagesmarke : 30;
+  const marke = markeAngenommen(eingabe.tagesmarke) ? eingabe.tagesmarke : 30;
   const wert = Math.min(5, Math.max(1, Math.round(eingabe.gesamtpassung)));
+
+  /*
+   * Der Wechselkontext gehört zum Wechsel, nicht zur einzelnen Antwort.
+   *
+   * Er wird einmal erfragt und auf jede weitere Antwort desselben
+   * Wechsels mitgeschrieben. Sonst stünde er nur an der ersten Zeile,
+   * und die Auswertung müsste ihn über einen Join zusammensuchen — eine
+   * Zeile, die für sich allein nicht deutbar ist, wird früher oder
+   * später falsch gelesen.
+   */
+  const [vorherige] = await withUser(db, user.id, (tx) =>
+    tx
+      .select({
+        wechselgrund: schema.checkIns.wechselgrund,
+        berufsnaehe: schema.checkIns.berufsnaehe,
+        ausbildungspassung: schema.checkIns.ausbildungspassung,
+      })
+      .from(schema.checkIns)
+      .where(
+        and(
+          eq(schema.checkIns.userId, user.id),
+          eq(schema.checkIns.applicationId, bewerbung.id),
+        ),
+      )
+      .orderBy(desc(schema.checkIns.createdAt))
+      .limit(1),
+  ).catch(() => []);
+
+  const kontext = kontextFortschreiben(
+    kontextLesen(vorherige ?? {}),
+    kontextLesen(eingabe),
+  );
 
   await withUser(db, user.id, (tx) =>
     tx.insert(schema.checkIns).values({
@@ -81,6 +130,9 @@ export async function checkInSpeichern(eingabe: CheckInEingabe): Promise<void> {
       taskEnergy: eingabe.aufgabenEnergie || null,
       leadershipAndTeam: eingabe.fuehrungUndTeam || null,
       learningOpportunities: eingabe.lernmoeglichkeiten || null,
+      wechselgrund: kontext.wechselgrund,
+      berufsnaehe: kontext.berufsnaehe,
+      ausbildungspassung: kontext.ausbildungspassung,
       sharedWithPartner: false,
     }),
   );
@@ -93,11 +145,10 @@ export async function checkInSpeichern(eingabe: CheckInEingabe): Promise<void> {
    * Anliegen.
    */
   await zufriedenheitVermerken(user.id, bewerbung.jobId, marke, wert);
-  await recordEvent(
-    user.id,
-    marke >= 180 ? "fit_check_180" : marke >= 90 ? "fit_check_90" : marke >= 60 ? "fit_check_60" : "fit_check_30",
-    { applicationId: bewerbung.id, jobId: bewerbung.jobId },
-  );
+  await recordEvent(user.id, ereignisFuerMarke(marke), {
+    applicationId: bewerbung.id,
+    jobId: bewerbung.jobId,
+  });
 
   await checkInAbgehakt(user.id, bewerbung.id, marke);
   await twinAusCheckIn(user.id, bewerbung.jobId, marke, wert);
@@ -186,7 +237,7 @@ async function twinAusCheckIn(
         d.dimension,
         wertFuerPerson,
         "beobachtet",
-        `Nach ${marke} Tagen in einer Stelle mit „${d.beleg}" — Rückmeldung: ${
+        `Nach ${markeText(marke)} in einer Stelle mit „${d.beleg}" — Rückmeldung: ${
           zufrieden ? "passt gut" : "passt wenig"
         }`,
       );
