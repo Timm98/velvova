@@ -143,13 +143,29 @@ export default async function UebersetzungSeite({
                 Zeile für Zeile.
               </p>
 
-              <Link
-                href={`/app/jobs/${jobId}`}
-                className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-(--radius-control) border border-line px-4 text-[14px] font-medium text-ink transition-colors hover:border-accent hover:bg-soft"
-              >
-                Die Stelle ansehen
-                <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} />
-              </Link>
+              {/*
+                Zwei Wege, und der erste ist der stärkere.
+
+                Die Übersetzung sagt, wie jemand es aufschreibt — eine
+                Aussage von Velvova über einen Menschen. Genau das
+                bewirkte in einem randomisierten Feldexperiment nichts.
+                Was wirkte, war ein Nachweis, den er weitergeben kann.
+              */}
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href={`/app/bruecke/${jobId}/probe`}
+                  className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90"
+                >
+                  Zeig, dass du es kannst
+                  <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} />
+                </Link>
+                <Link
+                  href={`/app/jobs/${jobId}`}
+                  className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-(--radius-control) border border-line px-4 text-[14px] font-medium text-ink transition-colors hover:border-accent hover:bg-soft"
+                >
+                  Die Stelle ansehen
+                </Link>
+              </div>
             </section>
           )}
 
