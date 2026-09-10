@@ -1,0 +1,63 @@
+name: Bedarfsschnappschuss
+
+# ─────────────────────────────────────────────────────────────
+# Der Wecker für die einzige Aufzeichnung, die sich nicht
+# nachholen lässt.
+#
+# Ruft `POST /api/intern/schnappschuss` auf. Dort wird festgehalten,
+# welcher Arbeitgeber welchen Beruf an welchem Ort heute
+# ausgeschrieben hat.
+#
+# ── Warum einmal am Tag ──────────────────────────────────────
+#
+# Der Schlüssel enthält den Tag. Ein zweiter Lauf schreibt dieselben
+# Zahlen — er schadet nicht, kostet aber einen Durchlauf über rund
+# 1,2 Millionen Anzeigen.
+#
+# ── Warum 03:10 UTC ──────────────────────────────────────────
+#
+# Nach dem nächtlichen Stellenabruf und vor dem ersten Versandfenster
+# in Mitteleuropa. Der Schnappschuss soll den Bestand sehen, der
+# morgens gilt, nicht den von gestern Abend.
+#
+# ── Warum ein Fehlschlag hier zählt ──────────────────────────
+#
+# Alles andere im Zeitplan lässt sich nachrechnen. Ein Tag ohne
+# Schnappschuss ist ein Tag, über den nie jemand etwas sagen kann.
+# Deshalb bricht dieser Lauf ab, statt still durchzugehen.
+#
+# ── Zwei Secrets, dieselben wie überall ──────────────────────
+#
+#   PAYCHECK_BASE_URL      Adresse der Anwendung, ohne Schrägstrich
+#   JOBS_REFRESH_SECRET    derselbe Wert wie in der Serverumgebung
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: "10 3 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: schnappschuss
+  cancel-in-progress: false
+
+jobs:
+  aufzeichnen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Anwendung anstossen
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "PAYCHECK_BASE_URL oder JOBS_REFRESH_SECRET fehlt — Lauf übersprungen."
+            exit 0
+          fi
+          antwort=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 600 \
+            "$BASIS/api/intern/schnappschuss")
+          echo "$antwort"
+          echo "$antwort" | grep -q '"ok":true' || exit 1

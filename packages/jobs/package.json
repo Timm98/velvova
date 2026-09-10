@@ -12,7 +12,8 @@
     "./canonical": "./src/canonical.ts",
     "./berufsregeln": "./src/berufsregeln.ts",
     "./entgeltreferenz": "./src/entgeltreferenz.ts",
-    "./berufsabfragen": "./src/berufsabfragen.ts"
+    "./berufsabfragen": "./src/berufsabfragen.ts",
+    "./bedarfsschnappschuss": "./src/bedarfsschnappschuss.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

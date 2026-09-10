@@ -48,3 +48,4 @@ export * from "./wechselverlauf.ts";
 export * from "./nachtlauf.ts";
 export * from "./versandfreigabe.ts";
 export * from "./wandelbar.ts";
+export * from "./dauerbedarf.ts";

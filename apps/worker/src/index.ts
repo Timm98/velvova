@@ -6,6 +6,7 @@ import { createCheckInReminders, createFollowUpReminders } from "./tasks/reminde
 import { runEntgeltReferenz } from "./tasks/entgeltreferenz.ts";
 import { runProfilsynthese } from "./tasks/profilsynthese.ts";
 import { runGeodaten } from "./tasks/geodaten.ts";
+import { runBedarfsschnappschuss } from "./tasks/bedarfsschnappschuss.ts";
 
 /**
  * Der Worker.
@@ -48,9 +49,19 @@ async function runAll(): Promise<void> {
      * weil sie ohne Netz auskommt und deshalb nie hängen bleibt.
      */
     runGeodaten(),
+    /*
+     * Der Bedarfsschnappschuss.
+     *
+     * Läuft einmal am Tag und ist der einzige Auftrag hier, dessen
+     * Ausfall sich nicht nachholen lässt: Ein Tag ohne Aufzeichnung
+     * ist ein Tag, über den nie jemand etwas sagen kann. Er steht
+     * trotzdem hinten, weil er ohne fremden Dienst auskommt und
+     * deshalb nie hängen bleibt.
+     */
+    runBedarfsschnappschuss(),
   ]);
 
-  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins", "Gehalts-Referenz", "Profilsynthese", "Geodaten"];
+  const names = ["Aufbewahrung", "Linkcheck", "Abgelaufene Anzeigen", "Nachfass-Erinnerungen", "Check-ins", "Gehalts-Referenz", "Profilsynthese", "Geodaten", "Bedarfsschnappschuss"];
   results.forEach((r, i) => {
     if (r.status === "fulfilled") {
       console.log(`  ${names[i]}: ${JSON.stringify(r.value)}`);

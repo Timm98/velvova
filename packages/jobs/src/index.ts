@@ -89,3 +89,4 @@ export * from "./karriereseite/fremdinhalt.ts";
 export * from "./karriereseite/abruf.ts";
 export * from "./karriereseite/initiativlage.ts";
 export * from "./karriereseite/chancenpruefung.ts";
+export * from "./bedarfsschnappschuss.ts";
