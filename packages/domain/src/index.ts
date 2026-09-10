@@ -52,3 +52,4 @@ export * from "./dauerbedarf.ts";
 export * from "./wunschprofil.ts";
 export * from "./arbeitsweise.ts";
 export * from "./faehigkeiten.ts";
+export * from "./faehigkeitskatalog.ts";
