@@ -1,7 +1,27 @@
 import { and, eq, isNull } from "drizzle-orm";
 import { schema, withUser, type Database } from "@paycheck/db";
-import { UserConstraintsSchema, type EvidenceItem, type UserConstraints } from "@paycheck/domain";
+import {
+  BELEGARTEN,
+  UserConstraintsSchema,
+  stufeAusZahl,
+  type Belegart,
+  type EvidenceItem,
+  type UserConstraints,
+} from "@paycheck/domain";
 import { wirksameKonfidenz, type Belegquelle, type Bewertungsprofil } from "@paycheck/matching";
+
+/**
+ * Die gespeicherte Quelle als Belegart.
+ *
+ * `profile_skills.quelle` trägt denselben Wortschatz wie `BELEGARTEN`;
+ * geschrieben wird er von `belegeVerdichten`. Alles Unbekannte gilt
+ * als Selbstauskunft — die schwächste Art, nicht die bequemste.
+ */
+function belegartLesen(roh: string | null): Belegart {
+  return (BELEGARTEN as readonly string[]).includes(roh ?? "")
+    ? (roh as Belegart)
+    : "nutzer_aussage";
+}
 
 /**
  * Das Profil einer Person laden — für Liste und Hintergrunddienst.
@@ -101,6 +121,13 @@ export async function profilkontextLaden(db: Database, userId: string): Promise<
         .select({
           skillKey: schema.profileSkills.skillKey,
           selfAssessedLevel: schema.profileSkills.selfAssessedLevel,
+          /*
+           * Der Beleg gehört dazu — sonst weiss die Fit-Rechnung am
+           * Ende, DASS eine Anforderung gedeckt ist, und nicht wodurch.
+           * Genau daran hing die fehlende Begründung.
+           */
+          belegId: schema.profileSkills.evidenceItemId,
+          quelle: schema.profileSkills.quelle,
         })
         .from(schema.profileSkills)
         .where(eq(schema.profileSkills.userId, userId)),
@@ -149,7 +176,14 @@ export async function profilkontextLaden(db: Database, userId: string): Promise<
        */
       faehigkeiten: faehigkeitszeilen.map((f) => ({
         schluessel: f.skillKey,
-        stufe: String(f.selfAssessedLevel ?? 2),
+        stufe: stufeAusZahl(f.selfAssessedLevel),
+        /*
+         * Leer, wenn die Zeile ohne Beleg entstanden ist. Dann bleibt
+         * die Fähigkeit gültig, aber die Begründung sagt ehrlich, dass
+         * sie auf keinen einzelnen Beleg zeigt.
+         */
+        belegtDurch: f.belegId === null ? [] : [f.belegId],
+        herkunft: belegartLesen(f.quelle),
       })),
       profileConfirmed: profilzeilen[0]?.confirmedByUser ?? false,
       coverage: profilzeilen[0]?.coverage ?? 0,

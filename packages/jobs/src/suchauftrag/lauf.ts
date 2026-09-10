@@ -762,6 +762,9 @@ export async function auftragslaufRunde(
           kriterienErgebnisse,
           gruende,
           offenePunkte,
+          /* Die Kette, an der der Wert hängt — mitgeschrieben, damit
+             sie beim nächsten Ansehen dieselbe ist. */
+          anforderungsbefunde: bewertung.fit.anforderungsbefunde,
           /*
            * ══════════════════════════════════════════════════════
            * Der Vorbehalt wird gerechnet, nicht geschrieben

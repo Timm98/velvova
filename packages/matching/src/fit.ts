@@ -1,4 +1,15 @@
-import type { EvidenceItem, FitBand, FitResult, Job, JobRequirement, UserConstraints } from "@paycheck/domain";
+import {
+  VERLANGTE_STUFE_STANDARD,
+  anforderungAbgleichen,
+  type Abgleichbefund,
+  type EvidenceItem,
+  type Faehigkeitsaussage,
+  type FitBand,
+  type FitResult,
+  type Job,
+  type JobRequirement,
+  type UserConstraints,
+} from "@paycheck/domain";
 import { SCORING_VERSION, isConfirmedFact } from "@paycheck/domain";
 import { toScore100, weightedScore, type WeightedInput } from "./weighted.ts";
 
@@ -112,7 +123,12 @@ export interface FitInput {
    * Leer zu lassen ist erlaubt und ändert nichts — der Wert ist dann
    * genau der, den es vorher gab.
    */
-  faehigkeiten?: readonly { schluessel: string; stufe: string }[];
+  /**
+   * Die belegten Fähigkeiten — mit ihren Belegen, nicht nur mit ihrem
+   * Namen. Ohne `belegtDurch` liesse sich am Ende nicht sagen, WODURCH
+   * eine Anforderung gedeckt ist.
+   */
+  faehigkeiten?: readonly Faehigkeitsaussage[];
   /** Der Katalog. Fehlt er, wird nichts zugeordnet. */
   schluesselFuerAnforderung?: (text: string) => string | null;
   weights?: Partial<FitWeights>;
@@ -164,6 +180,14 @@ function bestOverlap(needle: string, haystack: string[]): number {
   return haystack.reduce((best, h) => Math.max(best, overlap(needle, h)), 0);
 }
 
+/** Die Lesereihenfolge der Befunde. */
+const RANG: Record<Abgleichbefund["stand"], number> = {
+  erfuellt: 0,
+  teilweise: 1,
+  nicht_belegt: 2,
+  nicht_zustaendig: 3,
+};
+
 export function computeFit(input: FitInput): FitResult {
   const w = normaliseWeights(input.weights ?? {});
   const confirmed = input.evidence.filter(isConfirmedFact);
@@ -186,26 +210,96 @@ export function computeFit(input: FitInput): FitResult {
    * Ohne Katalog oder ohne Fähigkeiten ändert sich nichts.
    */
   const katalogschluessel = input.schluesselFuerAnforderung;
-  const belegteSchluessel = new Set((input.faehigkeiten ?? []).map((f) => f.schluessel));
+  const faehigkeiten = input.faehigkeiten ?? [];
+
+  /**
+   * Was je Anforderung herausgekommen ist.
+   *
+   * ── Warum das mitgeführt wird ───────────────────────────────────
+   *
+   * Hier stand `return 1`. Der Wert wusste, DASS eine Anforderung
+   * belegt war, und nicht wodurch — und damit konnte niemand die Zahl
+   * prüfen. Wer eine unerklärte Zahl erklären soll, erfindet eine
+   * Begründung; genau das schliesst diese Liste aus.
+   */
+  const befunde: Abgleichbefund[] = [];
 
   const scoreRequirement = (r: JobRequirement): number => {
-    if (katalogschluessel && belegteSchluessel.size > 0) {
-      const k = katalogschluessel(r.text);
-      /*
-       * 1 und nicht 0,9: Eine belegte Fähigkeit auf denselben
-       * Schlüssel ist keine Ähnlichkeit, sondern eine Übereinstimmung.
-       * Sie kleiner zu werten hiesse, den Beleg schlechter zu stellen
-       * als einen glücklichen Wortlaut.
-       */
-      if (k !== null && belegteSchluessel.has(k)) return 1;
+    /* Ob der Katalog zu dieser Anforderung schon etwas gesagt hat.
+       Dann entsteht kein zweiter Befund aus der Wortähnlichkeit. */
+    let katalogGesehen = false;
+
+    if (katalogschluessel && faehigkeiten.length > 0) {
+      const abgleich = anforderungAbgleichen(
+        r.text,
+        VERLANGTE_STUFE_STANDARD,
+        faehigkeiten,
+        katalogschluessel,
+      );
+      if (abgleich.stand !== "nicht_zustaendig") {
+        befunde.push({
+          anforderung: r.text,
+          art: r.kind === "nice" ? "nice" : "must",
+          stand: abgleich.stand,
+          schluessel: abgleich.schluessel,
+          belege: [...abgleich.belege],
+          satz: abgleich.satz,
+        });
+        skillEvidenceIds.push(...abgleich.belege);
+        /*
+         * 1 und nicht 0,9: Eine belegte Fähigkeit auf demselben
+         * Schlüssel ist keine Ähnlichkeit, sondern eine
+         * Übereinstimmung. Sie kleiner zu werten hiesse, den Beleg
+         * schlechter zu stellen als einen glücklichen Wortlaut.
+         *
+         * `teilweise` heisst: der Schlüssel stimmt, die Stufe reicht
+         * nicht. Das ist mehr als eine Wortüberlappung und weniger als
+         * eine Deckung.
+         */
+        if (abgleich.stand === "erfuellt") return 1;
+        if (abgleich.stand === "teilweise") return 0.6;
+        /*
+         * ── `nicht_belegt` senkt den Wert NICHT ──────────────────
+         *
+         * Naheliegend wäre `return 0`: Der Katalog kennt die
+         * Anforderung, der Mensch hat nichts dazu, also null. Ein Test
+         * hat gezeigt, was das anrichtet — dieselbe Anforderung ergab
+         * 0,5 für jemanden ohne bestätigte Fähigkeiten und 0 für
+         * jemanden mit einer anderen. Wer die Arbeit gemacht hat,
+         * seine Fähigkeiten zu bestätigen, stünde schlechter da als
+         * jemand, der sie nie angefasst hat.
+         *
+         * Der Befund bleibt trotzdem stehen und sagt, was fehlt. Er
+         * ist die Auskunft; der Wert darunter bleibt die schwache
+         * Wortähnlichkeit, die es ohne Katalog auch gäbe.
+         */
+        katalogGesehen = true;
+      }
     }
+
     let best = 0;
     let bestId: string | null = null;
     for (const e of confirmed) {
       const s = overlap(r.text, e.statement);
       if (s > best) { best = s; bestId = e.id; }
     }
-    if (bestId && best >= 0.34) skillEvidenceIds.push(bestId);
+    if (bestId && best >= 0.34 && !katalogGesehen) {
+      skillEvidenceIds.push(bestId);
+      befunde.push({
+        anforderung: r.text,
+        art: r.kind === "nice" ? "nice" : "must",
+        /*
+         * Wortüberlappung ist kein Beleg auf einem Schlüssel. Sie
+         * heisst „teilweise" und sagt das auch — sonst stünde am Ende
+         * dieselbe Auskunft für eine bestätigte Fähigkeit und für
+         * einen ähnlichen Satz.
+         */
+        stand: "teilweise",
+        schluessel: null,
+        belege: [bestId],
+        satz: "Eine deiner Angaben klingt danach. Zugeordnet ist sie nicht — der Katalog kennt diese Anforderung nicht.",
+      });
+    }
     return best;
   };
 
@@ -387,6 +481,12 @@ export function computeFit(input: FitInput): FitResult {
     factors,
     topReason,
     topReservation,
+    /*
+     * Die Kette, an der die Zahl hängt. Sortiert: erst was erfüllt
+     * ist, dann was teilweise, dann was fehlt — in der Reihenfolge,
+     * in der ein Mensch sie lesen will.
+     */
+    anforderungsbefunde: [...befunde].sort((a, b) => RANG[a.stand] - RANG[b.stand]),
     version: SCORING_VERSION,
   };
 }

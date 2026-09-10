@@ -36,6 +36,28 @@ export const ScoreFactorSchema = z.object({
 });
 export type ScoreFactor = z.infer<typeof ScoreFactorSchema>;
 
+/**
+ * Ein geprüfter Abgleich, wie ihn `anforderungAbgleichen` liefert.
+ *
+ * Hier als Schema, weil das Ergebnis gespeichert und wieder gelesen
+ * wird: Was in `auftrag_treffer` liegt, muss beim Lesen dieselbe Form
+ * haben wie beim Schreiben, auch nach einem Umbau.
+ */
+export const AbgleichergebnisSchema = z.object({
+  /** Der Anforderungstext, wie er in der Anzeige stand. */
+  anforderung: z.string().default(""),
+  /** must · nice */
+  art: z.enum(["must", "nice"]).default("must"),
+  /** erfuellt · teilweise · nicht_belegt · nicht_zustaendig */
+  stand: z.enum(["erfuellt", "teilweise", "nicht_belegt", "nicht_zustaendig"]),
+  /** Die strukturierte Fähigkeit. `null` heisst: keine zugeordnet. */
+  schluessel: z.string().nullable(),
+  /** Die Belege, die sie stützen. Nie erfunden — Kennungen aus `evidence_items`. */
+  belege: z.array(z.string()).default([]),
+  satz: z.string(),
+});
+export type Abgleichbefund = z.infer<typeof AbgleichergebnisSchema>;
+
 export const FitResultSchema = z.object({
   /** 0..100. Nur zeigen, wenn coverage ausreicht - sonst band verwenden. */
   score: z.number().int().min(0).max(100).nullable(),
@@ -47,6 +69,29 @@ export const FitResultSchema = z.object({
   topReason: z.string(),
   /** Der wichtigste Vorbehalt. Immer gefuellt - auch bei guter Passung. */
   topReservation: z.string(),
+  /**
+   * Je geprüfter Anforderung: Stand, Fähigkeit, Belege, Satz.
+   *
+   * ══════════════════════════════════════════════════════════════
+   * Warum die Zahl allein nicht genügt
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Bis zum 11.09.2026 gab `scoreRequirement` bei einem Katalogtreffer
+   * eine nackte `1` zurück. Der Wert wusste, DASS eine Anforderung
+   * belegt war — nicht, wodurch. Damit liess sich „passt zu 71 von
+   * 100" sagen und nicht „weil du Kommissionierung belegt hast, und
+   * zwar mit dieser Arbeitsprobe".
+   *
+   * Das ist der Unterschied zwischen einer Empfehlung, der man glauben
+   * muss, und einer, die man prüfen kann. Und es ist die Stelle, an
+   * der ein Modell sonst eine Begründung erfindet: Wer eine Zahl
+   * erklären soll, ohne die Kette zu kennen, formuliert etwas
+   * Plausibles.
+   *
+   * Leer heisst: Es wurde keine Anforderung geprüft — nicht, dass
+   * keine erfüllt ist.
+   */
+  anforderungsbefunde: z.array(AbgleichergebnisSchema).default([]),
   version: z.string().default(SCORING_VERSION),
 });
 export type FitResult = z.infer<typeof FitResultSchema>;

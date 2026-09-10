@@ -309,3 +309,39 @@ export function deckung(ergebnisse: readonly Abgleichergebnis[]): {
     gerechnet: zaehlbar.length,
   };
 }
+
+/**
+ * Welche Stufe eine Anzeige verlangt, wenn sie keine nennt.
+ *
+ * ── Warum „sicher" und nicht „grundkenntnisse" ──────────────────
+ *
+ * Deutsche Anzeigen nennen fast nie eine Stufe. Nähme man die
+ * unterste an, wäre jede Anforderung durch jeden Beleg erfüllt, und
+ * `teilweise` käme nie vor — der Abgleich hätte dann nur zwei
+ * Zustände und würde genau die Fälle verschlucken, um die es geht.
+ *
+ * Nähme man die oberste, stünde bei fast jedem Menschen „teilweise",
+ * auch bei einer Arbeitsprobe.
+ *
+ * „Sicher" ist die Stufe, die eine Anzeige meint, wenn sie „Erfahrung
+ * in X" schreibt. Sie ist eine Annahme, und sie steht deshalb hier an
+ * einer Stelle statt verteilt im Code.
+ */
+export const VERLANGTE_STUFE_STANDARD: Koennensstufe = "sicher";
+
+/**
+ * Aus der gespeicherten Zahl wieder eine Stufe.
+ *
+ * `profile_skills.self_assessed_level` hält 1 bis 4 — die Umkehrung
+ * von `stufenrang(s) + 1`. Ohne diese Funktion stand im Profilkontext
+ * `String(level)`, also „2" statt „sicher", und ein Abgleich gegen
+ * eine Stufe verglich eine Ziffer mit einem Wort. Es fiel nicht auf,
+ * weil die Stufe dort nie gelesen wurde.
+ *
+ * Ausserhalb von 1 bis 4 die unterste: Eine unbekannte Zahl darf
+ * niemanden hochstufen.
+ */
+export function stufeAusZahl(n: number | null): Koennensstufe {
+  const i = Math.trunc(n ?? 1) - 1;
+  return KOENNENSSTUFEN[i] ?? KOENNENSSTUFEN[0]!;
+}

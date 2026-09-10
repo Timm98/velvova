@@ -1,5 +1,6 @@
 import type {
   EvidenceItem,
+  Faehigkeitsaussage,
   Job,
   JobRequirement,
   JobSource,
@@ -58,7 +59,7 @@ export interface Bewertungsprofil {
    * die Wortüberlappung. Wo Fähigkeiten vorliegen, entscheiden sie —
    * sie kennen Synonyme, die ein Wortvergleich nicht kennt.
    */
-  faehigkeiten?: readonly { schluessel: string; stufe: string }[];
+  faehigkeiten?: readonly Faehigkeitsaussage[];
   /** Der Katalog. Fehlt er, wird nichts zugeordnet. */
   schluesselFuerAnforderung?: (text: string) => string | null;
 }

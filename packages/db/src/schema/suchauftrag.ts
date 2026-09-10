@@ -282,6 +282,14 @@ export const auftragTreffer = pgTable(
     kriterienErgebnisse: jsonb("kriterien_ergebnisse").$type<unknown[]>().notNull().default([]),
     gruende: jsonb("gruende").$type<string[]>().notNull().default([]),
     offenePunkte: jsonb("offene_punkte").$type<string[]>().notNull().default([]),
+    /**
+     * Die Kette hinter dem Wert — je geprüfter Anforderung.
+     *
+     * `[{ anforderung, art, stand, schluessel, belege[], satz }]`.
+     * Leer heisst: Es wurde keine Anforderung geprüft, nicht: keine
+     * erfüllt. Siehe Migration 0115.
+     */
+    anforderungsbefunde: jsonb("anforderungsbefunde").$type<unknown[]>().notNull().default([]),
     caveat: text("caveat"),
     /** Fingerabdruck der Angaben, die eine erneute Mail rechtfertigen. */
     materielleFassung: text("materielle_fassung").notNull(),

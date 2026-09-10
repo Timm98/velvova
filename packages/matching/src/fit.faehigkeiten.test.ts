@@ -89,3 +89,106 @@ describe("Fähigkeiten im Passungswert", () => {
     );
   });
 });
+
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Die Begründung — Anforderung → Fähigkeit → Beleg
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Bis zum 11.09.2026 gab der Katalogweg eine nackte `1` zurück. Der
+ * Wert wusste, DASS eine Anforderung gedeckt war, und nicht wodurch —
+ * und wer eine unerklärte Zahl erklären soll, erfindet eine
+ * Begründung. Diese Prüfungen halten die Kette zusammen.
+ */
+describe("Die Kette hinter dem Wert", () => {
+  const belegteFaehigkeit = (stufe: string, belege: string[]) => ({
+    schluessel: "kommissionierung",
+    stufe,
+    belegtDurch: belege,
+    herkunft: "arbeitsprobe" as const,
+  });
+
+  it("nennt bei einer erfüllten Anforderung Fähigkeit und Beleg", () => {
+    const f = computeFit({
+      ...basis("Erfahrung in der Kommissionierung"),
+      faehigkeiten: [belegteFaehigkeit("sicher", ["ev-k"])],
+      schluesselFuerAnforderung,
+    } as never);
+
+    const b = f.anforderungsbefunde.find((x) => x.anforderung === "Erfahrung in der Kommissionierung")!;
+    expect(b.stand).toBe("erfuellt");
+    expect(b.schluessel).toBe("kommissionierung");
+    expect(b.belege).toEqual(["ev-k"]);
+    expect(b.satz).toContain("sicher");
+  });
+
+  it("erfindet keine Begründung, wo kein Beleg steht", () => {
+    const f = computeFit({
+      ...basis("Erfahrung in der Kommissionierung"),
+      faehigkeiten: [{ ...belegteFaehigkeit("sicher", []), schluessel: "ladungssicherung" }],
+      schluesselFuerAnforderung,
+    } as never);
+
+    const b = f.anforderungsbefunde[0]!;
+    expect(b.stand).toBe("nicht_belegt");
+    expect(b.belege).toEqual([]);
+    /* Kein Satz, der eine Deckung behauptet. */
+    expect(b.satz).not.toMatch(/belegt auf der stufe/i);
+  });
+
+  it("sagt „teilweise“, wenn die Stufe nicht reicht", () => {
+    const f = computeFit({
+      ...basis("Erfahrung in der Kommissionierung"),
+      faehigkeiten: [belegteFaehigkeit("grundkenntnisse", ["ev-k"])],
+      schluesselFuerAnforderung,
+    } as never);
+
+    const b = f.anforderungsbefunde[0]!;
+    expect(b.stand).toBe("teilweise");
+    expect(b.belege).toEqual(["ev-k"]);
+    expect(b.satz).toContain("grundkenntnisse");
+  });
+
+  it("trägt in jedem erfüllten Befund mindestens einen Beleg", () => {
+    const f = computeFit({
+      ...basis("Erfahrung in der Kommissionierung"),
+      faehigkeiten: [belegteFaehigkeit("anleitend", ["ev-k", "ev-2"])],
+      schluesselFuerAnforderung,
+    } as never);
+
+    for (const b of f.anforderungsbefunde.filter((x) => x.stand === "erfuellt")) {
+      expect(b.belege.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("ordnet ohne Katalog keinen Schlüssel zu", () => {
+    const f = computeFit(basis("Erfahrung in der Kommissionierung") as never);
+    for (const b of f.anforderungsbefunde) {
+      expect(b.schluessel).toBeNull();
+    }
+  });
+
+  it("stellt das Erfüllte vor das Fehlende", () => {
+    const f = computeFit({
+      job: makeJob({ coreTasks: ["Ware zusammenstellen"] }),
+      requirements: [
+        { id: "r1", jobId: "job-1", kind: "must" as const, text: "Auftragszusammenstellung nach Liste", skillKey: null, category: "skill" },
+        { id: "r2", jobId: "job-1", kind: "must" as const, text: "Erfahrung in der Kommissionierung", skillKey: null, category: "skill" },
+      ],
+      evidence: makeEvidence([
+        { id: "ev-k", type: "skill" as const, statement: "Kommissionierung nach Pickliste, zwei Jahre" },
+      ]),
+      constraints: makeConstraints(),
+      energisingTasks: [],
+      drainingTasks: [],
+      workStylePreferences: [],
+      rankedValues: [],
+      statedInterests: [],
+      faehigkeiten: [belegteFaehigkeit("sicher", ["ev-k"])],
+      schluesselFuerAnforderung,
+    } as never);
+
+    expect(f.anforderungsbefunde).toHaveLength(2);
+    expect(f.anforderungsbefunde[0]!.stand).toBe("erfuellt");
+  });
+});

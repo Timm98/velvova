@@ -1,0 +1,34 @@
+-- ══════════════════════════════════════════════════════════════════
+-- Die Kette hinter dem Passungswert wird aufgeschrieben
+-- ══════════════════════════════════════════════════════════════════
+--
+-- Bis zum 11.09.2026 gab `scoreRequirement` bei einem Katalogtreffer
+-- eine nackte `1` zurueck. Der Wert wusste, DASS eine Anforderung
+-- gedeckt war -- nicht wodurch. Damit liess sich "passt zu 71 von 100"
+-- sagen und nicht "weil du Kommissionierung belegt hast, und zwar mit
+-- diesem Beleg".
+--
+-- ── Warum das gespeichert wird und nicht nur gerechnet ──────────
+--
+-- Weil es sonst bei jedem Ansehen neu entsteht -- aus dem Profil von
+-- heute, gegen eine Anzeige von damals. Ein Mensch, der eine
+-- Begruendung liest und sie am naechsten Tag nicht wiederfindet, hat
+-- keine Begruendung bekommen, sondern eine Vorfuehrung.
+--
+-- Und weil die Kette nachpruefbar sein muss: Welche Anforderung wurde
+-- geprueft, welche strukturierte Faehigkeit lag an, welcher konkrete
+-- Beleg stuetzt sie, wie direkt ist die Verbindung, was fehlt noch.
+-- Das steht Zeile fuer Zeile in dieser Spalte.
+--
+-- ── Form ───────────────────────────────────────────────────────
+--
+--   [{ anforderung, art, stand, schluessel, belege[], satz }]
+--
+--   stand: erfuellt · teilweise · nicht_belegt · nicht_zustaendig
+--   belege: Kennungen aus `evidence_items` -- nie erfunden, nie Text
+--
+-- Leer heisst: Es wurde keine Anforderung geprueft. Nicht: keine
+-- erfuellt. Der Unterschied ist der ganze Punkt.
+
+alter table auftrag_treffer
+  add column if not exists anforderungsbefunde jsonb not null default '[]'::jsonb;
