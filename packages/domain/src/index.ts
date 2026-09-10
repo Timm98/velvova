@@ -41,3 +41,5 @@ export * from "./anfragetext.ts";
 export * from "./projekt.ts";
 export * from "./waechter.ts";
 export * from "./marktwert.ts";
+export * from "./bruecke.ts";
+export * from "./berufssprache.ts";
