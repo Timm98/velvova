@@ -22,3 +22,4 @@ export * from "./proaktiv.ts";
 export * from "./intelligenz.ts";
 export * from "./chancen.ts";
 export * from "./projekte.ts";
+export * from "./nachweise.ts";

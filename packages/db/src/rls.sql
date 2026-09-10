@@ -113,6 +113,12 @@ DECLARE
     -- kann, was er will, was ihm vorgeschlagen wurde und warum er
     -- abgelehnt hat. Ohne Richtlinie laege das offen.
     'nina_events','profile_facts','match_feedback',
+    -- Nachweise gehoeren dem Menschen, ueber den sie etwas sagen. Ohne
+    -- Richtlinie koennte ein fremdes Konto sie lesen -- und damit
+    -- genau das tun, was die Tabelle verhindert: aus einem Zeugnis,
+    -- das jemand weitergibt, wenn er will, eine Akte machen, die
+    -- ohnehin offen liegt.
+    'nachweise',
     -- Der Outcome Loop. Die Zeile enthaelt, worauf sich jemand beworben
     -- hat und wie zufrieden er danach war -- das Empfindlichste, was
     -- das Produkt speichert. Die Auswertung liest ueber die
