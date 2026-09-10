@@ -43,3 +43,4 @@ export * from "./waechter.ts";
 export * from "./marktwert.ts";
 export * from "./bruecke.ts";
 export * from "./berufssprache.ts";
+export * from "./nachweis.ts";
