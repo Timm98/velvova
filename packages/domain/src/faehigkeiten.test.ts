@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  STUFEN,
+  KOENNENSSTUFEN,
   abgleichbar,
   anforderungAbgleichen,
   ausBeleg,
   deckung,
   istBedingung,
-  istLeerformel,
+  istAnforderungsLeerformel,
   stufeGrenze,
   stufenrang,
   type Beleg,
@@ -49,7 +49,7 @@ describe("Was keine Fähigkeit ist", () => {
 
   it("erkennt Leerformeln", () => {
     for (const t of ["teamfähig", "sehr zuverlässige Arbeitsweise", "eigenverantwortliches Handeln"]) {
-      expect(istLeerformel(t), t).toBe(true);
+      expect(istAnforderungsLeerformel(t), t).toBe(true);
     }
   });
 
@@ -195,7 +195,7 @@ describe("deckung", () => {
 
 describe("Die Stufen", () => {
   it("sind vier und ohne Zahl", () => {
-    expect(STUFEN).toHaveLength(4);
-    for (const s of STUFEN) expect(s).not.toMatch(/\d/);
+    expect(KOENNENSSTUFEN).toHaveLength(4);
+    for (const s of KOENNENSSTUFEN) expect(s).not.toMatch(/\d/);
   });
 });

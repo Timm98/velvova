@@ -44,15 +44,22 @@
 /**
  * Wie weit jemand in einer Sache ist.
  *
+ * Heisst `Koennensstufe` und nicht `Stufe`: Der kürzere Name gehört im
+ * Domänenpaket dem Marktwert. Dasselbe gilt für `Belegart` statt
+ * `Herkunft` (vergeben von `herkunft.ts`) und
+ * `istAnforderungsLeerformel` statt `istLeerformel` (vergeben vom
+ * Arbeitsweise-Profil). Zwei gleichnamige Begriffe nebeneinander sind
+ * die Art Mehrdeutigkeit, die man beim Lesen nicht bemerkt.
+ *
  * Vier Stufen, keine Zahl. „7 von 10" bei einer Fähigkeit ist eine
  * Genauigkeit, die niemand hat — und sie lädt dazu ein, Menschen
  * gegeneinander zu sortieren.
  */
-export const STUFEN = ["grundkenntnisse", "sicher", "routiniert", "anleitend"] as const;
-export type Stufe = (typeof STUFEN)[number];
+export const KOENNENSSTUFEN = ["grundkenntnisse", "sicher", "routiniert", "anleitend"] as const;
+export type Koennensstufe = (typeof KOENNENSSTUFEN)[number];
 
-export function stufenrang(s: Stufe): number {
-  return STUFEN.indexOf(s);
+export function stufenrang(s: Koennensstufe): number {
+  return KOENNENSSTUFEN.indexOf(s);
 }
 
 /**
@@ -61,8 +68,8 @@ export function stufenrang(s: Stufe): number {
  * Die Reihenfolge ist keine Rangfolge der Menschen, sondern der
  * Nachprüfbarkeit.
  */
-export const HERKUENFTE = ["nutzer_aussage", "lebenslauf", "zertifikat", "arbeitsprobe"] as const;
-export type Herkunft = (typeof HERKUENFTE)[number];
+export const BELEGARTEN = ["nutzer_aussage", "lebenslauf", "zertifikat", "arbeitsprobe"] as const;
+export type Belegart = (typeof BELEGARTEN)[number];
 
 /**
  * Wie weit eine Belegart überhaupt tragen kann.
@@ -78,7 +85,7 @@ export type Herkunft = (typeof HERKUENFTE)[number];
  * Sache getan hat. Bis „anleitend" trägt sie trotzdem nicht: Andere
  * anzuleiten ist eine andere Tätigkeit als es selbst zu können.
  */
-export function stufeGrenze(h: Herkunft): Stufe {
+export function stufeGrenze(h: Belegart): Koennensstufe {
   switch (h) {
     case "nutzer_aussage":
       return "sicher";
@@ -95,17 +102,17 @@ export interface Beleg {
   id: string;
   /** Der Satz, auf den sich die Fähigkeit stützt. */
   aussage: string;
-  herkunft: Herkunft;
+  herkunft: Belegart;
   bestaetigt: boolean;
 }
 
 export interface Faehigkeitsaussage {
   /** Der Schlüssel aus dem Katalog. */
   schluessel: string;
-  stufe: Stufe;
+  stufe: Koennensstufe;
   /** Nie leer. Eine Fähigkeit ohne Beleg entsteht nicht. */
   belegtDurch: readonly string[];
-  herkunft: Herkunft;
+  herkunft: Belegart;
 }
 
 /* ── Was keine Fähigkeit ist ── */
@@ -140,7 +147,7 @@ export function istBedingung(text: string): boolean {
  * Anzeigenseite: „teamfähig" als Anforderung ist keine, die sich
  * belegen liesse.
  */
-export const LEERFORMELN: readonly RegExp[] = [
+export const ANFORDERUNGS_LEERFORMELN: readonly RegExp[] = [
   /\bteamf[äa]hig/i,
   /\bmotiviert\b/i,
   /\bengagiert\b/i,
@@ -150,8 +157,8 @@ export const LEERFORMELN: readonly RegExp[] = [
   /\bsorgf[äa]ltig/i,
 ];
 
-export function istLeerformel(text: string): boolean {
-  return LEERFORMELN.some((m) => m.test(text));
+export function istAnforderungsLeerformel(text: string): boolean {
+  return ANFORDERUNGS_LEERFORMELN.some((m) => m.test(text));
 }
 
 /**
@@ -162,7 +169,7 @@ export function istLeerformel(text: string): boolean {
  */
 export function abgleichbar(anforderung: string): boolean {
   const t = anforderung.replace(/^[-•·*]\s*/, "").trim();
-  return t.length >= 6 && !istBedingung(t) && !istLeerformel(t);
+  return t.length >= 6 && !istBedingung(t) && !istAnforderungsLeerformel(t);
 }
 
 /* ── Der Abgleich ── */
@@ -199,7 +206,7 @@ export interface Abgleichergebnis {
  */
 export function anforderungAbgleichen(
   anforderung: string,
-  verlangteStufe: Stufe,
+  verlangteStufe: Koennensstufe,
   faehigkeiten: readonly Faehigkeitsaussage[],
   /** Schlüssel je Anforderungstext — aus dem Katalog, nicht geraten. */
   schluesselFuer: (text: string) => string | null,
@@ -263,10 +270,10 @@ export function anforderungAbgleichen(
 export function ausBeleg(
   beleg: Beleg,
   schluessel: string,
-  vorgeschlageneStufe: Stufe,
+  vorgeschlageneStufe: Koennensstufe,
 ): Faehigkeitsaussage | null {
   if (!beleg.bestaetigt) return null;
-  if (istBedingung(beleg.aussage) || istLeerformel(beleg.aussage)) return null;
+  if (istBedingung(beleg.aussage) || istAnforderungsLeerformel(beleg.aussage)) return null;
 
   const grenze = stufeGrenze(beleg.herkunft);
   const stufe =
