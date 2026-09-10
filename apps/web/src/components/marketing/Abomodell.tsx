@@ -35,8 +35,22 @@ import { ANGEBOTE, type Zielgruppe } from "@/lib/billing/preismodell";
  * Preise zu zeigen. Deshalb steht es an der Karte und nicht in einer
  * Fussnote: sichtbar, bevor jemand klickt.
  */
-export function Abomodell({ angemeldet }: { angemeldet: boolean }) {
-  const [wer, setWer] = useState<Zielgruppe>("person");
+/**
+ * `start` wählt, welche Spalte zuerst dasteht.
+ *
+ * Auf der Startseite ist das „person", weil dort Menschen ankommen.
+ * Wer von der Unternehmensseite auf „Preise ansehen" klickt, hat die
+ * Frage schon beantwortet — ihn erst wieder auf die Personenspalte zu
+ * stellen wäre eine Auswahl, die er zweimal treffen muss.
+ */
+export function Abomodell({
+  angemeldet,
+  start = "person",
+}: {
+  angemeldet: boolean;
+  start?: Zielgruppe;
+}) {
+  const [wer, setWer] = useState<Zielgruppe>(start);
   const angebote = ANGEBOTE[wer];
 
   return (

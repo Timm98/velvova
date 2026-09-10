@@ -196,6 +196,33 @@ export const REGISTER: readonly Funktion[] = [
     grenze:
       "Welche Schalter dort wirklich etwas speichern, ist beim Umbau der Sicherheitsseite einzeln zu prüfen. Bis dahin keine Zusage über Selbstbedienung beim Löschen und Exportieren.",
   },
+  {
+    key: "bedarfsaufnahme",
+    name: "Bedarf beschreiben",
+    stand: "pilot",
+    route: "/business/bedarf",
+    nachweis:
+      "apps/web/src/app/business/bedarf/ mit Bedarfsaufnahme.tsx; die Serveraktion liegt in " +
+      "apps/web/src/lib/arbeitgeber/wunschprofil.ts (`bedarfAufnehmen`, `angebotVerbindlichMachen`) " +
+      "und schreibt nach `angebote`.",
+    grenze:
+      "Verlangt ein Firmenkonto mit bestätigter Adresse (`arbeitgeberKontext` → `requireVerifiedUser`) " +
+      "und ein verfügbares Modell. Am 10.09.2026 hatte `angebote` null Zeilen: Der Weg ist gebaut, " +
+      "aber noch von niemandem benutzt worden. Die Klärung bei einer Lagebeschreibung stellt Fragen " +
+      "und legt noch keinen Befund ab.",
+  },
+  {
+    key: "preise",
+    name: "Preise",
+    stand: "nutzbar",
+    route: "/pricing",
+    nachweis:
+      "apps/web/src/app/pricing/page.tsx zeigt `Abomodell` aus lib/billing/preismodell.ts, " +
+      "getrennt nach Person und Unternehmen.",
+    grenze:
+      "Die Seite zeigt Beträge; buchbar ist davon nur die kostenlose Stufe. Alles mit `nochNicht` " +
+      "in preismodell.ts ist als nicht freigegeben markiert und führt zu keiner Zahlung.",
+  },
 ] as const;
 
 const NACH_KEY = new Map(REGISTER.map((f) => [f.key, f]));

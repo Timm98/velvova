@@ -62,7 +62,17 @@ export const metadata: Metadata = {
  * eigener Abschnitt mit eigener Überschrift.
  */
 export default async function FuerUnternehmenSeite() {
-  const klarheit = funktion("klarheits-check");
+  /*
+   * Der Einstieg steht und fällt mit dem Register.
+   *
+   * Steht `bedarfsaufnahme` dort nicht mehr auf „nutzbar" oder
+   * „pilot", verschwindet der Knopf und das Kontaktformular tritt an
+   * seine Stelle. Ein Verweis auf eine abgeschaltete Funktion ist der
+   * tote Knopf, den diese Seite gerade losgeworden ist.
+   */
+  const bedarf = funktion("bedarfsaufnahme");
+  const einstiegZiel = hatZiel(bedarf) ? "/unterstuetzung" : "/contact";
+  const einstiegText = hatZiel(bedarf) ? "Unterstützung finden" : "Pilotzugang anfragen";
   /*
    * Auch hier zählt das Land — aus einem anderen Grund.
    *
@@ -151,17 +161,20 @@ export default async function FuerUnternehmenSeite() {
           aktionen={
             <>
               {/*
-                Die Hauptaktion ist die Anfrage, nicht das Werkzeug.
+                Die Hauptaktion ist jetzt der Einstieg, nicht die Anfrage.
 
-                Im Register steht `klarheits-check` als
-                „nicht-verifiziert": Der Name kommt in apps/web/src nur
-                in Marketingtexten und im Preismodell vor, nicht als
-                Werkzeug. „Stellenanzeige prüfen" als Hauptknopf wäre
-                eine Tür, hinter der nichts ist.
+                Hier stand „Pilotzugang anfragen" auf `/contact` — ein
+                Kontaktformular als Hauptaktion einer Produktseite. Der
+                Grund war richtig: Im Register steht `klarheits-check`
+                als „nicht-verifiziert“, und „Stellenanzeige prüfen“
+                wäre eine Tür ohne Raum dahinter gewesen.
+
+                Inzwischen gibt es einen Raum. Die Bedarfsaufnahme ist
+                gebaut, `/unterstuetzung` führt hin und sagt vorher,
+                dass ein Firmenkonto dazugehört. Ein Kontaktformular
+                bleibt der zweitbeste Weg, solange ein echter danebensteht.
               */}
-              <Hauptknopf href={hatZiel(klarheit) ? klarheit.route : "/contact"}>
-                {hatZiel(klarheit) ? "Stellenanzeige prüfen" : "Pilotzugang anfragen"}
-              </Hauptknopf>
+              <Hauptknopf href={einstiegZiel}>{einstiegText}</Hauptknopf>
               <Nebenknopf href="#beispiel">Beispiel ansehen</Nebenknopf>
             </>
           }
@@ -312,10 +325,8 @@ export default async function FuerUnternehmenSeite() {
           text="Es gibt hier nichts zu abonnieren. Der Pilot ist begrenzt, und eine Anfrage legt kein freigeschaltetes Unternehmenskonto an."
           aktionen={
             <>
-              <Hauptknopf href={hatZiel(klarheit) ? klarheit.route : "/contact"}>
-                {hatZiel(klarheit) ? "Stellenanzeige prüfen" : "Pilotzugang anfragen"}
-              </Hauptknopf>
-              <Nebenknopf href="/pricing">Preise ansehen</Nebenknopf>
+              <Hauptknopf href={einstiegZiel}>{einstiegText}</Hauptknopf>
+              <Nebenknopf href="/pricing?fuer=unternehmen">Preise ansehen</Nebenknopf>
             </>
           }
         />

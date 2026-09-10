@@ -73,6 +73,9 @@ const SPALTEN = (mondayHref: string): Spalte[] => [
     titel: "Für Unternehmen",
     links: [
       { href: "/for-business", label: "Velvova für Unternehmen" },
+      /* Der Einstieg steht vor dem Werkzeug: Wer hier ankommt, hat
+         meist noch keine Anzeige, sondern einen Bedarf. */
+      { href: "/unterstuetzung", label: "Unterstützung finden" },
       { href: "/business/stellen", label: "Stellen veröffentlichen" },
       { href: "/business/bewerbungen", label: "Bewerbungen verwalten" },
     ],

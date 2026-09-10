@@ -104,19 +104,26 @@ auf die Monday-Anwendung, daneben `/business` (angemeldet) bzw.
 
 ## 4. Tote Knöpfe und uneingelöste Versprechen
 
-### 4.1 „Preise ansehen" führt in eine Anmeldung
+### 4.1 „Preise ansehen" führte in eine Anmeldung — behoben am 10.09.2026
 
-`app/for-business/page.tsx:318` verlinkt `/pricing`.
-`app/(public)/pricing/page.tsx` ist eine Weiterleitung auf
-`/app/settings/abo`. Die Zielseite verlangt eine Anmeldung.
+`app/for-business/page.tsx` verlinkte `/pricing`, und
+`app/(public)/pricing/page.tsx` war eine Weiterleitung auf
+`/app/settings/abo` hinter der Anmeldung. Derselbe Verweis stand im
+Fuss **jeder** Seite.
 
-Ein Besucher der Unternehmensseite klickt also auf „Preise ansehen"
-und landet in einem Anmeldeformular. Zusätzlich steht
-`flags.pricingPage` in `packages/config/src/flags.ts:34` auf `false`.
+Seither liegt die Seite unter `app/pricing/page.tsx` und zeigt
+`Abomodell` aus `lib/billing/preismodell.ts` — nach Person und
+Unternehmen getrennt, mit dem Vorbehalt an jeder Karte, die noch
+nicht buchbar ist. Für Angemeldete steht der Weg ins eigene Konto
+oben auf der Seite statt an ihrer Stelle.
 
-Dokument 2 verlangt eine Preisseite, die „Leistungen, Grenzen und
-Kosten nach persönlichem oder Unternehmenskontext" zeigt. Die gibt es
-nicht — und der einzige öffentliche Weg dorthin ist eine Sackgasse.
+`flags.pricingPage` in `packages/config/src/flags.ts:34` steht weiter
+auf `false` — und wird von keiner einzigen Zeile gelesen. Das Flag ist
+selbst ein Fall von Schema ohne Verdrahtung; angefasst wurde es nicht,
+weil es eine Produktionseinstellung ist und nichts bewirkt.
+
+`oeffentliche-ziele.test.ts` hält den Fall fest: Kein öffentlicher
+Verweis darf auf eine Seite zeigen, die nur weiterleitet.
 
 ### 4.2 Zwei Unternehmenswelten mit ähnlichem Namen
 
@@ -148,9 +155,10 @@ Angebotsentwurfs.
 | `/product` „Lösungen" | So funktioniert's | Erklärseite | vorhanden, falsch benannt |
 | `/how-it-works` | So funktioniert's | Erklärseite | doppelt zu `/product` |
 | `/for-business` | Für Unternehmen | Erklärseite | vorhanden, CTA fehlt |
-| `/business/bedarf` | Unterstützung finden | Modul E, schreibt `angebote` | **kein öffentlicher Weg dorthin** |
+| `/unterstuetzung` | Unterstützung finden | Einstieg mit zwei Wegen | seit 10.09.2026 vorhanden |
+| `/business/bedarf` | Unterstützung finden | Modul E, schreibt `angebote` | über `/unterstuetzung`, Firmenkonto nötig |
 | `/business/analysen` | Unternehmensanalyse | Seite vorhanden, Diagnose fehlt | intern |
-| `/pricing` | Preise | Weiterleitung in die Anmeldung | **Sackgasse** |
+| `/pricing` | Preise | zeigt `preismodell.ts`, Person und Unternehmen | Fuss, Unternehmensseite, Startseite |
 | `/security`, `/ai-transparency`, `/privacy` | Vertrauen und Kontrolle | vorhanden | im Fuss und in der Kopfzeile |
 | `/app/morgen` | erstes Ergebnis | Morgenbericht, liest `angebote` | vorhanden |
 | `/app/projekte` | Vorhaben | Route vorhanden, 0 Zeilen | **in keiner Navigation** |
@@ -190,12 +198,19 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
    `nina_*`-Tabellen), sichtbar heisst sie Monday
    (`brand.assistantName`). Bis das entschieden ist, wird keine
    Umbenennung angefasst.
-2. **Preisseite.** Ohne sie bleibt jeder Preis-Verweis eine Sackgasse.
-   Braucht eine Produktentscheidung, nicht Code.
-3. **`FLAG_PRICING_PAGE`** steht auf `false`. Eine öffentliche
-   Preisseite verlangt, dass jemand ihn umlegt — eine
-   Produktionseinstellung, also nichts, was hier passiert.
-4. **Diagnose-Tabellen.** `bedarfsebenen.ts` und `befundlage.ts`
+2. **Buchbar ist nur die kostenlose Stufe.** Die Preisseite steht,
+   aber alles mit `nochNicht` in `preismodell.ts` — Begleitung Plus
+   und Pro, Arbeitsraum Basis und Team — führt zu keiner Zahlung.
+   Kontingente, Zählweise, Ablauffristen und der Zahlungsweg brauchen
+   eine Freigabe, keinen Code.
+3. **`FLAG_PRICING_PAGE`** steht auf `false` und wird nirgends
+   gelesen. Entweder verdrahten oder streichen — beides ist eine
+   Entscheidung, keine Aufräumarbeit.
+4. **Die Kopfzeile trägt „Preise" nicht.** Der Weg führt über den
+   Fuss, die Unternehmensseite und den Preisblock der Startseite. Die
+   fünf Einträge oben sind ausdrücklich als fünf angelegt; ein
+   sechster ist eine Gestaltungsentscheidung.
+5. **Diagnose-Tabellen.** `bedarfsebenen.ts` und `befundlage.ts`
    rechnen heute ohne Speicher. Damit ein Befund einen Monat später
    noch dasteht, braucht es eine Migration; die ist nicht
    geschrieben und nicht freigegeben.

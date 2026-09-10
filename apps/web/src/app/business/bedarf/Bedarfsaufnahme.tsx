@@ -24,7 +24,7 @@ import { bedarfAufnehmen, angebotVerbindlichMachen, type Aufnahme } from "@/lib/
  * Aufnehmen und Zusagen dieselbe Handlung sind, erzeugt Zusagen, die
  * niemand bewusst gegeben hat.
  */
-export function Bedarfsaufnahme({ orgId }: { orgId: string }) {
+export function Bedarfsaufnahme({ orgId, klaerung = false }: { orgId: string; klaerung?: boolean }) {
   const [text, setText] = useState("");
   const [lage, setLage] = useState<Aufnahme | null>(null);
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -46,8 +46,16 @@ export function Bedarfsaufnahme({ orgId }: { orgId: string }) {
   return (
     <div className="grid gap-6">
       <div className="grid gap-3">
+        {/*
+          Zwei Fragen, nicht eine mit Zusatz.
+
+          „Wen würden Sie sofort nehmen?“ setzt voraus, dass es schon
+          jemanden gibt. Wer nur weiss, dass etwas klemmt, hat darauf
+          keine Antwort — und erfindet dann eine Rolle, die niemand
+          gebraucht hätte.
+        */}
         <label htmlFor="bedarf" className="text-[15px] font-medium text-ink">
-          Wen würden Sie sofort nehmen?
+          {klaerung ? "Was läuft bei Ihnen nicht rund?" : "Wen würden Sie sofort nehmen?"}
         </label>
         <textarea
           id="bedarf"
@@ -55,7 +63,11 @@ export function Bedarfsaufnahme({ orgId }: { orgId: string }) {
           onChange={(e) => setText(e.target.value)}
           rows={6}
           disabled={laeuft}
-          placeholder="Reden Sie, wie Sie reden würden. Zum Beispiel: Wir bräuchten eigentlich immer einen guten Elektriker, Wärmepumpen wären super, wir zahlen so viertausend, Firmenwagen gibt es auch."
+          placeholder={
+            klaerung
+              ? "Beschreiben Sie die Lage. Zum Beispiel: Kundenanfragen bleiben mehrere Tage liegen, und hinterher weiss keiner, wer dran war. Wir haben schon eine gemeinsame Mailadresse probiert, das hat es nicht besser gemacht."
+              : "Reden Sie, wie Sie reden würden. Zum Beispiel: Wir bräuchten eigentlich immer einen guten Elektriker, Wärmepumpen wären super, wir zahlen so viertausend, Firmenwagen gibt es auch."
+          }
           className="w-full resize-y rounded-(--radius-lg) border border-line bg-raised px-4 py-3 text-[15px] leading-relaxed text-ink outline-none placeholder:text-ink-3 focus-visible:border-accent"
         />
         <div className="flex flex-wrap items-center gap-4">
@@ -65,10 +77,12 @@ export function Bedarfsaufnahme({ orgId }: { orgId: string }) {
             disabled={laeuft || text.trim().length < 20}
             className="inline-flex min-h-11 items-center rounded-(--radius-control) bg-accent px-4 text-[14px] font-medium text-accent-on transition-opacity hover:opacity-90 disabled:opacity-60"
           >
-            {laeuft ? "Wird gelesen …" : "Daraus ein Angebot machen"}
+            {laeuft ? "Wird gelesen …" : klaerung ? "Einordnen lassen" : "Daraus ein Angebot machen"}
           </button>
           <span className="text-2xs leading-relaxed text-ink-3">
-            Noch nichts verbindlich. Was fehlt, wird nachgefragt.
+            {klaerung
+              ? "Noch nichts verbindlich, und vielleicht wird nie eine Stelle daraus."
+              : "Noch nichts verbindlich. Was fehlt, wird nachgefragt."}
           </span>
         </div>
       </div>

@@ -26,23 +26,32 @@ export const dynamic = "force-dynamic";
 export default async function BedarfPage({
   searchParams,
 }: {
-  searchParams: Promise<{ org?: string }>;
+  searchParams: Promise<{ org?: string; weg?: string }>;
 }) {
-  const { org } = await searchParams;
+  const { org, weg } = await searchParams;
   const { organisation } = await arbeitgeberKontext(org);
+
+  /*
+   * Der Weg kommt von `/unterstuetzung` und ist ein Wert aus zwei
+   * bekannten. Alles Unbekannte ist `rolle` — ein Parameter aus einer
+   * Adresszeile darf keinen dritten Zustand erfinden.
+   */
+  const klaerung = weg === "klaerung";
 
   return (
     <div className="grid gap-8">
       <div className="grid gap-2">
-        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">Bedarf</h1>
+        <h1 className="font-display text-2xl font-normal tracking-[-0.02em]">
+          {klaerung ? "Was klemmt" : "Bedarf"}
+        </h1>
         <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
-          Sagen Sie in einem Absatz, wen Sie suchen. Daraus wird ein Angebot mit Konditionen und
-          Frist — keine Anzeige, keine Sichtbarkeit, kein Ranking. Kandidaten sehen Ihren Namen
-          erst, wenn beide Seiten aufdecken.
+          {klaerung
+            ? "Beschreiben Sie in einem Absatz, was bei Ihnen nicht rundläuft. Ob daraus eine Stelle wird, entscheidet sich später — manche Engpässe verschwinden, sobald eine Zuständigkeit geklärt ist. Solange das nicht feststeht, entsteht hier kein Angebot."
+            : "Sagen Sie in einem Absatz, wen Sie suchen. Daraus wird ein Angebot mit Konditionen und Frist — keine Anzeige, keine Sichtbarkeit, kein Ranking. Kandidaten sehen Ihren Namen erst, wenn beide Seiten aufdecken."}
         </p>
       </div>
 
-      <Bedarfsaufnahme orgId={organisation.organizationId} />
+      <Bedarfsaufnahme orgId={organisation.organizationId} klaerung={klaerung} />
 
       <section className="grid gap-2 border-t border-line pt-6">
         <h2 className="text-[15px] font-semibold text-ink">Was mit den Angaben passiert</h2>
