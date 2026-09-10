@@ -18,6 +18,7 @@ import {
   type Stellenangaben,
   type Suchkriterium,
 } from "@paycheck/matching";
+import { schluesselFinden } from "@paycheck/domain";
 import { fassungsstand } from "../analyseschluessel.ts";
 import { rowToJob } from "../stellenzeile.ts";
 import { materielleFassung } from "./materiellefassung.ts";
@@ -561,7 +562,15 @@ export async function auftragslaufRunde(
       themes: (themenJeFirma.get(job.companyId) ?? []) as never,
       mitarbeiter: k.mitarbeiter,
       earlierDuplicateCount: 0,
-      profil,
+      /*
+       * Der Katalog kommt hier dazu, nicht im Profilkontext.
+       *
+       * `profilkontextLaden` liest Daten; welcher Katalog sie deutet,
+       * ist eine Entscheidung des Laufs. Stünde die Funktion im
+       * Profil, käme sie über die Datenbank — und eine Funktion lässt
+       * sich nicht speichern.
+       */
+      profil: { ...profil, schluesselFuerAnforderung: schluesselFinden },
       commute: KEINE_SCHAETZUNG,
       now: jetzt,
     });

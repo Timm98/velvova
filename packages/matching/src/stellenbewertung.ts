@@ -51,6 +51,16 @@ export interface Bewertungsprofil {
   statedInterests: string[];
   /** Wie viel des Profils belegt ist — geht in die Datenlage ein. */
   coverage: number;
+  /**
+   * Belegte Fähigkeiten aus dem Katalog.
+   *
+   * Leer zu lassen ist erlaubt: Dann rechnet der Fit wie zuvor über
+   * die Wortüberlappung. Wo Fähigkeiten vorliegen, entscheiden sie —
+   * sie kennen Synonyme, die ein Wortvergleich nicht kennt.
+   */
+  faehigkeiten?: readonly { schluessel: string; stufe: string }[];
+  /** Der Katalog. Fehlt er, wird nichts zugeordnet. */
+  schluesselFuerAnforderung?: (text: string) => string | null;
 }
 
 export interface Bewertungseingabe {
@@ -105,6 +115,8 @@ export function stelleBewerten(e: Bewertungseingabe): Bewertungsausgabe {
     workStylePreferences: profil.workStylePreferences,
     rankedValues: profil.rankedValues,
     statedInterests: profil.statedInterests,
+    faehigkeiten: profil.faehigkeiten,
+    schluesselFuerAnforderung: profil.schluesselFuerAnforderung,
   });
   const confidence = computeConfidence({
     job,

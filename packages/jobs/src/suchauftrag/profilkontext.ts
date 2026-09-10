@@ -87,16 +87,23 @@ export function zeileZuBeleg(row: typeof schema.evidenceItems.$inferSelect): Evi
 export async function profilkontextLaden(db: Database, userId: string): Promise<Profilkontext> {
   return withUser(db, userId, async (tx) => {
     /*
-     * Drei unabhängige Abfragen gleichzeitig. Gegen Supabase ist jedes
+     * Vier unabhängige Abfragen gleichzeitig. Gegen Supabase ist jedes
      * `await` ein eigener Netzweg von rund 44 Millisekunden.
      */
-    const [bedingungszeilen, belegzeilen, profilzeilen] = await Promise.all([
+    const [bedingungszeilen, belegzeilen, profilzeilen, faehigkeitszeilen] = await Promise.all([
       tx.select().from(schema.userConstraints).where(eq(schema.userConstraints.userId, userId)).limit(1),
       tx
         .select()
         .from(schema.evidenceItems)
         .where(and(eq(schema.evidenceItems.userId, userId), isNull(schema.evidenceItems.deletedAt))),
       tx.select().from(schema.careerProfiles).where(eq(schema.careerProfiles.userId, userId)).limit(1),
+      tx
+        .select({
+          skillKey: schema.profileSkills.skillKey,
+          selfAssessedLevel: schema.profileSkills.selfAssessedLevel,
+        })
+        .from(schema.profileSkills)
+        .where(eq(schema.profileSkills.userId, userId)),
     ]);
 
     const belege = belegzeilen.map(zeileZuBeleg);
@@ -128,6 +135,22 @@ export async function profilkontextLaden(db: Database, userId: string): Promise<
       workStylePreferences: nachRef("work_style_and_environment"),
       rankedValues: nachRef("values_and_motives"),
       statedInterests: nachRef("learning_goals"),
+      /*
+       * Die verdichteten Fähigkeiten.
+       *
+       * Sie kommen aus `profile_skills` und tragen ihren Schlüssel aus
+       * dem Katalog. Wo eine Anforderung auf denselben Schlüssel
+       * fällt, ist das eine Übereinstimmung und keine Ähnlichkeit —
+       * der Wortvergleich darunter würde „Auftragszusammenstellung"
+       * und „Kommissionierung" nie zusammenbringen.
+       *
+       * Leer, solange niemand Belege verdichtet hat. Dann rechnet der
+       * Fit genau wie zuvor.
+       */
+      faehigkeiten: faehigkeitszeilen.map((f) => ({
+        schluessel: f.skillKey,
+        stufe: String(f.selfAssessedLevel ?? 2),
+      })),
       profileConfirmed: profilzeilen[0]?.confirmedByUser ?? false,
       coverage: profilzeilen[0]?.coverage ?? 0,
     };

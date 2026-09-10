@@ -94,6 +94,27 @@ export interface FitInput {
   rankedValues: string[];
   /** Rollen oder Felder, die der Mensch selbst genannt hat. */
   statedInterests: string[];
+  /**
+   * Belegte Fähigkeiten aus dem Katalog.
+   *
+   * ── Warum sie neben den Belegen stehen und nicht statt ihrer ────
+   *
+   * Die Wortüberlappung unten trifft, was zufällig dieselben Wörter
+   * benutzt: „Erfahrung in der Kommissionierung" gegen
+   * „Kommissionierung nach Pickliste" — das geht gut. Sie trifft
+   * nicht, was dasselbe meint und anders heisst: „Auftragszusammen-
+   * stellung" gegen dieselbe Erfahrung.
+   *
+   * Eine Fähigkeit aus dem Katalog hat diesen Schritt hinter sich,
+   * und sie trägt ihre Stufe mit. Wo sie greift, entscheidet sie;
+   * wo der Katalog nichts kennt, bleibt es bei der Überlappung.
+   *
+   * Leer zu lassen ist erlaubt und ändert nichts — der Wert ist dann
+   * genau der, den es vorher gab.
+   */
+  faehigkeiten?: readonly { schluessel: string; stufe: string }[];
+  /** Der Katalog. Fehlt er, wird nichts zugeordnet. */
+  schluesselFuerAnforderung?: (text: string) => string | null;
   weights?: Partial<FitWeights>;
 }
 
@@ -153,7 +174,31 @@ export function computeFit(input: FitInput): FitResult {
   const evidenceTexts = confirmed.map((e) => e.statement);
   const skillEvidenceIds: string[] = [];
 
+  /*
+   * Der Katalogweg zuerst.
+   *
+   * Er kennt Synonyme und trägt eine Stufe; die Wortüberlappung
+   * darunter kennt nur Wörter. Wo der Katalog eine Anforderung und
+   * eine belegte Fähigkeit auf denselben Schlüssel bringt, ist das
+   * die bessere Auskunft — und sie kommt aus bestätigten Belegen,
+   * nicht aus einem Zufall im Wortlaut.
+   *
+   * Ohne Katalog oder ohne Fähigkeiten ändert sich nichts.
+   */
+  const katalogschluessel = input.schluesselFuerAnforderung;
+  const belegteSchluessel = new Set((input.faehigkeiten ?? []).map((f) => f.schluessel));
+
   const scoreRequirement = (r: JobRequirement): number => {
+    if (katalogschluessel && belegteSchluessel.size > 0) {
+      const k = katalogschluessel(r.text);
+      /*
+       * 1 und nicht 0,9: Eine belegte Fähigkeit auf denselben
+       * Schlüssel ist keine Ähnlichkeit, sondern eine Übereinstimmung.
+       * Sie kleiner zu werten hiesse, den Beleg schlechter zu stellen
+       * als einen glücklichen Wortlaut.
+       */
+      if (k !== null && belegteSchluessel.has(k)) return 1;
+    }
     let best = 0;
     let bestId: string | null = null;
     for (const e of confirmed) {
