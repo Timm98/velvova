@@ -395,26 +395,12 @@ export function AppShell({
        */}
 
       {/*
-        ── Oben rechts: nur der Name ───────────────────────────────
+        Hier stand der Schriftzug „VELVOVA" oben rechts.
 
-        Kein Kasten, kein Untertitel, keine Werkzeugleiste. Eine Marke
-        wirkt hochwertig, wenn sie sich nicht erklärt.
-
-        Nur ab `md`: Darunter trägt `TopNav` bereits den Namen, und
-        zweimal derselbe Schriftzug übereinander sieht nicht nach
-        Ruhe aus, sondern nach einem Fehler.
-
-        `pointer-events-none`, damit dieser Streifen nichts abfängt.
-        Er ist eine Angabe, kein Bedienelement.
+        Die Leiste links trägt den Namen bereits, und die Fläche
+        daneben gehört dem Gespräch. Ein zweiter Schriftzug in der
+        Ecke war eine Angabe ohne Aufgabe.
       */}
-      <div
-        aria-hidden
-        className="pointer-events-none hidden shrink-0 justify-end px-8 pt-5 pb-1 md:flex"
-      >
-        <span className="font-titel text-[13px] tracking-[0.14em] text-(--app-text-3) uppercase">
-          {brandName}
-        </span>
-      </div>
 
       <main
         id="inhalt"

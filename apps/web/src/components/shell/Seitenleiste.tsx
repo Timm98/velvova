@@ -282,9 +282,15 @@ export function Seitenleiste({
   function Ueberschrift({ text }: { text: string }) {
     if (eng) return <div className="mx-2.5 my-2 border-t border-line" aria-hidden />;
     return (
-      <h2 className="px-2.5 pt-4 pb-1 text-2xs font-medium uppercase tracking-[0.09em] text-ink-3">
-        {text}
-      </h2>
+      /*
+        Klein und leise, wie bei Claude.
+        
+        Vorher: Versalien, Sperrung, mittleres Gewicht — dieselbe
+        Behandlung, die ein Abschnittstitel in einem Bericht bekommt.
+        In einer Leiste ist eine Überschrift aber keine Ansage,
+        sondern eine Trennlinie mit einem Wort daran.
+      */
+      <h2 className="px-2.5 pt-4 pb-1 text-2xs font-normal text-(--app-text-3)">{text}</h2>
     );
   }
 
@@ -439,11 +445,12 @@ export function Seitenleiste({
             {projekte.map((p) => (
               <Projektzeile key={p.id} projekt={p} offen={pfad === p.href} />
             ))}
-            {projekte.length === 0 && (
-              <p className="px-1.5 pb-1 text-2xs leading-relaxed text-(--app-text-3)">
-                Sag Monday, was du beruflich vorhast — oder leg selbst eines an.
-              </p>
-            )}
+            {/*
+              Hier stand ein Satz, der erklärte, wie Vorhaben
+              entstehen. Eine Leiste erklärt sich nicht — das Plus
+              daneben sagt dasselbe, ohne zwei Zeilen dafür zu
+              brauchen.
+            */}
           </div>
         </div>
       )}
@@ -523,16 +530,23 @@ export function Seitenleiste({
                 Darunter liegt statt ihrer der Plan: eine Angabe, die
                 sich ändert und die man tatsächlich nachschlägt.
               */}
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-(--app-text)">
-                {userName ?? userEmail}
+              {/*
+                Name und Tarif als EIN Block, wie bei ChatGPT.
+                
+                Vorher stand der Tarif in einer eigenen Zeile
+                darunter, eingerückt bis unter den Namen — zwei
+                Elemente, die zusammengehören und trotzdem
+                auseinanderfielen. Jetzt gehören beide demselben
+                Knopf: Der Name oben, darunter klein der Tarif.
+              */}
+              <span className="min-w-0 flex-1 text-left">
+                <span className="block truncate text-[13px] font-medium text-(--app-text)">
+                  {userName ?? userEmail}
+                </span>
+                <span className="block truncate text-2xs text-(--app-text-3)">{planName}</span>
               </span>
-              <ChevronDown
-                className={cn(
-                  "size-4 shrink-0 text-(--app-text-3) transition-transform",
-                  kontoOffen && "rotate-180",
-                )}
-                strokeWidth={1.8}
-              />
+              {/* Kein Chevron: Der ganze Block ist der Knopf, und ein
+                  Pfeil daneben behauptet eine zweite Bedienstelle. */}
             </>
           )}
         </button>
@@ -550,22 +564,6 @@ export function Seitenleiste({
           Eingeklappt entfällt die Zeile: Ein Warenkorb ohne den Plan
           daneben ist ein Angebot ohne Zusammenhang.
         */}
-        {!eng && (
-          <div className="mt-0.5 flex items-center gap-2 pr-1 pl-[2.85rem]">
-            <span className="min-w-0 flex-1 truncate text-2xs text-(--app-text-3)">
-              {planName}
-            </span>
-            <Link
-              href={planHref}
-              aria-label={`Abo ansehen — aktuell ${planName}`}
-              title="Abo ansehen"
-              className="flex size-7 shrink-0 items-center justify-center rounded-(--radius-sm) text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)"
-            >
-              <ShoppingCart className="size-4" strokeWidth={1.8} />
-            </Link>
-          </div>
-        )}
-
         {kontoOffen && (
           /*
             Nach oben, nicht nach unten.

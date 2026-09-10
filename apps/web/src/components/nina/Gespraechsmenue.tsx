@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { MoreHorizontal, PauseCircle, Plus } from "lucide-react";
+import { BookOpen, MoreHorizontal, PauseCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -19,10 +19,13 @@ import { cn } from "@/lib/cn";
  * etwas, aber es drängt sich nicht auf.
  */
 export function Gespraechsmenue({
+  onKontext,
   onPause,
   pending,
   labels,
 }: {
+  /** Öffnet „Was ich über dich weiss". */
+  onKontext: () => void;
   onPause: () => void;
   pending: boolean;
   labels: { pause: string };
@@ -75,6 +78,18 @@ export function Gespraechsmenue({
           role="menu"
           className="absolute top-[calc(100%+0.25rem)] right-0 z-50 w-56 rounded-(--radius-lg) border border-(--app-rand) bg-(--app-erhoben) p-1.5 shadow-xl"
         >
+          <button
+            type="button"
+            role="menuitem"
+            className={eintrag}
+            onClick={() => {
+              setOffen(false);
+              onKontext();
+            }}
+          >
+            <BookOpen className="size-4 shrink-0" strokeWidth={1.8} />
+            Was ich über dich weiss
+          </button>
           <Link href="/app/monday" role="menuitem" className={eintrag} onClick={() => setOffen(false)}>
             <Plus className="size-4 shrink-0" strokeWidth={1.8} />
             Neues Gespräch

@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, BookOpen, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
+import { ArrowDown, Check, Mic, PauseCircle, Sparkle, Square, X } from "lucide-react";
 import { confirmEvidence, dismissEvidence, rejectEvidence } from "@/lib/profile";
 import { pauseSession } from "@/lib/interview";
 import { Composer } from "@/components/nina/Composer";
 import { Gespraechsmenue } from "@/components/nina/Gespraechsmenue";
 import { Startansicht } from "@/components/nina/Startansicht";
+import { Startabzeichen } from "@/components/nina/Startabzeichen";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
@@ -526,27 +527,28 @@ export function InterviewRoom({
          * über einem leeren Chat wäre ein Angebot, etwas zu
          * unterbrechen, das nicht läuft.
          */}
-        <div className="flex shrink-0 items-center justify-end gap-1 pt-4 pb-1">
-          <button
-            type="button"
-            onClick={() => setFortschrittOffen(true)}
-            className={cn(
-              "flex min-h-8 items-center gap-1.5 rounded-(--radius-pill) px-2.5 text-xs",
-              "text-(--app-text-3) transition-colors hover:bg-(--app-hover) hover:text-(--app-text)",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--app-fokus)",
-            )}
-          >
-            <BookOpen className="size-3.5 shrink-0" strokeWidth={1.8} />
-            Kontext
-          </button>
-          {!nochNichtsGesagt && (
+        {/*
+         * Der „Kontext"-Knopf stand hier oben rechts und ist weg.
+         *
+         * Auf der leeren Fläche war er das einzige Bedienelement über
+         * dem Namen — ein Angebot, bevor es etwas gibt, worüber es
+         * Zusammenhang geben könnte.
+         *
+         * Verloren ist er nicht: „Was ich über dich weiss" liegt im
+         * Punkt-Menü, zusammen mit den übrigen Gesprächsaktionen. Ein
+         * Bereich, den niemand mehr öffnen kann, wäre schlimmer als
+         * ein Knopf zu viel.
+         */}
+        {!nochNichtsGesagt && (
+          <div className="flex shrink-0 items-center justify-end pt-4 pb-1">
             <Gespraechsmenue
+              onKontext={() => setFortschrittOffen(true)}
               onPause={pausieren}
               pending={pending}
               labels={{ pause: labels.pauseSession }}
             />
-          )}
-        </div>
+          </div>
+        )}
 
         {/*
          * Was beim Sprechen schiefging — sichtbar, nicht nur im Zustand.
@@ -604,7 +606,10 @@ export function InterviewRoom({
              * abgerundete Ecke wurde angeschnitten. Vier Pixel Luft
              * genügen; mehr würde die Blase sichtbar einrücken.
              */
-            "uebergang-gespraech-strom ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1 pb-6",
+            "uebergang-gespraech-strom ohne-rollbalken min-h-0 flex-1 overflow-y-auto overscroll-contain pt-2 pr-1",
+            /* Im Gespräch braucht der Strom Luft nach unten, auf der
+               leeren Fläche trennt sie Name und Eingabe. */
+            nochNichtsGesagt ? "pb-0" : "pb-6",
             /*
              * ── Leere Fläche: die Gruppe liegt über der Mitte ──────
              *
@@ -624,7 +629,24 @@ export function InterviewRoom({
              * Genau mittig wirkt auf einem breiten Bildschirm zu tief,
              * weil der Blick beim Lesen ohnehin oberhalb ansetzt.
              */
-            nochNichtsGesagt && "flex flex-none flex-col justify-center pb-2",
+            /*
+             * Mittig, nicht darüber.
+             *
+             * Vorher schob `pb-[8vh]` die Gruppe eine Spur nach oben —
+             * richtig, solange Frage und Vorschläge darunter Platz
+             * brauchten. Jetzt sind es nur noch Core, Name und Feld;
+             * die Gruppe ist kurz genug, dass die Mitte auch die
+             * Mitte sein darf.
+             */
+            /*
+             * Über der Mitte, nicht genau darin.
+             *
+             * `pb-[12vh]` schiebt die Gruppe nach oben. Genau mittig
+             * wirkt auf einem breiten Bildschirm zu tief, weil der
+             * Blick beim Lesen oberhalb der Mitte ansetzt — und weil
+             * unter der Eingabe noch die Abzeichen stehen.
+             */
+            nochNichtsGesagt && "flex flex-none flex-col justify-center",
           )}
         >
           {nochNichtsGesagt && (
@@ -657,11 +679,8 @@ export function InterviewRoom({
              * darunter liegt sie damit leicht oberhalb der Mitte —
              * genau dort, wohin der Blick zuerst geht.
              */
-            <div className="grid justify-items-center gap-8 py-6">
-              <Startansicht
-                displayName={displayName}
-                onVorschlag={(text) => setEntwurf((v) => ({ text, zaehler: v.zaehler + 1 }))}
-              />
+            <div className="grid justify-items-center gap-6 pb-2">
+              <Startansicht displayName={displayName} />
               {/*
                * Hier stand die Eröffnungsfrage aus dem Interview —
                * „Was soll sich durch deine nächste berufliche
@@ -1105,6 +1124,17 @@ export function InterviewRoom({
           )}
           <Composer
             vorgabe={entwurf.zaehler > 0 ? entwurf : undefined}
+            /*
+              Der Sprachmodus, der bisher im aufgelösten Kopfbereich
+              als „Live sprechen" stand. Er hing seither an keinem
+              Knopf mehr — die Funktion war da, der Weg dorthin nicht.
+            */
+            sprachmodus={{
+              moeglich: live.möglich,
+              aktiv: live.stand.zustand !== "aus",
+              starten: live.starten,
+              beenden: live.beenden,
+            }}
             onSend={(text, options) => {
               /*
                * Wer selbst schreibt, will seine Zeile sehen.
@@ -1130,6 +1160,16 @@ export function InterviewRoom({
             modellwahl
             autoFocus
           />
+
+          {/*
+            Die Abzeichen stehen UNTER dem Feld und nur auf der leeren
+            Fläche.
+
+            In einem laufenden Gespräch wäre eine Zeile mit „Plugins"
+            unter der Eingabe ein Angebot, das Gespräch zu verlassen —
+            genau dann, wenn jemand gerade schreibt.
+          */}
+          {nochNichtsGesagt && <Startabzeichen />}
 
           {/*
             Der Weg zu den Stellen — als Geste UND als Knopf.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Check, Mic, Square, Trash2 } from "lucide-react";
+import { ArrowUp, AudioLines, Check, Mic, Square, Trash2 } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { DokumentKnopf } from "./DokumentKnopf";
 import { Modellwahl } from "./Modellwahl";
@@ -74,6 +74,7 @@ export function Composer({
   dokumenteFür,
   modellwahl = false,
   vorgabe,
+  sprachmodus,
 }: {
   onSend: (text: string, options?: { fromVoice?: boolean }) => void;
   busy: boolean;
@@ -100,6 +101,29 @@ export function Composer({
    * Knopf.
    */
   vorgabe?: { text: string; zaehler: number };
+  /**
+   * Der Sprachmodus — das laufende Gespräch, nicht das Diktat.
+   *
+   * ── Warum zwei Knöpfe und nicht einer ───────────────────────────
+   *
+   * Weil es zwei verschiedene Dinge sind. Das Mikrofon schreibt in
+   * das Feld, was man sagt; man liest es nach und schickt es ab. Der
+   * Sprachmodus führt ein Gespräch — man sagt etwas, Monday
+   * antwortet laut, ohne dass jemand tippt.
+   *
+   * Beides auf einen Knopf zu legen hiesse, dass niemand mehr
+   * diktieren kann, ohne ein Gespräch zu beginnen.
+   *
+   * Fehlt die Angabe, erscheint der Knopf nicht. Ein Zeichen für
+   * einen Modus, den es an dieser Stelle nicht gibt, wäre eine
+   * Zusage ohne Gegenstück.
+   */
+  sprachmodus?: {
+    moeglich: boolean;
+    aktiv: boolean;
+    starten: () => void;
+    beenden: () => void;
+  };
   /**
    * Mondays Name — schaltet den Dokumentknopf frei.
    *
@@ -314,7 +338,28 @@ export function Composer({
          * mehr als eine Zeile erwartet wird. Ein flaches sagt das
          * Gegenteil, und man schreibt entsprechend kurz.
          */
-        "mx-auto w-full max-w-[760px] min-h-[118px] flex flex-col justify-between",
+        /*
+         * Höher als eine Suchzeile.
+         *
+         * 118 Pixel waren die Höhe eines Feldes, in das man einen
+         * Satz tippt. Wer eine Lage schildert, schreibt drei — und
+         * ein Feld, das sichtbar Platz dafür hat, sagt das, bevor
+         * jemand anfängt.
+         */
+        /*
+         * Breit und flach, nicht schmal und hoch.
+         *
+         * Ich hatte es umgekehrt: 520 breit, 200 hoch. Das ist die
+         * Form eines Notizzettels. Claudes Eingabe ist eine Zeile mit
+         * Luft darunter — breit genug, dass ein Satz nicht dreimal
+         * umbricht, und flach genug, dass sie nicht wie ein Formular
+         * aussieht.
+         */
+        /* `relative z-10`: Die Leiste darunter schiebt sich hinter die
+           untere Kante. Ohne Stapelposition läge sie oben, weil sie
+           später im Baum steht — und man sähe ihre Oberkante quer
+           durch das Feld. */
+        "relative z-10 mx-auto w-full max-w-[720px] min-h-[124px] flex flex-col justify-between",
         className,
       )}
     >
@@ -467,31 +512,86 @@ export function Composer({
         <div className="ml-auto flex items-center gap-1.5">
           {modellwahl && <Modellwahl />}
 
+        {sprachmodus?.moeglich && (
+          <button
+            type="button"
+            onClick={() => (sprachmodus.aktiv ? sprachmodus.beenden() : sprachmodus.starten())}
+            aria-pressed={sprachmodus.aktiv}
+            aria-label={sprachmodus.aktiv ? "Sprachmodus beenden" : "Mit Monday sprechen"}
+            title={sprachmodus.aktiv ? "Sprachmodus beenden" : "Mit Monday sprechen"}
+            className={cn(
+              /*
+               * Ohne Fläche, wie das Mikrofon daneben.
+               *
+               * Der gefüllte Kreis machte aus dem Sprachmodus einen
+               * zweiten Hauptknopf neben dem Senden — zwei
+               * gleichgewichtige Flächen in einer Zeile, in der nur
+               * eine die Handlung ist.
+               *
+               * Gefüllt wird er erst, wenn er LÄUFT. Dann ist die
+               * Fläche keine Verzierung, sondern die Auskunft, dass
+               * gerade zugehört wird.
+               */
+              "grid size-8 shrink-0 place-items-center rounded-full transition-colors",
+              sprachmodus.aktiv
+                ? "bg-(--app-akzent) text-(--app-grund)"
+                : "text-(--app-text) hover:bg-(--app-hover)",
+            )}
+          >
+            <AudioLines className="size-4" strokeWidth={2} />
+          </button>
+        )}
+
         {stimmeMöglich && !hört && (
           <button
             type="button"
             onClick={diktatStarten}
             aria-label="Antwort diktieren"
-            className="grid size-9 shrink-0 place-items-center rounded-(--radius-control) text-(--app-text-2) transition-colors hover:bg-(--app-hover) hover:text-(--app-text)"
+            className="grid size-8 shrink-0 place-items-center rounded-full text-(--app-text) transition-colors hover:bg-(--app-hover)"
           >
             <Mic className="size-[18px]" strokeWidth={1.8} />
           </button>
         )}
 
+        {/*
+          Der Senden-Knopf erscheint erst, wenn es etwas zu senden
+          gibt.
+
+          Vorher stand er ausgegraut da — ein Knopf, der nichts tut,
+          und ein Pfeil, der auf ein leeres Feld zeigt. Die Vorlagen
+          machen es anders: Solange nichts getippt ist, steht dort
+          nichts, und der Platz gehört dem Sprachmodus.
+
+          Er kommt zurück, sobald das erste Zeichen da ist.
+        */}
+        {text.trim().length > 0 && (
         <button
           type="button"
           onClick={() => senden()}
-          disabled={busy || text.trim().length === 0}
+          disabled={busy}
           aria-label="Senden"
           className={cn(
-            "grid size-9 shrink-0 place-items-center rounded-(--radius-control) transition-all duration-(--duration-fast)",
-            text.trim().length > 0 && !busy
-              ? "bg-accent text-accent-on shadow-sm hover:bg-accent-hover active:translate-y-px"
-              : "bg-(--app-erhoben-2) text-(--app-text-3)",
+            /*
+             * Rund und hell, nicht eckig und farbig.
+             *
+             * Der Knopf trug die Markenfarbe in einem abgerundeten
+             * Quadrat. Beide Vorlagen machen es anders: ein Kreis,
+             * gefüllt mit der Textfarbe, das Zeichen darin in der
+             * Farbe des Grundes. Das liest sich als „ab damit" und
+             * nicht als „hier ist ein Knopf".
+             *
+             * Und ohne Schatten: Auf einer dunklen Fläche wird
+             * daraus ein grauer Hof, kein Relief.
+             */
+            "grid size-8 shrink-0 place-items-center rounded-full transition-colors duration-(--duration-fast)",
+            busy
+              ? "bg-(--app-erhoben-2) text-(--app-text-3)"
+              : "bg-(--app-text) text-(--app-grund) hover:opacity-90",
           )}
         >
-          <ArrowUp className="size-[18px]" strokeWidth={2.2} />
+          <ArrowUp className="size-4" strokeWidth={2.4} />
         </button>
+        )}
         </div>
       </div>
     </div>

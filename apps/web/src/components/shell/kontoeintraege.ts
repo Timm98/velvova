@@ -13,6 +13,7 @@ import {
   Tag,
   User,
   type LucideIcon,
+  Plug,
 } from "lucide-react";
 
 /**
@@ -119,6 +120,14 @@ export function kontoGruppen(labels: KontoBeschriftungen, assistent: string): Ko
       titel: "Konto",
       eintraege: [
         { href: "/app/settings", label: labels.settings, icon: User, exakt: true },
+        /*
+          Plugins gehören auch hierhin.
+          
+          Sie stehen in der Leiste unter den Bereichen — aber wer im
+          Kontomenü nach Verbindungen sucht, sucht dort und nicht
+          dreissig Zeilen weiter oben. Derselbe Ort, zwei Wege.
+        */
+        { href: "/app/plugins", label: "Plugins", icon: Plug },
         { href: "/app/settings/abo", label: "Abo & Zahlung", icon: CreditCard },
         { href: "/app/notifications", label: "Benachrichtigungen", icon: Bell },
         { href: "/app/settings/privacy", label: labels.privacy, icon: ShieldCheck },

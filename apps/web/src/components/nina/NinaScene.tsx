@@ -589,7 +589,36 @@ export function NinaScene({
        * den Unterschied nicht sieht.
        */
       const kante = Math.max(el.clientWidth, el.clientHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio * 2, kante >= 96 ? 3.5 : 1.5));
+      /*
+       * ══════════════════════════════════════════════════════════
+       * Nicht der Faktor wird gedeckelt, sondern der Puffer
+       * ══════════════════════════════════════════════════════════
+       *
+       * Hier stand `kante >= 96 ? 3.5 : 1.5`. Die Absicht war
+       * richtig — winzige Flächen brauchen keine hohe Auflösung.
+       * Die Wirkung war es nicht: Je GRÖSSER die Fläche, desto
+       * höher der Faktor.
+       *
+       * Bei 52 Pixeln ergab das 182×182. Bei 112 Pixeln sind es
+       * 392×392 — viereinhalbmal so viele Pixel, mit Kantenglättung,
+       * auf `low-power`. Der Treiber meldete daraufhin wiederholt
+       * „GPU stall due to ReadPixels", und der Core ruckelte
+       * sichtbar.
+       *
+       * Aufgefallen ist es erst, als der Core von 52 auf 112 wuchs.
+       * Die Zeile war vorher genauso falsch, nur hat es niemand
+       * gemerkt — bei kleinen Flächen fällt viermal zu viel Arbeit
+       * nicht auf.
+       *
+       * Jetzt gilt eine feste Obergrenze für die Kantenlänge des
+       * Puffers. Kleine Flächen verhalten sich unverändert (bei 52
+       * Pixeln greift weiterhin die 3,5), grosse werden nicht
+       * teurer, als sie aussehen.
+       */
+      const MAX_PUFFER = 320;
+      renderer.setPixelRatio(
+        Math.max(1, Math.min(window.devicePixelRatio * 2, 3.5, MAX_PUFFER / Math.max(kante, 1))),
+      );
       renderer.outputColorSpace = SRGBColorSpace;
       /*
        * Keine Tonwertkorrektur — bewusst.
