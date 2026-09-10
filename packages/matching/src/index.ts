@@ -38,3 +38,4 @@ export * from "./proaktiv/index.ts";
 export * from "./erkenntnis.ts";
 export * from "./naechstefrage.ts";
 export * from "./widersprueche.ts";
+export * from "./angebotsangaben.ts";

@@ -4,6 +4,7 @@ import { ArrowUpRight, Moon } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { berichtGesehen, morgenlage } from "@/lib/nachtlauf";
 import { fastPassende } from "@/lib/wandelbar";
+import { angebotstreffer } from "@/lib/angebotstreffer";
 import { PageHeader } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Heute Nacht" };
@@ -43,7 +44,11 @@ export const dynamic = "force-dynamic";
  */
 export default async function MorgenSeite() {
   const user = await requireUser();
-  const [lage, wandelbar] = await Promise.all([morgenlage(user.id), fastPassende(user.id)]);
+  const [lage, wandelbar, angebote] = await Promise.all([
+    morgenlage(user.id),
+    fastPassende(user.id),
+    angebotstreffer(user.id),
+  ]);
 
   /*
    * Das Aufschlagen ist das Ereignis, nicht das Schreiben.
@@ -181,6 +186,69 @@ export default async function MorgenSeite() {
                     In ihrer Sprache
                   </Link>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {angebote.length > 0 && (
+        /*
+         * Angebote statt Anzeigen.
+         *
+         * Der Unterschied ist nicht kosmetisch: Eine Anzeige
+         * beschreibt, was sich jemand vorgestellt hat, ein Angebot ist
+         * bindend, sobald beide Seiten aufdecken. Deshalb stehen sie
+         * über den Anzeigen und nicht darunter.
+         *
+         * Der Name des Betriebs steht hier nicht — vor dem Aufdecken
+         * gibt es nur den Umriss.
+         */
+        <section className="grid gap-4">
+          <div className="grid gap-1">
+            <h2 className="text-[17px] font-semibold text-ink">
+              Angebote, die nirgends ausgeschrieben sind
+            </h2>
+            <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+              Diese Betriebe haben verbindliche Konditionen hinterlegt, ohne eine Stelle
+              auszuschreiben. Was hier steht, gilt — und wer dahintersteht, erfährst du erst, wenn
+              ihr beide aufdeckt.
+            </p>
+          </div>
+
+          <ul className="grid gap-3">
+            {angebote.map((a) => (
+              <li
+                key={a.angebotId}
+                className="grid gap-2 rounded-(--radius-lg) border border-accent bg-accent-soft p-5"
+              >
+                <div className="grid gap-0.5">
+                  <span className="text-[16px] font-semibold text-ink">{a.rolle}</span>
+                  <span className="text-[14px] text-ink-2">
+                    {a.beschreibung}
+                    {a.ort ? ` · ${a.ort}` : ""}
+                  </span>
+                </div>
+
+                {a.gehaltVon !== null && (
+                  <p className="text-[14.5px] text-ink tabular-nums">
+                    {a.gehaltBis !== null
+                      ? `${a.gehaltVon.toLocaleString("de-DE")} bis ${a.gehaltBis.toLocaleString("de-DE")} € brutto im Monat`
+                      : `ab ${a.gehaltVon.toLocaleString("de-DE")} € brutto im Monat`}{" "}
+                    <span className="text-ink-2">— zugesagt, nicht geschätzt</span>
+                  </p>
+                )}
+
+                {a.offenePunkte.length > 0 && (
+                  <p className="max-w-[var(--measure)] border-t border-line pt-2 text-2xs leading-relaxed text-ink-3">
+                    Offen: {a.offenePunkte.join(" · ")}. Das ist keine Absage — der Betrieb hat es
+                    nur nicht gesagt.
+                  </p>
+                )}
+
+                <p className="text-2xs text-ink-3 tabular-nums">
+                  Gilt bis {new Intl.DateTimeFormat("de-DE").format(new Date(a.gueltigBis))}
+                </p>
               </li>
             ))}
           </ul>
