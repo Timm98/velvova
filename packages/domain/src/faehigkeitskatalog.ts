@@ -41,6 +41,9 @@
  * bis dahin leer.
  */
 
+/** Die Felder, für die ein Startbestand geprüft ist. */
+export type Berufsfeld = "pflege" | "lager";
+
 export interface Katalogeintrag {
   /** Stabiler Schlüssel. Ändert sich nie, auch wenn die Bezeichnung wechselt. */
   schluessel: string;
@@ -57,17 +60,32 @@ export interface Katalogeintrag {
    * Umlaute werden bei der Suche zu `ae`, `oe`, `ue` gefaltet — hier
    * stehen sie deshalb schon in dieser Form, damit beim Lesen
    * sichtbar ist, wonach wirklich gesucht wird.
+   *
+   * Kein Synonym trägt ein Leerzeichen als Abgrenzung. Die Grenze
+   * kommt aus der Suche selbst (siehe `schluesselFinden`) — ein
+   * Leerzeichen in den Daten hielt genau so lange, bis jemand
+   * `.trim()` schrieb.
    */
   synonyme: readonly string[];
   /** Für welches Berufsfeld dieser Eintrag geprüft ist. */
-  feld: "pflege";
+  feld: Berufsfeld;
 }
 
 /**
- * Startbestand Pflege.
+ * Startbestand.
  *
- * Gewählt nach dem, was in Stellenanzeigen dieser Zelle tatsächlich
- * verlangt wird — nicht nach dem, was ein Lehrbuch aufzählt.
+ * ── Warum zwei Felder und warum dieses zweite ───────────────────
+ *
+ * Zuerst stand hier nur Pflege — gewählt nach der dichtesten Zelle
+ * der Marktmessung (207 Arbeitgeber in Berlin). Der erste Lauf gegen
+ * die 142 bestätigten Belege ergab dann null Fähigkeiten, und der
+ * Grund war nicht der Katalog, sondern die Wahl: Kein einziger Beleg
+ * hatte Pflegebezug. Die Belege lauten „Ladungssicherung nach VDI
+ * 2700", „Kommissionierung nach Pickliste", „Warenannahme".
+ *
+ * Der Katalog folgt den Nutzern, nicht dem Markt. Der dichteste Markt
+ * sagt, wo sich ein Pilot lohnt; die vorhandenen Belege sagen, wofür
+ * heute gerechnet werden kann.
  */
 export const KATALOG: readonly Katalogeintrag[] = [
   { schluessel: "grundpflege", bezeichnung: "Grundpflege", feld: "pflege", synonyme: ["grundpflege", "koerperpflege"] },
@@ -81,7 +99,7 @@ export const KATALOG: readonly Katalogeintrag[] = [
   { schluessel: "praxisanleitung", bezeichnung: "Praxisanleitung", feld: "pflege", synonyme: ["praxisanleit", "praxisanleiter", "anleitung von auszubildenden"] },
   { schluessel: "einarbeitung", bezeichnung: "Einarbeitung neuer Kollegen", feld: "pflege", synonyme: ["einarbeitung neuer", "mentoring", "einarbeiten von"] },
   { schluessel: "beatmung", bezeichnung: "Beatmung", feld: "pflege", synonyme: ["beatmung", "beatmungspflege", "tracheostoma", "trachealkanuele"] },
-  { schluessel: "intensivpflege", bezeichnung: "Intensivpflege", feld: "pflege", synonyme: ["intensivpflege", "intensivstation", "its ", "anaesthesie"] },
+  { schluessel: "intensivpflege", bezeichnung: "Intensivpflege", feld: "pflege", synonyme: ["intensivpflege", "intensivstation", "anaesthesie"] },
   { schluessel: "notfallversorgung", bezeichnung: "Notfallversorgung", feld: "pflege", synonyme: ["notfall", "reanimation", "notaufnahme", "erste hilfe"] },
   { schluessel: "op_assistenz", bezeichnung: "OP-Assistenz", feld: "pflege", synonyme: ["op-assistenz", "instrumentier", "operationsdienst", "springertaetigkeit"] },
   { schluessel: "palliativpflege", bezeichnung: "Palliativpflege", feld: "pflege", synonyme: ["palliativ", "sterbebegleitung", "hospiz"] },
@@ -91,7 +109,7 @@ export const KATALOG: readonly Katalogeintrag[] = [
   { schluessel: "paediatrie", bezeichnung: "Pflege von Kindern", feld: "pflege", synonyme: ["paediatr", "kinderkrankenpflege", "neonatolog"] },
   { schluessel: "onkologie", bezeichnung: "Onkologische Pflege", feld: "pflege", synonyme: ["onkolog", "chemotherapie", "zytostatik"] },
   { schluessel: "dialyse", bezeichnung: "Dialyse", feld: "pflege", synonyme: ["dialyse", "nephrolog", "shunt"] },
-  { schluessel: "hygiene", bezeichnung: "Hygiene", feld: "pflege", synonyme: ["hygiene", "infektionsschutz", "desinfektion", "mre "] },
+  { schluessel: "hygiene", bezeichnung: "Hygiene", feld: "pflege", synonyme: ["hygiene", "infektionsschutz", "desinfektion"] },
   { schluessel: "qualitaetsmanagement", bezeichnung: "Qualitätsmanagement", feld: "pflege", synonyme: ["qualitaetsmanagement", "qm-", "audit", "mdk"] },
   { schluessel: "expertenstandards", bezeichnung: "Expertenstandards", feld: "pflege", synonyme: ["expertenstandard", "sturzprophylaxe", "dekubitusprophylaxe"] },
   { schluessel: "beratung", bezeichnung: "Beratung von Angehörigen", feld: "pflege", synonyme: ["angehoerigenberatung", "beratungsgespraech", "pflegeberatung"] },
@@ -102,7 +120,22 @@ export const KATALOG: readonly Katalogeintrag[] = [
   { schluessel: "mobilisation", bezeichnung: "Mobilisation und Transfer", feld: "pflege", synonyme: ["mobilisation", "transfer", "kinaesthetik", "bobath"] },
   { schluessel: "ernaehrungsmanagement", bezeichnung: "Ernährungsmanagement", feld: "pflege", synonyme: ["ernaehrungsmanagement", "peg", "sondenkost"] },
   { schluessel: "schmerzmanagement", bezeichnung: "Schmerzmanagement", feld: "pflege", synonyme: ["schmerzmanagement", "schmerzerfassung"] },
-  { schluessel: "pflegesoftware", bezeichnung: "Pflegesoftware", feld: "pflege", synonyme: ["vivendi", "dan produkte", "medifox", "snap ", "orbis", "pflegesoftware"] },
+  { schluessel: "pflegesoftware", bezeichnung: "Pflegesoftware", feld: "pflege", synonyme: ["vivendi", "medifox", "orbis", "pflegesoftware"] },
+
+  /* ── Lager und Logistik ── */
+  { schluessel: "kommissionierung", bezeichnung: "Kommissionierung", feld: "lager", synonyme: ["kommissionier", "pickliste", "auftragszusammenstellung"] },
+  { schluessel: "warenannahme", bezeichnung: "Warenannahme", feld: "lager", synonyme: ["warenannahme", "wareneingang", "wareneingangskontrolle", "warenausgang"] },
+  { schluessel: "ladungssicherung", bezeichnung: "Ladungssicherung", feld: "lager", synonyme: ["ladungssicherung", "vdi 2700", "ladungssicherheit"] },
+  { schluessel: "staplerfahren", bezeichnung: "Flurförderzeuge fahren", feld: "lager", synonyme: ["stapler", "gabelstapler", "flurfoerderzeug", "hubwagen", "schubmaststapler"] },
+  { schluessel: "lagerverwaltung", bezeichnung: "Lagerverwaltungssystem", feld: "lager", synonyme: ["lagerverwaltung", "lvs", "wms", "sap ewm", "sap wm"] },
+  { schluessel: "inventur", bezeichnung: "Inventur", feld: "lager", synonyme: ["inventur", "bestandskontrolle", "bestandsfuehrung"] },
+  { schluessel: "verpackung", bezeichnung: "Verpackung und Versand", feld: "lager", synonyme: ["verpackung", "versandvorbereitung", "packen von", "kartonage"] },
+  { schluessel: "gefahrgut", bezeichnung: "Gefahrgut", feld: "lager", synonyme: ["gefahrgut", "adr", "gefahrstoff"] },
+  { schluessel: "zoll", bezeichnung: "Zoll und Ausfuhr", feld: "lager", synonyme: ["zollabwicklung", "ausfuhranmeldung", "atlas", "praeferenz"] },
+  { schluessel: "disposition", bezeichnung: "Disposition", feld: "lager", synonyme: ["disposition", "tourenplanung", "frachtplanung", "speditionsauftrag"] },
+  { schluessel: "qualitaetskontrolle", bezeichnung: "Qualitätskontrolle", feld: "lager", synonyme: ["qualitaetskontrolle", "wareneingangspruefung", "reklamationsbearbeitung"] },
+  { schluessel: "arbeitssicherheit", bezeichnung: "Arbeitssicherheit", feld: "lager", synonyme: ["arbeitssicherheit", "unfallverhuetung", "sicherheitsunterweisung"] },
+  { schluessel: "schichtfuehrung", bezeichnung: "Schichtführung", feld: "lager", synonyme: ["schichtleitung", "schichtfuehrung", "teamleitung lager", "vorarbeiter"] },
 ];
 
 /** Ein Schlüssel je Eintrag — doppelte wären ein stiller Datenfehler. */
@@ -156,7 +189,21 @@ export function schluesselFinden(text: string): string | null {
   for (const eintrag of KATALOG) {
     for (const s of eintrag.synonyme) {
       const n = normalisieren(s).trim();
-      if (n.length === 0 || !t.includes(n)) continue;
+      /*
+       * Am Wortanfang, nicht irgendwo im Wort.
+       *
+       * Der Fehler, der das erzwungen hat, stand am 10.09.2026 mit 19
+       * Zeilen in der Produktion: Das Synonym „its " (für
+       * Intensivstation) trug bewusst ein Leerzeichen am Ende, und ein
+       * `.trim()` hier hat es entfernt. Danach traf „its" das Wort
+       * „Arbe-its-probe", und neunzehn Menschen bekamen die Fähigkeit
+       * Intensivpflege aus einem Satz über eine Arbeitsprobe.
+       *
+       * Ein Leerzeichen davor löst das allgemein, statt es je Synonym
+       * von Hand zu regeln: Deutsche Komposita tragen den gesuchten
+       * Stamm vorn („Dienstplan-gestaltung"), nie mitten im Wort.
+       */
+      if (n.length === 0 || !t.includes(` ${n}`)) continue;
       if (bester === null || n.length > bester.laenge) {
         bester = { schluessel: eintrag.schluessel, laenge: n.length };
       }

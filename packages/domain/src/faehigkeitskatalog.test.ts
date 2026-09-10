@@ -16,10 +16,26 @@ describe("Der Katalog selbst", () => {
 
   it("nennt sein Berufsfeld", () => {
     /*
-     * Ein Abgleich ausserhalb der Pflege soll nicht aussehen, als sei
-     * er geprüft worden.
+     * Ein Abgleich ausserhalb der geprüften Felder soll nicht
+     * aussehen, als sei er geprüft worden.
      */
-    for (const k of KATALOG) expect(k.feld).toBe("pflege");
+    for (const k of KATALOG) expect(["pflege", "lager"]).toContain(k.feld);
+  });
+
+  it("deckt beide Felder ab", () => {
+    /*
+     * Der Katalog folgt den Nutzern, nicht dem Markt: Der erste Lauf
+     * gegen 142 bestätigte Belege ergab null Fähigkeiten, weil kein
+     * einziger Beleg Pflegebezug hatte.
+     */
+    expect(KATALOG.some((k) => k.feld === "pflege")).toBe(true);
+    expect(KATALOG.some((k) => k.feld === "lager")).toBe(true);
+  });
+
+  it("findet die Fähigkeiten aus den echten Belegen im Bestand", () => {
+    expect(schluesselFinden("Ladungssicherung nach VDI 2700")).toBe("ladungssicherung");
+    expect(schluesselFinden("Kommissionierung nach Pickliste, zuletzt zwei Jahre täglich")).toBe("kommissionierung");
+    expect(schluesselFinden("Warenannahme und Wareneingangskontrolle")).toBe("warenannahme");
   });
 });
 
@@ -45,6 +61,22 @@ describe("schluesselFinden", () => {
      * landete eine Praxisanleiterin unter „Einarbeitung".
      */
     expect(schluesselFinden("Praxisanleitung von Auszubildenden")).toBe("praxisanleitung");
+  });
+
+  it("trifft nicht mitten in einem anderen Wort", () => {
+    /*
+     * Der Fehler, der 19 falsche Zeilen in der Produktion erzeugt hat:
+     * „its" traf „Arbe-its-probe", und neunzehn Menschen bekamen die
+     * Fähigkeit Intensivpflege aus einem Satz über eine Arbeitsprobe.
+     */
+    expect(schluesselFinden("Arbeitsprobe „Was dir Energie gibt“")).toBeNull();
+    expect(schluesselFinden("Die Arbeitsprobe hat sie gelöst")).toBeNull();
+  });
+
+  it("findet den Stamm am Anfang eines Kompositums", () => {
+    /* Deutsche Komposita tragen ihn vorn, nie mitten im Wort. */
+    expect(schluesselFinden("Dienstplangestaltung")).toBe("dienstplanung");
+    expect(schluesselFinden("Hygienebeauftragte der Station")).toBe("hygiene");
   });
 
   it("gibt null zurück, wo der Katalog nichts kennt", () => {
