@@ -28,8 +28,8 @@ import pg from "pg";
 import { writeFileSync } from "node:fs";
 
 const STADT = process.argv[2] ?? "Berlin";
-const GRENZE = Math.min(Number(process.argv[3] ?? 4000), 8000);
-const GLEICHZEITIG = 6;
+const GRENZE = Math.min(Number(process.argv[3] ?? 4000), 40000);
+const GLEICHZEITIG = 20;
 const MINDESTZAHL = 30;
 const MODELL = process.env.OPENAI_MODEL_FAST ?? "gpt-4.1-mini";
 const schluessel = process.env.OPENAI_API_KEY;
@@ -176,22 +176,64 @@ try {
    * durchläuft, dann in Node filtern und die Beschreibungen gezielt
    * für die verbleibenden Kennungen nachladen.
    */
+  /*
+   * In Schüben laden.
+   *
+   * 282.818 Zeilen in einer Anweisung überschreiten das Zeitlimit des
+   * Servers, und die Verbindung bricht ab, bevor eine Zeile zurückkommt.
+   * Nach `id` sortiert und mit Versatz geblättert läuft dieselbe Menge
+   * durch, ohne eine einzige Abfrage lange offen zu halten.
+   */
   process.stdout.write("Lade deutsche Stellen mit echtem Gehalt … ");
-  const { rows: schmal } = await pool.query(
-    `select id, location, kldb, salary_min, salary_max, salary_period, title
-       from jobs
-      where country='DE'
-        and salary_provenance in ('provider','text','employer')
-        and salary_currency='EUR'
-        and salary_period in ('year','month','hour')
-        and title is not null`,
-  );
-  console.log(`${schmal.length}`);
+  const schmal = [];
+  const SCHUB = 40000;
+  for (let versatz = 0; ; versatz += SCHUB) {
+    const { rows: teil } = await pool.query(
+      `select id, location, kldb, salary_min, salary_max, salary_period, title
+         from jobs
+        where country='DE'
+          and salary_provenance in ('provider','text','employer')
+          and salary_currency='EUR'
+          and salary_period in ('year','month','hour')
+          and (
+            (salary_period = 'year'  and salary_min between 15000 and 400000) or
+            (salary_period = 'month' and salary_min between 1200 and 34000) or
+            (salary_period = 'hour'  and salary_min between 8 and 200)
+          )
+          and title is not null
+        order by id
+        limit $1 offset $2`,
+      [SCHUB, versatz],
+    );
+    schmal.push(...teil);
+    process.stdout.write(`${schmal.length} `);
+    if (teil.length < SCHUB) break;
+  }
+  console.log();
 
-  const inStadt = schmal
-    .filter((r) => String(r.location ?? "").split(",")[0].trim().toLowerCase() === STADT.toLowerCase())
-    .slice(0, GRENZE);
-  console.log(`davon in ${STADT}: ${inStadt.length}`);
+  /*
+   * Region statt Stadt.
+   *
+   * Der Berlin-Lauf hat gezeigt, dass eine Stadt zu klein ist: 6.447
+   * Anzeigen auf Beruf × Stufe verteilt ergeben zwanzig je Gruppe,
+   * knapp unter der Schwelle. Das ist kein Methodenproblem, sondern
+   * ein Mengenproblem.
+   *
+   * `location` ist Freitext der Form „München, Bayern" oder
+   * „Nürnberg, Mittelfranken, Bayern". Der letzte Teil ist das
+   * Bundesland — ausser bei den Stadtstaaten, wo „Berlin,
+   * Deutschland" steht und der erste Teil die Region ist.
+   */
+  const region = (roh) => {
+    const teile = String(roh ?? "").split(",").map((t) => t.trim()).filter(Boolean);
+    if (teile.length === 0) return null;
+    const letzter = teile[teile.length - 1];
+    if (/^(deutschland|germany)$/i.test(letzter)) return teile[0].toLowerCase();
+    return letzter.toLowerCase();
+  };
+
+  const inStadt = schmal.filter((r) => region(r.location) === STADT.toLowerCase()).slice(0, GRENZE);
+  console.log(`davon in Region „${STADT}": ${inStadt.length}`);
 
   process.stdout.write("Lade Anzeigentexte … ");
   const { rows: texte } = await pool.query(
@@ -286,6 +328,23 @@ try {
   zeige("Wie bisher: Stufe aus dem Titel", "titelstufe");
   const mitModell = zeige("Neu: Stufe aus der gelesenen Anzeige", "modellstufe");
 
+  /*
+   * Gruppen ohne Streuung sind keine Marktwerte.
+   *
+   * 256 Berliner Anzeigen ergaben exakt 28.912 € — der Mindestlohn bei
+   * 40 Stunden. In solchen Gruppen ist p25 = median = p75. Die Zahl ist
+   * rechnerisch richtig und als Aussage wertlos: Sie sagt nur
+   * „Mindestlohn", nicht „so viel verdient man hier".
+   */
+  const ohneStreuung = mitModell.filter(([, w]) => {
+    const s2 = [...w].sort((a, b) => a - b);
+    return quantil(s2, 0.25) === quantil(s2, 0.75);
+  });
+  if (ohneStreuung.length > 0) {
+    console.log(`── ${ohneStreuung.length} Gruppen ohne jede Streuung (p25 = p75) ──`);
+    console.log("   Das sind Tarif- oder Mindestlohnstellen. Als Marktwert unbrauchbar.\n");
+  }
+
   console.log("── Die tragfähigen Gruppen ──");
   for (const [k, w] of mitModell.sort((a, b) => b[1].length - a[1].length).slice(0, 14)) {
     const s = [...w].sort((a, b) => a - b);
@@ -296,7 +355,7 @@ try {
       `p75 ${Math.round(quantil(s, 0.75)).toLocaleString("de-DE").padStart(7)}`);
   }
 
-  const datei = `/tmp/marktwert-${STADT.toLowerCase()}.json`;
+  const datei = `/tmp/marktwert-${STADT.toLowerCase().replace(/[^a-z0-9]/g, "-")}.json`;
   writeFileSync(datei, JSON.stringify(ergebnis, null, 1));
   console.log(`\nRohdaten: ${datei}`);
   console.log(`Kosten dieses Laufs: ~${(((ein + aus) / 1_000_000) * 0.4).toFixed(3)} $`);
