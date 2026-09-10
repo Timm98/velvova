@@ -10,6 +10,7 @@ import { AuffindbarSchalter, ConsentToggles, DangerZone, ExportButton } from "..
 import { standLaden } from "@/lib/nina/einrichtung/speicher";
 import { NinaBereich } from "./NinaBereich";
 import { EINWILLIGUNGEN } from "@/lib/privacy/einwilligungen";
+import { eigeneVorauswahlen } from "@/lib/vorauswahl";
 
 export const metadata: Metadata = { title: "Datenschutz & Daten" };
 export const dynamic = "force-dynamic";
@@ -39,7 +40,7 @@ export default async function PrivacySettingsPage() {
   const { t, brand, integrations } = await getPageContext();
   const db = await getDb();
 
-  const [consents, evidenceCount, documentCount, einstellungen] = await Promise.all([
+  const [consents, evidenceCount, documentCount, einstellungen, vorauswahl] = await Promise.all([
     withUser(db, user.id, (tx) =>
       tx.select().from(schema.consents).where(eq(schema.consents.userId, user.id)),
     ),
@@ -73,6 +74,8 @@ export default async function PrivacySettingsPage() {
           .limit(1)
       )[0],
     ),
+    /* Was aus der Auffindbarkeit tatsächlich geworden ist. */
+    eigeneVorauswahlen(user.id),
   ]);
 
   const consentState = Object.fromEntries(consents.map((c) => [c.kind, c.granted]));
@@ -154,6 +157,51 @@ export default async function PrivacySettingsPage() {
           </p>
         </div>
         <AuffindbarSchalter an={einstellungen?.auffindbar ?? false} seit={einstellungen?.auffindbarSeit ?? null} />
+
+        {/*
+          Was daraus geworden ist — an derselben Stelle wie der Schalter.
+
+          Eine Einwilligung, deren Folgen man nirgends nachsehen kann,
+          ist eine Blankounterschrift. Hier steht, was tatsächlich
+          entstanden ist, und daneben der Schalter, mit dem es aufhört.
+        */}
+        <div className="grid gap-2.5 border-t border-line pt-5">
+          <h3 className="text-[15px] font-medium text-ink">Was daraus entstanden ist</h3>
+          {vorauswahl.anzahl === 0 ? (
+            <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+              Bisher nichts. Es hat noch kein Unternehmen einen freigegebenen Bedarf gegen die
+              auffindbaren Profile gerechnet — und ohne das entsteht keine Zeile über dich.
+            </p>
+          ) : (
+            <>
+              <p className="max-w-[var(--measure)] text-sm leading-relaxed text-ink-2">
+                Du bist {vorauswahl.anzahl}
+                {vorauswahl.anzahl === 1 ? " mal" : " mal"} in einer internen Vorauswahl
+                aufgetaucht. Niemand hat dabei deinen Namen gesehen, und niemand hat dich
+                angeschrieben — sonst stünde es unter Nachrichten.
+              </p>
+              <ul className="grid gap-2">
+                {vorauswahl.zeilen.map((z) => (
+                  <li key={z.am.toISOString()} className="grid gap-0.5">
+                    <span className="text-sm text-ink-2">
+                      {z.am.toLocaleDateString("de-DE")} ·{" "}
+                      {z.passung === null ? "Passung nicht ermittelbar" : `Passung ${z.passung} von 100`}
+                    </span>
+                    {z.offenePunkte.length > 0 && (
+                      <span className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
+                        Offen geblieben: {z.offenePunkte.join(" · ")}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
+                Welches Unternehmen es war, steht hier nicht — genauso wenig, wie das Unternehmen
+                deinen Namen sieht. Aufgedeckt wird nur, wenn beide Seiten es ausdrücklich tun.
+              </p>
+            </>
+          )}
+        </div>
       </Card>
 
       <Card className="grid gap-5">

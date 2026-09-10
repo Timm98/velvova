@@ -230,3 +230,10 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
    ebenso für den älteren Vorschlagslauf zu Stellenanzeigen, der
    dieselbe Menge durchsucht. Die Engstelle ist die Zustimmung, nicht
    das Rechnen.
+
+   Dazu gehört seit demselben Tag die Gegenrichtung: Unter
+   `/app/settings/privacy` steht neben dem Auffindbar-Schalter, was
+   aus ihm geworden ist — jede Zeile, die über einen Menschen
+   entstanden ist, mit Passung und offenen Punkten, aber ohne den
+   Betrieb. Eine Einwilligung, deren Folgen man nirgends nachsehen
+   kann, ist eine Blankounterschrift.

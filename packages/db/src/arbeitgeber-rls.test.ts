@@ -323,3 +323,88 @@ describe("Das Unternehmen sieht nichts Privates", () => {
     expect(r.rows).toHaveLength(0);
   });
 });
+
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Die Vorauswahl — beide Richtungen der Trennlinie
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * `bedarfstreffer` ist die einzige Tabelle im Bestand, die zwei
+ * Richtlinien trägt: die Mitgliedsregel für den Betrieb und eine
+ * Leseregel für die Person, über die die Zeile entstanden ist.
+ *
+ * Beide Hälften sind gleich wichtig und beide fallen beim Umbau
+ * lautlos aus. Fehlt die Personenregel, entsteht eine Akte, die der
+ * Betroffene nicht lesen darf; fehlt ihre Begrenzung auf SELECT, kann
+ * er seinen eigenen Passungswert ändern.
+ */
+describe("Vorauswahl zu einem Bedarf", () => {
+  let vorgang = "";
+
+  beforeAll(async () => {
+    vorgang = await alsPerson(anna, async (tx) => {
+      const v = (await tx.execute(sql`
+        INSERT INTO bedarfsvorgaenge (organization_id, angelegt_von, titel, ausgangslage, ebene)
+        VALUES (${orgA}, ${anna}, 'Anfragen bleiben liegen',
+                'Kundenanfragen bleiben mehrere Tage liegen.', 'beobachtung')
+        RETURNING id
+      `)) as unknown as { rows: { id: string }[] };
+      const id = v.rows[0]!.id;
+      await tx.execute(sql`
+        INSERT INTO bedarfstreffer (organization_id, vorgang_id, user_id, passung, grundlage)
+        VALUES (${orgA}, ${id}, ${carla}, 71, 'a|b|c')
+      `);
+      return id;
+    });
+  }, 60_000);
+
+  it("liest der Betrieb, dem sie gehört", async () => {
+    const r = (await alsPerson(anna, (tx) =>
+      tx.execute(sql`SELECT passung FROM bedarfstreffer WHERE vorgang_id = ${vorgang}`),
+    )) as unknown as { rows: { passung: number }[] };
+    expect(r.rows).toHaveLength(1);
+    expect(r.rows[0]!.passung).toBe(71);
+  });
+
+  it("liest der Mensch, über den sie entstanden ist", async () => {
+    const r = (await alsPerson(carla, (tx) =>
+      tx.execute(sql`SELECT passung FROM bedarfstreffer`),
+    )) as unknown as { rows: unknown[] };
+    expect(r.rows).toHaveLength(1);
+  });
+
+  it("liest ein Unbeteiligter nicht", async () => {
+    const r = (await alsPerson(bernd, (tx) =>
+      tx.execute(sql`SELECT passung FROM bedarfstreffer`),
+    )) as unknown as { rows: unknown[] };
+    expect(r.rows).toHaveLength(0);
+  });
+
+  it("ändert der Mensch nicht — es ist eine Auskunft, keine Verhandlung", async () => {
+    await alsPerson(carla, (tx) =>
+      tx.execute(sql`UPDATE bedarfstreffer SET passung = 99 WHERE user_id = ${carla}`),
+    );
+    const r = (await alsPerson(anna, (tx) =>
+      tx.execute(sql`SELECT passung FROM bedarfstreffer WHERE vorgang_id = ${vorgang}`),
+    )) as unknown as { rows: { passung: number }[] };
+    expect(r.rows[0]!.passung).toBe(71);
+  });
+
+  it("verrät der Person den Betrieb nicht", async () => {
+    /*
+     * Die Kennung steht in der Zeile — der Name nicht. `organizations`
+     * bleibt unter der Mitgliedsregel, und die gilt für Carla nicht.
+     */
+    const r = (await alsPerson(carla, (tx) =>
+      tx.execute(sql`SELECT name FROM organizations WHERE id = ${orgA}`),
+    )) as unknown as { rows: unknown[] };
+    expect(r.rows).toHaveLength(0);
+  });
+
+  it("verrät der Person den Vorgang nicht", async () => {
+    const r = (await alsPerson(carla, (tx) =>
+      tx.execute(sql`SELECT titel FROM bedarfsvorgaenge WHERE id = ${vorgang}`),
+    )) as unknown as { rows: unknown[] };
+    expect(r.rows).toHaveLength(0);
+  });
+});

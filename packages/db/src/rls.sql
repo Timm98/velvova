@@ -489,6 +489,37 @@ BEGIN
 END $$
 --> statement-breakpoint
 /*
+ * Der Mensch sieht die Zeilen, die ueber ihn entstanden sind.
+ *
+ * ── Warum das nachgereicht wird ─────────────────────────────────
+ *
+ * Migration 0114 legte `bedarfstreffer` allein unter die
+ * Mitgliedsregel und schrieb die Kehrseite als Schuld in den
+ * Kommentar: Es gab keine Ansicht, in der jemand nachsieht, wem er
+ * vorgeschlagen wurde. Eine Zeile mit Namen und Passungswert, die die
+ * betroffene Person nicht lesen darf, ist eine Akte.
+ *
+ * ── Warum nur SELECT ────────────────────────────────────────────
+ *
+ * Weil es eine Auskunft ist, keine Verhandlung. Aendern darf die
+ * Bewertung niemand -- auch nicht die Person selbst; sie waere sonst
+ * eine Selbstauskunft, die wie eine Rechnung aussieht. Wer nicht mehr
+ * gefunden werden will, legt `auffindbar` um, und dann entsteht keine
+ * neue Zeile mehr.
+ *
+ * ── Was sie damit NICHT sieht ───────────────────────────────────
+ *
+ * Den Betrieb. `organization_id` ist eine Kennung ohne Bedeutung, und
+ * `organizations` und `bedarfsvorgaenge` bleiben fuer sie gesperrt --
+ * die Mitgliedsregel gilt weiter. Sie sieht, dass etwas ueber sie
+ * entstanden ist, und was darin steht. Nicht, bei wem.
+ */
+DROP POLICY IF EXISTS bedarfstreffer_person ON bedarfstreffer
+--> statement-breakpoint
+CREATE POLICY bedarfstreffer_person ON bedarfstreffer FOR SELECT
+  USING (user_id = app_current_user_id())
+--> statement-breakpoint
+/*
  * Die Person sieht ihre eigene Bewerbung — und darf sie zurueckziehen.
  *
  * Ohne diese zweite Richtlinie waere die Bewerbung fuer die Person, die
