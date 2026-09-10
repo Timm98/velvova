@@ -552,3 +552,60 @@ export const profilEinbettungen = pgTable(
     erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
   },
 );
+
+/**
+ * ══════════════════════════════════════════════════════════════
+ * Der Nachtlauf — als Sache, die man ansehen kann
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `durchlaufAusfuehren` rechnet jede Nacht: Kandidaten, Muss-Prüfung,
+ * semantische Runde, Belege, Treffer. Die Zahlen gingen bisher als
+ * Rückgabewert an den Zeitplan-Aufruf und starben dort.
+ *
+ * Damit fehlte dem Produkt sein Morgenmoment. „Ich habe heute Nacht
+ * 143 Stellen geprüft, 61 erfüllten deine Mindestanforderungen" lässt
+ * sich ohne festgehaltene Zahlen nicht sagen, ohne zu erfinden.
+ *
+ * ── Warum das nichts nachrechnet ──────────────────────────────
+ *
+ * Diese Zeile hält fest, was `auftragslaufRunde` ohnehin zurückgibt.
+ * Eine zweite Rechnung neben der laufenden liefe auseinander, und dann
+ * stünde im Bericht eine andere Zahl als in der Trefferliste.
+ *
+ * Siehe Migration 0108.
+ */
+export const nachtLaeufe = pgTable(
+  "nacht_laeufe",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    auftragId: uuid("auftrag_id").notNull().references(() => suchAuftraege.id, { onDelete: "cascade" }),
+    /** Stabil aus Person, lokalem Datum und Auftrag — wie `fensterschluessel`. */
+    nachtSchluessel: text("nacht_schluessel").notNull(),
+    /** Die Phasen stehen in `nachtlauf.ts`, nicht als enum. */
+    phase: text("phase").notNull().default("ruhe"),
+
+    /* ── Gezählt, nicht geschätzt ── */
+    gefunden: integer("gefunden").notNull().default(0),
+    nachFiltern: integer("nach_filtern").notNull().default(0),
+    geprueft: integer("geprueft").notNull().default(0),
+    empfohlen: integer("empfohlen").notNull().default(0),
+    zurueckgestellt: integer("zurueckgestellt").notNull().default(0),
+    ausgeschlossen: integer("ausgeschlossen").notNull().default(0),
+    stilleChancen: integer("stille_chancen").notNull().default(0),
+
+    /** Quellen, die nicht antworteten. Gehört in den Bericht, auch wenn er kleiner aussieht. */
+    quellenFehler: jsonb("quellen_fehler").$type<string[]>().notNull().default([]),
+    /** kein_aktives_profil · keine_kriterien · keine_kandidaten · fehler */
+    grund: text("grund"),
+
+    begonnenAm: timestamp("begonnen_am", { withTimezone: true }).notNull().defaultNow(),
+    beendetAm: timestamp("beendet_am", { withTimezone: true }),
+    /** Ein Bericht, den niemand geöffnet hat, ist kein zugestellter Bericht. */
+    gesehenAm: timestamp("gesehen_am", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("nacht_laeufe_schluessel_idx").on(t.userId, t.auftragId, t.nachtSchluessel),
+    index("nacht_laeufe_user_idx").on(t.userId, t.begonnenAm),
+  ],
+);

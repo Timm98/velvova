@@ -1,6 +1,7 @@
 import {
   Briefcase,
   Compass,
+  Moon,
   FileText,
   FolderOpen,
   MessageSquare,
@@ -68,6 +69,16 @@ export interface Seitenleisteneintrag {
  * die zu der Person gehört, die davorsitzt.
  */
 export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
+  /*
+   * „Heute Nacht" steht ganz oben, vor den Stellen.
+   *
+   * Es ist der einzige Eintrag, hinter dem etwas liegt, das sich
+   * geändert hat, seit jemand zuletzt hier war — alles andere steht
+   * still, bis er es anfasst. Wer morgens die Anwendung öffnet, soll
+   * zuerst darauf stossen und nicht auf eine Liste, die er gestern
+   * schon gesehen hat.
+   */
+  { href: "/app/morgen", text: "Heute Nacht", icon: Moon },
   { href: "/app/jobs", text: "Jobs & Checks", icon: Briefcase },
   /*
    * „Was du kannst" steht direkt hinter den Stellen, nicht darunter

@@ -8,6 +8,13 @@ import type { Modellrufer } from "./modell.ts";
 import type { Prompt3 } from "./mailtext.ts";
 import type { Prompt2 } from "./lauf.ts";
 import { einbettungenNachziehen, type Einbetter, type Einbettungsmodell } from "./einbettung.ts";
+import {
+  nachtlaufAbbrechen,
+  nachtlaufEroeffnen,
+  nachtlaufSchliessen,
+  nachtschluessel,
+  phaseSetzen,
+} from "./nachtlauf.ts";
 
 /**
  * Ein vollständiger Durchlauf des Suchauftrags.
@@ -128,13 +135,34 @@ export async function durchlaufAusfuehren(
     const zeilen = (await withSystem(db, (tx) =>
       tx.execute(sql`
         select id, user_id as "userId", name, status, geltungsbereich,
-               aktive_profil_version as "aktiveProfilVersion"
+               aktive_profil_version as "aktiveProfilVersion",
+               zeitzone
         from such_auftraege where id = ${eintrag.id}::uuid`),
-    )) as unknown as { rows: Auftragszeile[] };
+    )) as unknown as { rows: (Auftragszeile & { zeitzone: string | null })[] };
     const auftrag = zeilen.rows[0];
     if (!auftrag) continue;
 
+    /*
+     * Der Beleg über diese Nacht.
+     *
+     * Er wird vor der Runde eröffnet, nicht danach: Ein Lauf, der
+     * abstürzt, soll als abgebrochen dastehen und nicht gar nicht.
+     * Scheitert das Eröffnen selbst, bleibt `laufId` null und alles
+     * Weitere läuft ohne Beleg — die Treffer sind wichtiger als die
+     * Buchführung über sie.
+     */
+    const laufId = await nachtlaufEroeffnen(
+      db,
+      {
+        userId: auftrag.userId,
+        auftragId: auftrag.id,
+        schluessel: nachtschluessel(jetzt, auftrag.zeitzone ?? "Europe/Berlin"),
+      },
+      jetzt,
+    );
+
     try {
+      await phaseSetzen(db, laufId, "bewerten");
       const lauf = await auftragslaufRunde(db, auftrag, {
         jetzt,
         grenze: optionen.kandidaten,
@@ -145,6 +173,33 @@ export async function durchlaufAusfuehren(
         prompt2: optionen.prompt2,
       });
       betroffene.add(auftrag.userId);
+
+      /*
+       * Die Bilanz — abgeleitet, nicht nachgerechnet.
+       *
+       * `gefunden` ist die Zahl der Kandidaten, die in die Runde
+       * kamen (`geprueft` wird dort auf `kandidaten.length` gesetzt).
+       * `nachFiltern` sind die, die kein Muss-Kriterium verletzen:
+       * empfohlen plus zurückgestellt. Beides steht schon da; hier
+       * wird nur umbenannt, was der Bericht braucht.
+       */
+      await nachtlaufSchliessen(
+        db,
+        laufId,
+        {
+          gefunden: lauf.geprueft,
+          nachFiltern: lauf.empfohlen + lauf.zurueckgestellt,
+          geprueft: lauf.geprueft,
+          empfohlen: lauf.empfohlen,
+          zurueckgestellt: lauf.zurueckgestellt,
+          ausgeschlossen: lauf.ausgeschlossen,
+          stilleChancen: 0,
+          quellenFehler: einbettungen.gescheitert > 0 ? ["Einbettungen"] : [],
+        },
+        lauf.grund,
+        jetzt,
+      );
+
       berichte.push({
         name: auftrag.name,
         geprueft: lauf.geprueft,
@@ -164,6 +219,7 @@ export async function durchlaufAusfuehren(
        * kaputter Datensatz alle anderen Menschen um ihre
        * Zusammenfassung bringt.
        */
+      await nachtlaufAbbrechen(db, laufId, String(fehler), jetzt);
       berichte.push({
         name: auftrag.name,
         geprueft: 0,

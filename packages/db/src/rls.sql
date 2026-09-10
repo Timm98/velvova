@@ -119,6 +119,11 @@ DECLARE
     -- das jemand weitergibt, wenn er will, eine Akte machen, die
     -- ohnehin offen liegt.
     'nachweise',
+    -- Der Nachtlauf. Die Zeile sagt, wonach jemand sucht, wie viele
+    -- Anzeigen an seinen Bedingungen gescheitert sind und wann er den
+    -- Bericht geoeffnet hat. Aus der Zaehlerreihe allein liesse sich
+    -- ablesen, wie eng seine Gehaltsgrenze liegt und ob er noch sucht.
+    'nacht_laeufe',
     -- Der Outcome Loop. Die Zeile enthaelt, worauf sich jemand beworben
     -- hat und wie zufrieden er danach war -- das Empfindlichste, was
     -- das Produkt speichert. Die Auswertung liest ueber die
