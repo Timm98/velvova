@@ -109,8 +109,19 @@ export default async function BrueckeSeite() {
               <ul className="grid gap-2">
                 {lage.stellen.map((s) => (
                   <li key={s.jobId}>
+                    {/*
+                      Der Klick führt zur Übersetzung, nicht zur
+                      Anzeige.
+
+                      Wer aus dieser Liste direkt auf die
+                      Originalanzeige käme, läse dort Anforderungen in
+                      einer Sprache, die ihn nicht meint — und würde
+                      genau das denken, was ihn bisher abgehalten hat:
+                      „das bin ich nicht". Die Anzeige steht einen
+                      Schritt weiter, hinter der Übersetzung.
+                    */}
                     <Link
-                      href={`/app/jobs/${s.jobId}`}
+                      href={`/app/bruecke/${s.jobId}`}
                       className="grid gap-2 rounded-(--radius-lg) border border-line bg-raised p-5 transition-colors hover:border-accent"
                     >
                       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
@@ -163,7 +174,7 @@ export default async function BrueckeSeite() {
                           </span>
                         )}
                         <span className="inline-flex items-center gap-1">
-                          Anzeige ansehen
+                          In ihrer Sprache lesen
                           <ArrowUpRight className="size-3 shrink-0" strokeWidth={2} />
                         </span>
                       </span>
