@@ -206,3 +206,73 @@ export function herkunftAusArt(
       return "aggregator";
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════
+   Welcher Link die Bewerbung trägt
+   ══════════════════════════════════════════════════════════════════
+
+   Dieselbe Stelle steht auf mehreren Portalen. `job_source_links` hält
+   jede Fundstelle, aber angeklickt wird genau eine — und `rank`
+   entscheidet welche: die niedrigste Zahl gewinnt.
+
+   ── Warum das überhaupt eine Entscheidung ist ────────────────────
+
+   Weil sie sonst zufällig fällt. Bis hierher stand jede der 3,68 Mio.
+   Verknüpfungen auf dem Standardwert 100, und die Oberfläche zeigte
+   `jobs.original_url` — also die Adresse der Quelle, die zuerst
+   importiert hat. Bei 221.863 zusammengeführten Stellen entschied
+   damit die Reihenfolge des Abrufs, wohin ein Mensch geschickt wird.
+
+   ── Woher die Reihenfolge kommt ──────────────────────────────────
+
+   Nicht von hier. Sie steht seit jeher an `HerkunftSchema`, als Satz:
+   „Je weiter oben, desto näher am Arbeitgeber. Kennen wir zu einer
+   Stelle mehrere Quellen, gewinnt die oberste — nicht die, die wir
+   zuerst gesehen haben."
+
+   Genau das ist nie passiert, weil niemand den Satz in eine Zahl
+   übersetzt hat. Die Übersetzung steht unten und liest die Reihenfolge
+   direkt aus dem Enum.
+
+   ── Die Grenze, die diese Reihenfolge nicht überschreiten darf ───
+
+   Der Partnerrang steht hinter Arbeitgeberseite und ATS, und das ist
+   die eigentliche Aussage: Zwischen zwei Portalen ist es für den
+   Menschen gleich, wo er klickt — dort darf eine vertragliche
+   Beziehung entscheiden. Zwischen Portal und Arbeitgeberseite ist es
+   NICHT gleich, und dort darf sie es nicht.
+
+   Wer diese Reihenfolge ändert, ändert, wohin Menschen geschickt
+   werden. Deshalb ist sie eine Aussage der Domäne und keine des
+   Importers. */
+
+/**
+ * Die Rangwerte je Herkunft. Niedriger heisst: trägt die Bewerbung.
+ *
+ * Abgeleitet aus der Reihenfolge von `HerkunftSchema` und nicht daneben
+ * geschrieben. Dort steht die Rangfolge bereits als Satz — „je weiter
+ * oben, desto näher am Arbeitgeber" — und eine zweite, handgepflegte
+ * Tabelle wäre genau die Art von Duplikat, das irgendwann auseinander
+ * läuft: Jemand schiebt eine Herkunft im Enum nach oben, die Zahlen
+ * bleiben, und ab da widerspricht der Code seiner eigenen Erklärung.
+ *
+ * Schrittweite zehn, damit sich eine neue Herkunft dazwischenschieben
+ * lässt, ohne bestehende Zeilen neu zu schreiben.
+ */
+export const LINKRANG: Record<Herkunft, number> = Object.fromEntries(
+  HerkunftSchema.options.map((h, i) => [h, (i + 1) * 10]),
+) as Record<Herkunft, number>;
+
+/**
+ * Der Rang einer Fundstelle, aus der Art ihrer Quelle.
+ *
+ * `100` bleibt der Wert für alles, was diese Funktion nicht kennt —
+ * derselbe Standardwert wie in der Spalte. Eine unbekannte Art bekommt
+ * damit den letzten Platz und nicht den ersten: Sie verdrängt nichts,
+ * was begründet vorn steht.
+ */
+export function linkrangFuerArt(
+  kind: "licensed_api" | "employer_feed" | "partner" | "user_url" | "user_text" | "seed",
+): number {
+  return LINKRANG[herkunftAusArt(kind)] ?? 100;
+}

@@ -1,4 +1,4 @@
-import { anzeigenklartext } from "@paycheck/domain";
+import { anzeigenklartext, linkrangFuerArt } from "@paycheck/domain";
 import { fortschreiben, standAusFundstellen, type Verfuegbarkeitsstand } from "@paycheck/domain";
 import { randomUUID } from "node:crypto";
 import { kennungAusRohdaten } from "./berufskennung.ts";
@@ -10,6 +10,9 @@ import { aehnlicherText } from "./zusammenfuehren.ts";
 import { decideForProvider } from "@paycheck/sources";
 import { canonicalKey } from "./canonical.ts";
 import { breakerFor, familienBreakerFor, istKontoweiterFehler, quellenfamilie } from "./health.ts";
+
+/** Die Art einer Quelle, wie der Adapter sie meldet. */
+type Quellenart = JobSourceAdapter["kind"];
 
 /**
  * Echte Anzeigen in die Datenbank bringen.
@@ -147,7 +150,18 @@ async function verknuepfe(
   sourceId: string,
   n: NormalisedListing,
   canonical: string | null,
+  /**
+   * Die Art der Quelle — für den Rang.
+   *
+   * Ohne sie blieb `rank` auf dem Standardwert 100, und zwar bei allen
+   * 3,68 Mio. Verknüpfungen. Der Mechanismus, der entscheidet, welcher
+   * Link die Bewerbung trägt, war damit vorhanden und wirkungslos: Die
+   * Oberfläche nahm `jobs.original_url`, also die Adresse der Quelle,
+   * die zufällig zuerst importiert hatte.
+   */
+  art: Quellenart,
 ): Promise<void> {
+  const rank = linkrangFuerArt(art);
   await db
     .insert(schema.jobSourceLinks)
     .values({
@@ -156,6 +170,7 @@ async function verknuepfe(
       externalId: n.externalId,
       url: n.job.originalUrl ?? "",
       canonicalKey: canonical,
+      rank,
       lastSeenAt: n.job.fetchedAt,
     })
     .onConflictDoUpdate({
@@ -164,6 +179,10 @@ async function verknuepfe(
         jobId,
         url: n.job.originalUrl ?? "",
         canonicalKey: canonical,
+        /* Auch beim Wiedersehen: Ändert sich die Art einer Quelle —
+           aus einem Aggregator wird ein Vertragspartner —, soll der
+           Rang mitziehen, ohne dass jemand nachträglich schreibt. */
+        rank,
         lastSeenAt: n.job.fetchedAt,
       },
     });
@@ -345,6 +364,10 @@ async function writeListings(
   db: Awaited<ReturnType<typeof getDb>>,
   sourceId: string,
   liste: NormalisedListing[],
+  /* Die Art der Quelle — daraus wird der Rang jeder Verknüpfung.
+     Über diesen Pfad laufen fast alle Zeilen; bliebe er aussen vor,
+     stünde `rank` weiterhin bei Millionen Links auf dem Standardwert. */
+  art: Quellenart,
 ): Promise<{ ergebnisse: ("inserted" | "updated" | "unchanged" | "merged")[]; fehler: string[] }> {
   const ergebnisse: ("inserted" | "updated" | "unchanged" | "merged")[] = new Array(liste.length);
   const fehler: string[] = [];
@@ -704,13 +727,16 @@ async function writeListings(
     const eindeutig = new Map(verknuepfungen.map((v) => [`${sourceId}|${v.externalId}`, v]));
     await db
       .insert(schema.jobSourceLinks)
-      .values([...eindeutig.values()].map((v) => ({ ...v, sourceId })))
+      .values([...eindeutig.values()].map((v) => ({ ...v, sourceId, rank: linkrangFuerArt(art) })))
       .onConflictDoUpdate({
         target: [schema.jobSourceLinks.sourceId, schema.jobSourceLinks.externalId],
         set: {
           jobId: sql`excluded.job_id`,
           url: sql`excluded.url`,
           canonicalKey: sql`excluded.canonical_key`,
+          /* Auch beim Wiedersehen fortschreiben: Wird aus einem
+             Aggregator ein Vertragspartner, zieht der Rang mit. */
+          rank: sql`excluded.rank`,
           lastSeenAt: sql`excluded.last_seen_at`,
           validThrough: sql`excluded.valid_through`,
         },
@@ -743,6 +769,10 @@ async function writeListing(
   db: Awaited<ReturnType<typeof getDb>>,
   sourceId: string,
   n: NormalisedListing,
+  /* Die Art der Quelle reicht bis zur Verknüpfung durch — dort wird
+     daraus der Rang, der entscheidet, welcher Link die Bewerbung
+     trägt. */
+  art: Quellenart,
 ): Promise<"inserted" | "updated" | "unchanged" | "merged"> {
   const companyId = await findOrCreateCompany(db, n.companyName);
   const j = n.job;
@@ -784,7 +814,7 @@ async function writeListing(
   if (!existing[0] && schluessel) {
     const anderswo = await gleicheStelleBeiAnderemAnbieter(db, schluessel, sourceId);
     if (anderswo) {
-      await verknuepfe(db, anderswo, sourceId, n, schluessel);
+      await verknuepfe(db, anderswo, sourceId, n, schluessel, art);
       return "merged";
     }
 
@@ -811,7 +841,7 @@ async function writeListing(
       j.description ?? "",
     );
     if (wiederholung) {
-      await verknuepfe(db, wiederholung, sourceId, n, schluessel);
+      await verknuepfe(db, wiederholung, sourceId, n, schluessel, art);
       return "merged";
     }
   }
@@ -889,12 +919,12 @@ async function writeListing(
         .update(schema.jobs)
         .set({ fetchedAt: j.fetchedAt })
         .where(eq(schema.jobs.id, existing[0].id));
-      await verknuepfe(db, existing[0].id, sourceId, n, schluessel);
+      await verknuepfe(db, existing[0].id, sourceId, n, schluessel, art);
       return "unchanged";
     }
 
     await db.update(schema.jobs).set(values).where(eq(schema.jobs.id, existing[0].id));
-    await verknuepfe(db, existing[0].id, sourceId, n, schluessel);
+    await verknuepfe(db, existing[0].id, sourceId, n, schluessel, art);
     await db.delete(schema.jobRequirements).where(eq(schema.jobRequirements.jobId, existing[0].id));
     if (n.requirements.length > 0) {
       await db
@@ -938,7 +968,7 @@ async function writeListing(
    * Gefunden hat es kein Testlauf, sondern ein Kennzeichnungstest, der
    * vor einem Umbau festhalten sollte, was der Schreibpfad tut.
    */
-  await verknuepfe(db, created!.id, sourceId, n, schluessel);
+  await verknuepfe(db, created!.id, sourceId, n, schluessel, art);
 
   if (n.requirements.length > 0) {
     await db
@@ -1233,7 +1263,7 @@ export async function ingestFromAdapter(
   for (let i = 0; i < normalisiert.length; i += SCHWUNG) {
     const teil = normalisiert.slice(i, i + SCHWUNG);
     try {
-      const { ergebnisse, fehler } = await writeListings(db, sourceId, teil);
+      const { ergebnisse, fehler } = await writeListings(db, sourceId, teil, adapter.kind);
       for (const e of ergebnisse) if (e) result[e] += 1;
       for (const f of fehler) {
         result.failed += 1;
@@ -1252,7 +1282,7 @@ export async function ingestFromAdapter(
       );
       for (const n of teil) {
         try {
-          const outcome = await writeListing(db, sourceId, n);
+          const outcome = await writeListing(db, sourceId, n, adapter.kind);
           result[outcome] += 1;
         } catch (e2) {
           result.failed += 1;
@@ -1288,7 +1318,7 @@ export async function ingestFromAdapter(
 
   for (const listing of [] as typeof listings) {
     try {
-      const outcome = await writeListing(db, sourceId, normalise(listing, fetchedAt));
+      const outcome = await writeListing(db, sourceId, normalise(listing, fetchedAt), adapter.kind);
       result[outcome] += 1;
     } catch (error) {
       result.failed += 1;
