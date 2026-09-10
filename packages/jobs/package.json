@@ -13,7 +13,8 @@
     "./berufsregeln": "./src/berufsregeln.ts",
     "./entgeltreferenz": "./src/entgeltreferenz.ts",
     "./berufsabfragen": "./src/berufsabfragen.ts",
-    "./bedarfsschnappschuss": "./src/bedarfsschnappschuss.ts"
+    "./bedarfsschnappschuss": "./src/bedarfsschnappschuss.ts",
+    "./monatsbericht": "./src/monatsbericht.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

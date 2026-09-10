@@ -92,3 +92,4 @@ export * from "./karriereseite/chancenpruefung.ts";
 export * from "./bedarfsschnappschuss.ts";
 export * from "./faehigkeitsbackfill.ts";
 export * from "./begriffsgruppen-messen.ts";
+export * from "./monatsbericht.ts";

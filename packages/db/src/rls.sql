@@ -454,7 +454,14 @@ DECLARE
     'bedarfsvorgaenge',
     'bedarfsquellen',
     'bedarfsbefunde',
-    'bedarfsschritte'
+    'bedarfsschritte',
+    /*
+     * Der Monatsbericht (Migration 0113). Er fasst zusammen, was in
+     * den vier Tabellen darueber steht -- also dasselbe Vertrauliche,
+     * nur an einer Stelle gebuendelt.
+     */
+    'monatsbericht_einstellungen',
+    'monatsberichte'
   ];
 BEGIN
   FOREACH t IN ARRAY org_tables LOOP

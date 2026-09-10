@@ -1,0 +1,63 @@
+name: Monatsbericht
+
+# ─────────────────────────────────────────────────────────────
+# Der Wecker für den Unternehmensbericht.
+#
+# Ruft `POST /api/intern/monatsbericht` auf. Dort wird für jede
+# Organisation, die ihn eingeschaltet hat, der Stand des letzten
+# vollständigen Monats mit dem Bericht davor verglichen.
+#
+# ── Warum täglich, obwohl es ein Monatsbericht ist ───────────
+#
+# Weil ein Auslöser, der einmal im Monat feuert, genau einen Versuch
+# hat — und weder GitHub Actions noch Vercel wiederholen einen
+# fehlgeschlagenen Zeitplanaufruf von selbst. Ein Ausfall am
+# Monatsersten wäre ein fehlender Monat, und das fiele erst vier
+# Wochen später auf.
+#
+# Der tägliche Anruf kostet nichts: Ein eindeutiger Teilindex über
+# (Organisation, Berichtsmonat) lässt genau eine Zeile je Monat zu.
+# Ab dem zweiten Anruf desselben Monats meldet der Lauf
+# `uebersprungen` und schreibt nichts.
+#
+# ── Warum 04:20 UTC ──────────────────────────────────────────
+#
+# Nach dem Stellenabruf und dem Schnappschuss, vor dem ersten
+# Versandfenster in Mitteleuropa. Der Bericht soll den Stand sehen,
+# der morgens gilt.
+#
+# ── Zwei Secrets, dieselben wie überall ──────────────────────
+#
+#   PAYCHECK_BASE_URL      Adresse der Anwendung, ohne Schrägstrich
+#   JOBS_REFRESH_SECRET    derselbe Wert wie in der Serverumgebung
+# ─────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: "20 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: monatsbericht
+  cancel-in-progress: false
+
+jobs:
+  berichten:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Anwendung anstossen
+        env:
+          BASIS: ${{ secrets.PAYCHECK_BASE_URL }}
+          GEHEIMNIS: ${{ secrets.JOBS_REFRESH_SECRET }}
+        run: |
+          if [ -z "$BASIS" ] || [ -z "$GEHEIMNIS" ]; then
+            echo "PAYCHECK_BASE_URL oder JOBS_REFRESH_SECRET fehlt — Lauf übersprungen."
+            exit 0
+          fi
+          antwort=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GEHEIMNIS" \
+            --max-time 300 \
+            "$BASIS/api/intern/monatsbericht")
+          echo "$antwort"
+          echo "$antwort" | grep -q '"ok":true' || exit 1

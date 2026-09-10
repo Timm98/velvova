@@ -216,5 +216,11 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
    erzwungenem Zeilenschutz über `organization_id`. Die Klärung liegt
    unter `/business/vorgaenge`.
 
-   Offen bleibt der Monatsbericht: Die Tabellen tragen die Historie,
-   aber es gibt keinen Lauf, der zwei Stände vergleicht.
+   Der Monatsbericht steht seit dem 11.09.2026 (Migration 0113):
+   `/business/bericht`, ausgeschaltet bis jemand ihn einschaltet, ein
+   Lauf je Organisation und Berichtsmonat, geweckt täglich von
+   `.github/workflows/monatsbericht.yml`.
+
+   Offen bleibt daran: Zu einem bestätigten Bedarf werden noch keine
+   passenden Menschen gesucht — das ist für Angebote gebaut, nicht
+   für Klärungen.

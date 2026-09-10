@@ -25,3 +25,4 @@ export * from "./projekte.ts";
 export * from "./nachweise.ts";
 export * from "./angebote.ts";
 export * from "./bedarf.ts";
+export * from "./monatsbericht.ts";

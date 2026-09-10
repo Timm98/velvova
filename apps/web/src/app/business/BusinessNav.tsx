@@ -49,6 +49,7 @@ const WEGE = [
    * eingestellt werden muss.
    */
   { href: "/business/vorgaenge", label: "Klärungen" },
+  { href: "/business/bericht", label: "Monatsbericht" },
   { href: "/business/matches", label: "Matches" },
   { href: "/business/bewerbungen", label: "Gespräche" },
   { href: "/business/unternehmensseite", label: "Unternehmensseite" },
