@@ -53,3 +53,7 @@ export * from "./wunschprofil.ts";
 export * from "./arbeitsweise.ts";
 export * from "./faehigkeiten.ts";
 export * from "./faehigkeitskatalog.ts";
+export * from "./begriffsgruppen.ts";
+export * from "./bedarfsebenen.ts";
+export * from "./befundlage.ts";
+export * from "./quellenfreigabe.ts";

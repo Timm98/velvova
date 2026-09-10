@@ -5,9 +5,14 @@ import { eq, and } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
 import { selectProvider } from "@paycheck/ai";
 import {
+  EBENENSATZ,
   anforderungenPruefen,
+  ebenensignal,
+  klaerungsfragen,
   lagePruefen,
+  rolleBelegt,
   verbindlichkeitshinweis,
+  type Ebene,
   type Entwurf,
   type Wunschlage,
 } from "@paycheck/domain";
@@ -67,6 +72,19 @@ const EntwurfSchema = z.object({
 export type Aufnahme =
   | { art: "kein_modell" }
   | { art: "leer" }
+  /**
+   * Der Betrieb hat eine Lage beschrieben, keine Stelle.
+   *
+   * ── Warum das ein eigener Ausgang ist ───────────────────────────
+   *
+   * „Wir möchten Kunden schneller antworten“ ist ein Wunsch. Bis dort
+   * eine Stelle steht, liegen vier Schritte, und jeder kann ergeben,
+   * dass niemand eingestellt werden muss. Vorher ein Angebot
+   * anzulegen hiesse, einen Bedarf zu erfinden, den niemand geprüft
+   * hat — und genau daran hängt, ob dieses Produkt eine Diagnose ist
+   * oder ein Verkaufstrichter.
+   */
+  | { art: "situation"; ebene: Ebene; satz: string; fragen: string[] }
   | {
       art: "entwurf";
       angebotId: string;
@@ -120,8 +138,23 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
    */
   const { bleiben, gestrichen } = anforderungenPruefen(gelesen.anforderungen);
 
+  /*
+   * Die Rolle muss im Text des Menschen stehen.
+   *
+   * Die Anweisung oben sagt dem Modell, nichts zu ergänzen. Meistens
+   * hält es sich daran. Bei einer Lagebeschreibung trägt es trotzdem
+   * gern eine plausible Rolle ein — und dann stünde in `angebote`
+   * eine Stelle, die niemand genannt hat.
+   */
+  const auffaelligkeiten = [...gelesen.auffaelligkeiten];
+  let rolle = gelesen.rolle;
+  if (!rolleBelegt(rolle, roh)) {
+    auffaelligkeiten.push(`Die Rolle „${rolle}“ stand nicht in Ihrem Text und wurde nicht übernommen.`);
+    rolle = null;
+  }
+
   const entwurf: Entwurf = {
-    rolle: gelesen.rolle,
+    rolle,
     anforderungen: bleiben,
     gehaltVon: gelesen.gehaltVon,
     gehaltBis: gelesen.gehaltBis,
@@ -131,7 +164,23 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
     gueltigTage: gelesen.gueltigTage,
   };
   const lage = lagePruefen(entwurf);
-  if (lage.art === "leer") return { art: "leer" };
+  if (lage.art === "leer") {
+    /*
+     * Nichts Verwertbares — aber nicht dasselbe wie nichts gesagt.
+     * Klingt der Satz nach einem Wunsch oder einer Beobachtung, ist
+     * das der Anfang einer Diagnose und keine Sackgasse.
+     */
+    const signal = ebenensignal(roh);
+    if (signal === "beduerfnis" || signal === "beobachtung") {
+      return {
+        art: "situation",
+        ebene: signal,
+        satz: EBENENSATZ[signal],
+        fragen: klaerungsfragen(signal),
+      };
+    }
+    return { art: "leer" };
+  }
 
   const tage = entwurf.gueltigTage ?? GUELTIG_STANDARD;
   const gueltigBis = new Date(Date.now() + tage * 86_400_000).toISOString().slice(0, 10);
@@ -158,7 +207,7 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
         gueltigBis,
         offenePunkte: lage.art === "unvollstaendig" ? lage.fehlend : [],
         gestrichen,
-        auffaelligkeiten: gelesen.auffaelligkeiten,
+        auffaelligkeiten,
       })
       .returning({ id: schema.angebote.id }),
   );
@@ -173,7 +222,7 @@ export async function bedarfAufnehmen(orgId: string, text: string): Promise<Aufn
     angebotId: zeile!.id,
     lage,
     hinweis: verbindlichkeitshinweis(tage),
-    auffaelligkeiten: gelesen.auffaelligkeiten,
+    auffaelligkeiten,
   };
 }
 

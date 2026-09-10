@@ -93,6 +93,32 @@ export function Bedarfsaufnahme({ orgId }: { orgId: string }) {
         </p>
       )}
 
+      {lage?.art === "situation" && (
+        <section className="grid gap-3 rounded-(--radius-lg) border border-line bg-raised p-5">
+          <h2 className="text-[16px] font-semibold text-ink">
+            Das ist noch keine Stelle — und vielleicht braucht es auch keine
+          </h2>
+          <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+            {lage.satz}
+          </p>
+          <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+            Manche Engpässe verschwinden, sobald eine Zuständigkeit geklärt ist. Damit sich das
+            unterscheiden lässt, brauche ich drei Angaben:
+          </p>
+          <ul className="grid gap-1.5">
+            {lage.fragen.map((f) => (
+              <li key={f} className="text-[14.5px] leading-relaxed text-ink-2">
+                · {f}
+              </li>
+            ))}
+          </ul>
+          <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
+            Schreiben Sie die Antworten oben dazu. Solange nicht feststeht, woran es liegt, lege ich
+            kein Angebot an — ein erfundener Bedarf kostet Sie mehr als eine Rückfrage.
+          </p>
+        </section>
+      )}
+
       {lage?.art === "entwurf" && (
         <section className="grid gap-5 rounded-(--radius-lg) border border-line bg-raised p-5">
           {lage.lage.art === "unvollstaendig" ? (
