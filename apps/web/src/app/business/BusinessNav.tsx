@@ -34,6 +34,15 @@ const WEGE = [
      nicht ein Werkzeug daneben. */
   { href: "/business/onboarding", label: "Stelle einrichten" },
   { href: "/business/stellen", label: "Stellen" },
+  /*
+   * „Bedarf" steht neben „Stellen", nicht darunter.
+   *
+   * Es ist der andere Weg zur selben Sache: Eine Stelle wird
+   * ausgeschrieben, ein Bedarf wird gesagt. Wer keine Anzeige
+   * schreiben will — und das sind die meisten kleinen Betriebe —,
+   * findet hier den Weg, der ohne sie auskommt.
+   */
+  { href: "/business/bedarf", label: "Bedarf" },
   { href: "/business/matches", label: "Matches" },
   { href: "/business/bewerbungen", label: "Gespräche" },
   { href: "/business/unternehmensseite", label: "Unternehmensseite" },
