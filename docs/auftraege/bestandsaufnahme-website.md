@@ -193,11 +193,17 @@ Arbeitgebern passt, beginnt bei null, obwohl 1.027 Konten dastehen.
 
 ## 7. Offene Punkte
 
-1. **Name.** Dokument 1 nennt die offene Entscheidung Monday oder
-   Nina. Im Code heisst die Komponente `Nina*` (`NinaStreifen`,
-   `nina_*`-Tabellen), sichtbar heisst sie Monday
-   (`brand.assistantName`). Bis das entschieden ist, wird keine
-   Umbenennung angefasst.
+1. **Name — entschieden am 11.09.2026: Monday.**
+
+   Die Entscheidung verlangte keinen Umbau; sie war im Code bereits
+   vollzogen. Gemessen am selben Tag: **null sichtbare Vorkommen von
+   „Nina"** auf vierzehn öffentlichen Seiten, `brand.assistantName`
+   steht auf Monday, der Systemprompt setzt `{assistant}` daraus ein,
+   und `/app/nina` wie `/nina-einrichten` sind dauerhafte
+   Weiterleitungen (308).
+
+   Der Code heisst weiter Nina und bleibt so. Die Trennlinie hält
+   `apps/web/src/lib/markenname.test.ts`.
 2. **Buchbar ist nur die kostenlose Stufe.** Die Preisseite steht,
    aber alles mit `nochNicht` in `preismodell.ts` — Begleitung Plus
    und Pro, Arbeitsraum Basis und Team — führt zu keiner Zahlung.

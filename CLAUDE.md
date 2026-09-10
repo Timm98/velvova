@@ -11,6 +11,23 @@ einzelnen Aufträgen im Gesprächsverlauf.
 4. Bestehende aktuelle Architektur
 5. Frühere Phasen-Prompts
 
+## Der Name ist Monday
+
+Entschieden am 11.09.2026. Die Begleitung heisst **Monday**, überall,
+wo ein Mensch sie liest — Oberfläche, Systemtexte, Mails, Presse.
+
+**Der Code heisst weiter Nina**, und das bleibt so: Komponenten
+(`NinaProvider`, `NinaCore`), Tabellen (`nina_*`), Ordner
+(`lib/nina/`), das stabile `data-nina-target`. Eine Umbenennung von
+Datenbanken, Domains und Integrationsschlüsseln kostet Ausfälle und
+bringt niemandem etwas, der die Anwendung benutzt.
+
+Sichtbarer Text kommt aus `brand.assistantName`, nie aus einem hart
+geschriebenen Namen. Die alten Adressen `/app/nina` und
+`/nina-einrichten` bleiben als dauerhafte Weiterleitung bestehen.
+
+→ `apps/web/src/lib/markenname.test.ts`
+
 ## Monday Interaction System — verbindlich für jede Funktion
 
 Monday ist kein Chatbot, sondern die zentrale Assistenz-, Erklärungs-,
@@ -192,6 +209,8 @@ nicht geprüft wird, existiert nach drei Umbauten nicht mehr.
 | `keine-entscheidung.test.ts` | dass es keine Funktion gibt, die für einen Menschen entscheidet |
 | `geschuetzte-merkmale.test.ts` | dass beide Wege ins Produkt dieselben Merkmale abweisen |
 | `k-anonymitaet.test.ts` | dass unterhalb von fünf keine Zahl genannt wird |
+| `markenname.test.ts` | dass die Begleitung sichtbar Monday heisst und nirgends hart geschrieben steht |
+| `oeffentliche-ziele.test.ts` | dass kein öffentlicher Verweis in eine Weiterleitung hinter der Anmeldung führt |
 
 Noch nicht möglich, weil es die Funktion noch nicht gibt: Offenlegung
 in Arbeitgebergesprächen, Konzern-Sperre, Freigabe-Prüfung im Versand
