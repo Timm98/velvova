@@ -1,6 +1,11 @@
 import { getDb, schema, withUser } from "@paycheck/db";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
-import { spitzenauswahl, grundlagenSatz, type Spitzenkandidat } from "@paycheck/matching";
+import {
+  anzeigenqualitaet,
+  grundlagenSatz,
+  spitzenauswahl,
+  type Spitzenkandidat,
+} from "@paycheck/matching";
 import {
   LEERE_BILANZ,
   bilanzSatz,
@@ -164,8 +169,19 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
         offenePunkte: schema.auftragTreffer.offenePunkte,
         caveat: schema.auftragTreffer.caveat,
         gehaltMin: schema.jobs.salaryMin,
+        gehaltMax: schema.jobs.salaryMax,
         gehaltZeitraum: schema.jobs.salaryPeriod,
         gehaltHerkunft: schema.jobs.salaryProvenance,
+        /* Die elf Felder, aus denen `anzeigenqualitaet()` rechnet. */
+        aufgaben: schema.jobs.coreTasks,
+        vertragsform: schema.jobs.contractType,
+        wochenstunden: schema.jobs.weeklyHours,
+        arbeitsmodell: schema.jobs.workModel,
+        remoteAnteil: schema.jobs.remotePercent,
+        bewerbungsweg: schema.jobs.applyMethod,
+        bewerbungsziel: schema.jobs.applyTarget,
+        originalUrl: schema.jobs.originalUrl,
+        beschreibung: schema.jobs.description,
       })
       .from(schema.auftragTreffer)
       .innerJoin(schema.jobs, eq(schema.jobs.id, schema.auftragTreffer.jobId))
@@ -200,8 +216,40 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
             ? v.gehaltMin * 12
             : null
         : null,
-    /* Beide liegen noch nicht je Treffer vor — sie entscheiden deshalb nicht. */
-    anzeigenqualitaet: null,
+    /*
+     * Wie viel die Anzeige überhaupt hergibt.
+     *
+     * Gemessen am 10.09.2026: Von 561 Treffern haben 161 extrahierte
+     * Anforderungen. Die anderen 400 sind im Schnitt 1.009 Zeichen
+     * lang gegen 2.341, und nur 37 von ihnen haben überhaupt einen
+     * Profil-Block. Ihnen fehlen die Anforderungen nicht, weil die
+     * Extraktion sie übersehen hätte — sie stehen nicht im Text.
+     *
+     * Eine solche Anzeige lässt sich nicht gut beurteilen, und sie
+     * gehört deshalb nicht auf Platz eins. `anzeigenqualitaet()` gibt
+     * es seit langem und wurde nirgends aufgerufen.
+     *
+     * `eingabeUnvollstaendig` trennt dabei das, was sonst
+     * zusammenfiele: Ein abgeschnittener Import ist ein Eingabefehler
+     * und keine Aussage über den Arbeitgeber. Dann entscheidet die
+     * Zahl nicht mit.
+     */
+    anzeigenqualitaet: (() => {
+      const q = anzeigenqualitaet({
+        salary: { min: v.gehaltMin, max: v.gehaltMax } as never,
+        coreTasks: v.aufgaben ?? [],
+        contractType: v.vertragsform,
+        weeklyHours: v.wochenstunden,
+        workModel: v.arbeitsmodell,
+        location: v.ort ?? "",
+        remotePercent: v.remoteAnteil,
+        applyMethod: v.bewerbungsweg,
+        applyTarget: v.bewerbungsziel,
+        originalUrl: v.originalUrl,
+        description: v.beschreibung,
+      } as never);
+      return q.eingabeUnvollstaendig ? null : q.score;
+    })(),
     arbeitgeberurteil: null,
   }));
 
