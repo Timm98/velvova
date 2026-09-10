@@ -9,6 +9,7 @@ import { Composer } from "@/components/nina/Composer";
 import { Gespraechsmenue } from "@/components/nina/Gespraechsmenue";
 import { Startansicht } from "@/components/nina/Startansicht";
 import { Startabzeichen } from "@/components/nina/Startabzeichen";
+import { Nachtstreifen } from "@/components/nina/Nachtstreifen";
 import { NinaCore } from "@/components/nina/NinaCore";
 import { SpeakButton } from "@/components/nina/SpeakButton";
 import { ProgressDrawer } from "@/components/nina/ProgressDrawer";
@@ -1170,6 +1171,17 @@ export function InterviewRoom({
             genau dann, wenn jemand gerade schreibt.
           */}
           {nochNichtsGesagt && <Startabzeichen />}
+
+          {/*
+            Was Monday ausserhalb dieses Gesprächs tut.
+
+            Steht unter den Abzeichen — und meistens gar nicht: ohne
+            laufende Nacht gibt der Streifen nichts zurück. Das
+            Grundkonzept der Seite bleibt damit, wie es ist. Die Zeile
+            erscheint nur, wenn tatsächlich etwas läuft, und dann ist
+            sie das, was jemand am ehesten wissen will.
+          */}
+          <Nachtstreifen className="mt-3" />
 
           {/*
             Der Weg zu den Stellen — als Geste UND als Knopf.

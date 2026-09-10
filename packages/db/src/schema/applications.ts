@@ -336,3 +336,48 @@ export const zusagenPruefungen = pgTable("zusagen_pruefungen", {
   notiz: text("notiz").notNull().default(""),
   erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("zusagen_pruefungen_unique").on(t.zusageId, t.tagesmarke)]);
+
+/**
+ * ══════════════════════════════════════════════════════════════
+ * Die Freigabe für genau eine Nachricht
+ * ══════════════════════════════════════════════════════════════
+ *
+ * `consents` trägt die dauerhafte, allgemeine Einwilligung („Monday
+ * darf mein Postfach benutzen"). Diese Tabelle trägt die andere Art:
+ * einmalig, an eine bestimmte Nachricht gebunden, verfallend.
+ *
+ * Die erste allein reicht nicht. Wer „ja, benutze mein Gmail" gesagt
+ * hat, hat nicht gesagt, dass irgendetwas in seinem Namen hinausgehen
+ * darf — nur, dass der Weg offensteht.
+ *
+ * Die Entscheidung fällt in `versandfreigabe.ts` gegen die Werte
+ * dieser Zeile: vier Zeitpunkte, zwei Vergleiche, kein Modell.
+ *
+ * Siehe Migration 0109.
+ */
+export const versandfreigaben = pgTable(
+  "versandfreigaben",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    jobId: uuid("job_id").notNull().references(() => jobs.id, { onDelete: "cascade" }),
+    applicationId: uuid("application_id").references(() => applications.id, { onDelete: "set null" }),
+
+    /** Gebunden an die Adresse, die der Mensch gesehen hat. */
+    empfaenger: text("empfaenger").notNull(),
+    /** sha256 über Empfänger, Betreff und Text. */
+    fingerabdruck: text("fingerabdruck").notNull(),
+    /** sha256 des Tokens. Das Token selbst wird nie gespeichert. */
+    tokenHash: text("token_hash").notNull(),
+
+    gueltigBis: timestamp("gueltig_bis", { withTimezone: true }).notNull(),
+    /** Einmal verwendbar. Gesetzt beim Einlösen, nicht beim Senden. */
+    verwendetAm: timestamp("verwendet_am", { withTimezone: true }),
+    widerrufenAm: timestamp("widerrufen_am", { withTimezone: true }),
+    erstelltAm: timestamp("erstellt_am", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("versandfreigaben_token_unique").on(t.tokenHash),
+    index("versandfreigaben_user_idx").on(t.userId, t.erstelltAm),
+  ],
+);

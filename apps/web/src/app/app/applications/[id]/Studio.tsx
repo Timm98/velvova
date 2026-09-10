@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Entwurfsuebergabe } from "@/components/applications/Entwurfsuebergabe";
-import { approveArtifact, generateArtifact, sendApplication, updateArtifact } from "@/lib/studio";
+import { approveArtifact, generateArtifact, sendApplication, updateArtifact, versandFreigabeHolen } from "@/lib/studio";
 import type { StudioView } from "@/lib/studio";
 import { Badge, buttonClass, Card, Stack } from "@/components/ui";
 
@@ -76,6 +76,15 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
    */
   const [editorEntwuerfe, setEditorEntwuerfe] = useState<Record<string, string>>({});
   const [confirmed, setConfirmed] = useState(false);
+  /*
+   * Die Einmal-Freigabe zu genau diesem Text.
+   *
+   * Sie wird geholt, wenn das Häkchen gesetzt wird — nicht beim
+   * Absenden. So hängt sie an der Fassung, die in dem Moment auf dem
+   * Bildschirm stand; ändert sich der Text danach, lehnt der Server
+   * ab, statt etwas anderes zu senden als das Gelesene.
+   */
+  const [freigabe, setFreigabe] = useState<{ token: string; empfaenger: string } | null>(null);
 
   const active = view.artifacts.find((a) => a.id === activeId) ?? view.artifacts[0] ?? null;
   const musts = view.requirements.filter((r) => r.kind === "must");
@@ -102,7 +111,12 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
   function send() {
     if (!active) return;
     startTransition(async () => {
-      const r = await sendApplication(view.application.id, active.id, confirmed);
+      const r = await sendApplication(
+        view.application.id,
+        active.id,
+        confirmed,
+        freigabe?.token,
+      );
       setMessage({ tone: r.ok ? "ok" : "error", text: r.message });
       if (r.draft) setEntwurf(r.draft);
       router.refresh();
@@ -373,10 +387,35 @@ export function Studio({ view, labels }: { view: StudioView; labels: Labels }) {
                       <input
                         type="checkbox"
                         checked={confirmed}
-                        onChange={(e) => setConfirmed(e.target.checked)}
+                        onChange={(e) => {
+                          const an = e.target.checked;
+                          setConfirmed(an);
+                          if (!an) return setFreigabe(null);
+                          startTransition(async () => {
+                            const r = await versandFreigabeHolen(view.application.id, active.id);
+                            if (r.ok) setFreigabe({ token: r.token, empfaenger: r.empfaenger });
+                            else {
+                              setConfirmed(false);
+                              setMessage({ tone: "error", text: r.message });
+                            }
+                          });
+                        }}
                         style={{ width: 20, height: 20, marginTop: 2 }}
                       />
-                      <span style={{ fontSize: "var(--text-sm)" }}>{labels.confirmSend}</span>
+                      <span style={{ fontSize: "var(--text-sm)" }}>
+                        {labels.confirmSend}
+                        {/*
+                          Der Empfänger steht neben dem Häkchen, nicht
+                          in den Bedingungen. Wer bestätigt, soll im
+                          selben Blick lesen, wohin es geht.
+                        */}
+                        {freigabe && (
+                          <>
+                            {" "}
+                            <strong>{freigabe.empfaenger}</strong>
+                          </>
+                        )}
+                      </span>
                     </label>
 
                     <button

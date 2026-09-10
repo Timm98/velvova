@@ -8,6 +8,8 @@ import { and, desc, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireUser } from "./auth";
 import { recordEvent } from "./matching";
+import { freigabeAusstellen, freigabeEinloesen } from "./versandfreigabe";
+import { darfSenden } from "@paycheck/domain";
 
 /**
  * Application Studio.
@@ -344,10 +346,70 @@ export async function approveArtifact(
  * freigegeben, UND der Mensch hat den Versand ausdrücklich bestätigt.
  * Fehlt eines von beidem, passiert nichts.
  */
+/**
+ * Die Freigabe für genau diese Bewerbung holen.
+ *
+ * ── Warum das ein eigener Schritt ist ─────────────────────────
+ *
+ * Bisher hing der Versand an einem `userConfirmed: boolean` — einer
+ * Zahl, die der Aufrufer mitschickt. Wer den Aufruf nachbaut, schickt
+ * `true`, und der Riegel ist keiner.
+ *
+ * Die Freigabe hängt dagegen an dem, was der Mensch gesehen hat: an
+ * Empfänger, Betreff und Text. Ändert sich davon ein Zeichen, gilt sie
+ * nicht mehr — und ein zweites Absenden geht auch mit demselben Token
+ * nicht durch.
+ */
+export async function versandFreigabeHolen(
+  applicationId: string,
+  artifactId: string,
+): Promise<
+  { ok: true; token: string; empfaenger: string; betreff: string } | { ok: false; message: string }
+> {
+  const user = await requireUser();
+  const ctx = await loadContext(applicationId, user.id);
+  if (!ctx) return { ok: false, message: "Diese Bewerbung wurde nicht gefunden." };
+
+  const db = await getDb();
+  const [artifact] = await withUser(db, user.id, (tx) =>
+    tx
+      .select()
+      .from(schema.generatedArtifacts)
+      .where(
+        and(
+          eq(schema.generatedArtifacts.id, artifactId),
+          eq(schema.generatedArtifacts.userId, user.id),
+        ),
+      )
+      .limit(1),
+  );
+  if (!artifact) return { ok: false, message: "Dokument nicht gefunden." };
+  if (!artifact.approvedByUser) {
+    return { ok: false, message: "Das Dokument ist noch nicht freigegeben." };
+  }
+
+  const empfaenger = ctx.job.applyTarget ?? "unbekannt@example.invalid";
+  const betreff = `Bewerbung: ${ctx.job.title}`;
+  const ergebnis = await freigabeAusstellen(
+    ctx.job.id,
+    empfaenger,
+    betreff,
+    artifact.content,
+    applicationId,
+  );
+  if ("fehler" in ergebnis) return { ok: false, message: ergebnis.fehler };
+  return { ok: true, token: ergebnis.token, empfaenger, betreff };
+}
+
 export async function sendApplication(
   applicationId: string,
   artifactId: string,
   userConfirmed: boolean,
+  /**
+   * Die Einmal-Freigabe. Ohne sie geht nichts hinaus, das wirklich
+   * hinausgeht — Entwurf und Testserver bleiben davon unberührt.
+   */
+  token?: string,
 ): Promise<{ ok: boolean; message: string; draft?: { filename: string; content: string } }> {
   const user = await requireUser();
   const cfg = loadRuntimeConfig();
@@ -379,6 +441,30 @@ export async function sendApplication(
     isDemo: true,
     providerName: provider.displayName,
   };
+
+  /*
+   * Der Riegel.
+   *
+   * Nur vor echtem Versand: Ein Entwurf, der auf dem Gerät bleibt, und
+   * ein lokaler Testserver brauchen keine Einmal-Freigabe — sie
+   * verlassen nichts. Alles andere braucht sie, und zwar zu genau
+   * diesem Text: `freigabeEinloesen` vergleicht Empfänger und
+   * Fingerabdruck und verbraucht die Freigabe in derselben Anweisung,
+   * mit der es sie prüft.
+   */
+  const echterVersand =
+    provider.isConnected() && provider.key !== "draft" && provider.key !== "mailpit";
+  if (echterVersand) {
+    const einloesung = await freigabeEinloesen(
+      token ?? "",
+      preview.recipient,
+      preview.subject,
+      preview.body,
+    );
+    if (!darfSenden(einloesung.stand)) {
+      return { ok: false, message: einloesung.text };
+    }
+  }
 
   const result = await provider.send(preview, userConfirmed);
 

@@ -124,6 +124,11 @@ DECLARE
     -- Bericht geoeffnet hat. Aus der Zaehlerreihe allein liesse sich
     -- ablesen, wie eng seine Gehaltsgrenze liegt und ob er noch sucht.
     'nacht_laeufe',
+    -- Die Einmal-Freigabe fuer den Versand. Wer sie lesen koennte,
+    -- saehe, an welche Arbeitgeber jemand gerade schreibt -- und
+    -- koennte, waere der Riegel nicht der Token-Hash, in seinem Namen
+    -- senden. Beides gehoert ihm allein.
+    'versandfreigaben',
     -- Der Outcome Loop. Die Zeile enthaelt, worauf sich jemand beworben
     -- hat und wie zufrieden er danach war -- das Empfindlichste, was
     -- das Produkt speichert. Die Auswertung liest ueber die

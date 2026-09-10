@@ -169,6 +169,14 @@ interface NinaActions {
    * wissen, wie die Modelle dort heissen.
    */
   setModell: (id: string) => void;
+  /**
+   * Was Monday ausserhalb des Gesprächs tut.
+   *
+   * Wird vom Nachtstreifen gesetzt, der `nacht_laeufe` liest. `null`
+   * heisst: kein Lauf. Der Ring nimmt es nur an, wenn das Gespräch
+   * ruht — sprechen und zuhören gehen vor.
+   */
+  setProzess: (zustand: NinaVisualState | null) => void;
 }
 
 /** Ändert sich oft — beim Streamen bei jedem Zeichen. */
@@ -397,6 +405,14 @@ export function NinaProvider({
   const [readiness, setReadiness] = useState<NinaReadiness | null>(null);
   const [jobs, setJobs] = useState<JobVorschlag[]>([]);
   const [isListening, setIsListening] = useState(false);
+  /*
+   * Was Monday ausserhalb des Gesprächs tut.
+   *
+   * `null` heisst: nichts. Der Wert kommt aus `nacht_laeufe` und wird
+   * nur gesetzt, wenn dort wirklich ein Lauf steht — nie, um Betrieb
+   * vorzutäuschen.
+   */
+  const [prozess, setProzess] = useState<NinaVisualState | null>(null);
   const stimme = useNinaVoice();
   const [progressGroups, setProgressGroups] = useState<
     { key: string; label: string; done: boolean }[] | null
@@ -1041,6 +1057,7 @@ export function NinaProvider({
       stopSpeaking: stimme.stoppen,
       setListening,
       setModell,
+      setProzess,
     }),
     [
       pulsAnstossen,
@@ -1092,18 +1109,28 @@ export function NinaProvider({
        * Denken schlägt Stille. Keine Zeitschaltung, keine Zufälle —
        * jeder Zustand hat eine technische Ursache.
        */
+      /*
+       * Der Nachtlauf steht zuletzt, direkt vor der Stille.
+       *
+       * Er darf das Gespräch nie überschreiben: Wer gerade spricht,
+       * soll den Ring bei sich haben und nicht bei einer Suche, die im
+       * Hintergrund läuft. Aber „idle" zu zeigen, während wirklich
+       * gerechnet wird, wäre die andere Unwahrheit — und die
+       * unangenehmere, weil sie behauptet, es passiere nichts.
+       */
       visualState: (isListening
         ? "listening"
         : stimme.zustand === "spricht"
           ? "speaking"
           : busy
             ? "thinking"
-            : "idle") as NinaVisualState,
+            : (prozess ?? "idle")) as NinaVisualState,
     }),
     [
       open,
       messages,
       busy,
+      prozess,
       error,
       art,
       kennungen,
