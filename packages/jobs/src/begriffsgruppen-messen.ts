@@ -34,7 +34,50 @@ import { gruppenlage, type Gruppenlage, type Gruppenzaehlung } from "@paycheck/d
  * Ein Nachtlauf hat wenige verschiedene Suchbegriffe und Tausende
  * Anzeigen. Die Zählung je Begriff einmal zu machen statt je Stelle
  * ist der Unterschied zwischen einer Abfrage und Tausenden.
+ *
+ * ── Warum eine Stichprobe und keine Vollzählung ─────────────────
+ *
+ * Die erste Fassung zählte alle 1,24 Millionen deutschen Anzeigen.
+ * `' ' || lower(title) like '% lager%'` kann keinen Index benutzen,
+ * also las die Datenbank die ganze Tabelle — gemessen am 10.09.2026
+ * lief die Abfrage in die Zeitgrenze und lieferte nach 600 Sekunden
+ * gar nichts. Genau der Defekt, vor dem CLAUDE.md unter
+ * „Vollzählung" warnt.
+ *
+ * `tablesample system (2)` liest zwei Prozent der Datenseiten. Am
+ * selben Tag gemessen:
+ *
+ *   lager      6,6 s   663 Titeltreffer   51 zu 90 %
+ *   logistik  10,8 s   151 Titeltreffer   51 zu 78 %
+ *   pflege    10,3 s   636 Titeltreffer   81 zu 46 %, 82 zu 45 %
+ *
+ * Alle drei liegen weit über `MINDESTSTICHPROBE`. Zehn Prozent
+ * dauerten vier- bis sechsmal so lange und änderten an der Rangfolge
+ * der Gruppen nichts.
+ *
+ * ── Was diese Stichprobe NICHT ist ──────────────────────────────
+ *
+ * Sie ist keine Zufallsauswahl über Zeilen, sondern über Seiten. Wer
+ * dieselben Anzeigen am selben Tag eingelesen hat, liegt oft auf
+ * denselben Seiten — die Auswahl ist also mit Quelle und Ladezeit
+ * korreliert. Für die Frage „welche Berufsgruppen tragen dieses
+ * Wort" ist das tragbar, weil die Verteilung eindeutig ist; für eine
+ * Aussage über Anteile im Bestand wäre sie es nicht.
+ *
+ * ── Warum eine eigene Zeitgrenze ────────────────────────────────
+ *
+ * Ein seltener Begriff trifft in der Stichprobe wenig, und die
+ * Datenbank liest trotzdem alle gezogenen Seiten. Nach zwanzig
+ * Sekunden bricht sie ab, die Lage fällt auf „nicht belastbar", und
+ * die Stellen werden nicht abgewertet. Ein Nachtlauf darf an einer
+ * Messung nicht hängen bleiben.
  */
+
+/** Anteil der Datenseiten, den die Zählung liest. */
+const STICHPROBE_PROZENT = 2;
+
+/** Nach so vielen Sekunden ist die Messung es nicht mehr wert. */
+const ZEITGRENZE_SEKUNDEN = 20;
 
 const speicher = new Map<string, Gruppenlage>();
 
@@ -58,18 +101,19 @@ export async function lageFuerBegriff(begriff: string): Promise<Gruppenlage> {
   let lage: Gruppenlage = { tragend: [], stichprobe: 0, belastbar: false };
   try {
     const db = await getDb();
-    const ergebnis = (await withSystem(db, (tx) =>
-      tx.execute(sql`
+    const ergebnis = (await withSystem(db, async (tx) => {
+      await tx.execute(sql.raw(`set local statement_timeout = '${ZEITGRENZE_SEKUNDEN}s'`));
+      return tx.execute(sql`
         select left(kldb, 2) as gruppe, count(*)::int as titeltreffer
-        from jobs
+        from jobs tablesample system (${sql.raw(String(STICHPROBE_PROZENT))})
         where is_demo = false
           and country = 'DE'
           and kldb is not null
           and ' ' || lower(title) like ${`% ${schluessel}%`}
         group by 1
         order by 2 desc
-        limit 20`),
-    )) as unknown as { rows: Gruppenzaehlung[] };
+        limit 20`);
+    })) as unknown as { rows: Gruppenzaehlung[] };
     lage = gruppenlage(ergebnis.rows);
   } catch (fehler) {
     console.error(

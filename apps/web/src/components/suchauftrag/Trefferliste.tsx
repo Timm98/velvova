@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CircleHelp } from "lucide-react";
+import { gruppenhinweisTrennen } from "@paycheck/domain";
 import type { Trefferansicht } from "@/lib/suchauftrag/aktionen";
 
 /**
@@ -68,16 +69,27 @@ export function Trefferliste({
             </>
           ) : (
             <>
+              {/*
+                Der Gruppenhinweis ist ein Satz, die übrigen offenen
+                Punkte sind Feldnamen. Zusammengeworfen entstünde
+                „Zu Andere Berufsgruppe: … sagt die Anzeige nichts" —
+                deshalb trennt `gruppenhinweisTrennen` sie hier.
+              */}
               <p className="mt-2 flex gap-1.5 text-sm leading-relaxed text-ink-2">
                 <CircleHelp aria-hidden className="mt-0.5 size-3.5 shrink-0 text-ink-3" />
                 <span>
                   {t.caveat ??
-                    `Zu ${t.offenePunkte.join(" und ")} sagt die Anzeige nichts.`}
+                    `Zu ${gruppenhinweisTrennen(t.offenePunkte).uebrige.join(" und ")} sagt die Anzeige nichts.`}
                 </span>
               </p>
-              {t.offenePunkte.length > 0 && (
+              {gruppenhinweisTrennen(t.offenePunkte).hinweis && (
+                <p className="mt-1 text-2xs leading-relaxed text-caution">
+                  {gruppenhinweisTrennen(t.offenePunkte).hinweis}
+                </p>
+              )}
+              {gruppenhinweisTrennen(t.offenePunkte).uebrige.length > 0 && (
                 <p className="mt-1 text-2xs text-ink-3">
-                  Ungeklärt: {t.offenePunkte.map(feldname).join(", ")}
+                  Ungeklärt: {gruppenhinweisTrennen(t.offenePunkte).uebrige.map(feldname).join(", ")}
                 </p>
               )}
             </>

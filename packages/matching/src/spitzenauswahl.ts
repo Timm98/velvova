@@ -43,7 +43,12 @@
 /** Wie fein der Passungswert wirklich ist. Feiner zu sortieren wäre Schein. */
 export const FITBAND = 5;
 
-export type Rangkriterium = "passung" | "gehalt" | "anzeigenqualitaet" | "arbeitgeberurteil";
+export type Rangkriterium =
+  | "passung"
+  | "berufsgruppe"
+  | "gehalt"
+  | "anzeigenqualitaet"
+  | "arbeitgeberurteil";
 
 export interface Spitzenkandidat {
   trefferId: string;
@@ -56,6 +61,15 @@ export interface Spitzenkandidat {
   anzeigenqualitaet: number | null;
   /** 0–1, aus `review_aggregates`. Heute überall `null`. */
   arbeitgeberurteil: number | null;
+  /**
+   * Ob die amtliche Berufsgruppe der Anzeige zum Suchbegriff passt.
+   *
+   * `null` heisst nicht entscheidbar — die Anzeige trägt keine
+   * Kennung, oder die Messung war zu dünn. Von 1,24 Millionen
+   * deutschen Anzeigen tragen 928.242 eine; die übrigen dürfen nicht
+   * dafür büssen, dass niemand sie zugeordnet hat.
+   */
+  berufsgruppePasst: boolean | null;
 }
 
 export interface Spitzenregeln {
@@ -83,6 +97,34 @@ export function spitzenreihenfolge(a: Spitzenkandidat, b: Spitzenkandidat): numb
   const ba = band(a.fitScore);
   const bb = band(b.fitScore);
   if (ba !== bb) return bb - ba;
+
+  /*
+   * Die Berufsgruppe entscheidet VOR dem Geld.
+   *
+   * ── Warum in dieser Reihenfolge ───────────────────────────────
+   *
+   * Weil der Suchbegriff auch im Fliesstext einer Anzeige steht, die
+   * mit ihm nichts zu tun hat. Gemessen am 10.09.2026: Von sechzehn
+   * Treffern für sieben Menschen, die „Lager, Logistik" gesucht
+   * hatten, kamen elf über den Fliesstext herein — darunter
+   * „Sachbearbeiter Debitorenbuchhaltung" und „Verkäufer auf
+   * Vollzeitbasis". In jeder steht irgendwo „unser Lager".
+   *
+   * Stünde das Gehalt davor, gewänne eine solche Anzeige, sobald sie
+   * eine Zahl nennt — und der Mensch bekäme morgens die
+   * Debitorenbuchhaltung auf Platz eins, weil sie 3.400 Euro nennt.
+   *
+   * Es bleibt eine Reihenfolge, kein Ausschluss. Berufskennungen sind
+   * zugeordnet, nicht erklärt; eine falsche Zuordnung darf niemandem
+   * eine Stelle wegnehmen.
+   */
+  if (
+    a.berufsgruppePasst !== null &&
+    b.berufsgruppePasst !== null &&
+    a.berufsgruppePasst !== b.berufsgruppePasst
+  ) {
+    return a.berufsgruppePasst ? -1 : 1;
+  }
 
   if (a.gehaltJahr !== null && b.gehaltJahr !== null && a.gehaltJahr !== b.gehaltJahr) {
     return b.gehaltJahr - a.gehaltJahr;
@@ -132,11 +174,12 @@ export function grundlage(kandidaten: readonly Spitzenkandidat[]): {
   grundlage: Rangkriterium[];
   fehlend: Rangkriterium[];
 } {
-  const zaehle = (f: (k: Spitzenkandidat) => number | null) =>
+  const zaehle = (f: (k: Spitzenkandidat) => number | boolean | null) =>
     kandidaten.filter((k) => f(k) !== null).length;
 
   const paare: [Rangkriterium, number][] = [
     ["passung", zaehle((k) => k.fitScore)],
+    ["berufsgruppe", zaehle((k) => k.berufsgruppePasst)],
     ["gehalt", zaehle((k) => k.gehaltJahr)],
     ["anzeigenqualitaet", zaehle((k) => k.anzeigenqualitaet)],
     ["arbeitgeberurteil", zaehle((k) => k.arbeitgeberurteil)],
@@ -186,6 +229,7 @@ export function spitzenauswahl(
 export function grundlagenSatz(e: Spitzenergebnis): string {
   const wort: Record<Rangkriterium, string> = {
     passung: "Passung",
+    berufsgruppe: "Berufsgruppe",
     gehalt: "Gehalt",
     anzeigenqualitaet: "Klarheit der Anzeige",
     arbeitgeberurteil: "Bewertungen der Arbeitgeber",

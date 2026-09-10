@@ -3,7 +3,9 @@ import {
   MINDESTSTICHPROBE,
   TRAGENDER_ANTEIL,
   gruppenlage,
+  gruppenhinweisTrennen,
   gruppensatz,
+  istGruppenhinweis,
   passtZurGruppe,
   type Gruppenzaehlung,
 } from "./begriffsgruppen.ts";
@@ -78,12 +80,41 @@ describe("passtZurGruppe", () => {
 
 describe("gruppensatz", () => {
   it("erklärt nur die Abwertung", () => {
-    expect(gruppensatz(false, "Lager")).toContain("anderen Berufsgruppe");
-    expect(gruppensatz(true, "Lager")).toBeNull();
-    expect(gruppensatz(null, "Lager")).toBeNull();
+    expect(gruppensatz(false, ["Lager"])).toContain("anderen amtlichen Berufsgruppe");
+    expect(gruppensatz(true, ["Lager"])).toBeNull();
+    expect(gruppensatz(null, ["Lager"])).toBeNull();
   });
 
-  it("nennt den Begriff, um den es geht", () => {
-    expect(gruppensatz(false, "Logistik")).toContain("Logistik");
+  it("nennt alle Begriffe, um die es geht", () => {
+    const satz = gruppensatz(false, ["Lager", "Logistik"])!;
+    expect(satz).toContain("Lager");
+    expect(satz).toContain("Logistik");
+  });
+
+  it("schweigt ohne Begriff", () => {
+    expect(gruppensatz(false, [])).toBeNull();
+    expect(gruppensatz(false, ["  "])).toBeNull();
+  });
+
+  it("trägt die Kennung, an der der Hinweis wiederzufinden ist", () => {
+    const satz = gruppensatz(false, ["Lager"])!;
+    expect(istGruppenhinweis(satz)).toBe(true);
+    expect(istGruppenhinweis("Mindestgehalt nicht genannt.")).toBe(false);
+  });
+});
+
+describe("gruppenhinweisTrennen", () => {
+  const hinweis = gruppensatz(false, ["Lager"])!;
+
+  it("trennt den Satz von den Feldnamen", () => {
+    const t = gruppenhinweisTrennen(["Gehalt", hinweis, "Wochenstunden"]);
+    expect(t.hinweis).toBe(hinweis);
+    expect(t.uebrige).toEqual(["Gehalt", "Wochenstunden"]);
+  });
+
+  it("lässt eine Liste ohne Hinweis unangetastet", () => {
+    const t = gruppenhinweisTrennen(["Gehalt", "Ort"]);
+    expect(t.hinweis).toBeNull();
+    expect(t.uebrige).toEqual(["Gehalt", "Ort"]);
   });
 });

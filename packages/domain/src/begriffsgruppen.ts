@@ -111,17 +111,70 @@ export function passtZurGruppe(
 }
 
 /**
+ * Die Kennung, an der ein Gruppenhinweis wiederzuerkennen ist.
+ *
+ * ── Warum ein Präfix und kein eigenes Feld ──────────────────────
+ *
+ * Weil der Hinweis heute in `auftrag_treffer.offene_punkte` liegt —
+ * einer Liste von Sätzen, die es schon gibt. Eine eigene Spalte wäre
+ * sauberer und verlangt eine Migration; bis die freigegeben ist,
+ * bleibt der Hinweis ein Satz mit fester ersten Silbe, und
+ * `istGruppenhinweis` findet ihn wieder.
+ *
+ * Das ist eine Schuld, keine Lösung. Wer die Spalte anlegt, streicht
+ * beides.
+ */
+export const GRUPPENHINWEIS = "Andere Berufsgruppe: ";
+
+/** Ob dieser offene Punkt der Gruppenhinweis ist. */
+export function istGruppenhinweis(text: string): boolean {
+  return text.startsWith(GRUPPENHINWEIS);
+}
+
+/**
  * Der Satz, der die Abwertung erklärt.
  *
  * Er steht neben der Stelle, nicht in einer Fussnote: Wer eine
  * Empfehlung weiter unten findet, soll den Grund lesen können — und
  * widersprechen, wenn er falsch ist.
+ *
+ * ── Warum mehrere Begriffe ──────────────────────────────────────
+ *
+ * Weil eine Absicht selten aus einem besteht. „Lager, Logistik" sind
+ * zwei, und einen davon zu nennen hiesse, dem Menschen einen Grund zu
+ * zeigen, den er so nicht gesucht hat.
  */
 export function gruppensatz(
   passt: boolean | null,
-  begriff: string,
+  begriffe: readonly string[],
 ): string | null {
-  if (passt === null) return null;
-  if (passt) return null;
-  return `Der Begriff „${begriff}" steht in dieser Anzeige, aber die Stelle gehört zu einer anderen Berufsgruppe.`;
+  if (passt === null || passt) return null;
+  const genannt = begriffe.filter((b) => b.trim().length > 0);
+  if (genannt.length === 0) return null;
+  const liste = genannt.map((b) => `\u201e${b}\u201c`).join(" und ");
+  return `${GRUPPENHINWEIS}${liste} steht in dieser Anzeige, aber die Stelle ist einer anderen amtlichen Berufsgruppe zugeordnet.`;
+}
+
+/**
+ * Den Gruppenhinweis aus den offenen Punkten heraustrennen.
+ *
+ * ── Warum das nötig ist ─────────────────────────────────────────
+ *
+ * `offene_punkte` ist zwei Dinge gleichzeitig: eine Liste von
+ * Feldnamen („Gehalt", „Wochenstunden") und eine Liste von Sätzen.
+ * Die Trefferliste rendert daraus „Zu Gehalt und Ort sagt die Anzeige
+ * nichts" — und mit einem ganzen Satz darin ergäbe das Kauderwelsch.
+ *
+ * Getrennt gerendert steht der Hinweis da, wo er hingehört: als
+ * eigener Satz neben der Stelle, nicht als Feldname in einer
+ * Aufzählung.
+ */
+export function gruppenhinweisTrennen(punkte: readonly string[]): {
+  hinweis: string | null;
+  uebrige: string[];
+} {
+  return {
+    hinweis: punkte.find(istGruppenhinweis) ?? null,
+    uebrige: punkte.filter((p) => !istGruppenhinweis(p)),
+  };
 }

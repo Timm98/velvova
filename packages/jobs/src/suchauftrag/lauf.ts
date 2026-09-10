@@ -18,7 +18,8 @@ import {
   type Stellenangaben,
   type Suchkriterium,
 } from "@paycheck/matching";
-import { schluesselFinden } from "@paycheck/domain";
+import { gruppensatz, passtZurGruppe, schluesselFinden } from "@paycheck/domain";
+import { lageFuerBegriffe } from "../begriffsgruppen-messen.ts";
 import { fassungsstand } from "../analyseschluessel.ts";
 import { rowToJob } from "../stellenzeile.ts";
 import { materielleFassung } from "./materiellefassung.ts";
@@ -532,6 +533,39 @@ export async function auftragslaufRunde(
     /** Die vorläufige Zulässigkeit — vor dem Modell. */
     vorlaeufig: string;
   }
+  /*
+   * ── Welche Berufsgruppen der Suchbegriff überhaupt trägt ──────
+   *
+   * Gemessen am 10.09.2026: Von sechzehn Treffern für sieben
+   * Menschen, die „Lager, Logistik" gesucht hatten, kamen elf nicht
+   * über den Titel herein, sondern über den Fliesstext — darunter
+   * „Sachbearbeiter Debitorenbuchhaltung" und „Verkäufer auf
+   * Vollzeitbasis". In jeder dieser Anzeigen steht irgendwo „unser
+   * Lager".
+   *
+   * Die Suche im Fliesstext bleibt: „Versandmitarbeiter" ist ein
+   * echter Logistikjob, dessen Titel keinen der beiden Begriffe
+   * enthält, und wer die Suche auf den Titel verengt, verliert genau
+   * die Stellen, die sonst niemand findet.
+   *
+   * Was dazukommt, ist die amtliche Berufskennung als Unterscheider.
+   * Einmal je Lauf gemessen, nicht je Stelle — und wenn die Messung
+   * nichts hergibt, bleibt sie folgenlos.
+   */
+  const suchbegriffe = [
+    ...new Set(
+      kriterien
+        .filter((k) => k.kriterium === "taetigkeit" || k.kriterium === "berufsfeld")
+        .flatMap((k) => (Array.isArray(k.wert) ? k.wert : [k.wert]))
+        .filter((w): w is string => typeof w === "string" && w.trim().length >= 3)
+        .map((w) => w.trim().toLowerCase()),
+    ),
+  ];
+  const gruppenlageDesAuftrags =
+    suchbegriffe.length > 0
+      ? await lageFuerBegriffe(suchbegriffe)
+      : { tragend: [], stichprobe: 0, belastbar: false };
+
   const vorbefunde: Vorbefund[] = [];
 
   for (const k of kandidaten) {
@@ -688,9 +722,23 @@ export async function auftragslaufRunde(
       ...gruendeAus(kriterienErgebnisse),
       ...belegteTransfers.slice(0, 1).map((t) => t.reason),
     ].slice(0, 2);
+    /*
+     * Der Gruppenhinweis ist ein offener Punkt, kein Ausschluss.
+     *
+     * Berufskennungen sind zugeordnet, nicht erklärt. Eine falsche
+     * Zuordnung darf niemandem eine Stelle wegnehmen — sie darf sie
+     * nur nach hinten stellen und den Grund dazuschreiben, damit der
+     * Mensch widersprechen kann.
+     */
+    const gruppenhinweis = gruppensatz(
+      passtZurGruppe(job.kldb, gruppenlageDesAuftrags),
+      suchbegriffe,
+    );
+
     const offenePunkte = [
       ...zulaessig.offeneMuss,
       ...vermutungen.slice(0, 1).map((t) => `Möglicher Übergang: ${t.job_requirement} — noch nicht belegt.`),
+      ...(gruppenhinweis === null ? [] : [gruppenhinweis]),
     ];
 
     const geschrieben = await withUser(db, auftrag.userId, async (tx) => {

@@ -17,6 +17,7 @@ const K = (teil: Partial<Spitzenkandidat> = {}): Spitzenkandidat => ({
   gehaltJahr: null,
   anzeigenqualitaet: null,
   arbeitgeberurteil: null,
+  berufsgruppePasst: null,
   ...teil,
 });
 
@@ -153,5 +154,51 @@ describe("grundlagenSatz", () => {
   it("behauptet ohne Datenlage keine Reihenfolge", () => {
     const e = spitzenauswahl([K({ fitScore: null })]);
     expect(grundlagenSatz(e)).toContain("reichte die Datenlage nicht");
+  });
+});
+
+describe("Die Berufsgruppe", () => {
+  it("entscheidet vor dem Gehalt", () => {
+    /*
+     * Der gemessene Fall: „Sachbearbeiter Debitorenbuchhaltung" kam
+     * über den Fliesstext in eine Suche nach „Lager, Logistik" — und
+     * nennt ein Gehalt, das die passende Stelle nicht nennt. Ohne
+     * diese Stufe stünde sie morgens auf Platz eins.
+     */
+    const falscheGruppeMitGeld = K({ berufsgruppePasst: false, gehaltJahr: 44_000 });
+    const richtigeGruppeOhneGeld = K({ berufsgruppePasst: true, gehaltJahr: null });
+    const sortiert = [falscheGruppeMitGeld, richtigeGruppeOhneGeld].sort(spitzenreihenfolge);
+    expect(sortiert[0]).toBe(richtigeGruppeOhneGeld);
+  });
+
+  it("entscheidet nicht über ein Passungsband hinweg", () => {
+    const falscheGruppeBesserFit = K({ berufsgruppePasst: false, fitScore: 90 });
+    const richtigeGruppeSchlechterFit = K({ berufsgruppePasst: true, fitScore: 60 });
+    const sortiert = [richtigeGruppeSchlechterFit, falscheGruppeBesserFit].sort(spitzenreihenfolge);
+    expect(sortiert[0]).toBe(falscheGruppeBesserFit);
+  });
+
+  it("entscheidet nur, wenn beide Seiten bekannt sind", () => {
+    /*
+     * 928.242 von 1,24 Millionen deutschen Anzeigen tragen eine
+     * Berufskennung. Die übrigen dürfen nicht dafür büssen, dass
+     * niemand sie zugeordnet hat — sie fallen auf das nächste
+     * Kriterium durch.
+     */
+    const ohneKennungMehrGeld = K({ berufsgruppePasst: null, gehaltJahr: 60_000 });
+    const mitKennungWenigerGeld = K({ berufsgruppePasst: true, gehaltJahr: 40_000 });
+    const sortiert = [mitKennungWenigerGeld, ohneKennungMehrGeld].sort(spitzenreihenfolge);
+    expect(sortiert[0]).toBe(ohneKennungMehrGeld);
+  });
+
+  it("zählt als Grundlage erst ab zwei bekannten Werten", () => {
+    expect(grundlage([K({ berufsgruppePasst: true }), K(), K()]).fehlend).toContain("berufsgruppe");
+    const zwei = grundlage([K({ berufsgruppePasst: true }), K({ berufsgruppePasst: false }), K()]);
+    expect(zwei.grundlage).toContain("berufsgruppe");
+  });
+
+  it("kommt im Satz vor, wenn sie mitentschieden hat", () => {
+    const e = spitzenauswahl([K({ berufsgruppePasst: true }), K({ berufsgruppePasst: false })]);
+    expect(grundlagenSatz(e)).toContain("Berufsgruppe");
   });
 });

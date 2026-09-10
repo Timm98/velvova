@@ -6,6 +6,7 @@ import { berichtGesehen, morgenlage } from "@/lib/nachtlauf";
 import { fastPassende } from "@/lib/wandelbar";
 import { angebotstreffer } from "@/lib/angebotstreffer";
 import { PageHeader } from "@/components/ui/states";
+import { gruppenhinweisTrennen } from "@paycheck/domain";
 
 export const metadata: Metadata = { title: "Heute Nacht" };
 export const dynamic = "force-dynamic";
@@ -170,7 +171,24 @@ export default async function MorgenSeite() {
                   </ul>
                 )}
 
-                {(v.offenePunkte.length > 0 || v.caveat) && (
+                {gruppenhinweisTrennen(v.offenePunkte).hinweis && (
+                  /*
+                   * Der Grund für einen schlechteren Platz steht neben
+                   * der Stelle, nicht in einer Fussnote — und in
+                   * Warnfarbe, weil er etwas über die Stelle sagt und
+                   * nicht über eine fehlende Angabe.
+                   *
+                   * Wer ihn für falsch hält, soll ihn lesen und
+                   * widersprechen können. Eine Abwertung ohne
+                   * genannten Grund ist von Willkür nicht zu
+                   * unterscheiden.
+                   */
+                  <p className="max-w-[var(--measure)] border-t border-line pt-2.5 text-2xs leading-relaxed text-caution">
+                    {gruppenhinweisTrennen(v.offenePunkte).hinweis}
+                  </p>
+                )}
+
+                {(gruppenhinweisTrennen(v.offenePunkte).uebrige.length > 0 || v.caveat) && (
                   /*
                    * Was offen ist, steht mit dabei — nicht kleiner,
                    * nicht weggeklappt. Eine unbekannte Muss-Angabe ist
@@ -179,7 +197,10 @@ export default async function MorgenSeite() {
                    * ausdrücklich nicht macht.
                    */
                   <p className="max-w-[var(--measure)] border-t border-line pt-2.5 text-2xs leading-relaxed text-ink-3">
-                    Offen: {[...v.offenePunkte, v.caveat].filter(Boolean).join(" · ")}
+                    Offen:{" "}
+                    {[...gruppenhinweisTrennen(v.offenePunkte).uebrige, v.caveat]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 )}
 

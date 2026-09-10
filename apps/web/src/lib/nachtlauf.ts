@@ -9,6 +9,7 @@ import {
 import {
   LEERE_BILANZ,
   bilanzSatz,
+  istGruppenhinweis,
   magerkeitsgrund,
   phasentext,
   ringbild,
@@ -167,6 +168,8 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
         fitScore: schema.auftragTreffer.fitScore,
         gruende: schema.auftragTreffer.empfehlungsgruende,
         offenePunkte: schema.auftragTreffer.offenePunkte,
+        /* Nur für die Reihenfolge — siehe `berufsgruppePasst` unten. */
+        kldb: schema.jobs.kldb,
         caveat: schema.auftragTreffer.caveat,
         gehaltMin: schema.jobs.salaryMin,
         gehaltMax: schema.jobs.salaryMax,
@@ -204,10 +207,38 @@ export async function morgenlage(userId: string): Promise<Morgenlage> {
    * im Bestand. Sie in eine Reihenfolge einzurechnen hiesse, Stellen
    * danach zu sortieren, was ein Dritter über sie vermutet.
    */
+  /*
+   * ══════════════════════════════════════════════════════════════
+   * Die Berufsgruppe kommt aus dem Nachtlauf, nicht aus einer Abfrage
+   * ══════════════════════════════════════════════════════════════
+   *
+   * Welche Berufsgruppen ein Suchbegriff trägt, misst
+   * `lageFuerBegriffe` — und das dauert acht bis elf Sekunden, weil
+   * `like '% lager%'` keinen Index benutzen kann. In einem
+   * Seitenaufruf hat das nichts verloren; genau davor warnt CLAUDE.md
+   * unter „Vollzählung im Seitenaufruf".
+   *
+   * Der Nachtlauf hat schon gemessen und das Ergebnis als offenen
+   * Punkt hinterlassen. Hier steht deshalb nur noch eine Ableitung:
+   *
+   *   keine Berufskennung  → null, nicht entscheidbar
+   *   Hinweis vorhanden    → false
+   *   Kennung, kein Hinweis → true
+   *
+   * ── Warum die dritte Zeile trotzdem stimmt ──────────────────────
+   *
+   * Sie könnte falsch sein: Wenn die Messung in jener Nacht nichts
+   * hergab, bekam keine Anzeige einen Hinweis, und alle mit Kennung
+   * lesen sich hier als „passt". Das hebt sich auf — entscheidet ein
+   * Kriterium bei allen gleich, entscheidet es nichts, und
+   * `spitzenreihenfolge` geht zum nächsten über.
+   */
   const kandidaten: Spitzenkandidat[] = engereWahl.map((v) => ({
     trefferId: v.trefferId,
     arbeitgeberId: v.arbeitgeberId,
     fitScore: v.fitScore,
+    berufsgruppePasst:
+      v.kldb === null ? null : !(v.offenePunkte ?? []).some(istGruppenhinweis),
     gehaltJahr:
       v.gehaltMin !== null && (v.gehaltHerkunft === "employer" || v.gehaltHerkunft === "provider")
         ? v.gehaltZeitraum === "year"
