@@ -2,10 +2,16 @@ import { sql } from "drizzle-orm";
 import { getDb, withSystem } from "@paycheck/db";
 import {
   KATALOG,
+  VERWERTUNG,
   ausBeleg,
+  darfSkillTragen,
+  eigenerBeitragErkennbar,
+  istOrientierungsprobe,
   schluesselFinden,
   stufenrang,
   type Belegart,
+  type EvidenceNodeType,
+  type Kategoriezaehlung,
   type Koennensstufe,
 } from "@paycheck/domain";
 
@@ -132,9 +138,22 @@ export function stufeAlsZahl(s: Koennensstufe): number {
 export interface Verdichtungsbericht {
   belegeGelesen: number;
   ohneBelegart: number;
+  /**
+   * Belege, die durften und trotzdem nicht zugeordnet wurden.
+   *
+   * Bis zum 11.09.2026 standen hier auch die 113 Vorlieben, Motive
+   * und Rollenbezeichnungen — der Lauf meldete damit eine
+   * Fehlerquote, die die Zusammensetzung des Bestands beschrieb.
+   */
   ohneKatalogeintrag: number;
+  /** Belege, deren Art keine Fähigkeit tragen darf. Kein Fehler. */
+  bewusstNichtVerdichtet: number;
+  /** Ergebnissätze ohne erkennbaren eigenen Anteil. */
+  ohneEigenenBeitrag: number;
   angelegt: number;
   schonVorhanden: number;
+  /** Je Belegart, für den Bericht. */
+  jeKategorie: Kategoriezaehlung[];
 }
 
 /**
@@ -156,33 +175,95 @@ export async function belegeVerdichten(grenze = 500): Promise<Verdichtungsberich
     belegeGelesen: 0,
     ohneBelegart: 0,
     ohneKatalogeintrag: 0,
+    bewusstNichtVerdichtet: 0,
+    ohneEigenenBeitrag: 0,
     angelegt: 0,
     schonVorhanden: 0,
+    jeKategorie: [],
   };
 
   const belege = (await withSystem(db, (tx) =>
     tx.execute(sql`
-      select id, user_id as "userId", statement, source_type as "sourceType"
+      select id, user_id as "userId", statement, type,
+             source_type as "sourceType", source_ref as "sourceRef"
       from evidence_items
       where user_confirmed = true and user_rejected = false
       order by created_at
       limit ${grenze}`),
   )) as unknown as {
-    rows: { id: string; userId: string; statement: string; sourceType: string }[];
+    rows: {
+      id: string; userId: string; statement: string; type: string;
+      sourceType: string; sourceRef: string | null;
+    }[];
+  };
+
+  const zaehlung = new Map<string, Kategoriezaehlung>();
+  const zaehle = (art: EvidenceNodeType) => {
+    const z = zaehlung.get(art) ?? {
+      art,
+      weg: VERWERTUNG[art],
+      gesamt: 0,
+      uebernommen: 0,
+      bewusstNicht: 0,
+      nichtZugeordnet: 0,
+    };
+    zaehlung.set(art, z);
+    return z;
   };
 
   for (const b of belege.rows) {
     bericht.belegeGelesen++;
+    const nodeArt = b.type as EvidenceNodeType;
+    const z = zaehle(nodeArt);
+    z.gesamt++;
+
+    /*
+     * ── Die Art entscheidet vor allem anderen ──────────────────
+     *
+     * Eine Vorliebe ist kein misslungener Fähigkeitsbeleg. Sie gehört
+     * in den Wunsch-Abgleich, und sie hier als Fehlschlag zu zählen
+     * hiesse, die Zusammensetzung des Bestands als Fehlerquote
+     * auszugeben.
+     */
+    if (!darfSkillTragen(nodeArt)) {
+      bericht.bewusstNichtVerdichtet++;
+      z.bewusstNicht++;
+      continue;
+    }
+
+    /*
+     * Eine Orientierungsprobe tritt gar nicht erst an. Sie dürfte
+     * antreten und könnte nie durchkommen — und stünde damit dauerhaft
+     * als Fehlschlag in der Bilanz.
+     */
+    if (istOrientierungsprobe(b.sourceRef)) {
+      bericht.bewusstNichtVerdichtet++;
+      z.bewusstNicht++;
+      continue;
+    }
 
     const art = belegartAus(b.sourceType);
     if (art === null) {
       bericht.ohneBelegart++;
+      z.bewusstNicht++;
+      continue;
+    }
+
+    /*
+     * Ein Ergebnis trägt eine Fähigkeit nur mit erkennbarem eigenem
+     * Anteil. „Der Bereich hat die Durchlaufzeit halbiert" sagt
+     * nichts darüber, wer das getan hat.
+     */
+    if (VERWERTUNG[nodeArt] === "nur_mit_beitrag" && !eigenerBeitragErkennbar(b.statement)) {
+      bericht.ohneEigenenBeitrag++;
+      z.nichtZugeordnet++;
       continue;
     }
 
     const schluessel = schluesselFinden(b.statement);
     if (schluessel === null) {
       bericht.ohneKatalogeintrag++;
+      z.nichtZugeordnet++;
       continue;
     }
 
@@ -194,6 +275,7 @@ export async function belegeVerdichten(grenze = 500): Promise<Verdichtungsberich
     if (aussage === null) {
       /* Bedingung oder Leerformel — `ausBeleg` hat sie abgewiesen. */
       bericht.ohneKatalogeintrag++;
+      z.nichtZugeordnet++;
       continue;
     }
 
@@ -214,7 +296,9 @@ export async function belegeVerdichten(grenze = 500): Promise<Verdichtungsberich
 
     if (eingefuegt.rows.length > 0) bericht.angelegt++;
     else bericht.schonVorhanden++;
+    z.uebernommen++;
   }
 
+  bericht.jeKategorie = [...zaehlung.values()].sort((a, b) => b.gesamt - a.gesamt);
   return bericht;
 }
