@@ -61,9 +61,15 @@ Stufen:
 - leitung: Personal- oder Budgetverantwortung, Team-, Abteilungs- oder Bereichsleitung, Geschäftsführung
 - unbekannt: die Anzeige lässt es offen
 
-Wichtig: "unbekannt" ist eine richtige Antwort. Rate nicht.
+Bestimme ausserdem die Wochenarbeitszeit:
+- "stunden": die Zahl der Wochenstunden, wenn die Anzeige sie nennt (z.B. 38.5, 20)
+- wenn nur "Vollzeit" ohne Zahl dasteht: 40
+- wenn "Teilzeit" ohne Zahl dasteht: null
+- wenn nichts dazu dasteht: null
 
-Antworte NUR mit JSON: {"stufe":"..."}`;
+Wichtig: "unbekannt" und null sind richtige Antworten. Rate nicht.
+
+Antworte NUR mit JSON: {"stufe":"...","stunden":<Zahl oder null>}`;
 
 /**
  * Die gültigen Antworten.
@@ -93,7 +99,7 @@ async function lesen(a, versuche = 4) {
         method: "POST",
         headers: { "content-type": "application/json", authorization: `Bearer ${schluessel}` },
         body: JSON.stringify({
-          model: MODELL, temperature: 0, max_tokens: 24,
+          model: MODELL, temperature: 0, max_tokens: 40,
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: ANWEISUNG },
@@ -111,17 +117,49 @@ async function lesen(a, versuche = 4) {
       await warte(1200 * (v + 1) + Math.random() * 600);
       continue;
     }
-    if (!r.ok) return { stufe: "fehler", verbrauch: {}, grund: `HTTP ${r.status}` };
+    if (!r.ok) return { stufe: "fehler", stunden: null, verbrauch: {}, grund: `HTTP ${r.status}` };
     const d = await r.json();
-    let stufe = "unbekannt";
-    try { stufe = JSON.parse(d.choices?.[0]?.message?.content ?? "{}").stufe ?? "unbekannt"; } catch {}
+    let stufe = "unbekannt", stunden = null;
+    try {
+      const j = JSON.parse(d.choices?.[0]?.message?.content ?? "{}");
+      stufe = j.stufe ?? "unbekannt";
+      /* Nur plausible Angaben. Ein Modell, das „8" für eine
+         Wochenarbeitszeit liefert, hat den Tagessatz gelesen. */
+      const h = Number(j.stunden);
+      stunden = Number.isFinite(h) && h >= 10 && h <= 60 ? h : null;
+    } catch {}
     if (!STUFEN.has(stufe)) stufe = "unbekannt";
-    return { stufe, verbrauch: d.usage ?? {} };
+    return { stufe, stunden, verbrauch: d.usage ?? {} };
   }
-  return { stufe: "fehler", verbrauch: {}, grund: "aufgegeben" };
+  return { stufe: "fehler", stunden: null, verbrauch: {}, grund: "aufgegeben" };
 }
 
 const mitte = (v, b) => (Number(v) + Math.max(Number(v), Number(b ?? v))) / 2;
+
+/*
+ * Auf ein Jahresgehalt, mit der GELESENEN Arbeitszeit.
+ *
+ * `jobs.weekly_hours` steht bewusst nicht zur Verfügung: 120.253
+ * deutsche Stundenlohn-Stellen tragen dort ausnahmslos den Wert 40 —
+ * auch die 1.356 mit „Teilzeit" oder „Minijob" im Titel. Gesetzt von
+ * einer einzigen Quelle. Das ist ein Standardwert beim Import, kein
+ * Arbeitsmarkt.
+ *
+ * Spiegelt `aufJahr` aus @paycheck/domain; die Tests dort halten die
+ * Fassung fest.
+ */
+const WOCHEN = 52;
+function aufJahr(betrag, periode, stunden) {
+  if (!betrag || !Number.isFinite(betrag) || betrag <= 0) return null;
+  switch (periode) {
+    case "year": return Math.round(betrag);
+    case "month": return Math.round(betrag * 12);
+    case "week": return Math.round(betrag * WOCHEN);
+    case "day": return stunden > 0 ? Math.round(betrag * (stunden / 8) * WOCHEN) : null;
+    case "hour": return stunden > 0 ? Math.round(betrag * stunden * WOCHEN) : null;
+    default: return null;
+  }
+}
 const quantil = (s, p) => { if (s.length === 1) return s[0]; const pos = (s.length - 1) * p, u = Math.floor(pos), o = Math.ceil(pos); return u === o ? s[u] : s[u] + (s[o] - s[u]) * (pos - u); };
 
 const pool = new pg.Pool({ connectionString: libpqSemantik(url), max: 2 });
@@ -140,12 +178,12 @@ try {
    */
   process.stdout.write("Lade deutsche Stellen mit echtem Gehalt … ");
   const { rows: schmal } = await pool.query(
-    `select id, location, kldb, salary_min, salary_max, title
+    `select id, location, kldb, salary_min, salary_max, salary_period, title
        from jobs
       where country='DE'
         and salary_provenance in ('provider','text','employer')
-        and salary_period='year' and salary_currency='EUR'
-        and salary_min between 15000 and 400000
+        and salary_currency='EUR'
+        and salary_period in ('year','month','hour')
         and title is not null`,
   );
   console.log(`${schmal.length}`);
@@ -170,12 +208,19 @@ try {
   const ergebnis = [];
   for (let i = 0; i < rows.length; i += GLEICHZEITIG) {
     const teil = rows.slice(i, i + GLEICHZEITIG);
-    const antworten = await Promise.all(teil.map((a) => lesen(a).catch((e) => ({ stufe: "fehler", verbrauch: {}, grund: String(e).slice(0, 40) }))));
+    const antworten = await Promise.all(teil.map((a) => lesen(a).catch((e) => ({ stufe: "fehler", stunden: null, verbrauch: {}, grund: String(e).slice(0, 40) }))));
     antworten.forEach((r, k) => {
       ein += r.verbrauch.prompt_tokens ?? 0;
       aus += r.verbrauch.completion_tokens ?? 0;
+      const roh = mitte(teil[k].salary_min, teil[k].salary_max);
+      const jahr = aufJahr(roh, teil[k].salary_period, r.stunden);
       ergebnis.push({
-        kldb: teil[k].kldb, wert: mitte(teil[k].salary_min, teil[k].salary_max),
+        kldb: teil[k].kldb,
+        /* Nur plausible Jahresbeträge. Was darunter oder darüber
+           liegt, ist keine Vollzeitstelle oder ein Datenfehler — in
+           beiden Fällen gehört es nicht in einen Marktwert. */
+        wert: jahr !== null && jahr >= 15000 && jahr <= 400000 ? jahr : null,
+        periode: teil[k].salary_period, stunden: r.stunden,
         titelstufe: stufeAusTitel(teil[k].title), modellstufe: r.stufe, titel: teil[k].title,
       });
     });
@@ -201,10 +246,23 @@ try {
   }
   console.log();
 
+  const jePeriode = {};
+  const gerettet = {};
+  for (const r of ergebnis) {
+    jePeriode[r.periode] = (jePeriode[r.periode] ?? 0) + 1;
+    if (r.wert !== null) gerettet[r.periode] = (gerettet[r.periode] ?? 0) + 1;
+  }
+  console.log("── Umrechnung auf Jahresgehalt ──");
+  for (const [p, n] of Object.entries(jePeriode).sort((a, b) => b[1] - a[1])) {
+    console.log(`  ${p.padEnd(6)} ${String(n).padStart(5)} Anzeigen → ${String(gerettet[p] ?? 0).padStart(5)} brauchbar` +
+      `  (${(((gerettet[p] ?? 0) / n) * 100).toFixed(0)} %)`);
+  }
+  console.log();
+
   const gruppieren = (feld) => {
     const g = new Map();
     for (const r of ergebnis) {
-      if (!r.kldb || !Number.isFinite(r.wert) || r.wert <= 0) continue;
+      if (!r.kldb || r.wert === null || !Number.isFinite(r.wert)) continue;
       const s = r[feld];
       if (s === "fehler") continue;
       const k = `${String(r.kldb).slice(0, 3)}|${s}`;

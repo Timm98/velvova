@@ -1,3 +1,5 @@
+import { vomArbeitgeber, type Gehaltsquelle } from "./gehaltsquelle.ts";
+
 /**
  * ══════════════════════════════════════════════════════════════════
  * Was jemand am Markt wert ist — und wann man das nicht sagen darf
@@ -22,6 +24,14 @@
  * alles, was danach kommt. Deshalb: lieber „dazu weiss ich zu wenig"
  * als eine Zahl aus vier Anzeigen.
  *
+ * ── Was hier NICHT steht ────────────────────────────────────────
+ *
+ * Die Umrechnung auf ein Jahresgehalt und die Frage, ob eine Zahl vom
+ * Arbeitgeber stammt. Beides gibt es bereits in
+ * `verguetungsangabe.ts` und `gehaltsquelle.ts` — inklusive einer
+ * Regel, die mir gefehlt hätte: Ein Gesamtpaket ist nicht mit einem
+ * Festgehalt vergleichbar.
+ *
  * ── Die drei Regeln ─────────────────────────────────────────────
  *
  *   1. Nur echte Angaben. Ein Portal, das selbst schätzt, ist keine
@@ -35,19 +45,36 @@
 /* ── 1. Welche Gehaltsangaben zählen ─────────────────────────── */
 
 /**
- * Woher eine Gehaltsangabe stammen darf.
+ * Die Spalte `jobs.salary_provenance` auf die Quellen der Domäne.
  *
- * `board_estimate` fehlt hier mit Absicht, und das ist die wichtigste
- * Zeile der Datei: 280.283 Angaben im Bestand sind Schätzungen eines
- * Portals. Sie zu verwenden hiesse, eine fremde Vermutung als Messung
- * auszugeben — und zwar ausgerechnet in der Zahl, an der das ganze
- * Produkt gemessen wird.
+ * ── Warum eine Abbildung und keine zweite Liste ─────────────────
+ *
+ * `gehaltsquelle.ts` beantwortet die Frage längst: `vomArbeitgeber()`
+ * sagt, ob eine Zahl eine Aussage über DIESE Stelle ist. Was fehlte,
+ * war die Übersetzung der Werte, die tatsächlich in der Datenbank
+ * stehen.
+ *
+ * `board_estimate` wird zu `portal`, und das ist die wichtigste Zeile:
+ * 280.283 Angaben im Bestand sind Schätzungen eines Portals. Sie zu
+ * verwenden hiesse, eine fremde Vermutung als Messung auszugeben —
+ * ausgerechnet in der Zahl, an der das ganze Produkt gemessen wird.
  */
-export const ECHTE_HERKUNFT = ["employer", "provider", "text"] as const;
-export type Gehaltsherkunft = (typeof ECHTE_HERKUNFT)[number];
+export const QUELLE_AUS_SPALTE: Record<string, Gehaltsquelle> = {
+  employer: "arbeitgeber",
+  provider: "arbeitgeber",
+  text: "aus_text",
+  board_estimate: "portal",
+};
 
-export function gehaltZaehlt(herkunft: string | null | undefined): boolean {
-  return ECHTE_HERKUNFT.includes(herkunft as Gehaltsherkunft);
+/**
+ * Darf diese Gehaltsangabe in einen Marktwert eingehen?
+ *
+ * Unbekannte Werte fallen durch. Eine neue Herkunft, die noch niemand
+ * eingeordnet hat, ist keine Erlaubnis — sie ist eine offene Frage.
+ */
+export function gehaltZaehlt(spaltenwert: string | null | undefined): boolean {
+  const quelle = QUELLE_AUS_SPALTE[spaltenwert ?? ""];
+  return quelle !== undefined && vomArbeitgeber(quelle);
 }
 
 /* ── 2. Senioritätsstufe ─────────────────────────────────────── */
@@ -259,4 +286,58 @@ function naeherung(eigenes: number, w: Extract<Marktwert, { art: "bekannt" }>): 
   if (eigenes <= w.median) return 0.25 + 0.25 * ((eigenes - w.p25) / Math.max(w.median - w.p25, 1));
   if (eigenes <= w.p75) return 0.5 + 0.25 * ((eigenes - w.median) / Math.max(w.p75 - w.median, 1));
   return Math.min(0.99, 0.75 + 0.24 * ((eigenes - w.p75) / Math.max(w.p75, 1)));
+}
+
+/* ── 5. Auf ein Jahresgehalt bringen ─────────────────────────── */
+
+/**
+ * ══════════════════════════════════════════════════════════════════
+ * Warum hier keine Umrechnung steht
+ * ══════════════════════════════════════════════════════════════════
+ *
+ * Ich hatte eine gebaut. Sie war überflüssig: `aufJahr` in
+ * `verguetungsangabe.ts` tut genau dasselbe und ist strenger — dort
+ * hängt an einer Angabe ausserdem, ob sie das FESTE Gehalt meint, das
+ * Jahresziel mit Provision oder ein Gesamtpaket. Ein Marktwert, der
+ * Festgehälter mit Gesamtpaketen mittelt, misst nichts.
+ *
+ * Zwei Umrechnungen nebeneinander wären genau das Duplikat, vor dem
+ * `LINKRANG` in `herkunft.ts` warnt: Jemand ändert die eine, die
+ * andere bleibt, und ab da widersprechen sich zwei Zahlen, die
+ * dasselbe heissen.
+ *
+ * Also: `aufJahr(angabe, betrag)` aus `verguetungsangabe.ts`, und
+ * `vomArbeitgeber(quelle)` aus `gehaltsquelle.ts` statt einer eigenen
+ * Herkunftsprüfung.
+ *
+ * Was hier bleibt, ist die eine Frage, die dort NICHT beantwortet
+ * wird: ob eine Arbeitszeitspalte überhaupt eine Angabe enthält.
+ */
+
+/**
+ * Ist diese Arbeitszeitangabe eine Angabe — oder ein Standardwert?
+ *
+ * Eine Spalte, in der jeder Wert gleich ist, beschreibt nichts. Diese
+ * Prüfung gehört an jede Stelle, die Arbeitszeiten aus einer Quelle
+ * übernimmt, und nicht nur an die eine, an der es aufgefallen ist.
+ *
+ * Zurückgegeben wird der Anteil des häufigsten Werts. Ab `verdaechtig`
+ * ist die Spalte für Rechnungen nicht zu gebrauchen.
+ */
+export function istStandardwert(
+  werte: readonly (number | null | undefined)[],
+  verdaechtig = 0.98,
+): { verdaechtig: boolean; anteil: number; haeufigster: number | null } {
+  const echte = werte.filter((w): w is number => typeof w === "number" && Number.isFinite(w));
+  if (echte.length === 0) return { verdaechtig: false, anteil: 0, haeufigster: null };
+
+  const zaehler = new Map<number, number>();
+  for (const w of echte) zaehler.set(w, (zaehler.get(w) ?? 0) + 1);
+
+  let haeufigster = echte[0]!;
+  let anzahl = 0;
+  for (const [w, n] of zaehler) if (n > anzahl) ((haeufigster = w), (anzahl = n));
+
+  const anteil = anzahl / echte.length;
+  return { verdaechtig: anteil >= verdaechtig, anteil, haeufigster };
 }

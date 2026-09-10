@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { vomArbeitgeber } from "./gehaltsquelle.ts";
 import {
   DEUTLICH_AB,
+  QUELLE_AUS_SPALTE,
   MINDESTZAHL,
   einordnen,
   gehaltZaehlt,
+  istStandardwert,
   marktwert,
   stufeAusTitel,
 } from "./marktwert.ts";
@@ -29,6 +32,15 @@ describe("gehaltZaehlt", () => {
     expect(gehaltZaehlt("employer")).toBe(true);
     expect(gehaltZaehlt("provider")).toBe(true);
     expect(gehaltZaehlt("text")).toBe(true);
+  });
+
+  it("entscheidet über die Quellen der Domäne, nicht über eine eigene Liste", () => {
+    /* Die Zuordnung steht in `QUELLE_AUS_SPALTE`, die Entscheidung in
+       `vomArbeitgeber`. Zwei Listen nebeneinander liefen auseinander,
+       sobald jemand eine Quelle anders einstuft. */
+    for (const [spalte, quelle] of Object.entries(QUELLE_AUS_SPALTE)) {
+      expect(gehaltZaehlt(spalte)).toBe(vomArbeitgeber(quelle));
+    }
   });
 
   it("lehnt Unbekanntes ab statt es durchzulassen", () => {
@@ -155,5 +167,31 @@ describe("einordnen", () => {
     const klar = Math.round(64750 * (1 - DEUTLICH_AB * 2));
     const l = einordnen(klar, wert, gruppe);
     expect(l.art === "eingeordnet" && l.deutlich).toBe(true);
+  });
+});
+
+describe("istStandardwert", () => {
+  it("erkennt eine Spalte, in der alles gleich ist", () => {
+    /* Genau der gemessene Fall: 120.253 Zeilen, jede mit dem Wert 40. */
+    const b = istStandardwert(Array.from({ length: 500 }, () => 40));
+    expect(b.verdaechtig).toBe(true);
+    expect(b.haeufigster).toBe(40);
+    expect(b.anteil).toBe(1);
+  });
+
+  it("hält eine echte Verteilung für unverdächtig", () => {
+    const echt = [...Array(200).fill(40), ...Array(60).fill(20), ...Array(40).fill(30), ...Array(20).fill(35)];
+    expect(istStandardwert(echt).verdaechtig).toBe(false);
+  });
+
+  it("zählt fehlende Werte nicht mit", () => {
+    const b = istStandardwert([40, null, 40, undefined, 20]);
+    expect(b.anteil).toBeCloseTo(2 / 3, 5);
+  });
+
+  it("hält eine leere Spalte nicht für verdächtig", () => {
+    /* Nichts zu wissen ist etwas anderes, als einen Standardwert zu
+       sehen — und führt zu einer anderen Entscheidung. */
+    expect(istStandardwert([null, undefined]).verdaechtig).toBe(false);
   });
 });

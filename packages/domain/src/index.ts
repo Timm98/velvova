@@ -39,3 +39,5 @@ export * from "./stillechancen.ts";
 export * from "./arbeitgeberpassung.ts";
 export * from "./anfragetext.ts";
 export * from "./projekt.ts";
+export * from "./waechter.ts";
+export * from "./marktwert.ts";
