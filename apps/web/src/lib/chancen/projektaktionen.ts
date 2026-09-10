@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { getDb, schema, withUser } from "@paycheck/db";
+import { MAX_NAME, MIN_NAME } from "@paycheck/domain";
 import { requireUser } from "@/lib/auth";
 
 /**
@@ -22,9 +23,16 @@ import { requireUser } from "@/lib/auth";
  * eine Antwort, die man auch geben kann.
  */
 
-/** Kürzer ist kein Name, länger passt in keine Leiste. */
-const MIN = 3;
-const MAX = 60;
+/* Kürzer ist kein Name, länger passt in keine Leiste — und beide
+   Zahlen stehen in der Domäne, damit nicht jeder Weg zum Anlegen
+   seine eigenen hat.
+
+   Hier tippt ein Mensch, deshalb gilt die Domänenuntergrenze: „IT"
+   ist ein Vorhaben. Die Zielerkennung ist an dieser Stelle strenger,
+   weil dort ein Modell vorschlägt — die Begründung steht bei
+   `PROJEKTGRENZEN`. */
+const MIN = MIN_NAME;
+const MAX = MAX_NAME;
 
 function sauber(name: string): string | null {
   const n = name.replace(/\s+/g, " ").trim();

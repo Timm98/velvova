@@ -136,48 +136,84 @@ export async function projektStellen(
       .where(and(eq(schema.savedJobs.userId, userId), eq(schema.savedJobs.projektId, projektId)))
       .limit(grenze);
 
-    /*
-     * Zusammenführen, ohne dieselbe Stelle zweimal.
-     *
-     * Wer eine Stelle merkt, die die Suche ohnehin gefunden hat, soll
-     * sie einmal sehen — und dann mit Fit, weil die Prüfung für sie
-     * gelaufen ist. Der Handeintrag liefert in diesem Fall nur noch
-     * die Merkkennung, damit sich die Zuordnung wieder lösen lässt.
-     */
-    const merkeNachJob = new Map(vonHand.map((v) => [v.jobId, v.merkId]));
+    return stellenZusammenfuehren(ausSuche, vonHand, grenze);
+  });
+}
 
-    const gefunden: Projektstelle[] = ausSuche.map((t) => ({
-      merkId: merkeNachJob.get(t.jobId) ?? null,
-      jobId: t.jobId,
-      titel: t.titel,
-      firma: t.firma,
-      fit: t.fit,
-      zulaessigkeit: t.zulaessigkeit,
-      gruende: t.gruende,
-      herkunft: "suche" as const,
+/* ══════════════════════════════════════════════════════════════════
+   Die Zusammenführung — ohne Datenbank
+   ══════════════════════════════════════════════════════════════════
+
+   Eigene Funktion, weil das die Stelle ist, an der etwas schiefgehen
+   kann: Entdopplung, Reihenfolge und die Frage, welche der beiden
+   Herkünfte gewinnt, wenn dieselbe Stelle in beiden steht. Alles
+   drei lässt sich prüfen, ohne eine Zeile in eine Tabelle zu
+   schreiben — und nur so wird es tatsächlich geprüft. */
+
+export interface Trefferzeile {
+  jobId: string;
+  titel: string;
+  firma: string;
+  fit: number | null;
+  zulaessigkeit: string;
+  gruende: string[];
+}
+
+export interface Merkzeile {
+  merkId: string;
+  jobId: string;
+  titel: string;
+  firma: string;
+}
+
+export function stellenZusammenfuehren(
+  ausSuche: readonly Trefferzeile[],
+  vonHand: readonly Merkzeile[],
+  grenze: number = TREFFERGRENZE,
+): Projektstelle[] {
+  /*
+   * Wer eine Stelle merkt, die die Suche ohnehin gefunden hat, soll
+   * sie einmal sehen — und dann mit Fit, weil die Prüfung für sie
+   * gelaufen ist. Der Handeintrag liefert in diesem Fall nur noch die
+   * Merkkennung, damit sich die Zuordnung wieder lösen lässt.
+   */
+  const merkeNachJob = new Map(vonHand.map((v) => [v.jobId, v.merkId]));
+
+  const gefunden: Projektstelle[] = ausSuche.map((t) => ({
+    merkId: merkeNachJob.get(t.jobId) ?? null,
+    jobId: t.jobId,
+    titel: t.titel,
+    firma: t.firma,
+    fit: t.fit,
+    zulaessigkeit: t.zulaessigkeit,
+    gruende: t.gruende,
+    herkunft: "suche" as const,
+  }));
+
+  const bekannt = new Set(gefunden.map((g) => g.jobId));
+  const eigene: Projektstelle[] = vonHand
+    .filter((v) => !bekannt.has(v.jobId))
+    .map((v) => ({
+      merkId: v.merkId,
+      jobId: v.jobId,
+      titel: v.titel,
+      firma: v.firma,
+      fit: null,
+      zulaessigkeit: null,
+      gruende: [],
+      herkunft: "hand" as const,
     }));
 
-    const bekannt = new Set(gefunden.map((g) => g.jobId));
-    const eigene: Projektstelle[] = vonHand
-      .filter((v) => !bekannt.has(v.jobId))
-      .map((v) => ({
-        merkId: v.merkId,
-        jobId: v.jobId,
-        titel: v.titel,
-        firma: v.firma,
-        fit: null,
-        zulaessigkeit: null,
-        gruende: [],
-        herkunft: "hand" as const,
-      }));
-
-    /*
-     * Gefundene zuerst, nach Fit. Ein fehlender Fit steht hinten und
-     * nicht als Null vorne — „keine Zahl" ist nicht „Null Punkte".
-     */
-    gefunden.sort((a, b) => (b.fit ?? -1) - (a.fit ?? -1));
-    return [...gefunden, ...eigene].slice(0, grenze);
-  });
+  /*
+   * Gefundene zuerst, nach Fit. Ein fehlender Fit steht hinten und
+   * nicht als Null vorne — „keine Zahl" ist nicht „Null Punkte".
+   *
+   * `sort` ist stabil (ES2019), gleiche Punktzahlen behalten also die
+   * Reihenfolge aus der Abfrage. Ohne diese Zusage sähe die Liste bei
+   * jedem Aufruf anders aus, obwohl sich nichts geändert hat.
+   */
+  gefunden.sort((a, b) => (b.fit ?? -1) - (a.fit ?? -1));
+  return [...gefunden, ...eigene].slice(0, grenze);
 }
 
 /**

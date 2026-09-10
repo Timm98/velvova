@@ -59,6 +59,19 @@ export type Suchbefund =
 const MINDESTZIEL = 12;
 
 /**
+ * Taugt dieses Ziel als Grundlage für Kriterien?
+ *
+ * Eigene Funktion, weil hier eine Entscheidung getroffen wird und
+ * keine Abfrage läuft: Aus „Jobsuche" lassen sich keine Kriterien
+ * ableiten, aus „Projektleitung in Zürich" schon. Fragt man das
+ * Modell trotzdem, kostet es Geld und liefert entweder nichts oder
+ * — schlimmer — eine erfundene Eingrenzung.
+ */
+export function zielTaugt(ziel: string | null | undefined): boolean {
+  return (ziel ?? "").trim().length >= MINDESTZIEL;
+}
+
+/**
  * Legt für ein Vorhaben einen Suchauftrag im Entwurf an.
  *
  * Vorhandene Aufträge des Vorhabens werden nicht angefasst: Wer
@@ -72,7 +85,7 @@ export async function sucheFuerProjekt(
   ziel: string | null,
 ): Promise<Suchbefund> {
   const text = (ziel ?? "").trim();
-  if (text.length < MINDESTZIEL) return { ok: false, grund: "kein_ziel" };
+  if (!zielTaugt(text)) return { ok: false, grund: "kein_ziel" };
 
   const db = await getDb();
 

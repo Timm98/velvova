@@ -34,6 +34,8 @@
  * jemand von Hand aufräumen.
  */
 
+import { MAX_AKTIVE_PROJEKTE, MAX_NAME } from "@paycheck/domain";
+
 export type Zuordnungsart =
   | "neues_projekt"
   | "verfeinern"
@@ -93,9 +95,39 @@ export interface Projektgrenzen {
   maxNameZeichen: number;
 }
 
-/* Eigener Name, weil `GRENZEN` im Paket schon der Team-Aufstellung
-   gehört — sonst gewinnt im gemeinsamen Export der spätere still. */
-export const PROJEKTGRENZEN: Projektgrenzen = { maxProjekte: 12, minNameZeichen: 3, maxNameZeichen: 60 };
+/*
+ * Die Zahlen kommen aus der Domäne, nicht von hier.
+ *
+ * Hier standen 3 und 60, in `apps/web` nochmal 3 und 60, und in
+ * `packages/domain` 2 und 40 — drei Orte, zwei Wahrheiten. Sichtbar
+ * wurde das nie als Fehler, sondern als Widerspruch: Erkennt Monday
+ * ein Vorhaben selbst, galt 60; legte sie dasselbe über das Werkzeug
+ * `projekt_anlegen` an, prüfte `projektAnlegenPruefen` gegen 40 und
+ * lehnte ab. Derselbe Name, zwei Ergebnisse, je nach Weg.
+ *
+ * Für die OBERgrenze gewinnt die Domäne, weil sie als einzige eine
+ * Begründung trägt: So kurz, dass der Name in die Leiste passt, ohne
+ * abgeschnitten zu werden. 60 war eine Zahl ohne Grund.
+ *
+ * ── Warum die UNTERgrenze hier trotzdem höher liegt ─────────────
+ *
+ * Weil hier ein Modell vorschlägt und dort ein Mensch tippt. „IT" ist
+ * ein Vorhaben, wenn jemand es eingibt — als Modellvorschlag ist ein
+ * Name aus zwei Zeichen fast immer die Antwort des Menschen, die
+ * versehentlich zum Titel wurde: „ja", „ok", „hm".
+ *
+ * Die beiden Zahlen messen also nicht dasselbe, und sie
+ * gleichzuschalten hiesse, entweder „IT" zu verbieten oder „ja" als
+ * Vorhaben anzulegen.
+ *
+ * Eigener Name, weil `GRENZEN` im Paket schon der Team-Aufstellung
+ * gehört — sonst gewinnt im gemeinsamen Export der spätere still.
+ */
+export const PROJEKTGRENZEN: Projektgrenzen = {
+  maxProjekte: MAX_AKTIVE_PROJEKTE,
+  minNameZeichen: 3,
+  maxNameZeichen: MAX_NAME,
+};
 
 /** Grobe Normalform für den Namensvergleich. */
 function schluessel(s: string): string {
