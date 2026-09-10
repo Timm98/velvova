@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { bewerbungsstandMelden, type Stand } from "@/lib/bewerbungsstand";
 
 /**
  * „Hast du die Bewerbung abgeschickt?"
@@ -12,6 +13,17 @@ import { useState } from "react";
  * Deshalb wird gefragt — und „noch nicht" ist eine ebenso gültige
  * Antwort wie „ja". Ohne diese Möglichkeit wäre die Frage eine
  * Aufforderung.
+ *
+ * ── Was hier vorher stand ───────────────────────────────────────
+ *
+ * `void jobId;` — die Antwort lag in `useState` und ging nirgendwohin.
+ * Auf jeden Klick erschien „Notiert.", und notiert wurde nichts. Die
+ * Bewerbung blieb in „In Vorbereitung", und wer später auf seine
+ * Liste sah, hielt sich selbst für vergesslich.
+ *
+ * Das war kein fehlendes Feature, sondern ein simulierter
+ * Erfolgszustand — die Art Fehler, die man nicht sieht, weil sie wie
+ * ein Erfolg aussieht.
  */
 
 const ANTWORTEN = [
@@ -28,8 +40,26 @@ export function HandoffConfirm({
   jobId: string;
   assistantName: string;
 }) {
-  const [gewaehlt, setGewaehlt] = useState<string | null>(null);
-  void jobId;
+  const [gewaehlt, setGewaehlt] = useState<Stand | null>(null);
+  const [fehler, setFehler] = useState(false);
+  const [laeuft, uebergang] = useTransition();
+
+  function melden(stand: Stand) {
+    /*
+     * Erst anzeigen, dann schreiben.
+     *
+     * Die Antwort ist eine Angabe des Menschen und keine Berechnung —
+     * sie umgehend zu zeigen ist richtig. Scheitert das Schreiben,
+     * sagt die Zeile darunter es; sie behauptet dann nicht mehr,
+     * etwas sei notiert.
+     */
+    setGewaehlt(stand);
+    setFehler(false);
+    uebergang(async () => {
+      const a = await bewerbungsstandMelden(jobId, stand);
+      if (!a.ok) setFehler(true);
+    });
+  }
 
   return (
     <section className="grid gap-3 border-t border-line pt-6">
@@ -44,8 +74,9 @@ export function HandoffConfirm({
           <button
             key={a.key}
             type="button"
-            onClick={() => setGewaehlt(a.key)}
+            onClick={() => melden(a.key)}
             aria-pressed={gewaehlt === a.key}
+            disabled={laeuft}
             className={`inline-flex min-h-10 items-center rounded-(--radius-full) border px-4 text-sm transition-colors ${
               gewaehlt === a.key
                 ? "border-accent bg-accent-soft text-accent-text"
@@ -57,13 +88,24 @@ export function HandoffConfirm({
         ))}
       </div>
 
-      {gewaehlt && (
+      {gewaehlt && !fehler && (
         <p className="text-xs leading-relaxed text-ink-3">
-          {gewaehlt === "sent"
-            ? "Notiert. Wir erinnern dich, wenn ein Nachfassen sinnvoll wird — vorher nicht."
-            : gewaehlt === "aborted"
-              ? "Notiert. Die Stelle bleibt gespeichert, falls du zurückkommst."
-              : "Notiert. Die Bewerbung bleibt vorbereitet, du kannst jederzeit weitermachen."}
+          {laeuft
+            ? "Wird eingetragen …"
+            : gewaehlt === "sent"
+              ? "Eingetragen. Wir erinnern dich, wenn ein Nachfassen sinnvoll wird — vorher nicht."
+              : gewaehlt === "aborted"
+                ? "Eingetragen. Die Stelle bleibt gespeichert, falls du zurückkommst."
+                : "Eingetragen. Die Bewerbung bleibt vorbereitet, du kannst jederzeit weitermachen."}
+        </p>
+      )}
+
+      {fehler && (
+        /* Kein „Notiert." über einem fehlgeschlagenen Schreibvorgang.
+           Genau diese Verwechslung war der Fehler zuvor. */
+        <p className="text-xs leading-relaxed text-critical">
+          Das liess sich gerade nicht eintragen. Du kannst den Stand auf der Bewerbungsseite
+          setzen.
         </p>
       )}
     </section>

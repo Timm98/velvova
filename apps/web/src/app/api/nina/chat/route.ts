@@ -48,7 +48,7 @@ import {
 import { alsMaterial, mondayTeam } from "@/lib/nina/teamlauf";
 import { projektZuordnen } from "@/lib/nina/projektzuordnung";
 import { ninaJobSuggestions } from "@/lib/nina/suggest-jobs";
-import { listJobsForUser, loadProfileContext } from "@/lib/matching";
+import { listJobsForUser, loadProfileContext, recordEvent } from "@/lib/matching";
 import { buildContextEnvelope, buildScopedContext } from "@/lib/nina/context/build-context-envelope";
 import { buildPageContext } from "@/lib/nina/page-context";
 import {
@@ -1477,13 +1477,63 @@ async function runTool(
 
       case "create_application": {
         const data = input as z.infer<(typeof ToolSchemas)["create_application"]>;
-        const [row] = await withUser(db, userId, (tx) =>
-          tx
+
+        /*
+         * Zwei Dinge, die hier fehlten und die `startApplication()`
+         * seit jeher tut.
+         *
+         * Erstens: keine Doppelung. Ohne die Prüfung legte Monday bei
+         * jedem „bewirb mich dort" eine weitere Zeile an, und in der
+         * Liste stand dieselbe Stelle dreimal.
+         *
+         * Zweitens: das Ereignis. `recordEvent` ist die eine Stelle,
+         * durch die alles läuft — sie schreibt den Ereignisstrom und
+         * friert die Vorhersage ein. Über Monday angelegte
+         * Bewerbungen fehlten damit in jeder Auswertung, auch in der
+         * Trichterdiagnose auf der Bewerbungsseite.
+         */
+        const angelegt = await withUser(db, userId, async (tx) => {
+          const [vorhanden] = await tx
+            .select({ id: schema.applications.id, stage: schema.applications.stage })
+            .from(schema.applications)
+            .where(
+              and(
+                eq(schema.applications.userId, userId),
+                eq(schema.applications.jobId, data.jobId),
+              ),
+            )
+            .limit(1);
+
+          if (vorhanden) {
+            if (vorhanden.stage === "saved") {
+              await tx
+                .update(schema.applications)
+                .set({ stage: "preparing", updatedAt: new Date() })
+                .where(eq(schema.applications.id, vorhanden.id));
+            }
+            return { id: vorhanden.id, neu: false };
+          }
+
+          const [row] = await tx
             .insert(schema.applications)
             .values({ userId, jobId: data.jobId, stage: "preparing" })
-            .returning({ id: schema.applications.id }),
-        );
-        return { ok: true, output: { applicationId: row?.id } };
+            .returning({ id: schema.applications.id });
+          return row ? { id: row.id, neu: true } : null;
+        });
+
+        if (angelegt?.neu) {
+          await recordEvent(userId, "application_started", {
+            jobId: data.jobId,
+            applicationId: angelegt.id,
+          }).catch((e: unknown) => {
+            /* Der Ereignisstrom darf das Werkzeug nicht scheitern
+               lassen — die Bewerbung steht, und das ist die Hauptsache.
+               Aber stumm bleibt es nicht. */
+            console.error("[bewerbung] Ereignis nicht geschrieben:", e);
+          });
+        }
+
+        return { ok: true, output: { applicationId: angelegt?.id, neu: angelegt?.neu === true } };
       }
 
       default:

@@ -241,6 +241,9 @@ export async function bewerben(
       organizationId: schema.jobPostings.organizationId,
       status: schema.jobPostings.status,
       title: schema.jobPostings.title,
+      /* Die Verknüpfung zur Stellentabelle. Nullbar — nicht jedes
+         Velvova-Posting hat eine Entsprechung dort. */
+      jobId: schema.jobPostings.jobId,
     })
     .from(schema.jobPostings)
     .where(eq(schema.jobPostings.id, postingId))
@@ -273,6 +276,65 @@ export async function bewerben(
         })
         .onConflictDoNothing(),
     );
+    /*
+     * Auch in den Ergebnisstrom, wenn es geht.
+     *
+     * ── Warum das hier gefehlt hat ──────────────────────────────
+     *
+     * Das ist der einzige Weg, auf dem tatsächlich Daten an ein
+     * Unternehmen gehen — und er lief an `applications` und
+     * `recordEvent` vorbei. Velvova-Bewerbungen waren damit in der
+     * Trichterdiagnose, im Ergebnisabgleich und beim Nachfassen
+     * unsichtbar. Wer sich ausschliesslich hier bewarb, hatte in
+     * jeder Auswertung null Bewerbungen.
+     *
+     * ── Warum es nicht immer geht ───────────────────────────────
+     *
+     * `applications.jobId` verweist auf `jobs`. Ein Posting ohne
+     * `jobId` hat dort keine Entsprechung, und eine Bewerbung ohne
+     * Stelle lässt sich nicht anlegen. Dann bleibt es bei der
+     * getrennten Liste — sichtbar an der richtigen Stelle, nur nicht
+     * in der Auswertung. Das ist eine Lücke des Datenmodells und
+     * keine, die diese Funktion schliessen darf.
+     */
+    if (posting.jobId) {
+      try {
+        const jobId = posting.jobId;
+        const applicationId = await withUser(db, user.id, async (tx) => {
+          const [vorhanden] = await tx
+            .select({ id: schema.applications.id })
+            .from(schema.applications)
+            .where(
+              and(eq(schema.applications.userId, user.id), eq(schema.applications.jobId, jobId)),
+            )
+            .limit(1);
+
+          if (vorhanden) {
+            await tx
+              .update(schema.applications)
+              .set({ stage: "sent", lastContactAt: new Date(), updatedAt: new Date() })
+              .where(eq(schema.applications.id, vorhanden.id));
+            return vorhanden.id;
+          }
+
+          const [neu] = await tx
+            .insert(schema.applications)
+            .values({ userId: user.id, jobId, stage: "sent", lastContactAt: new Date() })
+            .returning({ id: schema.applications.id });
+          return neu?.id ?? null;
+        });
+
+        if (applicationId) {
+          const { recordEvent } = await import("@/lib/matching");
+          await recordEvent(user.id, "application_sent", { jobId, applicationId });
+        }
+      } catch (e) {
+        /* Die Bewerbung ist raus — daran ändert ein fehlender
+           Eintrag nichts. Aber stumm bleibt es nicht. */
+        console.error("[arbeitgeber] Bewerbung nicht in den Ergebnisstrom aufgenommen:", e);
+      }
+    }
+
     revalidatePath("/app/applications");
     return { ok: true, text: `Bewerbung auf „${posting.title}" ist raus.` };
   } catch (e) {
