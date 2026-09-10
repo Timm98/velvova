@@ -47,3 +47,4 @@ export * from "./nachweis.ts";
 export * from "./wechselverlauf.ts";
 export * from "./nachtlauf.ts";
 export * from "./versandfreigabe.ts";
+export * from "./wandelbar.ts";

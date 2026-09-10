@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, Moon } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { berichtGesehen, morgenlage } from "@/lib/nachtlauf";
+import { fastPassende } from "@/lib/wandelbar";
 import { PageHeader } from "@/components/ui/states";
 
 export const metadata: Metadata = { title: "Heute Nacht" };
@@ -42,7 +43,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function MorgenSeite() {
   const user = await requireUser();
-  const lage = await morgenlage(user.id);
+  const [lage, wandelbar] = await Promise.all([morgenlage(user.id), fastPassende(user.id)]);
 
   /*
    * Das Aufschlagen ist das Ereignis, nicht das Schreiben.
@@ -180,6 +181,90 @@ export default async function MorgenSeite() {
                     In ihrer Sprache
                   </Link>
                 </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {wandelbar.length > 0 && (
+        /*
+         * Die Stellen, die der Abgleich weggeworfen hat — zu Recht.
+         *
+         * Ein verletztes Muss-Kriterium ist ein verletztes
+         * Muss-Kriterium. Nur ist die Anzeige keine Tatsache, sondern
+         * eine Momentaufnahme dessen, was sich jemand vorgestellt hat,
+         * und niemand fragt nach.
+         *
+         * Hier stehen nur die, bei denen ALLE Hindernisse Bedingungen
+         * des Arbeitgebers sind. Wo eine Zulassung fehlt, steht nichts:
+         * Die Frage wäre eine Aufforderung zum Rechtsbruch.
+         */
+        <section className="grid gap-4 border-t border-line pt-6">
+          <div className="grid gap-1">
+            <h2 className="text-[17px] font-semibold text-ink">
+              Fast passend — es fehlt nur eine Bedingung
+            </h2>
+            <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+              Diese Stellen habe ich aussortiert, weil ein Muss-Kriterium verletzt ist. Bei ihnen
+              ist es eines, das der Arbeitgeber selbst gesetzt hat — und das er ändern könnte, wenn
+              er wollte.
+            </p>
+          </div>
+
+          <ul className="grid gap-3">
+            {wandelbar.map((w) => (
+              <li
+                key={w.jobId}
+                className="grid gap-2.5 rounded-(--radius-lg) border border-line border-dashed p-5"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <div className="grid gap-0.5">
+                    <span className="text-[15.5px] font-semibold text-ink">{w.titel}</span>
+                    <span className="text-[14px] text-ink-2">
+                      {w.firma}
+                      {w.ort ? ` · ${w.ort}` : ""}
+                    </span>
+                  </div>
+                  {w.fitScore !== null && (
+                    <span className="font-mono text-2xs uppercase tracking-[0.09em] text-ink-3 tabular-nums">
+                      Passung {w.fitScore}
+                    </span>
+                  )}
+                </div>
+
+                <p className="max-w-[var(--measure)] text-[14.5px] leading-relaxed text-ink-2">
+                  {w.text}
+                </p>
+
+                {/*
+                  Die Fragen stehen im Wortlaut da, nicht als Andeutung.
+
+                  Wer nicht liest, was in seinem Namen gefragt würde,
+                  kann es nicht freigeben — und eine Anfrage, die
+                  jemand nicht gelesen hat, soll von hier nicht
+                  hinausgehen.
+                */}
+                <ul className="grid gap-1 border-t border-line pt-2.5">
+                  {w.fragen.map((f) => (
+                    <li key={f} className="text-[14px] leading-relaxed text-ink-3">
+                      „{f}"
+                    </li>
+                  ))}
+                </ul>
+
+                <p className="max-w-[var(--measure)] text-2xs leading-relaxed text-ink-3">
+                  Gefragt wird erst, wenn du es freigibst — und ohne deinen Namen. Der Arbeitgeber
+                  erfährt, dass jemand passen würde, nicht wer.
+                </p>
+
+                <Link
+                  href={`/app/jobs/${w.jobId}`}
+                  className="inline-flex min-h-10 w-fit items-center gap-1.5 rounded-(--radius-control) border border-line px-4 text-[14px] font-medium text-ink transition-colors hover:bg-soft"
+                >
+                  Die Stelle ansehen
+                  <ArrowUpRight className="size-4 shrink-0" strokeWidth={1.8} />
+                </Link>
               </li>
             ))}
           </ul>
