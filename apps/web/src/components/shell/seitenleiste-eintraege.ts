@@ -1,5 +1,6 @@
 import {
   Briefcase,
+  Compass,
   FileText,
   FolderOpen,
   MessageSquare,
@@ -68,6 +69,14 @@ export interface Seitenleisteneintrag {
  */
 export const ARBEITSBEREICHE: readonly Seitenleisteneintrag[] = [
   { href: "/app/jobs", text: "Jobs & Checks", icon: Briefcase },
+  /*
+   * „Was du kannst" steht direkt hinter den Stellen, nicht darunter
+   * bei den Werkzeugen. Es ist derselbe Gegenstand aus der anderen
+   * Richtung: Die Stellenseite fragt „was gibt es", diese fragt „was
+   * davon kannst du" — und die zweite Frage stellt sich niemand von
+   * allein.
+   */
+  { href: "/app/bruecke", text: "Was du kannst", icon: Compass },
   { href: "/app/applications", text: "Bewerbungen", icon: FileText },
   { href: "/app/documents", text: "Dokumente", icon: FolderOpen },
   { href: "/app/plugins", text: "Plugins", icon: Plug },
