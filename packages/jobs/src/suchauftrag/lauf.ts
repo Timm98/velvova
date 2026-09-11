@@ -18,7 +18,7 @@ import {
   type Stellenangaben,
   type Suchkriterium,
 } from "@paycheck/matching";
-import { gruppensatz, passtZurGruppe, schluesselFinden } from "@paycheck/domain";
+import { EXTRAKTIONSFASSUNG, gruppensatz, passtZurGruppe, schluesselFinden } from "@paycheck/domain";
 import { lageFuerBegriffe } from "../begriffsgruppen-messen.ts";
 import { fassungsstand } from "../analyseschluessel.ts";
 import { rowToJob } from "../stellenzeile.ts";
@@ -486,8 +486,27 @@ export async function auftragslaufRunde(
   );
 
   /* Einmal ordnen statt bei jeder Stelle neu suchen. */
+  /*
+   * ── Nur die neueste Fassung je Stelle ─────────────────────────
+   *
+   * `job_requirements` trägt seit Migration 0116 zwei Fassungen
+   * nebeneinander: die alte Extraktion und `anforderung-2`. Beide zu
+   * lesen hiesse, dieselbe Anforderung doppelt zu prüfen — und die
+   * alte würde die neue verwässern, weil sie Arbeitsbedingungen als
+   * fachliche Anforderung führt.
+   *
+   * Wo die neue Fassung vorliegt, gilt sie allein. Wo nicht, bleibt
+   * die alte: Sie ist schlechter als nichts nicht.
+   */
+  const hatNeueFassung = new Set(
+    anforderungszeilen
+      .filter((r) => r.extraktionFassung === EXTRAKTIONSFASSUNG)
+      .map((r) => r.jobId),
+  );
+
   const anforderungenJeJob = new Map<string, (typeof anforderungszeilen)[number][]>();
   for (const r of anforderungszeilen) {
+    if (hatNeueFassung.has(r.jobId) && r.extraktionFassung !== EXTRAKTIONSFASSUNG) continue;
     const liste = anforderungenJeJob.get(r.jobId);
     if (liste) liste.push(r);
     else anforderungenJeJob.set(r.jobId, [r]);
