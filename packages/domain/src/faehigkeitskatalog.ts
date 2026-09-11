@@ -136,6 +136,38 @@ export const KATALOG: readonly Katalogeintrag[] = [
   { schluessel: "qualitaetskontrolle", bezeichnung: "Qualitätskontrolle", feld: "lager", synonyme: ["qualitaetskontrolle", "wareneingangspruefung", "reklamationsbearbeitung"] },
   { schluessel: "arbeitssicherheit", bezeichnung: "Arbeitssicherheit", feld: "lager", synonyme: ["arbeitssicherheit", "unfallverhuetung", "sicherheitsunterweisung"] },
   { schluessel: "schichtfuehrung", bezeichnung: "Schichtführung", feld: "lager", synonyme: ["schichtleitung", "schichtfuehrung", "teamleitung lager", "vorarbeiter"] },
+  /*
+   * ── Aus dem Bestand ergänzt, 11.09.2026 ────────────────────────
+   *
+   * Gemessen an 12.000 Anforderungen aus Anzeigen der KldB-Gruppe 51:
+   * 5.963 waren fachlich abgleichbar und hatten keinen Katalogeintrag.
+   * Aufgenommen wurde, was darin mindestens fünfzehnmal wiederkehrt,
+   * fachlich eindeutig ist und sich mit einer Nutzerangabe vergleichen
+   * lässt. Die Zahl in Klammern ist das gemessene Vorkommen.
+   *
+   * ── Was ausdrücklich NICHT aufgenommen wurde ──────────────────
+   *
+   * Berufsbezeichnungen. „Fachkraft für Lagerlogistik" kam 90-mal vor,
+   * „Lagerarbeiter" 95-mal, „Lagerhelfer" 81-mal — häufig genug, und
+   * trotzdem falsch: Ein Beruf ist kein Nachweis. Wer Disponent war,
+   * hat damit nicht LKW-Disposition belegt.
+   *
+   * SAP EWM, SAP WM, SAP MM und S/4HANA einzeln: jeweils unter
+   * fünfzehn Vorkommen in diesem Cluster. Sie stehen als Synonym bei
+   * `lagerverwaltung` beziehungsweise `sap`, nicht als eigener
+   * Eintrag — ein Katalogeintrag für etwas, das zwölfmal vorkommt,
+   * verspricht eine Unterscheidung, die die Daten nicht tragen.
+   */
+  { schluessel: "erp", bezeichnung: "ERP-System", feld: "lager", synonyme: ["erp-system", "erp system", "erp-kenntnis", "erp "] },
+  { schluessel: "sap", bezeichnung: "SAP", feld: "lager", synonyme: ["sap"] },
+  { schluessel: "warenwirtschaft", bezeichnung: "Warenwirtschaftssystem", feld: "lager", synonyme: ["warenwirtschaft", "wawi"] },
+  { schluessel: "bueroanwendungen", bezeichnung: "Büroanwendungen", feld: "lager", synonyme: ["ms-office", "ms office", "microsoft office", "excel", "outlook"] },
+  { schluessel: "spedition", bezeichnung: "Speditionsabwicklung", feld: "lager", synonyme: ["spedition", "speditionsabwicklung", "speditionskaufmann", "frachtabrechnung"] },
+  { schluessel: "scannergebrauch", bezeichnung: "Scanner und MDE-Geräte", feld: "lager", synonyme: ["mde-geraet", "mde geraet", "handscanner", "scannergestuetzt", "barcodescanner"] },
+  { schluessel: "teamfuehrung", bezeichnung: "Team führen", feld: "lager", synonyme: ["teamfuehrung", "mitarbeiterfuehrung", "fuehrung eines teams", "fuehrung von mitarbeit"] },
+  { schluessel: "projektsteuerung", bezeichnung: "Projekte steuern", feld: "lager", synonyme: ["projektleitung", "projektsteuerung", "projektmanagement"] },
+  { schluessel: "einkauf", bezeichnung: "Einkauf und Beschaffung", feld: "lager", synonyme: ["einkauf", "beschaffung", "bestellwesen"] },
+  { schluessel: "hochregallager", bezeichnung: "Hochregallager", feld: "lager", synonyme: ["hochregal", "schmalgang"] },
 ];
 
 /** Ein Schlüssel je Eintrag — doppelte wären ein stiller Datenfehler. */

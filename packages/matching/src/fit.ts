@@ -1,6 +1,6 @@
 import {
-  VERLANGTE_STUFE_STANDARD,
   anforderungAbgleichen,
+  verlangteStufeAus,
   type Abgleichbefund,
   type EvidenceItem,
   type Faehigkeitsaussage,
@@ -232,7 +232,8 @@ export function computeFit(input: FitInput): FitResult {
     if (katalogschluessel && faehigkeiten.length > 0) {
       const abgleich = anforderungAbgleichen(
         r.text,
-        VERLANGTE_STUFE_STANDARD,
+        /* Aus dem Wortlaut der Anzeige, nicht pauschal. */
+        verlangteStufeAus(r.text),
         faehigkeiten,
         katalogschluessel,
       );

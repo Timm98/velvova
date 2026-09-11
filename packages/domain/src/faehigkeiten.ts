@@ -345,3 +345,35 @@ export function stufeAusZahl(n: number | null): Koennensstufe {
   const i = Math.trunc(n ?? 1) - 1;
   return KOENNENSSTUFEN[i] ?? KOENNENSSTUFEN[0]!;
 }
+
+/**
+ * Welche Stufe eine Anzeige verlangt — aus ihrem Wortlaut.
+ *
+ * ── Warum das gemessen ist und nicht erfunden ───────────────────
+ *
+ * Am 11.09.2026 an 160 SAP-Anforderungen aus Logistikanzeigen
+ * gezählt: 0 nennen das Wort ohne jede Einordnung, 38 sagen
+ * „Kenntnisse", 148 „Erfahrung", 35 „sicher", „fundiert" oder
+ * „mehrjährig". Der Anzeigentext trägt also eine grobe Tiefe — drei
+ * Abstufungen, nicht vier, und keine, die zwischen „benutzt" und
+ * „regelmässig benutzt" unterscheidet.
+ *
+ * Deshalb wird hier auf die vorhandene Skala abgebildet und keine
+ * zweite daneben gestellt. Eine Stufe, die die Daten nicht tragen,
+ * wäre eine erfundene Genauigkeit.
+ *
+ * Ohne Hinweis bleibt es bei `VERLANGTE_STUFE_STANDARD`.
+ */
+export function verlangteStufeAus(anforderung: string): Koennensstufe {
+  const t = anforderung.toLowerCase();
+  if (/(erste|grund|basis)[a-zäöüß]*kenntnis|grundlegende kenntnis|erste erfahrung/.test(t)) {
+    return "grundkenntnisse";
+  }
+  if (/(anleit|einarbeit|schulung von|ausbild[a-zäöüß]* von|fuehrung von mitarbeit)/.test(t)) {
+    return "anleitend";
+  }
+  if (/(fundiert|sicherer? umgang|mehrjaehrig|mehrjährig|routin|taeglich|täglich|umfassend)/.test(t)) {
+    return "routiniert";
+  }
+  return VERLANGTE_STUFE_STANDARD;
+}
