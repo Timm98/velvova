@@ -241,7 +241,29 @@ export const jobRequirements = pgTable("job_requirements", {
   konfidenz: smallint("konfidenz").notNull().default(70),
   /** Der Satz aus der Anzeige, auf den sich das stützt. */
   belegstelle: text("belegstelle"),
-}, (t) => [index("job_requirements_job_idx").on(t.jobId)]);
+
+  /* ── Struktur, Migration 0116 ─────────────────────────────── */
+
+  /** Eine aus `ANFORDERUNGSKATEGORIEN`. `TASK` fordert nichts. */
+  kategorie: text("kategorie").notNull().default("UNKNOWN"),
+  /** `muss` · `wunsch` · `unklar`. Der häufigste Wert ist `unklar`. */
+  verbindlichkeit: text("verbindlichkeit").notNull().default("unklar"),
+  /** Der Satz ohne Beiwerk. Das Original steht in `text`. */
+  bedeutung: text("bedeutung"),
+  /** Bei EXPERIENCE: worin. `null` heisst unbekannt, nie „egal". */
+  erfahrungsfeld: text("erfahrungsfeld"),
+  erfahrungsmass: text("erfahrungsmass"),
+  /**
+   * Welche Regeln diese Zeile erzeugt haben.
+   *
+   * Die neue Fassung wird neben die alte geschrieben, nicht darüber.
+   * Leser nehmen die höchste vorhandene je Stelle.
+   */
+  extraktionFassung: text("extraktion_fassung").notNull().default("anforderung-1"),
+}, (t) => [
+  index("job_requirements_job_idx").on(t.jobId),
+  index("job_requirements_fassung_idx").on(t.jobId, t.extraktionFassung),
+]);
 
 export const companySources = pgTable("company_sources", {
   id: uuid("id").primaryKey().defaultRandom(),

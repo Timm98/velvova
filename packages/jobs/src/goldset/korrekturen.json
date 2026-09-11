@@ -1,0 +1,32 @@
+{
+  "_hinweis": "Referenz zu bestand.json, Stichprobe von 120 Eintraegen. Erstellt am 11.09.2026 durch Pruefung der Maschinenausgabe Zeile fuer Zeile. Von mir geprueft, nicht von einem Dritten. DROP heisst: haette gar kein Eintrag werden duerfen.",
+  "korrekturen": {
+    "1": { "kategorie": "LANGUAGE", "verbindlichkeit": "muss" },
+    "3": { "drop": true },
+    "7": { "drop": true },
+    "9": { "drop": true },
+    "10": { "drop": true },
+    "16": { "kategorie": "LANGUAGE", "verbindlichkeit": "unklar" },
+    "24": { "kategorie": "UNKNOWN", "verbindlichkeit": "unklar" },
+    "28": { "drop": true },
+    "34": { "drop": true },
+    "35": { "drop": true },
+    "37": { "kategorie": "LEGAL_REQUIREMENT", "verbindlichkeit": "muss" },
+    "42": { "kategorie": "QUALIFICATION", "verbindlichkeit": "muss" },
+    "45": { "drop": true },
+    "49": { "drop": true },
+    "50": { "drop": true },
+    "51": { "drop": true },
+    "62": { "drop": true },
+    "69": { "drop": true },
+    "72": { "drop": true },
+    "77": { "kategorie": "UNKNOWN", "verbindlichkeit": "unklar" },
+    "83": { "kategorie": "UNKNOWN", "verbindlichkeit": "unklar" },
+    "88": { "kategorie": "LEGAL_REQUIREMENT", "verbindlichkeit": "unklar" },
+    "91": { "kategorie": "UNKNOWN", "verbindlichkeit": "unklar" },
+    "104": { "drop": true },
+    "114": { "kategorie": "EXPERIENCE", "verbindlichkeit": "wunsch" },
+    "119": { "drop": true },
+    "120": { "drop": true }
+  }
+}

@@ -93,3 +93,5 @@ export * from "./bedarfsschnappschuss.ts";
 export * from "./faehigkeitsbackfill.ts";
 export * from "./begriffsgruppen-messen.ts";
 export * from "./monatsbericht.ts";
+export * from "./anforderungsextraktion.ts";
+export * from "./anforderungsbackfill.ts";
